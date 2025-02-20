@@ -43,7 +43,7 @@ private:
 public:
     Engine(const QueryContext & query_context, const SearchStages & search_stages);
     void InitLogicalExpression(ExpressionPtr expression_ptr);
-    GroupPtr GroupInsert(GroupPtr group_target, ExpressionPtr expression_ptr,
+    GroupPtr PgroupInsert(GroupPtr group_target, ExpressionPtr expression_ptr,
 					  XForm::EXformId xformid_origin,
 					  GroupExpressionPtr group_exp_origin, bool fIntermediate);
     void

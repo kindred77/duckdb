@@ -31,76 +31,76 @@ Engine::Engine(const QueryContext & query_context, const SearchStages & search_s
 
 void Engine::InitLogicalExpression(ExpressionPtr expression_ptr) {
     GroupPtr group_root =
-		GroupInsert(nullptr /*pgroupTarget*/, expression_ptr, XForm::ExfInvalid,
+		PgroupInsert(nullptr /*pgroupTarget*/, expression_ptr, XForm::ExfInvalid,
 					 nullptr /*pgexprOrigin*/, false /*fIntermediate*/);
 	m_pmemo->SetRoot(group_root);
 }
 
-GroupPtr Engine::GroupInsert(GroupPtr group_target, ExpressionPtr expression_ptr,
-					  XForm::EXformId xformid_origin,
-					  GroupExpressionPtr group_exp_origin, bool fIntermediate) {
-    GroupPtr group_origin = nullptr;
+GroupPtr Engine::PgroupInsert(GroupPtr pgroupTarget, ExpressionPtr pexpr,
+					  XForm::EXformId exfidOrigin,
+					  GroupExpressionPtr pgexprOrigin, bool fIntermediate) {
+    GroupPtr pgroupOrigin = nullptr;
 
-    if (nullptr != expression_ptr->GroupExpression()) {
-		group_origin = expression_ptr->GroupExpression()->Group();
-		//GPOS_ASSERT(nullptr != group_origin && nullptr == group_target &&
+    if (nullptr != pexpr->Pgexpr()) {
+		pgroupOrigin = pexpr->Pgexpr()->Group();
+		//GPOS_ASSERT(nullptr != pgroupOrigin && nullptr == group_target &&
 		//			"A valid group is expected");
 
 		// if parent has group pointer, all children must have group pointers;
 		// terminate recursive insertion here
-		return group_origin;
+		return pgroupOrigin;
 	}
 
 	// if we have a valid origin group, target group must be NULL
 	//GPOS_ASSERT_IMP(nullptr != pgroupOrigin, nullptr == pgroupTarget);
 
 	// insert expression's children to memo by recursive call
-	std::shared_ptr<Groups> group_children =
-		std::make_shared<Groups>(expression_ptr->Arity());
+	std::shared_ptr<Groups> pdrgpgroupChildren =
+		std::make_shared<Groups>(pexpr->Arity());
 
-	InsertExpressionChildren(expression_ptr, group_children, xformid_origin,
-							 group_exp_origin);
+	InsertExpressionChildren(pexpr, pdrgpgroupChildren, exfidOrigin,
+							 pgexprOrigin);
 	
-	LogicalOperatorPtr op = expression_ptr->op();
-	GroupExpressionPtr group_expr = std::make_shared<GroupExpression>(
-		op, group_children, xformid_origin,
-		group_exp_origin, fIntermediate);
+	LogicalOperatorPtr op = pexpr->op();
+	GroupExpressionPtr pgexpr = std::make_shared<GroupExpression>(
+		op, pdrgpgroupChildren, exfidOrigin,
+		pgexprOrigin, fIntermediate);
 
 	// find the group that contains created group expression
-	GroupPtr group_container =
-		m_pmemo->GroupInsert(group_target, expression_ptr, group_expr);
+	GroupPtr pgroupContainer =
+		m_pmemo->GroupInsert(pgroupTarget, pexpr, pgexpr);
 
-	if (nullptr == group_expr->Group())
+	if (nullptr == pgexpr->Group())
 	{
 		// insertion failed, release created group expression
-		group_expr->Release();
+		pgexpr->Release();
 	}
 
-	return group_container;
+	return pgroupContainer;
 }
 
 void
 Engine::InsertExpressionChildren(ExpressionPtr expr,
-		std::shared_ptr<Groups> group_children,
-		XForm::EXformId exfid_origin,
-		GroupExpressionPtr group_expr_origin) {
+		std::shared_ptr<Groups> pdrgpgroupChildren,
+		XForm::EXformId exfidOrigin,
+		GroupExpressionPtr pgexprOrigin) {
 	size_t arity = expr->Arity();
 
 	for (auto i = 0; i < arity; i++) {
-		GroupPtr group_child = nullptr;
-		LogicalOperatorPtr op_child = expr->operator[](i)->op();
-		if (op_child->FPattern() && CPattern::PopConvert(op_child)->FLeaf()) {
+		GroupPtr pgroupChild = nullptr;
+		LogicalOperatorPtr popChild = expr->operator[](i)->op();
+		if (popChild->FPattern() && CPattern::PopConvert(popChild)->FLeaf()) {
 			//GPOS_ASSERT(nullptr != (*pexpr)[i]->Pgexpr()->Pgroup());
 
 			// group is already assigned during binding extraction;
-			group_child = expr->operator[](i)->GroupExpression()->Group();
+			pgroupChild = expr->operator[](i)->GroupExpression()->Group();
 		} else {
 			// insert child expression recursively
-			group_child =
-				GroupInsert(nullptr /*pgroupTarget*/, expr->operator[](i), exfid_origin,
-							 group_expr_origin, true /*fIntermediate*/);
+			pgroupChild =
+				PgroupInsert(nullptr /*pgroupTarget*/, expr->operator[](i), exfidOrigin,
+							 pgexprOrigin, true /*fIntermediate*/);
 		}
-		group_children->push_back(group_child);
+		pdrgpgroupChildren->push_back(pgroupChild);
 	}
 }
 
