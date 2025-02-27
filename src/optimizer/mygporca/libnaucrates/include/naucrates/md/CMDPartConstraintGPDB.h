@@ -65,21 +65,21 @@ public:
 						  BOOL is_unbounded, CDXLNode *dxlnode);
 
 	// dtor
-	~CMDPartConstraintGPDB() override;
+	virtual ~CMDPartConstraintGPDB();
 
 	// serialize constraint in DXL format
-	void Serialize(CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(CXMLSerializer *xml_serializer) const;
 
 	// the scalar expression of the part constraint
-	CExpression *GetPartConstraintExpr(
+	virtual CExpression *GetPartConstraintExpr(
 		CMemoryPool *mp, CMDAccessor *md_accessor,
-		CColRefArray *colref_array) const override;
+		CColRefArray *colref_array) const;
 
 	// included default partitions
-	ULongPtrArray *GetDefaultPartsArray() const override;
+	virtual ULongPtrArray *GetDefaultPartsArray() const;
 
 	// is constraint unbounded
-	BOOL IsConstraintUnbounded() const override;
+	virtual BOOL IsConstraintUnbounded() const;
 };
 }  // namespace gpmd
 

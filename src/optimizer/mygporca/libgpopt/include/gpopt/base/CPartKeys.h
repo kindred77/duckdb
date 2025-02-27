@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CPartKeys.h
@@ -24,7 +24,7 @@ class CColRefSet;
 class CPartKeys;
 
 // array of part keys
-using CPartKeysArray = CDynamicPtrArray<CPartKeys, CleanupRelease>;
+typedef CDynamicPtrArray<CPartKeys, CleanupRelease> CPartKeysArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -43,14 +43,15 @@ private:
 	// number of levels
 	ULONG m_num_of_part_levels;
 
-public:
-	CPartKeys(const CPartKeys &) = delete;
+	// private copy ctor
+	CPartKeys(const CPartKeys &);
 
+public:
 	// ctor
 	explicit CPartKeys(CColRef2dArray *pdrgpdrgpcr);
 
 	// dtor
-	~CPartKeys() override;
+	~CPartKeys();
 
 	// return key at a given level
 	CColRef *PcrKey(ULONG ulLevel) const;
@@ -81,7 +82,7 @@ public:
 							  UlongToColRefMap *colref_mapping) const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// copy array of part keys into given memory pool
 	static CPartKeysArray *PdrgppartkeysCopy(

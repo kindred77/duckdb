@@ -57,7 +57,9 @@ CLogicalDifferenceAll::CLogicalDifferenceAll(CMemoryPool *mp,
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogicalDifferenceAll::~CLogicalDifferenceAll() = default;
+CLogicalDifferenceAll::~CLogicalDifferenceAll()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -115,7 +117,7 @@ CLogicalDifferenceAll::DeriveKeyCollection(CMemoryPool *,		// mp,
 ) const
 {
 	// TODO: Add keys on columns contributing to the setop from the outer child
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------

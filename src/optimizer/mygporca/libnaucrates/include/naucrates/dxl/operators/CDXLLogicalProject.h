@@ -29,23 +29,24 @@ namespace gpdxl
 class CDXLLogicalProject : public CDXLLogical
 {
 private:
+	// private copy ctor
+	CDXLLogicalProject(CDXLLogicalProject &);
+
 	// alias name
 	const CMDName *m_mdname_alias;
 
 public:
-	CDXLLogicalProject(CDXLLogicalProject &) = delete;
-
 	// ctor
 	explicit CDXLLogicalProject(CMemoryPool *);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 	const CMDName *MdName() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxl_node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxl_node) const;
 
 	// set alias name
 	void SetAliasName(CMDName *);
@@ -54,7 +55,7 @@ public:
 	static CDXLLogicalProject *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalProject == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalProject *>(dxl_op);
@@ -63,7 +64,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

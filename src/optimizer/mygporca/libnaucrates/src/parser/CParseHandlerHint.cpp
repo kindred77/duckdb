@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerHint.cpp
@@ -34,8 +34,7 @@ XERCES_CPP_NAMESPACE_USE
 CParseHandlerHint::CParseHandlerHint(CMemoryPool *mp,
 									 CParseHandlerManager *parse_handler_mgr,
 									 CParseHandlerBase *parse_handler_root)
-	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
-	  m_hint(nullptr)
+	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root), m_hint(NULL)
 {
 }
 
@@ -76,6 +75,10 @@ CParseHandlerHint::StartElement(const XMLCh *const,	 //element_uri,
 	}
 
 	// parse hint configuration options
+	ULONG min_num_of_parts_to_require_sort_on_insert =
+		CDXLOperatorFactory::ExtractConvertAttrValueToUlong(
+			m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
+			EdxltokenMinNumOfPartsToRequireSortOnInsert, EdxltokenHint);
 	ULONG join_arity_for_associativity_commutativity =
 		CDXLOperatorFactory::ExtractConvertAttrValueToUlong(
 			m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
@@ -110,14 +113,12 @@ CParseHandlerHint::StartElement(const XMLCh *const,	 //element_uri,
 			m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
 			EdxltokenXformBindThreshold, EdxltokenHint, true,
 			XFORM_BIND_THRESHOLD);
-	ULONG skew_factor = CDXLOperatorFactory::ExtractConvertAttrValueToUlong(
-		m_parse_handler_mgr->GetDXLMemoryManager(), attrs, EdxltokenSkewFactor,
-		EdxltokenHint, true, SKEW_FACTOR);
 
 	m_hint = GPOS_NEW(m_mp) CHint(
+		min_num_of_parts_to_require_sort_on_insert,
 		join_arity_for_associativity_commutativity, array_expansion_threshold,
 		join_order_dp_threshold, broadcast_threshold, enforce_constraint_on_dml,
-		push_group_by_below_setop_threshold, xform_bind_threshold, skew_factor);
+		push_group_by_below_setop_threshold, xform_bind_threshold);
 }
 
 //---------------------------------------------------------------------------
@@ -143,7 +144,7 @@ CParseHandlerHint::EndElement(const XMLCh *const,  // element_uri,
 				   str->GetBuffer());
 	}
 
-	GPOS_ASSERT(nullptr != m_hint);
+	GPOS_ASSERT(NULL != m_hint);
 	GPOS_ASSERT(0 == this->Length());
 
 	// deactivate handler

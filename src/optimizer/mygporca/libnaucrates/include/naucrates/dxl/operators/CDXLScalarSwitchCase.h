@@ -34,39 +34,42 @@ using namespace gpmd;
 class CDXLScalarSwitchCase : public CDXLScalar
 {
 private:
-public:
-	CDXLScalarSwitchCase(const CDXLScalarSwitchCase &) = delete;
+	// private copy ctor
+	CDXLScalarSwitchCase(const CDXLScalarSwitchCase &);
 
+public:
 	// ctor
 	explicit CDXLScalarSwitchCase(CMemoryPool *mp);
 
 	//dtor
-	~CDXLScalarSwitchCase() override = default;
+	virtual ~CDXLScalarSwitchCase()
+	{
+	}
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// DXL Operator ID
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarSwitchCase *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSwitchCase == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarSwitchCase *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid function call for a container operator");
 		return false;
@@ -75,8 +78,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

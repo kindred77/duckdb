@@ -31,9 +31,10 @@ class CDistributionSpec;
 class CPhysicalScalarAgg : public CPhysicalAgg
 {
 private:
-public:
-	CPhysicalScalarAgg(const CPhysicalScalarAgg &) = delete;
+	// private copy ctor
+	CPhysicalScalarAgg(const CPhysicalScalarAgg &);
 
+public:
 	// ctor
 	CPhysicalScalarAgg(
 		CMemoryPool *mp, CColRefArray *colref_array,
@@ -43,19 +44,19 @@ public:
 		CLogicalGbAgg::EAggStage aggStage, BOOL should_enforce_distribution);
 
 	// dtor
-	~CPhysicalScalarAgg() override;
+	virtual ~CPhysicalScalarAgg();
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalScalarAgg;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalScalarAgg";
 	}
@@ -65,26 +66,26 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required sort columns of the n-th child
-	COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							COrderSpec *posRequired, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt,
-							ULONG ulOptReq) const override;
+	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+									COrderSpec *posRequired, ULONG child_index,
+									CDrvdPropArray *pdrgpdpCtxt,
+									ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *PosDerive(CMemoryPool *mp,
-						  CExpressionHandle &exprhdl) const override;
+	virtual COrderSpec *PosDerive(CMemoryPool *mp,
+								  CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -94,10 +95,10 @@ public:
 	static CPhysicalScalarAgg *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalScalarAgg == pop->Eopid());
 
-		return dynamic_cast<CPhysicalScalarAgg *>(pop);
+		return reinterpret_cast<CPhysicalScalarAgg *>(pop);
 	}
 
 };	// class CPhysicalScalarAgg

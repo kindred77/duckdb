@@ -33,19 +33,23 @@ using namespace gpos;
 class CKeyCollection : public CRefCount, public DbgPrintMixin<CKeyCollection>
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// array of key sets
 	CColRefSetArray *m_pdrgpcrs;
 
-public:
-	CKeyCollection(const CKeyCollection &) = delete;
+	// private copy ctor
+	CKeyCollection(const CKeyCollection &);
 
+public:
 	// ctors
 	explicit CKeyCollection(CMemoryPool *mp);
 	CKeyCollection(CMemoryPool *mp, CColRefSet *pcrs);
 	CKeyCollection(CMemoryPool *mp, CColRefArray *colref_array);
 
 	// dtor
-	~CKeyCollection() override;
+	virtual ~CKeyCollection();
 
 	// add individual set -- takes ownership
 	void Add(CColRefSet *pcrs);
@@ -80,7 +84,7 @@ public:
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CKeyCollection
 

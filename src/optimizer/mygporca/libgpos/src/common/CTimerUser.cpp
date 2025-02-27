@@ -25,7 +25,7 @@ using namespace gpos;
 //		User time in micro-seconds since object construction
 //
 //---------------------------------------------------------------------------
-gpos::ULONG
+ULONG
 CTimerUser::ElapsedUS() const
 {
 	RUSAGE rusage;

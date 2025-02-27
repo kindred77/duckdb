@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformDelete2DML : public CXformExploration
 {
 private:
-public:
-	CXformDelete2DML(const CXformDelete2DML &) = delete;
+	// private copy ctor
+	CXformDelete2DML(const CXformDelete2DML &);
 
+public:
 	// ctor
 	explicit CXformDelete2DML(CMemoryPool *mp);
 
 	// dtor
-	~CXformDelete2DML() override = default;
+	virtual ~CXformDelete2DML()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfDelete2DML;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformDelete2DML";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformDelete2DML
 }  // namespace gpopt

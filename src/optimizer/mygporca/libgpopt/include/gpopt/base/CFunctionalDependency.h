@@ -24,8 +24,8 @@ namespace gpopt
 class CFunctionalDependency;
 
 // definition of array of functional dependencies
-using CFunctionalDependencyArray =
-	CDynamicPtrArray<CFunctionalDependency, CleanupRelease>;
+typedef CDynamicPtrArray<CFunctionalDependency, CleanupRelease>
+	CFunctionalDependencyArray;
 
 using namespace gpos;
 
@@ -47,14 +47,15 @@ private:
 	// the right hand side of the FD
 	CColRefSet *m_pcrsDetermined;
 
-public:
-	CFunctionalDependency(const CFunctionalDependency &) = delete;
+	// private copy ctor
+	CFunctionalDependency(const CFunctionalDependency &);
 
+public:
 	// ctor
 	CFunctionalDependency(CColRefSet *pcrsKey, CColRefSet *pcrsDetermined);
 
 	// dtor
-	~CFunctionalDependency() override;
+	virtual ~CFunctionalDependency();
 
 	// key set accessor
 	CColRefSet *
@@ -83,14 +84,14 @@ public:
 	BOOL
 	FFunctionallyDependent(CColRefSet *pcrsKey, CColRef *colref)
 	{
-		GPOS_ASSERT(nullptr != pcrsKey);
-		GPOS_ASSERT(nullptr != colref);
+		GPOS_ASSERT(NULL != pcrsKey);
+		GPOS_ASSERT(NULL != colref);
 
 		return m_pcrsKey->Equals(pcrsKey) && m_pcrsDetermined->FMember(colref);
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// hash function
 	static ULONG HashValue(const CFunctionalDependencyArray *pdrgpfd);

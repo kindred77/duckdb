@@ -73,18 +73,21 @@ private:
 	// inclusion option for right end
 	ERangeInclusion m_eriRight;
 
+	// hidden copy ctor
+	CRange(const CRange &);
+
 	// construct an equality predicate if possible
 	CExpression *PexprEquality(CMemoryPool *mp, const CColRef *colref);
 
 	// construct a scalar comparison expression from one of the ends
-	static CExpression *PexprScalarCompEnd(CMemoryPool *mp, IDatum *datum,
-										   ERangeInclusion eri,
-										   IMDType::ECmpType ecmptIncl,
-										   IMDType::ECmpType ecmptExcl,
-										   const CColRef *colref);
+	CExpression *PexprScalarCompEnd(CMemoryPool *mp, IDatum *datum,
+									ERangeInclusion eri,
+									IMDType::ECmpType ecmptIncl,
+									IMDType::ECmpType ecmptExcl,
+									const CColRef *colref);
 
 	// inverse of the inclusion option
-	static ERangeInclusion
+	ERangeInclusion
 	EriInverseInclusion(ERangeInclusion eri)
 	{
 		if (EriIncluded == eri)
@@ -95,12 +98,10 @@ private:
 	}
 
 	// print a bound
-	static IOstream &OsPrintBound(IOstream &os, IDatum *datum,
-								  const CHAR *szInfinity);
+	IOstream &OsPrintBound(IOstream &os, IDatum *datum,
+						   const CHAR *szInfinity) const;
 
 public:
-	CRange(const CRange &) = delete;
-
 	// ctor
 	CRange(IMDId *mdid, const IComparator *pcomp, IDatum *pdatumLeft,
 		   ERangeInclusion eriLeft, IDatum *pdatumRight,
@@ -110,7 +111,7 @@ public:
 	CRange(const IComparator *pcomp, IMDType::ECmpType cmp_type, IDatum *datum);
 
 	// dtor
-	~CRange() override;
+	virtual ~CRange();
 
 	// range type
 	IMDId *
@@ -197,11 +198,11 @@ public:
 	BOOL
 	IsConstraintUnbounded() const
 	{
-		return (nullptr == m_pdatumLeft && nullptr == m_pdatumRight);
+		return (NULL == m_pdatumLeft && NULL == m_pdatumRight);
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CRange
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarArrayRefIndexList.h
@@ -43,22 +43,23 @@ private:
 	// index list type
 	EIndexListType m_eilt;
 
-public:
-	CScalarArrayRefIndexList(const CScalarArrayRefIndexList &) = delete;
+	// private copy ctor
+	CScalarArrayRefIndexList(const CScalarArrayRefIndexList &);
 
+public:
 	// ctor
 	CScalarArrayRefIndexList(CMemoryPool *mp, EIndexListType eilt);
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarArrayRefIndexList;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarArrayRefIndexList";
 	}
@@ -71,39 +72,39 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// type of expression's result
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		GPOS_ASSERT(
 			!"Invalid function call: CScalarArrayRefIndexList::MdidType()");
-		return nullptr;
+		return NULL;
 	}
 
 	// conversion function
 	static CScalarArrayRefIndexList *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarArrayRefIndexList == pop->Eopid());
 
 		return dynamic_cast<CScalarArrayRefIndexList *>(pop);

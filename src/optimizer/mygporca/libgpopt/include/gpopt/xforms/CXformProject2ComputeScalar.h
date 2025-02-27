@@ -31,31 +31,34 @@ using namespace gpos;
 class CXformProject2ComputeScalar : public CXformImplementation
 {
 private:
-public:
-	CXformProject2ComputeScalar(const CXformProject2ComputeScalar &) = delete;
+	// private copy ctor
+	CXformProject2ComputeScalar(const CXformProject2ComputeScalar &);
 
+public:
 	// ctor
 	explicit CXformProject2ComputeScalar(CMemoryPool *mp);
 
 	// dtor
-	~CXformProject2ComputeScalar() override = default;
+	virtual ~CXformProject2ComputeScalar()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfProject2ComputeScalar;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformProject2ComputeScalar";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
-	Exfp(CExpressionHandle &exprhdl) const override
+	virtual EXformPromise
+	Exfp(CExpressionHandle &exprhdl) const
 	{
 		if (exprhdl.DeriveHasSubquery(1))
 		{
@@ -66,8 +69,8 @@ public:
 	}
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	virtual void Transform(CXformContext *, CXformResult *,
+						   CExpression *) const;
 
 };	// class CXformProject2ComputeScalar
 

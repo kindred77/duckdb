@@ -1,4 +1,5 @@
 //---------------------------------------------------------------------------
+//
 //	Greenplum Database
 //	Copyright (C) 2017 VMware, Inc. or its affiliates.
 //
@@ -33,19 +34,19 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
+
+	CParseHandlerScalarSortGroupClause(
+		const CParseHandlerScalarSortGroupClause &);
 
 public:
-	CParseHandlerScalarSortGroupClause(
-		const CParseHandlerScalarSortGroupClause &) = delete;
-
 	// ctor/dtor
 	CParseHandlerScalarSortGroupClause(CMemoryPool *mp,
 									   CParseHandlerManager *parse_handler_mgr,

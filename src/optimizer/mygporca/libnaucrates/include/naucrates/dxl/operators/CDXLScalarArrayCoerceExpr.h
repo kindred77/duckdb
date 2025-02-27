@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarArrayCoerceExpr.h
@@ -38,34 +38,58 @@ using namespace gpmd;
 class CDXLScalarArrayCoerceExpr : public CDXLScalarCoerceBase
 {
 private:
-public:
-	CDXLScalarArrayCoerceExpr(const CDXLScalarArrayCoerceExpr &) = delete;
+	// catalog MDId of element coerce function
+	IMDId *m_coerce_func_mdid;
 
-	CDXLScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *result_type_mdid,
-							  INT type_modifier, EdxlCoercionForm coerce_format,
+	// conversion semantics flag to pass to func
+	BOOL m_explicit;
+
+	// private copy ctor
+	CDXLScalarArrayCoerceExpr(const CDXLScalarArrayCoerceExpr &);
+
+public:
+	CDXLScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *coerce_func_mdid,
+							  IMDId *result_type_mdid, INT type_modifier,
+							  BOOL is_explicit, EdxlCoercionForm coerce_format,
 							  INT location);
 
-	~CDXLScalarArrayCoerceExpr() override = default;
+	virtual ~CDXLScalarArrayCoerceExpr()
+	{
+		m_coerce_func_mdid->Release();
+	}
 
 	// ident accessor
-	Edxlopid
-	GetDXLOperator() const override
+	virtual Edxlopid
+	GetDXLOperator() const
 	{
 		return EdxlopScalarArrayCoerceExpr;
 	}
 
+	// return metadata id of element coerce function
+	IMDId *
+	GetCoerceFuncMDid() const
+	{
+		return m_coerce_func_mdid;
+	}
+
+	BOOL
+	IsExplicit() const
+	{
+		return m_explicit;
+	}
+
 	// name of the DXL operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarArrayCoerceExpr *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarArrayCoerceExpr == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarArrayCoerceExpr *>(dxl_op);

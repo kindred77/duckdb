@@ -34,10 +34,11 @@ class CXformImplementInnerCorrelatedApply
 											CPhysicalCorrelatedInnerNLJoin>
 {
 private:
-public:
+	// private copy ctor
 	CXformImplementInnerCorrelatedApply(
-		const CXformImplementInnerCorrelatedApply &) = delete;
+		const CXformImplementInnerCorrelatedApply &);
 
+public:
 	// ctor
 	explicit CXformImplementInnerCorrelatedApply(CMemoryPool *mp)
 		: CXformImplementCorrelatedApply<CLogicalInnerCorrelatedApply,
@@ -46,17 +47,19 @@ public:
 	}
 
 	// dtor
-	~CXformImplementInnerCorrelatedApply() override = default;
+	virtual ~CXformImplementInnerCorrelatedApply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementInnerCorrelatedApply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementInnerCorrelatedApply";
 	}

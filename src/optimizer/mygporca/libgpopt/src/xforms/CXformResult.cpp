@@ -27,7 +27,7 @@ FORCE_GENERATE_DBGSTR(CXformResult);
 //---------------------------------------------------------------------------
 CXformResult::CXformResult(CMemoryPool *mp) : m_ulExpr(0)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 }
 
@@ -61,7 +61,7 @@ CXformResult::Add(CExpression *pexpr)
 	GPOS_ASSERT(0 == m_ulExpr &&
 				"Incorrect workflow: cannot add further alternatives");
 
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	m_pdrgpexpr->Append(pexpr);
 }
 
@@ -77,7 +77,7 @@ CXformResult::Add(CExpression *pexpr)
 CExpression *
 CXformResult::PexprNext()
 {
-	CExpression *pexpr = nullptr;
+	CExpression *pexpr = NULL;
 	if (m_ulExpr < m_pdrgpexpr->Size())
 	{
 		pexpr = (*m_pdrgpexpr)[m_ulExpr];

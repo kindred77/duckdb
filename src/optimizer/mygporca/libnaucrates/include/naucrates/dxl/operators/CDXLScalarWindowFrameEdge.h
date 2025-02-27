@@ -55,18 +55,19 @@ private:
 	// frame boundary
 	EdxlFrameBoundary m_dxl_frame_boundary;
 
-public:
-	CDXLScalarWindowFrameEdge(const CDXLScalarWindowFrameEdge &) = delete;
+	// private copy ctor
+	CDXLScalarWindowFrameEdge(const CDXLScalarWindowFrameEdge &);
 
+public:
 	// ctor
 	CDXLScalarWindowFrameEdge(CMemoryPool *mp, BOOL fLeading,
 							  EdxlFrameBoundary frame_boundary);
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// is it a leading or trailing edge
 	BOOL
@@ -83,17 +84,17 @@ public:
 	}
 
 	// return the string representation of frame boundary
-	static const CWStringConst *GetFrameBoundaryStr(
-		EdxlFrameBoundary frame_boundary);
+	const CWStringConst *GetFrameBoundaryStr(
+		EdxlFrameBoundary frame_boundary) const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid function call for a container operator");
 		return false;
@@ -102,15 +103,14 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarWindowFrameEdge *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarWindowFrameEdge == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarWindowFrameEdge *>(dxl_op);

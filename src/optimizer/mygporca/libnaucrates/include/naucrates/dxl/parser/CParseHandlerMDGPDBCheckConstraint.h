@@ -44,25 +44,26 @@ private:
 	// mdid of the relation
 	IMDId *m_rel_mdid;
 
+	// private copy ctor
+	CParseHandlerMDGPDBCheckConstraint(
+		const CParseHandlerMDGPDBCheckConstraint &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerMDGPDBCheckConstraint(
-		const CParseHandlerMDGPDBCheckConstraint &) = delete;
-
 	// ctor
 	CParseHandlerMDGPDBCheckConstraint(CMemoryPool *mp,
 									   CParseHandlerManager *parse_handler_mgr,

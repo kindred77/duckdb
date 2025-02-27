@@ -34,39 +34,41 @@ using namespace gpos;
 class CDrvdPropCtxtRelational : public CDrvdPropCtxt
 {
 private:
+	// private copy ctor
+	CDrvdPropCtxtRelational(const CDrvdPropCtxtRelational &);
+
 protected:
 	// copy function
-	CDrvdPropCtxt *
-	PdpctxtCopy(CMemoryPool *mp) const override
+	virtual CDrvdPropCtxt *
+	PdpctxtCopy(CMemoryPool *mp) const
 	{
 		return GPOS_NEW(mp) CDrvdPropCtxtRelational(mp);
 	}
 
 	// add props to context
-	void
+	virtual void
 	AddProps(CDrvdProp *  // pdp
-			 ) override
+	)
 	{
 		// derived relational context is currently empty
 	}
 
 public:
-	CDrvdPropCtxtRelational(const CDrvdPropCtxtRelational &) = delete;
-
 	// ctor
 	CDrvdPropCtxtRelational(CMemoryPool *mp) : CDrvdPropCtxt(mp)
 	{
 	}
 
 	// dtor
-	~CDrvdPropCtxtRelational() override = default;
-
+	virtual ~CDrvdPropCtxtRelational()
+	{
+	}
 
 #ifdef GPOS_DEBUG
 
 	// is it a relational property context?
-	BOOL
-	FRelational() const override
+	virtual BOOL
+	FRelational() const
 	{
 		return true;
 	}
@@ -77,9 +79,9 @@ public:
 	static CDrvdPropCtxtRelational *
 	PdpctxtrelConvert(CDrvdPropCtxt *pdpctxt)
 	{
-		GPOS_ASSERT(nullptr != pdpctxt);
+		GPOS_ASSERT(NULL != pdpctxt);
 
-		return dynamic_cast<CDrvdPropCtxtRelational *>(pdpctxt);
+		return reinterpret_cast<CDrvdPropCtxtRelational *>(pdpctxt);
 	}
 
 };	// class CDrvdPropCtxtRelational

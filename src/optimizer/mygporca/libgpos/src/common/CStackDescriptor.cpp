@@ -43,7 +43,7 @@ CStackDescriptor::BackTrace(ULONG top_frames_to_skip)
 	// get stack start address
 	ULONG_PTR stack_start = 0;
 	IWorker *worker = IWorker::Self();
-	if (nullptr == worker)
+	if (NULL == worker)
 	{
 		// no worker in stack, return immediately
 		return;
@@ -201,7 +201,7 @@ CStackDescriptor::AppendTrace(IOstream &os, ULONG depth) const
 //		Get hash value for stored stack
 //
 //---------------------------------------------------------------------------
-gpos::ULONG
+ULONG
 CStackDescriptor::HashValue() const
 {
 	GPOS_ASSERT(0 < m_depth && "No stack to hash");

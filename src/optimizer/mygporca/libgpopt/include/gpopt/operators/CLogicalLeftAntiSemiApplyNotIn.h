@@ -29,10 +29,10 @@ namespace gpopt
 class CLogicalLeftAntiSemiApplyNotIn : public CLogicalLeftAntiSemiApply
 {
 private:
-public:
-	CLogicalLeftAntiSemiApplyNotIn(const CLogicalLeftAntiSemiApplyNotIn &) =
-		delete;
+	// private copy ctor
+	CLogicalLeftAntiSemiApplyNotIn(const CLogicalLeftAntiSemiApplyNotIn &);
 
+public:
 	// ctor
 	explicit CLogicalLeftAntiSemiApplyNotIn(CMemoryPool *mp)
 		: CLogicalLeftAntiSemiApply(mp)
@@ -47,18 +47,20 @@ public:
 	}
 
 	// dtor
-	~CLogicalLeftAntiSemiApplyNotIn() override = default;
+	virtual ~CLogicalLeftAntiSemiApplyNotIn()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftAntiSemiApplyNotIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftAntiSemiApplyNotIn";
 	}
@@ -68,22 +70,21 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CLogicalLeftAntiSemiApplyNotIn *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftAntiSemiApplyNotIn == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftAntiSemiApplyNotIn *>(pop);

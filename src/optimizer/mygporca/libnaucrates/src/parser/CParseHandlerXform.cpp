@@ -36,7 +36,7 @@ CParseHandlerXform::CParseHandlerXform(CMemoryPool *mp,
 									   CParseHandlerManager *parse_handler_mgr,
 									   CParseHandlerBase *parse_handler_root)
 	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
-	  m_xform(nullptr)
+	  m_xform(NULL)
 {
 }
 
@@ -49,7 +49,9 @@ CParseHandlerXform::CParseHandlerXform(CMemoryPool *mp,
 //		Destructor
 //
 //---------------------------------------------------------------------------
-CParseHandlerXform::~CParseHandlerXform() = default;
+CParseHandlerXform::~CParseHandlerXform()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -84,7 +86,7 @@ CParseHandlerXform::StartElement(const XMLCh *const,  // element_uri,
 		CDXLUtils::CreateMultiByteCharStringFromWCString(
 			m_mp, str_xform_name->GetBuffer());
 	m_xform = CXformFactory::Pxff()->Pxf(char_str_xform_name);
-	GPOS_ASSERT(nullptr != m_xform);
+	GPOS_ASSERT(NULL != m_xform);
 
 	GPOS_DELETE(str_xform_name);
 	GPOS_DELETE_ARRAY(char_str_xform_name);

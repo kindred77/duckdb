@@ -24,6 +24,7 @@
 #include "gpopt/metadata/CName.h"
 #include "gpopt/metadata/CTableDescriptor.h"
 #include "gpopt/operators/CExpressionHandle.h"
+#include "gpopt/translate/CTranslatorDXLToExpr.h"
 #include "naucrates/statistics/CStatistics.h"
 
 using namespace gpopt;
@@ -39,11 +40,11 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CLogicalGet::CLogicalGet(CMemoryPool *mp)
 	: CLogical(mp),
-	  m_pnameAlias(nullptr),
-	  m_ptabdesc(nullptr),
-	  m_pdrgpcrOutput(nullptr),
-	  m_pdrgpdrgpcrPart(nullptr),
-	  m_pcrsDist(nullptr)
+	  m_pnameAlias(NULL),
+	  m_ptabdesc(NULL),
+	  m_pdrgpcrOutput(NULL),
+	  m_pdrgpdrgpcrPart(NULL),
+	  m_pcrsDist(NULL)
 {
 	m_fPattern = true;
 }
@@ -61,12 +62,12 @@ CLogicalGet::CLogicalGet(CMemoryPool *mp, const CName *pnameAlias,
 	: CLogical(mp),
 	  m_pnameAlias(pnameAlias),
 	  m_ptabdesc(ptabdesc),
-	  m_pdrgpcrOutput(nullptr),
-	  m_pdrgpdrgpcrPart(nullptr),
-	  m_pcrsDist(nullptr)
+	  m_pdrgpcrOutput(NULL),
+	  m_pdrgpdrgpcrPart(NULL),
+	  m_pcrsDist(NULL)
 {
-	GPOS_ASSERT(nullptr != ptabdesc);
-	GPOS_ASSERT(nullptr != pnameAlias);
+	GPOS_ASSERT(NULL != ptabdesc);
+	GPOS_ASSERT(NULL != pnameAlias);
 
 	// generate a default column set for the table descriptor
 	m_pdrgpcrOutput = PdrgpcrCreateMapping(mp, m_ptabdesc->Pdrgpcoldesc(),
@@ -96,10 +97,10 @@ CLogicalGet::CLogicalGet(CMemoryPool *mp, const CName *pnameAlias,
 	  m_pnameAlias(pnameAlias),
 	  m_ptabdesc(ptabdesc),
 	  m_pdrgpcrOutput(pdrgpcrOutput),
-	  m_pdrgpdrgpcrPart(nullptr)
+	  m_pdrgpdrgpcrPart(NULL)
 {
-	GPOS_ASSERT(nullptr != ptabdesc);
-	GPOS_ASSERT(nullptr != pnameAlias);
+	GPOS_ASSERT(NULL != ptabdesc);
+	GPOS_ASSERT(NULL != pnameAlias);
 
 	if (m_ptabdesc->IsPartitioned())
 	{
@@ -183,7 +184,7 @@ CLogicalGet::PopCopyWithRemappedColumns(CMemoryPool *mp,
 										UlongToColRefMap *colref_mapping,
 										BOOL must_exist)
 {
-	CColRefArray *pdrgpcrOutput = nullptr;
+	CColRefArray *pdrgpcrOutput = NULL;
 	if (must_exist)
 	{
 		pdrgpcrOutput =
@@ -251,7 +252,8 @@ CLogicalGet::DeriveNotNullColumns(CMemoryPool *mp,
 	CColRefSetIter crsi(*exprhdl.DeriveOutputColumns());
 	while (crsi.Advance())
 	{
-		CColRefTable *pcrtable = CColRefTable::PcrConvert(crsi.Pcr());
+		CColRefTable *pcrtable =
+			CColRefTable::PcrConvert(const_cast<CColRef *>(crsi.Pcr()));
 		if (pcrtable->IsNullable())
 		{
 			pcrs->Exclude(pcrtable);

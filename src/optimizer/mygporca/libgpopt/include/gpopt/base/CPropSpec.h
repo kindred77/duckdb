@@ -46,16 +46,21 @@ public:
 	};
 
 private:
+	// private copy ctor
+	CPropSpec(const CPropSpec &);
+
 protected:
 	// ctor
-	CPropSpec() = default;
+	CPropSpec()
+	{
+	}
 
 	// dtor
-	~CPropSpec() override = default;
+	~CPropSpec()
+	{
+	}
 
 public:
-	CPropSpec(const CPropSpec &) = delete;
-
 	// append enforcers to dynamic array for the given plan properties
 	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CReqdPropPlan *prpp,
@@ -70,8 +75,6 @@ public:
 
 	// property type
 	virtual EPropSpecType Epst() const = 0;
-
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 
 };	// class CPropSpec
 

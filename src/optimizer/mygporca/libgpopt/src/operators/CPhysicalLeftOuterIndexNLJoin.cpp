@@ -25,8 +25,8 @@ CPhysicalLeftOuterIndexNLJoin::CPhysicalLeftOuterIndexNLJoin(
 	  m_pdrgpcrOuterRefs(colref_array),
 	  m_origJoinPred(origJoinPred)
 {
-	GPOS_ASSERT(nullptr != colref_array);
-	if (nullptr != origJoinPred)
+	GPOS_ASSERT(NULL != colref_array);
+	if (NULL != origJoinPred)
 	{
 		origJoinPred->AddRef();
 	}
@@ -56,7 +56,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalLeftOuterIndexNLJoin::EpetDistribution(
 	CExpressionHandle &exprhdl, const CEnfdDistribution *ped) const
 {
-	GPOS_ASSERT(nullptr != ped);
+	GPOS_ASSERT(NULL != ped);
 
 	// outer index nested loop join cannot have the inner child be random
 	if (exprhdl.Pdpplan(1)->Pds()->Edt() == CDistributionSpec::EdtRandom)
@@ -76,18 +76,19 @@ CPhysicalLeftOuterIndexNLJoin::EpetDistribution(
 }
 
 CDistributionSpec *
-CPhysicalLeftOuterIndexNLJoin::PdsRequired(
-	CMemoryPool *mp GPOS_UNUSED, CExpressionHandle &exprhdl GPOS_UNUSED,
-	CDistributionSpec *,  //pdsRequired,
-	ULONG child_index GPOS_UNUSED, CDrvdPropArray *pdrgpdpCtxt GPOS_UNUSED,
-	ULONG  // ulOptReq
+CPhysicalLeftOuterIndexNLJoin::PdsRequired(CMemoryPool * /*mp*/,
+										   CExpressionHandle & /*exprhdl*/,
+										   CDistributionSpec *,	 //pdsRequired,
+										   ULONG /*child_index*/,
+										   CDrvdPropArray * /*pdrgpdpCtxt*/,
+										   ULONG  // ulOptReq
 ) const
 {
 	GPOS_RAISE(
 		CException::ExmaInvalid, CException::ExmiInvalid,
 		GPOS_WSZ_LIT(
 			"PdsRequired should not be called for CPhysicalLeftOuterIndexNLJoin"));
-	return nullptr;
+	return NULL;
 }
 
 CEnfdDistribution *
@@ -175,7 +176,7 @@ CPhysicalLeftOuterIndexNLJoin::Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
 	return GPOS_NEW(mp) CEnfdDistribution(
 		GPOS_NEW(mp)
 			CDistributionSpecReplicated(CDistributionSpec::EdtReplicated),
-		CEnfdDistribution::EDistributionMatching::EdmSatisfy);
+		CEnfdDistribution::EdmSatisfy);
 }
 
 

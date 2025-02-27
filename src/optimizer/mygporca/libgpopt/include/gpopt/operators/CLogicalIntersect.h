@@ -29,9 +29,10 @@ namespace gpopt
 class CLogicalIntersect : public CLogicalSetOp
 {
 private:
-public:
-	CLogicalIntersect(const CLogicalIntersect &) = delete;
+	// private copy ctor
+	CLogicalIntersect(const CLogicalIntersect &);
 
+public:
 	// ctor
 	explicit CLogicalIntersect(CMemoryPool *mp);
 
@@ -39,46 +40,44 @@ public:
 					  CColRef2dArray *pdrgpdrgpcrInput);
 
 	// dtor
-	~CLogicalIntersect() override;
+	virtual ~CLogicalIntersect();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalIntersect;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalIntersect";
 	}
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
-	DerivePropertyConstraint(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CPropConstraint *
+	DerivePropertyConstraint(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintSetop(mp, exprhdl, true /*fIntersect*/);
 	}
@@ -88,22 +87,23 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Stats
 	//-------------------------------------------------------------------------------------
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -113,10 +113,10 @@ public:
 	static CLogicalIntersect *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalIntersect == pop->Eopid());
 
-		return dynamic_cast<CLogicalIntersect *>(pop);
+		return reinterpret_cast<CLogicalIntersect *>(pop);
 	}
 
 };	// class CLogicalIntersect

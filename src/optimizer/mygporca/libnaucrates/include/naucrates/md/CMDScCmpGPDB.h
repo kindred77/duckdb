@@ -37,7 +37,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// object id
 	IMDId *m_mdid;
@@ -57,44 +57,49 @@ private:
 	// comparison operator id
 	IMDId *m_mdid_op;
 
-public:
-	CMDScCmpGPDB(const CMDScCmpGPDB &) = delete;
+	// private copy ctor
+	CMDScCmpGPDB(const CMDScCmpGPDB &);
 
+public:
 	// ctor
 	CMDScCmpGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 				 IMDId *left_mdid, IMDId *right_mdid,
 				 IMDType::ECmpType cmp_type, IMDId *mdid_op);
 
 	// dtor
-	~CMDScCmpGPDB() override;
+	virtual ~CMDScCmpGPDB();
 
 	// accessors
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// copmarison object id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// cast object name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// left type
-	IMDId *GetLeftMdid() const override;
+	virtual IMDId *GetLeftMdid() const;
 
 	// right type
-	IMDId *GetRightMdid() const override;
+	virtual IMDId *GetRightMdid() const;
 
 	// comparison type
-	IMDType::ECmpType ParseCmpType() const override;
+	virtual IMDType::ECmpType ParseCmpType() const;
 
 	// comparison operator id
-	IMDId *MdIdOp() const override;
+	virtual IMDId *MdIdOp() const;
 
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

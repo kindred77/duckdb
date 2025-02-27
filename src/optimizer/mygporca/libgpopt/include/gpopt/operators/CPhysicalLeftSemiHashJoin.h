@@ -28,44 +28,44 @@ namespace gpopt
 class CPhysicalLeftSemiHashJoin : public CPhysicalHashJoin
 {
 private:
-public:
-	CPhysicalLeftSemiHashJoin(const CPhysicalLeftSemiHashJoin &) = delete;
+	// private copy ctor
+	CPhysicalLeftSemiHashJoin(const CPhysicalLeftSemiHashJoin &);
 
+public:
 	// ctor
 	CPhysicalLeftSemiHashJoin(
 		CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
-		CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-		BOOL is_null_aware = true,
+		CExpressionArray *pdrgpexprInnerKeys,
+		IMdIdArray *hash_opfamilies = NULL,
 		CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CPhysicalLeftSemiHashJoin() override;
+	virtual ~CPhysicalLeftSemiHashJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftSemiHashJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftSemiHashJoin";
 	}
 
-	CPartitionPropagationSpec *PppsRequired(
+	// check if required columns are included in output columns
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
+
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
 		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const override;
-
-	CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
-
-	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	// conversion function
 	static CPhysicalLeftSemiHashJoin *

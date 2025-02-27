@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CPartialPlan.cpp
@@ -39,9 +39,9 @@ CPartialPlan::CPartialPlan(CGroupExpression *pgexpr, CReqdPropPlan *prpp,
 	  m_pccChild(pccChild),	 // cost context of an already optimized child
 	  m_ulChildIndex(child_index)
 {
-	GPOS_ASSERT(nullptr != pgexpr);
-	GPOS_ASSERT(nullptr != prpp);
-	GPOS_ASSERT_IMP(nullptr != pccChild, child_index < pgexpr->Arity());
+	GPOS_ASSERT(NULL != pgexpr);
+	GPOS_ASSERT(NULL != prpp);
+	GPOS_ASSERT_IMP(NULL != pccChild, child_index < pgexpr->Arity());
 }
 
 
@@ -73,8 +73,8 @@ CPartialPlan::ExtractChildrenCostingInfo(CMemoryPool *mp, ICostModel *pcm,
 										 ICostModel::SCostingInfo *pci)
 {
 	GPOS_ASSERT(m_pgexpr == exprhdl.Pgexpr());
-	GPOS_ASSERT(nullptr != pci);
-	GPOS_ASSERT_IMP(nullptr != m_pccChild, m_ulChildIndex < exprhdl.Arity());
+	GPOS_ASSERT(NULL != pci);
+	GPOS_ASSERT_IMP(NULL != m_pccChild, m_ulChildIndex < exprhdl.Arity());
 
 	const ULONG arity = m_pgexpr->Arity();
 	ULONG ulIndex = 0;
@@ -89,11 +89,7 @@ CPartialPlan::ExtractChildrenCostingInfo(CMemoryPool *mp, ICostModel *pcm,
 
 		CReqdPropPlan *prppChild = exprhdl.Prpp(ul);
 		IStatistics *child_stats = pgroupChild->Pstats();
-		if (nullptr == child_stats)
-		{
-			GPOS_RAISE(gpopt::ExmaGPOPT, gpopt::ExmiNoStats,
-					   GPOS_WSZ_LIT("CPartialPlan"));
-		}
+		RaiseExceptionIfStatsNull(child_stats);
 
 		if (ul == m_ulChildIndex)
 		{
@@ -148,6 +144,25 @@ CPartialPlan::ExtractChildrenCostingInfo(CMemoryPool *mp, ICostModel *pcm,
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPartialPlan::RaiseExceptionIfStatsNull
+//
+//	@doc:
+//		Raise exception if the stats object is NULL
+//
+//---------------------------------------------------------------------------
+void
+CPartialPlan::RaiseExceptionIfStatsNull(IStatistics *stats)
+{
+	if (NULL == stats)
+	{
+		GPOS_RAISE(gpopt::ExmaGPOPT, gpopt::ExmiNoStats,
+				   GPOS_WSZ_LIT("CPartialPlan"));
+	}
+}
+
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPartialPlan::CostCompute
 //
 //	@doc:
@@ -161,7 +176,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 	exprhdl.Attach(m_pgexpr);
 
 	// init required properties of expression
-	exprhdl.DeriveProps(nullptr /*pdpdrvdCtxt*/);
+	exprhdl.DeriveProps(NULL /*pdpdrvdCtxt*/);
 	exprhdl.InitReqdProps(m_prpp);
 
 	// create array of child derived properties
@@ -175,11 +190,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 	pdrgpdp->Release();
 
 	IStatistics *stats = m_pgexpr->Pgroup()->Pstats();
-	if (nullptr == stats)
-	{
-		GPOS_RAISE(gpopt::ExmaGPOPT, gpopt::ExmiNoStats,
-				   GPOS_WSZ_LIT("CPartialPlan"));
-	}
+	RaiseExceptionIfStatsNull(stats);
 
 	stats->AddRef();
 	ICostModel::SCostingInfo ci(mp, exprhdl.UlNonScalarChildren(),
@@ -190,7 +201,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 
 	CDistributionSpec::EDistributionPartitioningType edpt =
 		CDistributionSpec::EdptSentinel;
-	if (nullptr != m_prpp->Ped())
+	if (NULL != m_prpp->Ped())
 	{
 		edpt = m_prpp->Ped()->PdsRequired()->Edpt();
 	}
@@ -204,7 +215,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 	// extract rows from stats
 	DOUBLE rows = m_pgexpr->Pgroup()->Pstats()->Rows().Get();
 	if (fDataPartitioningMotion ||	// root operator is known to distribute data across segments
-		nullptr ==
+		NULL ==
 			m_prpp
 				->Ped() ||	// required distribution not known yet, we assume data partitioning since we need a lower-bound on number of rows
 		CDistributionSpec::EdptPartitioned ==
@@ -255,7 +266,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 ULONG
 CPartialPlan::HashValue(const CPartialPlan *ppp)
 {
-	GPOS_ASSERT(nullptr != ppp);
+	GPOS_ASSERT(NULL != ppp);
 
 	ULONG ulHash = ppp->Pgexpr()->HashValue();
 	return CombineHashes(ulHash,
@@ -274,14 +285,13 @@ CPartialPlan::HashValue(const CPartialPlan *ppp)
 BOOL
 CPartialPlan::Equals(const CPartialPlan *pppFst, const CPartialPlan *pppSnd)
 {
-	GPOS_ASSERT(nullptr != pppFst);
-	GPOS_ASSERT(nullptr != pppSnd);
+	GPOS_ASSERT(NULL != pppFst);
+	GPOS_ASSERT(NULL != pppSnd);
 
 	BOOL fEqual = false;
-	if (nullptr == pppFst->PccChild() || nullptr == pppSnd->PccChild())
+	if (NULL == pppFst->PccChild() || NULL == pppSnd->PccChild())
 	{
-		fEqual =
-			(nullptr == pppFst->PccChild() && nullptr == pppSnd->PccChild());
+		fEqual = (NULL == pppFst->PccChild() && NULL == pppSnd->PccChild());
 	}
 	else
 	{

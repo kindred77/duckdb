@@ -16,9 +16,6 @@
 #include "gpos/common/CSyncHashtable.h"
 #include "gpos/common/CSyncList.h"
 
-#include "gpopt/base/CCostContext.h"
-#include "gpopt/base/COptimizationContext.h"
-#include "gpopt/base/CReqdPropPlan.h"
 #include "gpopt/operators/CLogical.h"
 #include "gpopt/search/CJobQueue.h"
 #include "gpopt/search/CTreeMap.h"
@@ -36,18 +33,22 @@ class CGroup;
 class CGroupExpression;
 class CDrvdProp;
 class CDrvdPropCtxtPlan;
+class CGroupProxy;
+class COptimizationContext;
+class CCostContext;
+class CReqdPropPlan;
 class CReqdPropRelational;
 class CExpression;
 
 // type definitions
 // array of groups
-using CGroupArray = CDynamicPtrArray<CGroup, CleanupNULL>;
+typedef CDynamicPtrArray<CGroup, CleanupNULL> CGroupArray;
 
 // map required plan props to cost lower bound of corresponding plan
-using ReqdPropPlanToCostMap =
-	CHashMap<CReqdPropPlan, CCost, CReqdPropPlan::UlHashForCostBounding,
-			 CReqdPropPlan::FEqualForCostBounding,
-			 CleanupRelease<CReqdPropPlan>, CleanupDelete<CCost>>;
+typedef CHashMap<CReqdPropPlan, CCost, CReqdPropPlan::UlHashForCostBounding,
+				 CReqdPropPlan::FEqualForCostBounding,
+				 CleanupRelease<CReqdPropPlan>, CleanupDelete<CCost> >
+	ReqdPropPlanToCostMap;
 
 // optimization levels in ascending order,
 // under a given optimization context, group expressions in higher levels
@@ -75,7 +76,9 @@ class CGroup : public CRefCount, public DbgPrintMixin<CGroup>
 
 public:
 	// type definition of optimization context hash table
-	using ShtOC = CSyncHashtable<COptimizationContext, COptimizationContext>;
+	typedef CSyncHashtable<COptimizationContext,  // entry
+						   COptimizationContext /* search key */>
+		ShtOC;
 
 	// states of a group
 	enum EState
@@ -97,16 +100,19 @@ public:
 
 private:
 	// definition of hash table iter
-	using ShtIter =
-		CSyncHashtableIter<COptimizationContext, COptimizationContext>;
+	typedef CSyncHashtableIter<COptimizationContext,  // entry
+							   COptimizationContext>
+		ShtIter;
 
 	// definition of hash table iter accessor
-	using ShtAccIter =
-		CSyncHashtableAccessByIter<COptimizationContext, COptimizationContext>;
+	typedef CSyncHashtableAccessByIter<COptimizationContext,  // entry
+									   COptimizationContext>
+		ShtAccIter;
 
 	// definition of hash table accessor
-	using ShtAcc =
-		CSyncHashtableAccessByKey<COptimizationContext, COptimizationContext>;
+	typedef CSyncHashtableAccessByKey<COptimizationContext,	 // entry
+									  COptimizationContext>
+		ShtAcc;
 
 	//---------------------------------------------------------------------------
 	//	@class:
@@ -147,15 +153,17 @@ private:
 	};	// struct SContextLink
 
 	// map of processed links in TreeMap structure
-	using LinkMap = CHashMap<SContextLink, BOOL, SContextLink::HashValue,
-							 SContextLink::Equals, CleanupDelete<SContextLink>,
-							 CleanupDelete<BOOL>>;
+	typedef CHashMap<SContextLink, BOOL, SContextLink::HashValue,
+					 SContextLink::Equals, CleanupDelete<SContextLink>,
+					 CleanupDelete<BOOL> >
+		LinkMap;
 
 	// map of computed stats objects during costing
-	using OptCtxtToIStatisticsMap = CHashMap<
+	typedef CHashMap<
 		COptimizationContext, IStatistics, COptimizationContext::UlHashForStats,
 		COptimizationContext::FEqualForStats,
-		CleanupRelease<COptimizationContext>, CleanupRelease<IStatistics>>;
+		CleanupRelease<COptimizationContext>, CleanupRelease<IStatistics> >
+		OptCtxtToIStatisticsMap;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -239,6 +247,9 @@ private:
 	// implementation job queue
 	CJobQueue m_jqImplementation;
 
+	// private copy ctor
+	CGroup(const CGroup &);
+
 	// cleanup optimization contexts on destruction
 	void CleanupContexts();
 
@@ -281,24 +292,24 @@ private:
 	CGroupExpression *PgexprNext(CGroupExpression *pgexpr);
 
 	// return true if first promise is better than second promise
-	static BOOL FBetterPromise(CMemoryPool *mp, CLogical::EStatPromise espFst,
-							   CGroupExpression *pgexprFst,
-							   CLogical::EStatPromise espSnd,
-							   CGroupExpression *pgexprSnd);
+	BOOL FBetterPromise(CMemoryPool *mp, CLogical::EStatPromise espFst,
+						CGroupExpression *pgexprFst,
+						CLogical::EStatPromise espSnd,
+						CGroupExpression *pgexprSnd) const;
 
 	// derive stats recursively on child groups
-	static CLogical::EStatPromise EspDerive(CMemoryPool *pmpLocal,
-											CMemoryPool *pmpGlobal,
-											CGroupExpression *pgexpr,
-											CReqdPropRelational *prprel,
-											IStatisticsArray *stats_ctxt,
-											BOOL fDeriveChildStats);
+	CLogical::EStatPromise EspDerive(CMemoryPool *pmpLocal,
+									 CMemoryPool *pmpGlobal,
+									 CGroupExpression *pgexpr,
+									 CReqdPropRelational *prprel,
+									 IStatisticsArray *stats_ctxt,
+									 BOOL fDeriveChildStats);
 
 	// reset computed stats
 	void ResetStats();
 
 	// helper function to add links in child groups
-	static void RecursiveBuildTreeMap(
+	void RecursiveBuildTreeMap(
 		CMemoryPool *mp, COptimizationContext *poc, CCostContext *pccParent,
 		CGroupExpression *pgexprCurrent, ULONG child_index,
 		CTreeMap<CCostContext, CExpression, CDrvdPropCtxtPlan,
@@ -323,13 +334,11 @@ private:
 										IStatisticsArray *stats_ctxt);
 
 public:
-	CGroup(const CGroup &) = delete;
-
 	// ctor
 	CGroup(CMemoryPool *mp, BOOL fScalar = false);
 
 	// dtor
-	~CGroup() override;
+	~CGroup();
 
 	// id accessor
 	ULONG
@@ -494,7 +503,7 @@ public:
 	BOOL
 	FDuplicateGroup() const
 	{
-		return nullptr != m_pgroupDuplicate;
+		return NULL != m_pgroupDuplicate;
 	}
 
 	// duplicate group accessor
@@ -604,7 +613,7 @@ public:
 	static BOOL FDuplicateGroups(CGroup *pgroupFst, CGroup *pgroupSnd);
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// slink for group list in memo
 	SLink m_link;

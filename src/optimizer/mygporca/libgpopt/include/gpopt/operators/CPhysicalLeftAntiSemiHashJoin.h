@@ -28,37 +28,44 @@ namespace gpopt
 class CPhysicalLeftAntiSemiHashJoin : public CPhysicalHashJoin
 {
 private:
-public:
-	CPhysicalLeftAntiSemiHashJoin(const CPhysicalLeftAntiSemiHashJoin &) =
-		delete;
+	// private copy ctor
+	CPhysicalLeftAntiSemiHashJoin(const CPhysicalLeftAntiSemiHashJoin &);
 
+public:
 	// ctor
 	CPhysicalLeftAntiSemiHashJoin(
 		CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
-		CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-		BOOL is_null_aware = true,
+		CExpressionArray *pdrgpexprInnerKeys,
+		IMdIdArray *hash_opfamilies = NULL,
 		CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CPhysicalLeftAntiSemiHashJoin() override;
+	virtual ~CPhysicalLeftAntiSemiHashJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftAntiSemiHashJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftAntiSemiHashJoin";
 	}
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
+
+	// compute required partition propagation spec
+	virtual CPartitionPropagationSpec *PppsRequired(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	// conversion function
 	static CPhysicalLeftAntiSemiHashJoin *

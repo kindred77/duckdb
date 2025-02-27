@@ -45,19 +45,20 @@ private:
 	const CDXLNodeArray *m_cte_producers;
 
 
-public:
-	CSerializableQuery(const CSerializableQuery &) = delete;
+	// private copy ctor
+	CSerializableQuery(const CSerializableQuery &);
 
+public:
 	// ctor
 	CSerializableQuery(CMemoryPool *mp, const CDXLNode *query,
 					   const CDXLNodeArray *query_output_dxlnode_array,
 					   const CDXLNodeArray *cte_producers);
 
 	// dtor
-	~CSerializableQuery() override;
+	virtual ~CSerializableQuery();
 
 	// serialize object to passed stream
-	void Serialize(COstream &oos) override;
+	virtual void Serialize(COstream &oos);
 
 };	// class CSerializableQuery
 }  // namespace gpopt

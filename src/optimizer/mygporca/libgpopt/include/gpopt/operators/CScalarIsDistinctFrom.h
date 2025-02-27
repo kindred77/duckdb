@@ -31,9 +31,10 @@ using namespace gpos;
 class CScalarIsDistinctFrom : public CScalarCmp
 {
 private:
-public:
-	CScalarIsDistinctFrom(const CScalarIsDistinctFrom &) = delete;
+	// private copy ctor
+	CScalarIsDistinctFrom(const CScalarIsDistinctFrom &);
 
+public:
 	// ctor
 	CScalarIsDistinctFrom(CMemoryPool *mp, IMDId *mdid_op,
 						  const CWStringConst *pstrOp)
@@ -43,32 +44,35 @@ public:
 	}
 
 	// dtor
-	~CScalarIsDistinctFrom() override = default;
+	virtual ~CScalarIsDistinctFrom()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarIsDistinctFrom;
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarIsDistinctFrom";
 	}
 
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// conversion function
 	static CScalarIsDistinctFrom *PopConvert(COperator *pop);
 
 	// get commuted scalar IDF operator
-	CScalarCmp *PopCommutedOp(CMemoryPool *mp) override;
+	virtual CScalarIsDistinctFrom *PopCommutedOp(CMemoryPool *mp,
+												 COperator *pop);
 
 };	// class CScalarIsDistinctFrom
 

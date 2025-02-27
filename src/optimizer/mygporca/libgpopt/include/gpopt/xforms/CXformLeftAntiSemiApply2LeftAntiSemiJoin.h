@@ -34,10 +34,11 @@ class CXformLeftAntiSemiApply2LeftAntiSemiJoin
 							  CLogicalLeftAntiSemiJoin>
 {
 private:
-public:
+	// private copy ctor
 	CXformLeftAntiSemiApply2LeftAntiSemiJoin(
-		const CXformLeftAntiSemiApply2LeftAntiSemiJoin &) = delete;
+		const CXformLeftAntiSemiApply2LeftAntiSemiJoin &);
 
+public:
 	// ctor
 	explicit CXformLeftAntiSemiApply2LeftAntiSemiJoin(CMemoryPool *mp)
 		: CXformApply2Join<CLogicalLeftAntiSemiApply, CLogicalLeftAntiSemiJoin>(
@@ -46,27 +47,29 @@ public:
 	}
 
 	// dtor
-	~CXformLeftAntiSemiApply2LeftAntiSemiJoin() override = default;
+	virtual ~CXformLeftAntiSemiApply2LeftAntiSemiJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftAntiSemiApply2LeftAntiSemiJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftAntiSemiApply2LeftAntiSemiJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftAntiSemiApply2LeftAntiSemiJoin
 

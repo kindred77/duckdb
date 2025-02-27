@@ -63,9 +63,10 @@ private:
 	// default value expression
 	gpdxl::CDXLNode *m_dxl_default_val;
 
-public:
-	CMDColumn(const CMDColumn &) = delete;
+	// private copy ctor
+	CMDColumn(const CMDColumn &);
 
+public:
 	// ctor
 	CMDColumn(CMDName *mdname, INT attrnum, IMDId *mdid_type, INT type_modifier,
 			  BOOL is_nullable, BOOL is_dropped,
@@ -73,50 +74,50 @@ public:
 			  ULONG length = gpos::ulong_max);
 
 	// dtor
-	~CMDColumn() override;
+	virtual ~CMDColumn();
 
 	// accessors
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// column type
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// attribute number
-	INT AttrNum() const override;
+	virtual INT AttrNum() const;
 
 	// is this a system column
-	BOOL
-	IsSystemColumn() const override
+	virtual BOOL
+	IsSystemColumn() const
 	{
 		return (0 > m_attno);
 	}
 
 	// length of the column
 	ULONG
-	Length() const override
+	Length() const
 	{
 		return m_length;
 	}
 
 	// is the column nullable
-	BOOL IsNullable() const override;
+	virtual BOOL IsNullable() const;
 
 	// is the column dropped
-	BOOL IsDropped() const override;
+	virtual BOOL IsDropped() const;
 
 	// serialize metadata object in DXL format given a serializer object
 	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the column
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 
 // array of metadata column descriptor
-using CMDColumnArray = CDynamicPtrArray<CMDColumn, CleanupRelease>;
+typedef CDynamicPtrArray<CMDColumn, CleanupRelease> CMDColumnArray;
 
 }  // namespace gpmd
 

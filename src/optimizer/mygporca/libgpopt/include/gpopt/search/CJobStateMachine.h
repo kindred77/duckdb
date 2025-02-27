@@ -80,10 +80,10 @@ class CJobStateMachine
 {
 private:
 	// pointer to job action function
-	using PFuncAction = TEnumEvent (*)(CSchedulerContext *, CJob *);
+	typedef TEnumEvent (*PFuncAction)(CSchedulerContext *psc, CJob *pjOwner);
 
 	// shorthand for state machine
-	using SM = CStateMachine<TEnumState, estSentinel, TEnumEvent, eevSentinel>;
+	typedef CStateMachine<TEnumState, estSentinel, TEnumEvent, eevSentinel> SM;
 
 	// array of actions corresponding to states
 	PFuncAction m_rgPfuncAction[estSentinel];
@@ -91,14 +91,15 @@ private:
 	// job state machine
 	SM m_sm;
 
-public:
-	CJobStateMachine(const CJobStateMachine &) = delete;
+	// hidden copy ctor
+	CJobStateMachine(const CJobStateMachine &);
 
+public:
 	// ctor
-	CJobStateMachine() = default;
+	CJobStateMachine<TEnumState, estSentinel, TEnumEvent, eevSentinel>(){};
 
 	// dtor
-	~CJobStateMachine() = default;
+	~CJobStateMachine(){};
 
 	// initialize state machine
 	void
@@ -124,8 +125,8 @@ public:
 	void
 	SetAction(TEnumState est, PFuncAction pfAction)
 	{
-		GPOS_ASSERT(nullptr != pfAction);
-		GPOS_ASSERT(nullptr == m_rgPfuncAction[est] &&
+		GPOS_ASSERT(NULL != pfAction);
+		GPOS_ASSERT(NULL == m_rgPfuncAction[est] &&
 					"Action has been already set");
 
 		m_rgPfuncAction[est] = pfAction;
@@ -135,8 +136,8 @@ public:
 	BOOL
 	FRun(CSchedulerContext *psc, CJob *pjOwner)
 	{
-		GPOS_ASSERT(nullptr != psc);
-		GPOS_ASSERT(nullptr != pjOwner);
+		GPOS_ASSERT(NULL != psc);
+		GPOS_ASSERT(NULL != pjOwner);
 
 		TEnumState estCurrent = estSentinel;
 		TEnumState estNext = estSentinel;
@@ -155,14 +156,17 @@ public:
 
 			// get the function associated with current state
 			PFuncAction pfunc = m_rgPfuncAction[estCurrent];
-			GPOS_ASSERT(nullptr != pfunc);
+			GPOS_ASSERT(NULL != pfunc);
 
 			// execute the function to get an event
 			TEnumEvent eev = pfunc(psc, pjOwner);
 
 			// use the event to transition state machine
 			estNext = estCurrent;
-			BOOL fSucceeded GPOS_ASSERTS_ONLY = m_sm.FTransition(eev, estNext);
+#ifdef GPOS_DEBUG
+			BOOL fSucceeded =
+#endif	// GPOS_DEBUG
+				m_sm.FTransition(eev, estNext);
 
 			GPOS_ASSERT(fSucceeded);
 		} while (estNext != estCurrent && estNext != m_sm.TesFinal());
@@ -179,7 +183,7 @@ public:
 		// initialize actions array
 		for (ULONG i = 0; i < estSentinel; i++)
 		{
-			m_rgPfuncAction[i] = nullptr;
+			m_rgPfuncAction[i] = NULL;
 		}
 	}
 

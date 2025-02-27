@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CDistributionSpecStrictRandom_H
 #define GPOPT_CDistributionSpecStrictRandom_H
@@ -27,23 +27,23 @@ public:
 	CDistributionSpecStrictRandom();
 
 	// accessor
-	EDistributionType
-	Edt() const override
+	virtual EDistributionType
+	Edt() const
 	{
 		return CDistributionSpec::EdtStrictRandom;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "STRICT RANDOM";
 	}
 
 	// does this distribution match the given one
-	BOOL Matches(const CDistributionSpec *pds) const override;
+	virtual BOOL Matches(const CDistributionSpec *pds) const;
 
 	// does this distribution satisfy the given one
-	BOOL FSatisfies(const CDistributionSpec *pds) const override;
+	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
 };	// class CDistributionSpecStrictRandom
 }  // namespace gpopt
 

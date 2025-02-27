@@ -30,13 +30,13 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CDrvdPropScalar::CDrvdPropScalar(CMemoryPool *mp)
 	: m_mp(mp),
-	  m_is_prop_derived(nullptr),
-	  m_pcrsDefined(nullptr),
-	  m_pcrsSetReturningFunction(nullptr),
-	  m_pcrsUsed(nullptr),
+	  m_is_prop_derived(NULL),
+	  m_pcrsDefined(NULL),
+	  m_pcrsSetReturningFunction(NULL),
+	  m_pcrsUsed(NULL),
 	  m_fHasSubquery(false),
-	  m_ppartinfo(nullptr),
-	  m_pfp(nullptr),
+	  m_ppartinfo(NULL),
+	  m_pfp(NULL),
 	  m_fHasNonScalarFunction(false),
 	  m_ulDistinctAggs(0),
 	  m_fHasMultipleDistinctAggs(false),
@@ -105,8 +105,6 @@ CDrvdPropScalar::Derive(CMemoryPool *, CExpressionHandle &exprhdl,
 
 	DeriveHasScalarArrayCmp(exprhdl);
 
-	DeriveContainsOnlyReplicationSafeAggFuncs(exprhdl);
-
 	m_is_complete = true;
 }
 
@@ -122,7 +120,7 @@ CDrvdPropScalar::Derive(CMemoryPool *, CExpressionHandle &exprhdl,
 CDrvdPropScalar *
 CDrvdPropScalar::GetDrvdScalarProps(CDrvdProp *pdp)
 {
-	GPOS_ASSERT(nullptr != pdp);
+	GPOS_ASSERT(NULL != pdp);
 	GPOS_ASSERT(EptScalar == pdp->Ept() &&
 				"This is not a scalar properties container");
 
@@ -141,8 +139,8 @@ CDrvdPropScalar::GetDrvdScalarProps(CDrvdProp *pdp)
 BOOL
 CDrvdPropScalar::FSatisfies(const CReqdPropPlan *prpp) const
 {
-	GPOS_ASSERT(nullptr != prpp);
-	GPOS_ASSERT(nullptr != prpp->PcrsRequired());
+	GPOS_ASSERT(NULL != prpp);
+	GPOS_ASSERT(NULL != prpp->PcrsRequired());
 
 	BOOL fSatisfies = m_pcrsDefined->ContainsAll(prpp->PcrsRequired());
 
@@ -430,31 +428,6 @@ CDrvdPropScalar::DeriveTotalOrderedAggs(CExpressionHandle &exprhdl)
 	}
 	return m_ulOrderedAggs;
 }
-
-BOOL
-CDrvdPropScalar::ContainsOnlyReplicationSafeAggFuncs() const
-{
-	GPOS_RTL_ASSERT(IsComplete());
-	return m_fContainsOnlyReplicationSafeAggFuncs;
-}
-
-BOOL
-CDrvdPropScalar::DeriveContainsOnlyReplicationSafeAggFuncs(
-	CExpressionHandle &exprhdl)
-{
-	if (!m_is_prop_derived->ExchangeSet(
-			EdptFContainsOnlyReplicationSafeAggFuncs))
-	{
-		if (COperator::EopScalarProjectList == exprhdl.Pop()->Eopid())
-		{
-			m_fContainsOnlyReplicationSafeAggFuncs =
-				CScalarProjectList::FContainsOnlyReplicationSafeAggFuncs(
-					exprhdl);
-		}
-	}
-	return m_fContainsOnlyReplicationSafeAggFuncs;
-}
-
 
 //---------------------------------------------------------------------------
 //	@function:

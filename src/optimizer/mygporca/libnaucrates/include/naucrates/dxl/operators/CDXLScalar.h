@@ -38,22 +38,23 @@ using namespace gpopt;
 class CDXLScalar : public CDXLOperator
 {
 private:
-public:
-	CDXLScalar(CDXLScalar &) = delete;
+	// private copy ctor
+	CDXLScalar(CDXLScalar &);
 
+public:
 	// ctor/dtor
 	explicit CDXLScalar(CMemoryPool *mp);
 
-	~CDXLScalar() override = default;
+	virtual ~CDXLScalar(){};
 
-	Edxloptype GetDXLOperatorType() const override;
+	Edxloptype GetDXLOperatorType() const;
 
 	// does the operator return a boolean result
 	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const = 0;
 
 #ifdef GPOS_DEBUG
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override = 0;
+	virtual void AssertValid(const CDXLNode *dxlnode,
+							 BOOL validate_children) const = 0;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

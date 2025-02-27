@@ -51,16 +51,16 @@ CCostContext::CCostContext(CMemoryPool *mp, COptimizationContext *poc,
 	  m_cost(GPOPT_INVALID_COST),
 	  m_estate(estUncosted),
 	  m_pgexpr(pgexpr),
-	  m_pgexprForStats(nullptr),
-	  m_pdrgpoc(nullptr),
-	  m_pdpplan(nullptr),
+	  m_pgexprForStats(NULL),
+	  m_pdrgpoc(NULL),
+	  m_pdpplan(NULL),
 	  m_ulOptReq(ulOptReq),
 	  m_fPruned(false),
-	  m_pstats(nullptr),
+	  m_pstats(NULL),
 	  m_poc(poc)
 {
-	GPOS_ASSERT(nullptr != poc);
-	GPOS_ASSERT(nullptr != pgexpr);
+	GPOS_ASSERT(NULL != poc);
+	GPOS_ASSERT(NULL != pgexpr);
 	GPOS_ASSERT_IMP(
 		pgexpr->Pop()->FPhysical(),
 		ulOptReq < CPhysical::PopConvert(pgexpr->Pop())->UlOptRequests());
@@ -70,7 +70,7 @@ CCostContext::CCostContext(CMemoryPool *mp, COptimizationContext *poc,
 	{
 		CGroupExpression *pgexprForStats =
 			m_pgexpr->Pgroup()->PgexprBestPromise(m_mp, m_pgexpr);
-		if (nullptr != pgexprForStats)
+		if (NULL != pgexprForStats)
 		{
 			pgexprForStats->AddRef();
 			m_pgexprForStats = pgexprForStats;
@@ -109,7 +109,7 @@ CCostContext::~CCostContext()
 BOOL
 CCostContext::FOwnsStats() const
 {
-	GPOS_ASSERT(nullptr != m_pstats);
+	GPOS_ASSERT(NULL != m_pstats);
 
 	// new stats are owned if context holds stats different from group stats
 	return (m_pstats != m_pgexpr->Pgroup()->Pstats());
@@ -138,7 +138,7 @@ CCostContext::FNeedsNewStats() const
 		return false;
 	}
 
-	if (!m_poc->Prpp()->Pepp()->PppsRequired()->ContainsAnyConsumers())
+	if (!m_pdpplan->Ppim()->FContainsUnresolved())
 	{
 		// All partition selectors have been resolved at this level.
 		// No need to use DPE stats for the common ancestor join and
@@ -146,8 +146,11 @@ CCostContext::FNeedsNewStats() const
 		return false;
 	}
 
+	CEnfdPartitionPropagation *pepp = Poc()->Prpp()->Pepp();
+
 	if (GPOS_FTRACE(EopttraceDeriveStatsForDPE) && CUtils::FPhysicalScan(pop) &&
-		CPhysicalScan::PopConvert(pop)->FDynamicScan())
+		CPhysicalScan::PopConvert(pop)->FDynamicScan() &&
+		!pepp->PpfmDerived()->IsEmpty())
 	{
 		// context is attached to a dynamic scan that went through
 		// partition elimination in another part of the plan
@@ -161,7 +164,7 @@ CCostContext::FNeedsNewStats() const
 	{
 		COptimizationContext *pocChild = (*Pdrgpoc())[ul];
 		CCostContext *pccChild = pocChild->PccBest();
-		GPOS_ASSERT(nullptr != pccChild);
+		GPOS_ASSERT(NULL != pccChild);
 
 		fDeriveStats = pccChild->FOwnsStats();
 	}
@@ -181,10 +184,10 @@ CCostContext::FNeedsNewStats() const
 void
 CCostContext::DeriveStats()
 {
-	GPOS_ASSERT(nullptr != m_pgexpr);
-	GPOS_ASSERT(nullptr != m_poc);
+	GPOS_ASSERT(NULL != m_pgexpr);
+	GPOS_ASSERT(NULL != m_poc);
 
-	if (nullptr != m_pstats)
+	if (NULL != m_pstats)
 	{
 		// stats are already derived
 		return;
@@ -199,7 +202,7 @@ CCostContext::DeriveStats()
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	exprhdl.DeriveCostContextStats();
-	if (nullptr == exprhdl.Pstats())
+	if (NULL == exprhdl.Pstats())
 	{
 		GPOS_RAISE(gpopt::ExmaGPOPT, gpopt::ExmiNoStats,
 				   GPOS_WSZ_LIT("CCostContext"));
@@ -221,21 +224,21 @@ CCostContext::DeriveStats()
 void
 CCostContext::DerivePlanProps(CMemoryPool *mp)
 {
-	GPOS_ASSERT(nullptr != m_pdrgpoc);
+	GPOS_ASSERT(NULL != m_pdrgpoc);
 
-	if (nullptr == m_pdpplan)
+	if (NULL == m_pdpplan)
 	{
 		// derive properties of the plan carried by cost context
 		CExpressionHandle exprhdl(mp);
 		exprhdl.Attach(this);
 		exprhdl.DerivePlanPropsForCostContext();
 		CDrvdPropPlan *pdpplan = CDrvdPropPlan::Pdpplan(exprhdl.Pdp());
-		GPOS_ASSERT(nullptr != pdpplan);
+		GPOS_ASSERT(NULL != pdpplan);
 
 		// set derived plan properties
 		pdpplan->AddRef();
 		m_pdpplan = pdpplan;
-		GPOS_ASSERT(nullptr != m_pdpplan);
+		GPOS_ASSERT(NULL != m_pdpplan);
 	}
 }
 
@@ -266,13 +269,13 @@ CCostContext::operator==(const CCostContext &cc) const
 BOOL
 CCostContext::IsValid(CMemoryPool *mp)
 {
-	GPOS_ASSERT(nullptr != m_poc);
-	GPOS_ASSERT(nullptr != m_pdrgpoc);
+	GPOS_ASSERT(NULL != m_poc);
+	GPOS_ASSERT(NULL != m_pdrgpoc);
 
 	// obtain relational properties from group
 	CDrvdPropRelational *pdprel =
 		CDrvdPropRelational::GetRelationalProperties(Pgexpr()->Pgroup()->Pdp());
-	GPOS_ASSERT(nullptr != pdprel);
+	GPOS_ASSERT(NULL != pdprel);
 
 	// derive plan properties
 	DerivePlanProps(mp);
@@ -324,10 +327,10 @@ CCostContext::BreakCostTiesForJoinPlans(
 	BOOL *pfTiesResolved  // output: if true, tie resolution has succeeded
 )
 {
-	GPOS_ASSERT(nullptr != pccFst);
-	GPOS_ASSERT(nullptr != pccSnd);
-	GPOS_ASSERT(nullptr != ppccPrefered);
-	GPOS_ASSERT(nullptr != pfTiesResolved);
+	GPOS_ASSERT(NULL != pccFst);
+	GPOS_ASSERT(NULL != pccSnd);
+	GPOS_ASSERT(NULL != ppccPrefered);
+	GPOS_ASSERT(NULL != pfTiesResolved);
 	GPOS_ASSERT(*(pccFst->Poc()) == *(pccSnd->Poc()));
 	GPOS_ASSERT(estCosted == pccFst->Est());
 	GPOS_ASSERT(estCosted == pccSnd->Est());
@@ -343,7 +346,7 @@ CCostContext::BreakCostTiesForJoinPlans(
 	// to have more reliable statistics on this side
 
 	*pfTiesResolved = false;
-	*ppccPrefered = nullptr;
+	*ppccPrefered = NULL;
 	CDouble dRowsOuterFst =
 		(*pccFst->Pdrgpoc())[0]->PccBest()->Pstats()->Rows();
 	CDouble dRowsInnerFst =
@@ -401,7 +404,7 @@ CCostContext::BreakCostTiesForJoinPlans(
 BOOL
 CCostContext::FBetterThan(const CCostContext *pcc) const
 {
-	GPOS_ASSERT(nullptr != pcc);
+	GPOS_ASSERT(NULL != pcc);
 	GPOS_ASSERT(*m_poc == *(pcc->Poc()));
 	GPOS_ASSERT(estCosted == m_estate);
 	GPOS_ASSERT(estCosted == pcc->Est());
@@ -433,46 +436,6 @@ CCostContext::FBetterThan(const CCostContext *pcc) const
 				IsTwoStageScalarDQACostCtxt(pcc))
 			{
 				return true;
-			}
-		}
-	}
-
-	// if multistageAgg flag is true and the distribution type is not
-	// replicated/universal mark multistage agg plan is better and should
-	// override cost based check between multistage agg and singlestage
-	// agg.  When data distribution is universal or replicated, it means
-	// that the same data is available across all the nodes, there is no
-	// need for motions between nodes during aggregation. What if we force
-	// a multi-stage plan where no motion exists, we would get 2
-	// consecutive aggs that are redundant. So multi-stage aggregation may
-	// not be necessary in this scenario, instead single-stage aggregation
-	// approach can be used, where each node independently aggregates its
-	// local data and the final result is obtained by combining the local
-	// aggregates.
-	if (GPOS_FTRACE(EopttraceForceMultiStageAgg))
-	{
-		if ((IsMultiStageAggCostCtxt(pcc) && IsSingleStageAggCostCtxt(this)))
-		{
-			switch (Pdpplan()->Pds()->Edt())
-			{
-				case CDistributionSpec::EdtStrictReplicated:
-				case CDistributionSpec::EdtTaintedReplicated:
-				case CDistributionSpec::EdtUniversal:
-					return true;
-				default:
-					return false;
-			}
-		}
-		else if (IsSingleStageAggCostCtxt(pcc) && IsMultiStageAggCostCtxt(this))
-		{
-			switch (pcc->Pdpplan()->Pds()->Edt())
-			{
-				case CDistributionSpec::EdtStrictReplicated:
-				case CDistributionSpec::EdtTaintedReplicated:
-				case CDistributionSpec::EdtUniversal:
-					return false;
-				default:
-					return true;
 			}
 		}
 	}
@@ -514,7 +477,7 @@ CCostContext::FBetterThan(const CCostContext *pcc) const
 	if (CUtils::FPhysicalJoin(Pgexpr()->Pop()) &&
 		CUtils::FPhysicalJoin(pcc->Pgexpr()->Pop()))
 	{
-		CONST_COSTCTXT_PTR pccPrefered = nullptr;
+		CONST_COSTCTXT_PTR pccPrefered = NULL;
 		BOOL fSuccess = false;
 		BreakCostTiesForJoinPlans(this, pcc, &pccPrefered, &fSuccess);
 		if (fSuccess)
@@ -546,7 +509,7 @@ CCostContext::FBetterThan(const CCostContext *pcc) const
 }
 
 BOOL
-CCostContext::IsTwoStageScalarDQACostCtxt(const CCostContext *pcc)
+CCostContext::IsTwoStageScalarDQACostCtxt(const CCostContext *pcc) const
 {
 	if (CUtils::FPhysicalAgg(pcc->Pgexpr()->Pop()))
 	{
@@ -561,7 +524,7 @@ CCostContext::IsTwoStageScalarDQACostCtxt(const CCostContext *pcc)
 }
 
 BOOL
-CCostContext::IsThreeStageScalarDQACostCtxt(const CCostContext *pcc)
+CCostContext::IsThreeStageScalarDQACostCtxt(const CCostContext *pcc) const
 {
 	if (CUtils::FPhysicalAgg(pcc->Pgexpr()->Pop()))
 	{
@@ -570,30 +533,6 @@ CCostContext::IsThreeStageScalarDQACostCtxt(const CCostContext *pcc)
 		GPOS_ASSERT_IMP(popAgg->IsThreeStageScalarDQA(),
 						popAgg->IsAggFromSplitDQA());
 		return (popAgg->IsAggFromSplitDQA() && popAgg->IsThreeStageScalarDQA());
-	}
-
-	return false;
-}
-
-BOOL
-CCostContext::IsMultiStageAggCostCtxt(const CCostContext *pcc)
-{
-	if (CUtils::FPhysicalAgg(pcc->Pgexpr()->Pop()))
-	{
-		CPhysicalAgg *popAgg = CPhysicalAgg::PopConvert(pcc->Pgexpr()->Pop());
-		return popAgg->FMultiStage();
-	}
-
-	return false;
-}
-
-BOOL
-CCostContext::IsSingleStageAggCostCtxt(const CCostContext *pcc)
-{
-	if (CUtils::FPhysicalAgg(pcc->Pgexpr()->Pop()))
-	{
-		CPhysicalAgg *popAgg = CPhysicalAgg::PopConvert(pcc->Pgexpr()->Pop());
-		return !popAgg->FMultiStage();
 	}
 
 	return false;
@@ -635,7 +574,7 @@ CCostContext::CostCompute(CMemoryPool *mp, CCostArray *pdrgpcostChildren)
 	DeriveStats();
 
 	ULONG arity = 0;
-	if (nullptr != m_pdrgpoc)
+	if (NULL != m_pdrgpoc)
 	{
 		arity = Pdrgpoc()->Size();
 	}
@@ -673,7 +612,7 @@ CCostContext::CostCompute(CMemoryPool *mp, CCostArray *pdrgpcostChildren)
 	{
 		COptimizationContext *pocChild = (*m_pdrgpoc)[ul];
 		CCostContext *pccChild = pocChild->PccBest();
-		GPOS_ASSERT(nullptr != pccChild);
+		GPOS_ASSERT(NULL != pccChild);
 
 		IStatistics *child_stats = pccChild->Pstats();
 
@@ -751,7 +690,7 @@ CCostContext::DRowsPerHost() const
 		CStatisticsConfig *stats_config =
 			poptctxt->GetOptimizerConfig()->GetStatsConf();
 		CDouble dNDVs = CStatisticsUtils::Groups(m_mp, Pstats(), stats_config,
-												 pdrgpul, nullptr /*keys*/);
+												 pdrgpul, NULL /*keys*/);
 		pdrgpul->Release();
 
 		if (dNDVs < ulHosts)
@@ -782,7 +721,7 @@ CCostContext::OsPrint(IOstream &os) const
 	os << "main ctxt (stage " << m_poc->UlSearchStageIndex() << ")"
 	   << m_poc->Id() << "." << m_ulOptReq;
 
-	if (nullptr != m_pdrgpoc)
+	if (NULL != m_pdrgpoc)
 	{
 		os << ", child ctxts:[";
 		ULONG arity = m_pdrgpoc->Size();
@@ -798,7 +737,7 @@ CCostContext::OsPrint(IOstream &os) const
 		os << "]";
 	}
 
-	if (nullptr != m_pstats)
+	if (NULL != m_pstats)
 	{
 		os << ", rows:" << m_pstats->Rows();
 		if (FOwnsStats())

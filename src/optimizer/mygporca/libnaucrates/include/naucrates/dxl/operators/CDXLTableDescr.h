@@ -20,9 +20,6 @@
 #include "naucrates/md/CMDName.h"
 #include "naucrates/md/IMDId.h"
 
-// default value for m_assigned_query_id_for_target_rel - no assigned query for table descriptor
-#define UNASSIGNED_QUERYID 0
-
 namespace gpdxl
 {
 using namespace gpmd;
@@ -38,6 +35,9 @@ using namespace gpmd;
 class CDXLTableDescr : public CRefCount
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// id and version information for the table
 	IMDId *m_mdid;
 
@@ -50,26 +50,17 @@ private:
 	// id of user the table needs to be accessed with
 	ULONG m_execute_as_user_id;
 
-	// lock mode from the parser
-	INT m_lockmode;
-
-	// identifier of query to which current table belongs.
-	// This field is used for assigning current table entry with
-	// target one within DML operation. If descriptor doesn't point
-	// to the target (result) relation it has value UNASSIGNED_QUERYID
-	ULONG m_assigned_query_id_for_target_rel;
+	// private copy ctor
+	CDXLTableDescr(const CDXLTableDescr &);
 
 	void SerializeMDId(CXMLSerializer *xml_serializer) const;
 
 public:
-	CDXLTableDescr(const CDXLTableDescr &) = delete;
-
 	// ctor/dtor
 	CDXLTableDescr(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-				   ULONG ulExecuteAsUser, int lockmode,
-				   ULONG assigned_query_id_for_target_rel = UNASSIGNED_QUERYID);
+				   ULONG ulExecuteAsUser);
 
-	~CDXLTableDescr() override;
+	virtual ~CDXLTableDescr();
 
 	// setters
 	void SetColumnDescriptors(CDXLColDescrArray *dxl_column_descr_array);
@@ -88,17 +79,11 @@ public:
 	// user id
 	ULONG GetExecuteAsUserId() const;
 
-	// lock mode
-	INT LockMode() const;
-
 	// get the column descriptor at the given position
 	const CDXLColDescr *GetColumnDescrAt(ULONG idx) const;
 
 	// serialize to dxl format
 	void SerializeToDXL(CXMLSerializer *xml_serializer) const;
-
-	// get assigned query id for target relation
-	ULONG GetAssignedQueryIdForTargetRel() const;
 };
 }  // namespace gpdxl
 

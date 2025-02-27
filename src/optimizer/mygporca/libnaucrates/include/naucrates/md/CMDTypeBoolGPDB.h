@@ -23,7 +23,6 @@
 #define GPDB_BOOL_OID OID(16)
 #define GPDB_BOOL_OPFAMILY OID(2222)
 #define GPDB_BOOL_LEGACY_OPFAMILY OID(7124)
-#define GPDB_BOOL_PART_OPFAMILY OID(424)
 #define GPDB_BOOL_LENGTH 1
 #define GPDB_BOOL_EQ_OP OID(91)
 #define GPDB_BOOL_NEQ_OP OID(85)
@@ -71,7 +70,6 @@ private:
 	IMDId *m_mdid;
 	IMDId *m_distr_opfamily;
 	IMDId *m_legacy_distr_opfamily;
-	IMDId *m_part_opfamily;
 
 	// mdids of different operators
 	IMDId *m_mdid_op_eq;
@@ -99,7 +97,7 @@ private:
 	IMDId *m_mdid_count;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// type name and id
 	static CWStringConst m_str;
@@ -108,52 +106,55 @@ private:
 	// a null datum of this type (used for statistics comparison)
 	IDatum *m_datum_null;
 
-public:
-	CMDTypeBoolGPDB(const CMDTypeBoolGPDB &) = delete;
+	// private copy ctor
+	CMDTypeBoolGPDB(const CMDTypeBoolGPDB &);
 
+public:
 	// ctor
 	explicit CMDTypeBoolGPDB(CMemoryPool *mp);
 
 	// dtor
-	~CMDTypeBoolGPDB() override;
+	virtual ~CMDTypeBoolGPDB();
 
 	// accessors
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// type id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
-	IMDId *GetDistrOpfamilyMdid() const override;
-
-	IMDId *GetPartOpfamilyMdid() const override;
+	IMDId *GetDistrOpfamilyMdid() const;
 
 	// type name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// is type redistributable
-	BOOL
-	IsRedistributable() const override
+	virtual BOOL
+	IsRedistributable() const
 	{
 		return true;
 	}
 
 	// is type fixed length
-	BOOL
-	IsFixedLength() const override
+	virtual BOOL
+	IsFixedLength() const
 	{
 		return true;
 	}
 
 	// is type composite
-	BOOL
-	IsComposite() const override
+	virtual BOOL
+	IsComposite() const
 	{
 		return false;
 	}
 
 	// type length
-	ULONG
-	Length() const override
+	virtual ULONG
+	Length() const
 	{
 		return GPDB_BOOL_LENGTH;
 	}
@@ -166,87 +167,87 @@ public:
 	}
 
 	// is type passed by value
-	BOOL
-	IsPassedByValue() const override
+	virtual BOOL
+	IsPassedByValue() const
 	{
 		return true;
 	}
 
 	// id of specified comparison operator type
-	IMDId *GetMdidForCmpType(ECmpType cmp_type) const override;
+	virtual IMDId *GetMdidForCmpType(ECmpType cmp_type) const;
 
-	const IMDId *
-	CmpOpMdid() const override
+	virtual const IMDId *
+	CmpOpMdid() const
 	{
 		return m_mdid_op_cmp;
 	}
 
 	// id of specified specified aggregate type
-	IMDId *GetMdidForAggType(EAggType agg_type) const override;
+	virtual IMDId *GetMdidForAggType(EAggType agg_type) const;
 
 	// is type hashable
-	BOOL
-	IsHashable() const override
+	virtual BOOL
+	IsHashable() const
 	{
 		return true;
 	}
 
 	// is type merge joinable
-	BOOL
-	IsMergeJoinable() const override
+	virtual BOOL
+	IsMergeJoinable() const
 	{
 		return true;
 	}
 
 	// array type id
-	IMDId *
-	GetArrayTypeMdid() const override
+	virtual IMDId *
+	GetArrayTypeMdid() const
 	{
 		return m_mdid_type_array;
 	}
 
 	// id of the relation corresponding to a composite type
-	IMDId *
-	GetBaseRelMdid() const override
+	virtual IMDId *
+	GetBaseRelMdid() const
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// return the null constant for this type
-	IDatum *
-	DatumNull() const override
+	virtual IDatum *
+	DatumNull() const
 	{
 		return m_datum_null;
 	}
 
 	// factory method for creating constants
-	IDatumBool *CreateBoolDatum(CMemoryPool *mp, BOOL fValue,
-								BOOL is_null) const override;
+	virtual IDatumBool *CreateBoolDatum(CMemoryPool *mp, BOOL fValue,
+										BOOL is_null) const;
 
 	// create typed datum from DXL datum
-	IDatum *GetDatumForDXLDatum(CMemoryPool *mp,
-								const CDXLDatum *dxl_datum) const override;
+	virtual IDatum *GetDatumForDXLDatum(CMemoryPool *mp,
+										const CDXLDatum *dxl_datum) const;
 
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 	// transformation function to generate datum from CDXLScalarConstValue
-	IDatum *GetDatumForDXLConstVal(
-		const CDXLScalarConstValue *dxl_op) const override;
+	virtual IDatum *GetDatumForDXLConstVal(
+		const CDXLScalarConstValue *dxl_op) const;
 
 	// generate the DXL datum from IDatum
-	CDXLDatum *GetDatumVal(CMemoryPool *mp, IDatum *datum) const override;
+	virtual CDXLDatum *GetDatumVal(CMemoryPool *mp, IDatum *datum) const;
 
 	// generate the DXL scalar constant from IDatum
-	CDXLScalarConstValue *GetDXLOpScConst(CMemoryPool *mp,
-										  IDatum *datum) const override;
+	virtual CDXLScalarConstValue *GetDXLOpScConst(CMemoryPool *mp,
+												  IDatum *datum) const;
 
 	// generate the DXL datum representing null value
-	CDXLDatum *GetDXLDatumNull(CMemoryPool *mp) const override;
+	virtual CDXLDatum *GetDXLDatumNull(CMemoryPool *mp) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

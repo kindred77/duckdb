@@ -18,8 +18,9 @@ using namespace gpos;
 
 
 // shorthand for HT accessor
-using HashTableAccessor = CSyncHashtableAccessByKey<CTaskLocalStorageObject,
-													CTaskLocalStorage::Etlsidx>;
+typedef CSyncHashtableAccessByKey<CTaskLocalStorageObject,
+								  CTaskLocalStorage::Etlsidx>
+	HashTableAccessor;
 
 
 // invalid idx
@@ -35,7 +36,9 @@ const CTaskLocalStorage::Etlsidx CTaskLocalStorage::m_invalid_idx =
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CTaskLocalStorage::~CTaskLocalStorage() = default;
+CTaskLocalStorage::~CTaskLocalStorage()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -72,12 +75,12 @@ CTaskLocalStorage::Reset(CMemoryPool *mp)
 void
 CTaskLocalStorage::Store(CTaskLocalStorageObject *obj)
 {
-	GPOS_ASSERT(nullptr != obj);
+	GPOS_ASSERT(NULL != obj);
 
 #ifdef GPOS_DEBUG
 	{
 		HashTableAccessor HashTableAccessor(m_hash_table, obj->idx());
-		GPOS_ASSERT(nullptr == HashTableAccessor.Find() &&
+		GPOS_ASSERT(NULL == HashTableAccessor.Find() &&
 					"Duplicate TLS object key");
 	}
 #endif	// GPOS_DEBUG
@@ -113,12 +116,11 @@ CTaskLocalStorage::Get(CTaskLocalStorage::Etlsidx idx)
 void
 CTaskLocalStorage::Remove(CTaskLocalStorageObject *obj)
 {
-	GPOS_ASSERT(nullptr != obj);
+	GPOS_ASSERT(NULL != obj);
 
 	// lookup object
 	HashTableAccessor HashTableAccessor(m_hash_table, obj->idx());
-	GPOS_ASSERT(nullptr != HashTableAccessor.Find() &&
-				"Object not found in TLS");
+	GPOS_ASSERT(NULL != HashTableAccessor.Find() && "Object not found in TLS");
 
 	HashTableAccessor.Remove(obj);
 }

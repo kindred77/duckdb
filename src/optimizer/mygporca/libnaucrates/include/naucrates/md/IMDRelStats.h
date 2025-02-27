@@ -36,8 +36,8 @@ class IMDRelStats : public IMDCacheObject
 {
 public:
 	// object type
-	Emdtype
-	MDType() const override
+	virtual Emdtype
+	MDType() const
 	{
 		return EmdtRelStats;
 	}

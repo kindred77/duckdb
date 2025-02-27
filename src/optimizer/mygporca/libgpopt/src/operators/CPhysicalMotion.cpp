@@ -34,16 +34,15 @@ BOOL
 CPhysicalMotion::FValidContext(CMemoryPool *, COptimizationContext *poc,
 							   COptimizationContextArray *pdrgpocChild) const
 {
-	GPOS_ASSERT(nullptr != pdrgpocChild);
+	GPOS_ASSERT(NULL != pdrgpocChild);
 	GPOS_ASSERT(1 == pdrgpocChild->Size());
 
 	COptimizationContext *pocChild = (*pdrgpocChild)[0];
 	CCostContext *pccBest = pocChild->PccBest();
-	GPOS_ASSERT(nullptr != pccBest);
+	GPOS_ASSERT(NULL != pccBest);
 
 	CDrvdPropPlan *pdpplanChild = pccBest->Pdpplan();
-	CPartitionPropagationSpec *pps_req = poc->Prpp()->Pepp()->PppsRequired();
-	if (pdpplanChild->Ppps()->IsUnsupportedPartSelector(pps_req))
+	if (pdpplanChild->Ppim()->FContainsUnresolved())
 	{
 		return false;
 	}
@@ -174,14 +173,61 @@ CPhysicalMotion::PrsRequired(CMemoryPool *mp,
 										   CRewindabilitySpec::EmhtNoMotion);
 }
 
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalMotion::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
 CPartitionPropagationSpec *
-CPhysicalMotion::PppsRequired(CMemoryPool *mp, CExpressionHandle &,
-							  CPartitionPropagationSpec *, ULONG,
-							  CDrvdPropArray *, ULONG) const
+CPhysicalMotion::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							  CPartitionPropagationSpec *pppsRequired,
+							  ULONG
+#ifdef GPOS_DEBUG
+								  child_index
+#endif	// GPOS_DEBUG
+							  ,
+							  CDrvdPropArray *,	 //pdrgpdpCtxt,
+							  ULONG				 //ulOptReq
+)
 {
-	// A motion is a hard barrier for partition propagation since it executes in a
-	// different slice; and thus it cannot require this property from its child
-	return GPOS_NEW(mp) CPartitionPropagationSpec(mp);
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	CPartIndexMap *ppimReqd = pppsRequired->Ppim();
+	CPartFilterMap *ppfmReqd = pppsRequired->Ppfm();
+
+	ULongPtrArray *pdrgpul = ppimReqd->PdrgpulScanIds(mp);
+
+	CPartIndexMap *ppimResult = GPOS_NEW(mp) CPartIndexMap(mp);
+	CPartFilterMap *ppfmResult = GPOS_NEW(mp) CPartFilterMap(mp);
+
+	/// get derived part consumers
+	CPartInfo *ppartinfo = exprhdl.DerivePartitionInfo(0);
+
+	const ULONG ulPartIndexSize = pdrgpul->Size();
+
+	for (ULONG ul = 0; ul < ulPartIndexSize; ul++)
+	{
+		ULONG part_idx_id = *((*pdrgpul)[ul]);
+
+		if (!ppartinfo->FContainsScanId(part_idx_id))
+		{
+			// part index id does not exist in child nodes: do not push it below
+			// the motion
+			continue;
+		}
+
+		ppimResult->AddRequiredPartPropagation(
+			ppimReqd, part_idx_id, CPartIndexMap::EppraPreservePropagators);
+		(void) ppfmResult->FCopyPartFilter(m_mp, part_idx_id, ppfmReqd, NULL);
+	}
+
+	pdrgpul->Release();
+
+	return GPOS_NEW(mp) CPartitionPropagationSpec(ppimResult, ppfmResult);
 }
 
 //---------------------------------------------------------------------------
@@ -246,13 +292,6 @@ CPhysicalMotion::PrsDerive(CMemoryPool *mp,
 										   CRewindabilitySpec::EmhtMotion);
 }
 
-CPartitionPropagationSpec *
-CPhysicalMotion::PppsDerive(CMemoryPool *mp, CExpressionHandle &) const
-{
-	// A Motion cannot pass propagation spec
-	return GPOS_NEW(mp) CPartitionPropagationSpec(mp);
-}
-
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -266,7 +305,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalMotion::EpetDistribution(CExpressionHandle &,	// exprhdl
 								  const CEnfdDistribution *ped) const
 {
-	GPOS_ASSERT(nullptr != ped);
+	GPOS_ASSERT(NULL != ped);
 
 	if (ped->FCompatible(Pds()))
 	{

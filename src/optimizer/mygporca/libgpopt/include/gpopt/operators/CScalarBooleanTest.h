@@ -52,9 +52,10 @@ private:
 	// boolean test
 	EBoolTest m_ebt;
 
-public:
-	CScalarBooleanTest(const CScalarBooleanTest &) = delete;
+	// private copy ctor
+	CScalarBooleanTest(const CScalarBooleanTest &);
 
+public:
 	// ctor
 	CScalarBooleanTest(CMemoryPool *mp, EBoolTest ebt) : CScalar(mp), m_ebt(ebt)
 	{
@@ -62,18 +63,20 @@ public:
 	}
 
 	// dtor
-	~CScalarBooleanTest() override = default;
+	virtual ~CScalarBooleanTest()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarBooleanTest;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarBooleanTest";
 	}
@@ -86,39 +89,39 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// conversion function
 	static CScalarBooleanTest *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarBooleanTest == pop->Eopid());
 
 		return dynamic_cast<CScalarBooleanTest *>(pop);

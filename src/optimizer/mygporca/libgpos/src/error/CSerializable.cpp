@@ -30,7 +30,7 @@ CSerializable::CSerializable()
 {
 	CTask *task = CTask::Self();
 
-	GPOS_ASSERT(nullptr != task);
+	GPOS_ASSERT(NULL != task);
 
 	task->ConvertErrCtxt()->Register(this);
 }
@@ -48,7 +48,7 @@ CSerializable::~CSerializable()
 {
 	CTask *task = CTask::Self();
 
-	GPOS_ASSERT(nullptr != task);
+	GPOS_ASSERT(NULL != task);
 
 	task->ConvertErrCtxt()->Unregister(this);
 }

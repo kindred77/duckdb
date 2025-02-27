@@ -30,36 +30,39 @@ using namespace gpos;
 class CXformIndexGet2IndexOnlyScan : public CXformImplementation
 {
 private:
-public:
-	CXformIndexGet2IndexOnlyScan(const CXformIndexGet2IndexOnlyScan &) = delete;
+	// private copy ctor
+	CXformIndexGet2IndexOnlyScan(const CXformIndexGet2IndexOnlyScan &);
 
+public:
 	// ctor
 	explicit CXformIndexGet2IndexOnlyScan(CMemoryPool *);
 
 	// dtor
-	~CXformIndexGet2IndexOnlyScan() override = default;
+	virtual ~CXformIndexGet2IndexOnlyScan()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfIndexGet2IndexOnlyScan;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformIndexGet2IndexOnlyScan";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &	//exprhdl
-	) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &	//exprhdl
+	) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformIndexGet2IndexOnlyScan
 

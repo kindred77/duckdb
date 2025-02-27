@@ -28,9 +28,10 @@ namespace gpos
 class CTaskLocalStorageObject
 {
 private:
-public:
-	CTaskLocalStorageObject(const CTaskLocalStorageObject &) = delete;
+	// private copy ctor
+	CTaskLocalStorageObject(const CTaskLocalStorageObject &);
 
+public:
 	// ctor
 	CTaskLocalStorageObject(CTaskLocalStorage::Etlsidx etlsidx)
 		: m_etlsidx(etlsidx)
@@ -40,7 +41,9 @@ public:
 	}
 
 	// dtor
-	virtual ~CTaskLocalStorageObject() = default;
+	virtual ~CTaskLocalStorageObject()
+	{
+	}
 
 	// accessor
 	const CTaskLocalStorage::Etlsidx &

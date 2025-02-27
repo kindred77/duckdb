@@ -40,7 +40,9 @@ CDXLScalarSubquery::CDXLScalarSubquery(CMemoryPool *mp, ULONG colid)
 //		Destructor
 //
 //---------------------------------------------------------------------------
-CDXLScalarSubquery::~CDXLScalarSubquery() = default;
+CDXLScalarSubquery::~CDXLScalarSubquery()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

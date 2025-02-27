@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2014 VMware, Inc. or its affiliates.
+//	Copyright 2014 Pivotal Inc.
 //
 //	@filename:
 //		CScaleFactorUtils.h
@@ -75,17 +75,17 @@ public:
 		}
 	};
 
-	using SJoinConditionArray = CDynamicPtrArray<SJoinCondition, CleanupDelete>;
+	typedef CDynamicPtrArray<SJoinCondition, CleanupDelete> SJoinConditionArray;
 
-	using OIDPairToScaleFactorArrayMap =
-		CHashMap<IMdIdArray, CDoubleArray, SJoinCondition::HashValue,
-				 SJoinCondition::Equals, CleanupRelease<IMdIdArray>,
-				 CleanupRelease<CDoubleArray>>;
-
-	using OIDPairToScaleFactorArrayMapIter =
-		CHashMapIter<IMdIdArray, CDoubleArray, SJoinCondition::HashValue,
+	typedef CHashMap<IMdIdArray, CDoubleArray, SJoinCondition::HashValue,
 					 SJoinCondition::Equals, CleanupRelease<IMdIdArray>,
-					 CleanupRelease<CDoubleArray>>;
+					 CleanupRelease<CDoubleArray> >
+		OIDPairToScaleFactorArrayMap;
+
+	typedef CHashMapIter<IMdIdArray, CDoubleArray, SJoinCondition::HashValue,
+						 SJoinCondition::Equals, CleanupRelease<IMdIdArray>,
+						 CleanupRelease<CDoubleArray> >
+		OIDPairToScaleFactorArrayMapIter;
 
 	// generate the hashmap of scale factors grouped by pred tables, also produces array of complex join preds
 	static OIDPairToScaleFactorArrayMap *GenerateScaleFactorMap(

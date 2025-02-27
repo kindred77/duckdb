@@ -37,6 +37,10 @@ class CXformLeftSemiApplyWithExternalCorrs2InnerJoin
 	: public CXformApply2Join<CLogicalLeftSemiApply, CLogicalInnerJoin>
 {
 private:
+	// private copy ctor
+	CXformLeftSemiApplyWithExternalCorrs2InnerJoin(
+		const CXformLeftSemiApplyWithExternalCorrs2InnerJoin &);
+
 	// helper for splitting correlations into external and residual
 	static BOOL FSplitCorrelations(CMemoryPool *mp, CExpression *pexprOuter,
 								   CExpression *pexprInner,
@@ -54,9 +58,6 @@ private:
 	static CExpression *PexprDecorrelate(CMemoryPool *mp, CExpression *pexpr);
 
 public:
-	CXformLeftSemiApplyWithExternalCorrs2InnerJoin(
-		const CXformLeftSemiApplyWithExternalCorrs2InnerJoin &) = delete;
-
 	// ctor
 	explicit CXformLeftSemiApplyWithExternalCorrs2InnerJoin(CMemoryPool *mp)
 		: CXformApply2Join<CLogicalLeftSemiApply, CLogicalInnerJoin>(
@@ -73,27 +74,29 @@ public:
 	}
 
 	// dtor
-	~CXformLeftSemiApplyWithExternalCorrs2InnerJoin() override = default;
+	virtual ~CXformLeftSemiApplyWithExternalCorrs2InnerJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftSemiApplyWithExternalCorrs2InnerJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftSemiApplyWithExternalCorrs2InnerJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftSemiApplyWithExternalCorrs2InnerJoin
 

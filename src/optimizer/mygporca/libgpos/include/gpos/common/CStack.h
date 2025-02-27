@@ -34,11 +34,12 @@ private:
 	// top of stack index
 	ULONG m_size;
 
-public:
-	CStack(CStack &) = delete;
+	// copy c'tor - not defined
+	CStack(CStack &);
 
+public:
 	// c'tor
-	CStack(CMemoryPool *mp, ULONG min_size = 4) : m_size(0)
+	CStack<T>(CMemoryPool *mp, ULONG min_size = 4) : m_size(0)
 	{
 		m_dynamic_ptr_array =
 			GPOS_NEW(mp) CDynamicPtrArray<T, CleanupNULL>(mp, min_size, 10);
@@ -54,7 +55,7 @@ public:
 	void
 	Push(T *obj)
 	{
-		GPOS_ASSERT(m_dynamic_ptr_array != nullptr && "Dynamic array missing");
+		GPOS_ASSERT(m_dynamic_ptr_array != NULL && "Dynamic array missing");
 		GPOS_ASSERT(m_size <= m_dynamic_ptr_array->Size() &&
 					"The top of stack cannot be beyond the underlying array");
 

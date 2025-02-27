@@ -38,7 +38,9 @@ CDXLPhysicalSequence::CDXLPhysicalSequence(CMemoryPool *mp) : CDXLPhysical(mp)
 //		Destructor
 //
 //---------------------------------------------------------------------------
-CDXLPhysicalSequence::~CDXLPhysicalSequence() = default;
+CDXLPhysicalSequence::~CDXLPhysicalSequence()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

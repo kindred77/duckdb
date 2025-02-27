@@ -14,12 +14,12 @@
 #include "gpos/base.h"
 #include "gpos/common/CAutoP.h"
 
+#include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CDefaultComparator.h"
 #include "gpopt/cost/ICostModel.h"
 #include "gpopt/eval/IConstExprEvaluator.h"
 #include "gpopt/optimizer/COptimizerConfig.h"
 #include "naucrates/traceflags/traceflags.h"
-
 
 using namespace gpopt;
 
@@ -44,28 +44,25 @@ COptCtxt::COptCtxt(CMemoryPool *mp, CColumnFactory *col_factory,
 	  m_pceeval(pceeval),
 	  m_pcomp(GPOS_NEW(m_mp) CDefaultComparator(pceeval)),
 	  m_auPartId(m_ulFirstValidPartId),
-	  m_pcteinfo(nullptr),
-	  m_pdrgpcrSystemCols(nullptr),
+	  m_pcteinfo(NULL),
+	  m_pdrgpcrSystemCols(NULL),
 	  m_optimizer_config(optimizer_config),
 	  m_fDMLQuery(false),
 	  m_has_master_only_tables(false),
-	  m_has_replicated_tables(false),
-	  m_scanid_to_part_map(nullptr),
-	  m_selector_id_counter(0)
+	  m_has_volatile_func(false),
+	  m_has_replicated_tables(false)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != col_factory);
-	GPOS_ASSERT(nullptr != md_accessor);
-	GPOS_ASSERT(nullptr != pceeval);
-	GPOS_ASSERT(nullptr != m_pcomp);
-	GPOS_ASSERT(nullptr != optimizer_config);
-	GPOS_ASSERT(nullptr != optimizer_config->GetCostModel());
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != col_factory);
+	GPOS_ASSERT(NULL != md_accessor);
+	GPOS_ASSERT(NULL != pceeval);
+	GPOS_ASSERT(NULL != m_pcomp);
+	GPOS_ASSERT(NULL != optimizer_config);
+	GPOS_ASSERT(NULL != optimizer_config->GetCostModel());
 
 	m_pcteinfo = GPOS_NEW(m_mp) CCTEInfo(m_mp);
 	m_cost_model = optimizer_config->GetCostModel();
 	m_direct_dispatchable_filters = GPOS_NEW(mp) CExpressionArray(mp);
-	m_scanid_to_part_map = GPOS_NEW(m_mp) UlongToBitSetMap(m_mp);
-	m_part_selector_info = GPOS_NEW(m_mp) SPartSelectorInfo(m_mp);
 }
 
 
@@ -87,8 +84,6 @@ COptCtxt::~COptCtxt()
 	m_optimizer_config->Release();
 	CRefCount::SafeRelease(m_pdrgpcrSystemCols);
 	CRefCount::SafeRelease(m_direct_dispatchable_filters);
-	m_scanid_to_part_map->Release();
-	m_part_selector_info->Release();
 }
 
 
@@ -105,13 +100,13 @@ COptCtxt::PoctxtCreate(CMemoryPool *mp, CMDAccessor *md_accessor,
 					   IConstExprEvaluator *pceeval,
 					   COptimizerConfig *optimizer_config)
 {
-	GPOS_ASSERT(nullptr != optimizer_config);
+	GPOS_ASSERT(NULL != optimizer_config);
 
 	// CONSIDER:  - 1/5/09; allocate column factory out of given mem pool
 	// instead of having it create its own;
 	CColumnFactory *col_factory = GPOS_NEW(mp) CColumnFactory;
 
-	COptCtxt *poctxt = nullptr;
+	COptCtxt *poctxt = NULL;
 	{
 		// safe handling of column factory; since it owns a pool that would be
 		// leaked if below allocation fails
@@ -152,29 +147,4 @@ COptCtxt::FAllEnforcersEnabled()
 		GPOS_FTRACE(EopttraceDisablePartPropagation);
 
 	return !fEnforcerDisabled;
-}
-
-void
-COptCtxt::AddPartForScanId(ULONG scanid, ULONG index)
-{
-	CBitSet *parts = m_scanid_to_part_map->Find(&scanid);
-	if (nullptr == parts)
-	{
-		parts = GPOS_NEW(m_mp) CBitSet(m_mp);
-		m_scanid_to_part_map->Insert(GPOS_NEW(m_mp) ULONG(scanid), parts);
-	}
-	parts->ExchangeSet(index);
-}
-
-const SPartSelectorInfoEntry *
-COptCtxt::GetPartSelectorInfo(ULONG selector_id) const
-{
-	return m_part_selector_info->Find(&selector_id);
-}
-
-BOOL
-COptCtxt::AddPartSelectorInfo(ULONG selector_id, SPartSelectorInfoEntry *entry)
-{
-	ULONG *key = GPOS_NEW(m_mp) ULONG(selector_id);
-	return m_part_selector_info->Insert(key, entry);
 }

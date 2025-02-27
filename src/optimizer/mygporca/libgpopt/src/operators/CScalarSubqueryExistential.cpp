@@ -43,7 +43,9 @@ CScalarSubqueryExistential::CScalarSubqueryExistential(CMemoryPool *mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CScalarSubqueryExistential::~CScalarSubqueryExistential() = default;
+CScalarSubqueryExistential::~CScalarSubqueryExistential()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -73,7 +75,7 @@ CScalarSubqueryExistential::MdidType() const
 BOOL
 CScalarSubqueryExistential::Matches(COperator *pop) const
 {
-	GPOS_ASSERT(nullptr != pop);
+	GPOS_ASSERT(NULL != pop);
 
 	return pop->Eopid() == Eopid();
 }
@@ -92,7 +94,7 @@ CScalarSubqueryExistential::PpartinfoDerive(CMemoryPool *,	// mp,
 											CExpressionHandle &exprhdl) const
 {
 	CPartInfo *ppartinfoChild = exprhdl.DerivePartitionInfo(0);
-	GPOS_ASSERT(nullptr != ppartinfoChild);
+	GPOS_ASSERT(NULL != ppartinfoChild);
 	ppartinfoChild->AddRef();
 	return ppartinfoChild;
 }

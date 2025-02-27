@@ -39,10 +39,11 @@ private:
 	// allow outer references in the operator tree where distribution is requested
 	BOOL m_fAllowOuterRefs;
 
+	// private copy ctor
+	CDistributionSpecAny(const CDistributionSpecAny &);
+
 
 public:
-	CDistributionSpecAny(const CDistributionSpecAny &) = delete;
-
 	//ctor
 	CDistributionSpecAny(COperator::EOperatorId eopidRequested)
 		: m_eopidRequested(eopidRequested), m_fAllowOuterRefs(false)
@@ -57,50 +58,50 @@ public:
 	}
 
 	// accessor
-	EDistributionType
-	Edt() const override
+	virtual EDistributionType
+	Edt() const
 	{
 		return CDistributionSpec::EdtAny;
 	}
 
 	// does current distribution satisfy the given one
-	BOOL
-	FSatisfies(const CDistributionSpec *pds) const override
+	virtual BOOL
+	FSatisfies(const CDistributionSpec *pds) const
 	{
 		return EdtAny == pds->Edt();
 	}
 
 	// return true if distribution spec can be derived
-	BOOL
-	FDerivable() const override
+	virtual BOOL
+	FDerivable() const
 	{
 		return false;
 	}
 
 	// append enforcers to dynamic array for the given plan properties
-	void
+	virtual void
 	AppendEnforcers(
 		CMemoryPool *,		  // mp
 		CExpressionHandle &,  // exprhdl: gives access to child properties
 		CReqdPropPlan *,	  // prpp
 		CExpressionArray *,	  // pdrgpexpr
 		CExpression *		  // pexpr
-		) override
+	)
 	{
 		GPOS_ASSERT(!"attempt to enforce ANY distribution");
 	}
 
 	// print
-	IOstream &
-	OsPrint(IOstream &os) const override
+	virtual IOstream &
+	OsPrint(IOstream &os) const
 	{
 		return os << "ANY "
 				  << " EOperatorId: " << m_eopidRequested << " ";
 	}
 
 	// return distribution partitioning type
-	EDistributionPartitioningType
-	Edpt() const override
+	virtual EDistributionPartitioningType
+	Edpt() const
 	{
 		return EdptUnknown;
 	}
@@ -116,7 +117,7 @@ public:
 	static CDistributionSpecAny *
 	PdsConvert(CDistributionSpec *pds)
 	{
-		GPOS_ASSERT(nullptr != pds);
+		GPOS_ASSERT(NULL != pds);
 		GPOS_ASSERT(EdtAny == pds->Edt());
 
 		return dynamic_cast<CDistributionSpecAny *>(pds);

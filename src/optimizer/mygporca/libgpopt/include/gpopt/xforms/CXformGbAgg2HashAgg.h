@@ -30,13 +30,14 @@ using namespace gpos;
 class CXformGbAgg2HashAgg : public CXformImplementation
 {
 private:
+	// private copy ctor
+	CXformGbAgg2HashAgg(const CXformGbAgg2HashAgg &);
+
 protected:
 	// check if the transformation is applicable
-	static BOOL FApplicable(CExpression *pexpr);
+	BOOL FApplicable(CExpression *pexpr) const;
 
 public:
-	CXformGbAgg2HashAgg(const CXformGbAgg2HashAgg &) = delete;
-
 	// ctor
 	CXformGbAgg2HashAgg(CMemoryPool *mp);
 
@@ -44,28 +45,30 @@ public:
 	explicit CXformGbAgg2HashAgg(CExpression *pexprPattern);
 
 	// dtor
-	~CXformGbAgg2HashAgg() override = default;
+	virtual ~CXformGbAgg2HashAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAgg2HashAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAgg2HashAgg";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformGbAgg2HashAgg
 

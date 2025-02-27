@@ -27,7 +27,7 @@ class CSearchStage;
 class CExpression;
 
 // definition of array of search stages
-using CSearchStageArray = CDynamicPtrArray<CSearchStage, CleanupDelete>;
+typedef CDynamicPtrArray<CSearchStage, CleanupDelete> CSearchStageArray;
 
 
 //---------------------------------------------------------------------------
@@ -73,9 +73,7 @@ public:
 	RestartTimer()
 	{
 		if (m_time_threshold != gpos::ulong_max)
-		{
 			m_timer.Restart();
-		}
 	}
 
 	// is search stage timed-out?
@@ -85,9 +83,7 @@ public:
 	FTimedOut() const
 	{
 		if (m_time_threshold == gpos::ulong_max)
-		{
 			return false;
-		}
 		return m_timer.ElapsedMS() > m_time_threshold;
 	}
 
@@ -101,7 +97,7 @@ public:
 	BOOL
 	FAchievedReqdCost() const
 	{
-		return (nullptr != m_pexprBest && m_costBest <= m_cost_threshold);
+		return (NULL != m_pexprBest && m_costBest <= m_cost_threshold);
 	}
 
 	// xforms set accessor
@@ -143,7 +139,7 @@ public:
 	}
 
 	// print function
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// generate default search strategy
 	static CSearchStageArray *PdrgpssDefault(CMemoryPool *mp);

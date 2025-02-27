@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CLogicalDynamicBitmapTableGet.cpp
@@ -17,7 +17,6 @@
 
 #include "gpopt/operators/CLogicalDynamicBitmapTableGet.h"
 
-#include "gpopt/metadata/CPartConstraint.h"
 #include "gpopt/metadata/CTableDescriptor.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "gpopt/xforms/CXform.h"
@@ -39,9 +38,12 @@ CLogicalDynamicBitmapTableGet::CLogicalDynamicBitmapTableGet(
 	CMemoryPool *mp, CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
 	const CName *pnameTableAlias, ULONG ulPartIndex,
 	CColRefArray *pdrgpcrOutput, CColRef2dArray *pdrgpdrgpcrPart,
-	IMdIdArray *partition_mdids)
+	ULONG ulSecondaryPartIndexId, BOOL is_partial, CPartConstraint *ppartcnstr,
+	CPartConstraint *ppartcnstrRel)
 	: CLogicalDynamicGetBase(mp, pnameTableAlias, ptabdesc, ulPartIndex,
-							 pdrgpcrOutput, pdrgpdrgpcrPart, partition_mdids),
+							 pdrgpcrOutput, pdrgpdrgpcrPart,
+							 ulSecondaryPartIndexId, is_partial, ppartcnstr,
+							 ppartcnstrRel),
 	  m_ulOriginOpId(ulOriginOpId)
 
 {
@@ -68,7 +70,9 @@ CLogicalDynamicBitmapTableGet::CLogicalDynamicBitmapTableGet(CMemoryPool *mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogicalDynamicBitmapTableGet::~CLogicalDynamicBitmapTableGet() = default;
+CLogicalDynamicBitmapTableGet::~CLogicalDynamicBitmapTableGet()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -188,7 +192,7 @@ COperator *
 CLogicalDynamicBitmapTableGet::PopCopyWithRemappedColumns(
 	CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist)
 {
-	CColRefArray *pdrgpcrOutput = nullptr;
+	CColRefArray *pdrgpcrOutput = NULL;
 	if (must_exist)
 	{
 		pdrgpcrOutput =
@@ -202,14 +206,20 @@ CLogicalDynamicBitmapTableGet::PopCopyWithRemappedColumns(
 	CName *pnameAlias = GPOS_NEW(mp) CName(mp, *m_pnameAlias);
 
 	m_ptabdesc->AddRef();
-	m_partition_mdids->AddRef();
 
 	CColRef2dArray *pdrgpdrgpcrPart = CUtils::PdrgpdrgpcrRemap(
 		mp, m_pdrgpdrgpcrPart, colref_mapping, must_exist);
+	CPartConstraint *ppartcnstr =
+		m_part_constraint->PpartcnstrCopyWithRemappedColumns(mp, colref_mapping,
+															 must_exist);
+	CPartConstraint *ppartcnstrRel =
+		m_ppartcnstrRel->PpartcnstrCopyWithRemappedColumns(mp, colref_mapping,
+														   must_exist);
 
 	return GPOS_NEW(mp) CLogicalDynamicBitmapTableGet(
 		mp, m_ptabdesc, m_ulOriginOpId, pnameAlias, m_scan_id, pdrgpcrOutput,
-		pdrgpdrgpcrPart, m_partition_mdids);
+		pdrgpdrgpcrPart, m_ulSecondaryScanId, m_is_partial, ppartcnstr,
+		ppartcnstrRel);
 }
 
 //---------------------------------------------------------------------------

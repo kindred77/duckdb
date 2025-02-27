@@ -51,37 +51,49 @@ private:
 	struct SSubqueryDesc
 	{
 		// subquery can return more than one row
-		BOOL m_returns_set{false};
+		BOOL m_returns_set;
 
 		// subquery has volatile functions
-		BOOL m_fHasVolatileFunctions{false};
+		BOOL m_fHasVolatileFunctions;
 
 		// subquery has outer references
-		BOOL m_fHasOuterRefs{false};
+		BOOL m_fHasOuterRefs;
 
 		// the returned column is an outer reference
-		BOOL m_fReturnedPcrIsOuterRef{false};
+		BOOL m_fReturnedPcrIsOuterRef;
 
 		// subquery has skip level correlations -- when inner expression refers to columns defined above the immediate outer expression
-		BOOL m_fHasSkipLevelCorrelations{false};
+		BOOL m_fHasSkipLevelCorrelations;
 
 		// subquery has a single count(*)/count(Any) agg
-		BOOL m_fHasCountAgg{false};
+		BOOL m_fHasCountAgg;
 
 		// column defining count(*)/count(Any) agg, if any
-		CColRef *m_pcrCountAgg{nullptr};
+		CColRef *m_pcrCountAgg;
 
 		//  does subquery project a count expression
-		BOOL m_fProjectCount{false};
+		BOOL m_fProjectCount;
 
 		// subquery is used in a value context
-		BOOL m_fValueSubquery{false};
+		BOOL m_fValueSubquery;
 
 		// subquery requires correlated execution
-		BOOL m_fCorrelatedExecution{false};
+		BOOL m_fCorrelatedExecution;
 
 		// ctor
-		SSubqueryDesc() = default;
+		SSubqueryDesc()
+			: m_returns_set(false),
+			  m_fHasVolatileFunctions(false),
+			  m_fHasOuterRefs(false),
+			  m_fReturnedPcrIsOuterRef(false),
+			  m_fHasSkipLevelCorrelations(false),
+			  m_fHasCountAgg(false),
+			  m_pcrCountAgg(NULL),
+			  m_fProjectCount(false),
+			  m_fValueSubquery(false),
+			  m_fCorrelatedExecution(false)
+		{
+		}
 
 		// set correlated execution flag
 		void SetCorrelatedExecution();
@@ -93,6 +105,9 @@ private:
 
 	// enforce using correlated apply for unnesting subqueries
 	BOOL m_fEnforceCorrelatedApply;
+
+	// private copy ctor
+	CSubqueryHandler(const CSubqueryHandler &);
 
 	// helper for adding nullness check, only if needed, to the given scalar expression
 	static CExpression *PexprIsNotNull(CMemoryPool *mp, CExpression *pexprOuter,
@@ -261,8 +276,6 @@ private:
 #endif	// GPOS_DEBUG
 
 public:
-	CSubqueryHandler(const CSubqueryHandler &) = delete;
-
 	// ctor
 	CSubqueryHandler(CMemoryPool *mp, BOOL fEnforceCorrelatedApply)
 		: m_mp(mp), m_fEnforceCorrelatedApply(fEnforceCorrelatedApply)

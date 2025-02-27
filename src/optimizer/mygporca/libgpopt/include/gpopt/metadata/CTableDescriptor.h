@@ -27,11 +27,11 @@ using namespace gpos;
 using namespace gpmd;
 
 // dynamic array of columns -- array owns columns
-using CColumnDescriptorArray =
-	CDynamicPtrArray<CColumnDescriptor, CleanupRelease>;
+typedef CDynamicPtrArray<CColumnDescriptor, CleanupRelease>
+	CColumnDescriptorArray;
 
 // dynamic array of bitsets
-using CBitSetArray = CDynamicPtrArray<CBitSet, CleanupRelease>;
+typedef CDynamicPtrArray<CBitSet, CleanupRelease> CBitSetArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -82,31 +82,31 @@ private:
 	// key sets
 	CBitSetArray *m_pdrgpbsKeys;
 
+	// number of leaf partitions
+	ULONG m_num_of_partitions;
+
 	// id of user the table needs to be accessed with
 	ULONG m_execute_as_user_id;
 
-	// lockmode from the parser
-	INT m_lockmode;
+	// if true, it means this descriptor has partial indexes
+	BOOL m_fHasPartialIndexes;
 
-	// identifier of query to which current table belongs.
-	// This field is used for assigning current table entry with
-	// target one within DML operation. If descriptor doesn't point
-	// to the target (result) relation it has value UNASSIGNED_QUERYID
-	ULONG m_assigned_query_id_for_target_rel;
+	// private copy ctor
+	CTableDescriptor(const CTableDescriptor &);
+
+	// returns true if this table descriptor has partial indexes
+	BOOL FDescriptorWithPartialIndexes();
 
 public:
-	CTableDescriptor(const CTableDescriptor &) = delete;
-
 	// ctor
 	CTableDescriptor(CMemoryPool *, IMDId *mdid, const CName &,
 					 BOOL convert_hash_to_random,
 					 IMDRelation::Ereldistrpolicy rel_distr_policy,
 					 IMDRelation::Erelstoragetype erelstoragetype,
-					 ULONG ulExecuteAsUser, INT lockmode,
-					 ULONG assigned_query_id_for_target_rel);
+					 ULONG ulExecuteAsUser);
 
 	// dtor
-	~CTableDescriptor() override;
+	virtual ~CTableDescriptor();
 
 	// add a column to the table descriptor
 	void AddColumn(CColumnDescriptor *);
@@ -143,12 +143,6 @@ public:
 	GetExecuteAsUserId() const
 	{
 		return m_execute_as_user_id;
-	}
-
-	INT
-	LockMode() const
-	{
-		return m_lockmode;
 	}
 
 	// return the position of a particular attribute (identified by attno)
@@ -189,6 +183,8 @@ public:
 		return m_pdrgpbsKeys;
 	}
 
+	// return the number of leaf partitions
+	ULONG PartitionCount() const;
 
 	// distribution policy
 	IMDRelation::Ereldistrpolicy
@@ -221,25 +217,26 @@ public:
 
 	// helper function for finding the index of a column descriptor in
 	// an array of column descriptors
-	static ULONG UlPos(const CColumnDescriptor *,
-					   const CColumnDescriptorArray *);
+	ULONG UlPos(const CColumnDescriptor *,
+				const CColumnDescriptorArray *) const;
 
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// returns number of indices
 	ULONG IndexCount();
+
+	// true iff this table has partial indexes
+	BOOL
+	HasPartialIndexes() const
+	{
+		return m_fHasPartialIndexes;
+	}
 
 	BOOL
 	IsAORowOrColTable() const
 	{
 		return m_erelstoragetype == IMDRelation::ErelstorageAppendOnlyCols ||
 			   m_erelstoragetype == IMDRelation::ErelstorageAppendOnlyRows;
-	}
-
-	ULONG
-	GetAssignedQueryIdForTargetRel() const
-	{
-		return m_assigned_query_id_for_target_rel;
 	}
 
 };	// class CTableDescriptor

@@ -36,14 +36,20 @@ SetTraceflags(
 		*ppbsDisabled  // output: disabled trace flags before function is called
 )
 {
-	if (nullptr == pbsInput)
+	if (NULL == pbsInput)
 	{
 		// bail out if input set is null
 		return;
 	}
 
-	GPOS_ASSERT(nullptr != ppbsEnabled);
-	GPOS_ASSERT(nullptr != ppbsDisabled);
+	GPOS_ASSERT(NULL != ppbsEnabled);
+	GPOS_ASSERT(NULL != ppbsDisabled);
+
+	// suppress error simulation while setting trace flags
+	CAutoTraceFlag atf1(EtraceSimulateAbort, false);
+	CAutoTraceFlag atf2(EtraceSimulateOOM, false);
+	CAutoTraceFlag atf3(EtraceSimulateNetError, false);
+	CAutoTraceFlag atf4(EtraceSimulateIOError, false);
 
 	*ppbsEnabled = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
 	*ppbsDisabled = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
@@ -54,14 +60,18 @@ SetTraceflags(
 		if (GPOS_FTRACE(ulTraceFlag))
 		{
 			// set trace flag in the enabled set
-			BOOL fSet GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+			BOOL fSet =
+#endif	// GPOS_DEBUG
 				(*ppbsEnabled)->ExchangeSet(ulTraceFlag);
 			GPOS_ASSERT(!fSet);
 		}
 		else
 		{
 			// set trace flag in the disabled set
-			BOOL fSet GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+			BOOL fSet =
+#endif	// GPOS_DEBUG
 				(*ppbsDisabled)->ExchangeSet(ulTraceFlag);
 			GPOS_ASSERT(!fSet);
 		}
@@ -83,14 +93,20 @@ SetTraceflags(
 void
 ResetTraceflags(CBitSet *pbsEnabled, CBitSet *pbsDisabled)
 {
-	if (nullptr == pbsEnabled || nullptr == pbsDisabled)
+	if (NULL == pbsEnabled || NULL == pbsDisabled)
 	{
 		// bail out if input sets are null
 		return;
 	}
 
-	GPOS_ASSERT(nullptr != pbsEnabled);
-	GPOS_ASSERT(nullptr != pbsDisabled);
+	GPOS_ASSERT(NULL != pbsEnabled);
+	GPOS_ASSERT(NULL != pbsDisabled);
+
+	// suppress error simulation while resetting trace flags
+	CAutoTraceFlag atf1(EtraceSimulateAbort, false);
+	CAutoTraceFlag atf2(EtraceSimulateOOM, false);
+	CAutoTraceFlag atf3(EtraceSimulateNetError, false);
+	CAutoTraceFlag atf4(EtraceSimulateIOError, false);
 
 	CBitSetIter bsiterEnabled(*pbsEnabled);
 	while (bsiterEnabled.Advance())

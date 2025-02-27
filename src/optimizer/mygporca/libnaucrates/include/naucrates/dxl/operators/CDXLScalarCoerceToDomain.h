@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarCoerceToDomain.h
@@ -45,31 +45,34 @@ using namespace gpmd;
 class CDXLScalarCoerceToDomain : public CDXLScalarCoerceBase
 {
 private:
-public:
-	CDXLScalarCoerceToDomain(const CDXLScalarCoerceToDomain &) = delete;
+	// private copy ctor
+	CDXLScalarCoerceToDomain(const CDXLScalarCoerceToDomain &);
 
+public:
 	// ctor/dtor
 	CDXLScalarCoerceToDomain(CMemoryPool *mp, IMDId *mdid_type,
 							 INT type_modifier,
 							 EdxlCoercionForm dxl_coerce_format, INT location);
 
-	~CDXLScalarCoerceToDomain() override = default;
+	virtual ~CDXLScalarCoerceToDomain()
+	{
+	}
 
 	// ident accessor
-	Edxlopid
-	GetDXLOperator() const override
+	virtual Edxlopid
+	GetDXLOperator() const
 	{
 		return EdxlopScalarCoerceToDomain;
 	}
 
 	// name of the DXL operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// conversion function
 	static CDXLScalarCoerceToDomain *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarCoerceToDomain == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarCoerceToDomain *>(dxl_op);

@@ -35,7 +35,14 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerDynamicIndexScan : public CParseHandlerIndexScan
 {
 private:
-	ULongPtrArray *m_selector_ids;
+	// part index id
+	ULONG m_part_index_id;
+
+	// printable partition index id
+	ULONG m_part_index_id_printable;
+
+	// private copy ctor
+	CParseHandlerDynamicIndexScan(const CParseHandlerDynamicIndexScan &);
 
 	// process the start of an element
 	void StartElement(
@@ -43,19 +50,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerDynamicIndexScan(const CParseHandlerDynamicIndexScan &) =
-		delete;
-
 	// ctor
 	CParseHandlerDynamicIndexScan(CMemoryPool *mp,
 								  CParseHandlerManager *parse_handler_mgr,

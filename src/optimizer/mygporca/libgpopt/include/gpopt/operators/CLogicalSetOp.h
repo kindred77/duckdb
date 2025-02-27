@@ -83,19 +83,19 @@ public:
 				  CColRef2dArray *pdrgpdrgpcrInput);
 
 	// dtor
-	~CLogicalSetOp() override;
+	virtual ~CLogicalSetOp();
 
 	// ident accessors
-	EOperatorId Eopid() const override = 0;
+	virtual EOperatorId Eopid() const = 0;
 
 	// return a string for operator name
-	const CHAR *SzId() const override = 0;
+	virtual const CHAR *SzId() const = 0;
 
 	// accessor of output column array
 	CColRefArray *
 	PdrgpcrOutput() const
 	{
-		GPOS_ASSERT(nullptr != m_pdrgpcrOutput);
+		GPOS_ASSERT(NULL != m_pdrgpcrOutput);
 		return m_pdrgpcrOutput;
 	}
 
@@ -103,54 +103,53 @@ public:
 	CColRef2dArray *
 	PdrgpdrgpcrInput() const
 	{
-		GPOS_ASSERT(nullptr != m_pdrgpdrgpcrInput);
+		GPOS_ASSERT(NULL != m_pdrgpdrgpcrInput);
 		return m_pdrgpdrgpcrInput;
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL FCanPullProjectionsUp(ULONG  //child_index
-	) const override
+	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	) const
 	{
 		return false;
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *,
-									CExpressionHandle &) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *, CExpressionHandle &);
 
 	// derive key collections
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive partition consumer info
-	CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
-								   CExpressionHandle &exprhdl) const override;
+	virtual CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *PcrsStat(CMemoryPool *,		   // mp
-						 CExpressionHandle &,  // exprhdl
-						 CColRefSet *pcrsInput,
-						 ULONG	// child_index
-	) const override;
+	virtual CColRefSet *PcrsStat(CMemoryPool *,		   // mp
+								 CExpressionHandle &,  // exprhdl
+								 CColRefSet *pcrsInput,
+								 ULONG	// child_index
+	) const;
 
 	// conversion function
 	static CLogicalSetOp *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(CUtils::FLogicalSetOp(pop));
 
 		return dynamic_cast<CLogicalSetOp *>(pop);

@@ -69,27 +69,28 @@ private:
 	// preserves NDVs of inputs
 	BOOL m_is_ndv_preserving;
 
+	// private copy ctor
+	CParseHandlerMDGPDBScalarOp(const CParseHandlerMDGPDBScalarOp &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 	// is this a supported child elem of the scalar op
-	static BOOL IsSupportedChildElem(const XMLCh *const xml_str);
+	BOOL IsSupportedChildElem(const XMLCh *const xml_str);
 
 public:
-	CParseHandlerMDGPDBScalarOp(const CParseHandlerMDGPDBScalarOp &) = delete;
-
 	// ctor
 	CParseHandlerMDGPDBScalarOp(CMemoryPool *mp,
 								CParseHandlerManager *parse_handler_mgr,

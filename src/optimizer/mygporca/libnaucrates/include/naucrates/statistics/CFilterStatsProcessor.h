@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CFilterStatsProcessor.h
@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/optimizer/COptimizerConfig.h"
+#include "naucrates/statistics/CFilterStatsProcessor.h"
 #include "naucrates/statistics/CJoinStatsProcessor.h"
 #include "naucrates/statistics/CScaleFactorUtils.h"
 #include "naucrates/statistics/CStatistics.h"
@@ -64,22 +65,19 @@ private:
 	static UlongToHistogramMap *MakeHistHashMapConjOrDisjFilter(
 		CMemoryPool *mp, const CStatisticsConfig *stats_config,
 		UlongToHistogramMap *input_histograms, CDouble input_rows,
-		CStatsPred *pred_stats, CDouble *scale_factor,
-		const CStatistics *input_stats);
+		CStatsPred *pred_stats, CDouble *scale_factor);
 
 	// create new hash map of histograms after applying the conjunction predicate
 	static UlongToHistogramMap *MakeHistHashMapConjFilter(
 		CMemoryPool *mp, const CStatisticsConfig *stats_config,
 		UlongToHistogramMap *intermediate_histograms, CDouble input_rows,
-		CStatsPredConj *conjunctive_pred_stats, CDouble *scale_factor,
-		const CStatistics *input_stats);
+		CStatsPredConj *conjunctive_pred_stats, CDouble *scale_factor);
 
 	// create new hash map of histograms after applying the disjunctive predicate
 	static UlongToHistogramMap *MakeHistHashMapDisjFilter(
 		CMemoryPool *mp, const CStatisticsConfig *stats_config,
 		UlongToHistogramMap *input_histograms, CDouble input_rows,
-		CStatsPredDisj *pred_stats, CDouble *scale_factor,
-		const CStatistics *input_stats);
+		CStatsPredDisj *pred_stats, CDouble *scale_factor);
 
 	// check if the column is a new column for statistic calculation
 	static BOOL IsNewStatsColumn(ULONG colid, ULONG last_colid);

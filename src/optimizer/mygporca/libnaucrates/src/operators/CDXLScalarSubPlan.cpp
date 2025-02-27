@@ -45,7 +45,7 @@ CDXLScalarSubPlan::CDXLScalarSubPlan(CMemoryPool *mp,
 	GPOS_ASSERT(EdxlSubPlanTypeSentinel > dxl_subplan_type);
 	GPOS_ASSERT_IMP(EdxlSubPlanTypeAny == dxl_subplan_type ||
 						EdxlSubPlanTypeAll == dxl_subplan_type,
-					nullptr != dxlnode_test_expr);
+					NULL != dxlnode_test_expr);
 }
 
 //---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ CDXLScalarSubPlan::GetSubplanTypeStr() const
 
 		default:
 			GPOS_ASSERT(!"Unrecognized subplan type");
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -169,7 +169,7 @@ CDXLScalarSubPlan::SerializeToDXL(CXMLSerializer *xml_serializer,
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenScalarSubPlanTestExpr));
 
-	if (nullptr != m_dxlnode_test_expr)
+	if (NULL != m_dxlnode_test_expr)
 	{
 		m_dxlnode_test_expr->SerializeToDXL(xml_serializer);
 	}
@@ -236,11 +236,11 @@ CDXLScalarSubPlan::AssertValid(const CDXLNode *dxlnode,
 	// assert child plan is a physical plan and is valid
 
 	CDXLNode *child_dxlnode = (*dxlnode)[EdxlSubPlanIndexChildPlan];
-	GPOS_ASSERT(nullptr != child_dxlnode);
+	GPOS_ASSERT(NULL != child_dxlnode);
 	GPOS_ASSERT(EdxloptypePhysical ==
 				child_dxlnode->GetOperator()->GetDXLOperatorType());
 	GPOS_ASSERT_IMP(
-		nullptr != m_dxlnode_test_expr,
+		NULL != m_dxlnode_test_expr,
 		EdxloptypeScalar ==
 			m_dxlnode_test_expr->GetOperator()->GetDXLOperatorType());
 

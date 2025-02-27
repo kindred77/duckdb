@@ -53,7 +53,7 @@ CXformDifference2LeftAntiSemiJoin::Transform(CXformContext *pxfctxt,
 											 CXformResult *pxfres,
 											 CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -83,26 +83,18 @@ CXformDifference2LeftAntiSemiJoin::Transform(CXformContext *pxfctxt,
 		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CLogicalLeftAntiSemiJoin(mp),
 								 pexprLeftChild, pexprRightChild, pexprScCond);
 
-	if (pdrgpcrOutput->Size() > 0)
-	{
-		// assemble the aggregate operator
-		pdrgpcrOutput->AddRef();
+	// assemble the aggregate operator
+	pdrgpcrOutput->AddRef();
 
-		CExpression *pexprProjList =
-			GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarProjectList(mp),
-									 GPOS_NEW(mp) CExpressionArray(mp));
+	CExpression *pexprProjList =
+		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarProjectList(mp),
+								 GPOS_NEW(mp) CExpressionArray(mp));
 
-		CExpression *pexprAgg = CUtils::PexprLogicalGbAggGlobal(
-			mp, pdrgpcrOutput, pexprLASJ, pexprProjList);
+	CExpression *pexprAgg = CUtils::PexprLogicalGbAggGlobal(
+		mp, pdrgpcrOutput, pexprLASJ, pexprProjList);
 
-		// add alternative to results
-		pxfres->Add(pexprAgg);
-	}
-	else
-	{
-		// skip the aggregate operator if output columns is empty
-		pxfres->Add(pexprLASJ);
-	}
+	// add alternative to results
+	pxfres->Add(pexprAgg);
 }
 
 // EOF

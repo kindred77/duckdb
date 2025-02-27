@@ -43,24 +43,25 @@ private:
 	// int4 value
 	INT m_val;
 
-public:
-	CDXLDatumInt4(const CDXLDatumInt4 &) = delete;
+	// private copy ctor
+	CDXLDatumInt4(const CDXLDatumInt4 &);
 
+public:
 	// ctor
 	CDXLDatumInt4(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, INT val);
 
 	// dtor
-	~CDXLDatumInt4() override = default;
+	virtual ~CDXLDatumInt4(){};
 
 	// accessor of int value
 	INT Value() const;
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumInt4;
 	}
@@ -69,7 +70,7 @@ public:
 	static CDXLDatumInt4 *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::EdxldatumInt4 == dxl_datum->GetDatumType());
 
 		return dynamic_cast<CDXLDatumInt4 *>(dxl_datum);

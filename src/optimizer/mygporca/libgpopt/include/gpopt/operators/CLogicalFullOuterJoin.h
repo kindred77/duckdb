@@ -28,33 +28,36 @@ namespace gpopt
 class CLogicalFullOuterJoin : public CLogicalJoin
 {
 private:
-public:
-	CLogicalFullOuterJoin(const CLogicalFullOuterJoin &) = delete;
+	// private copy ctor
+	CLogicalFullOuterJoin(const CLogicalFullOuterJoin &);
 
+public:
 	// ctor
 	explicit CLogicalFullOuterJoin(
 		CMemoryPool *mp, CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CLogicalFullOuterJoin() override = default;
+	virtual ~CLogicalFullOuterJoin()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalFullOuterJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalFullOuterJoin";
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL FCanPullProjectionsUp(ULONG  //child_index
-	) const override
+	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	) const
 	{
 		return false;
 	}
@@ -64,33 +67,33 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive not nullable output columns
-	CColRefSet *
+	virtual CColRefSet *
 	DeriveNotNullColumns(CMemoryPool *mp,
 						 CExpressionHandle &  //exprhdl
-	) const override
+	) const
 	{
 		// all output columns are nullable
 		return GPOS_NEW(mp) CColRefSet(mp);
 	}
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *mp,
 							 CExpressionHandle &  //exprhdl
-	) const override
+	) const
 	{
 		return GPOS_NEW(mp) CPropConstraint(
-			mp, GPOS_NEW(mp) CColRefSetArray(mp), nullptr /*pcnstr*/);
+			mp, GPOS_NEW(mp) CColRefSetArray(mp), NULL /*pcnstr*/);
 	}
 
 	// promise level for stat derivation
-	EStatPromise
+	virtual EStatPromise
 	Esp(CExpressionHandle &	 //exprhdl
-	) const override
+	) const
 	{
 		// Disable stats derivation for CLogicalFullOuterJoin because it is
 		// currently not implemented. Instead rely on stats coming from the
@@ -105,7 +108,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -115,7 +118,7 @@ public:
 	static CLogicalFullOuterJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalFullOuterJoin == pop->Eopid());
 
 		return dynamic_cast<CLogicalFullOuterJoin *>(pop);

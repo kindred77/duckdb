@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerHint.h
@@ -37,33 +37,34 @@ private:
 	// hint configuration
 	CHint *m_hint;
 
+	// private copy ctor
+	CParseHandlerHint(const CParseHandlerHint &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerHint(const CParseHandlerHint &) = delete;
-
 	// ctor
 	CParseHandlerHint(CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 					  CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerHint() override;
+	virtual ~CParseHandlerHint();
 
 	// type of the parse handler
-	EDxlParseHandlerType GetParseHandlerType() const override;
+	virtual EDxlParseHandlerType GetParseHandlerType() const;
 
 	// hint configuration
 	CHint *GetHint() const;

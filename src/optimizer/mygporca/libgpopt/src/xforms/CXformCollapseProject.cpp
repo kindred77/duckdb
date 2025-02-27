@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CXformCollapseProject.cpp
@@ -76,15 +76,15 @@ void
 CXformCollapseProject::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 								 CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
 	CMemoryPool *mp = pxfctxt->Pmp();
 
 	CExpression *pexprCollapsed = CUtils::PexprCollapseProjects(mp, pexpr);
 
-	if (nullptr != pexprCollapsed)
+	if (NULL != pexprCollapsed)
 	{
 		pxfres->Add(pexprCollapsed);
 	}

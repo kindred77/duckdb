@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
-//	Portions Copyright (c) 2023, HashData Technology Limited.
 //
 //	@filename:
 //		CMDCache.h
@@ -46,14 +45,15 @@ private:
 	static ULLONG m_ullCacheQuota;
 
 	// private ctor
-	CMDCache() = default;
+	CMDCache(){};
+
+	// no copy ctor
+	CMDCache(const CMDCache &);
 
 	// private dtor
-	~CMDCache() = default;
+	~CMDCache(){};
 
 public:
-	CMDCache(const CMDCache &) = delete;
-
 	// initialize underlying cache
 	static void Init();
 
@@ -61,7 +61,7 @@ public:
 	static BOOL
 	FInitialized()
 	{
-		return (nullptr != m_pcache);
+		return (NULL != m_pcache);
 	}
 
 	// destroy global instance
@@ -89,8 +89,6 @@ public:
 };	// class CMDCache
 
 }  // namespace gpopt
-
-extern "C" ULLONG GetCacheEvictionCounter();
 
 #endif	// !GPOPT_CMDCache_H
 

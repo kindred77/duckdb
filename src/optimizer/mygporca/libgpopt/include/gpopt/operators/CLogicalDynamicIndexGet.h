@@ -45,9 +45,10 @@ private:
 	// order spec
 	COrderSpec *m_pos;
 
-public:
-	CLogicalDynamicIndexGet(const CLogicalDynamicIndexGet &) = delete;
+	// private copy ctor
+	CLogicalDynamicIndexGet(const CLogicalDynamicIndexGet &);
 
+public:
 	// ctors
 	explicit CLogicalDynamicIndexGet(CMemoryPool *mp);
 
@@ -56,21 +57,23 @@ public:
 							const CName *pnameAlias, ULONG ulPartIndex,
 							CColRefArray *pdrgpcrOutput,
 							CColRef2dArray *pdrgpdrgpcrPart,
-							IMdIdArray *partition_mdids);
+							ULONG ulSecondaryPartIndexId,
+							CPartConstraint *ppartcnstr,
+							CPartConstraint *ppartcnstrRel);
 
 	// dtor
-	~CLogicalDynamicIndexGet() override;
+	virtual ~CLogicalDynamicIndexGet();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalDynamicIndexGet;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalDynamicIndexGet";
 	}
@@ -84,7 +87,7 @@ public:
 
 	// index name
 	const CName &
-	Name() const override
+	Name() const
 	{
 		return m_pindexdesc->Name();
 	}
@@ -103,6 +106,10 @@ public:
 		return m_pindexdesc;
 	}
 
+	// check if index is partial given the table descriptor and the index mdid
+	static BOOL IsPartialIndex(CTableDescriptor *ptabdesc,
+							   const IMDIndex *pmdindex);
+
 	// order spec
 	COrderSpec *
 	Pos() const
@@ -111,46 +118,46 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// derive outer references
-	CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
-									  CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
+											  CExpressionHandle &exprhdl);
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	virtual BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *,		   //mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
 			 ULONG				   // child_index
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"CLogicalDynamicIndexGet has no children");
-		return nullptr;
+		return NULL;
 	}
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -160,7 +167,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	// conversion function
@@ -169,7 +176,7 @@ public:
 	static CLogicalDynamicIndexGet *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalDynamicIndexGet == pop->Eopid());
 
 		return dynamic_cast<CLogicalDynamicIndexGet *>(pop);
@@ -177,7 +184,7 @@ public:
 
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CLogicalDynamicIndexGet
 

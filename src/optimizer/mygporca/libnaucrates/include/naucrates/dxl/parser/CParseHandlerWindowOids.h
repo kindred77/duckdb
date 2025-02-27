@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerWindowOids.h
@@ -37,34 +37,35 @@ private:
 	// deafult oids
 	CWindowOids *m_window_oids;
 
+	// private copy ctor
+	CParseHandlerWindowOids(const CParseHandlerWindowOids &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerWindowOids(const CParseHandlerWindowOids &) = delete;
-
 	// ctor
 	CParseHandlerWindowOids(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,
 							CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerWindowOids() override;
+	virtual ~CParseHandlerWindowOids();
 
 	// type of the parse handler
-	EDxlParseHandlerType GetParseHandlerType() const override;
+	virtual EDxlParseHandlerType GetParseHandlerType() const;
 
 	// return system specific window oids
 	CWindowOids *GetWindowOids() const;

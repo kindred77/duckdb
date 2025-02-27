@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal Inc.
 //
 //	@filename:
 //		CXformIntersect2Join.h
@@ -30,40 +30,43 @@ using namespace gpos;
 class CXformIntersect2Join : public CXformExploration
 {
 private:
-public:
-	CXformIntersect2Join(const CXformIntersect2Join &) = delete;
+	// private copy ctor
+	CXformIntersect2Join(const CXformIntersect2Join &);
 
+public:
 	// ctor
 	explicit CXformIntersect2Join(CMemoryPool *mp);
 
 	// dtor
-	~CXformIntersect2Join() override = default;
+	virtual ~CXformIntersect2Join()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfIntersect2Join;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformIntersect2Join";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformIntersect2Join
 

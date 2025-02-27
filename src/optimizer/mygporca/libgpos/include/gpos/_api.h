@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------
  *	Greenplum Database
- *	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+ *	Copyright (c) 2004-2015 Pivotal Software, Inc.
  *
  *	@filename:
  *		_api.h
@@ -30,10 +30,10 @@ gpos::BOOL FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
 
 // Check if given exception is an unexpected reason for failing to
 // produce a plan
-//gpos::BOOL IsLoggableFailure(gpos::CException &exc);
+gpos::BOOL IsLoggableFailure(gpos::CException &exc);
 
 // check if given exception should error out
-//gpos::BOOL ShouldErrorOut(gpos::CException &exc);
+gpos::BOOL ShouldErrorOut(gpos::CException &exc);
 
 
 extern "C" {

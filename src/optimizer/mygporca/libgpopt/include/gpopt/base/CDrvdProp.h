@@ -29,7 +29,7 @@ class CDrvdPropCtxt;
 class CReqdPropPlan;
 
 // dynamic array for properties
-using CDrvdPropArray = CDynamicPtrArray<CDrvdProp, CleanupRelease>;
+typedef CDynamicPtrArray<CDrvdProp, CleanupRelease> CDrvdPropArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -78,14 +78,17 @@ public:
 	};
 
 private:
-public:
-	CDrvdProp(const CDrvdProp &) = delete;
+	// private copy ctor
+	CDrvdProp(const CDrvdProp &);
 
+public:
 	// ctor
 	CDrvdProp();
 
 	// dtor
-	~CDrvdProp() override = default;
+	virtual ~CDrvdProp()
+	{
+	}
 
 	// type of properties
 	virtual EPropType Ept() = 0;
@@ -103,7 +106,6 @@ public:
 		return true;
 	}
 
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 };	// class CDrvdProp
 
 // shorthand for printing

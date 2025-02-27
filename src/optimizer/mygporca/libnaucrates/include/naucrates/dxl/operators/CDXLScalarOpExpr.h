@@ -42,20 +42,21 @@ private:
 	// operator name
 	const CWStringConst *m_str_opname;
 
-public:
-	CDXLScalarOpExpr(const CDXLScalarOpExpr &) = delete;
+	// private copy ctor
+	CDXLScalarOpExpr(const CDXLScalarOpExpr &);
 
+public:
 	// ctor/dtor
 	CDXLScalarOpExpr(CMemoryPool *mp, IMDId *mdid_op, IMDId *return_type_mdid,
 					 const CWStringConst *str_opname);
 
-	~CDXLScalarOpExpr() override;
+	virtual ~CDXLScalarOpExpr();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// name of the operator
 	const CWStringConst *GetScalarOpNameStr() const;
@@ -67,26 +68,25 @@ public:
 	IMDId *GetReturnTypeMdId() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// conversion function
 	static CDXLScalarOpExpr *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarOpExpr == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarOpExpr *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

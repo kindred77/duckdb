@@ -28,18 +28,15 @@ using namespace gpopt;
 BOOL
 CXformJoin2IndexApplyGeneric::FCanLeftOuterIndexApply(
 	CMemoryPool *mp, CExpression *pexprInner, CExpression *pexprScalar,
-	CTableDescriptor *ptabDesc, const CColRefSet *pcrsDist)
+	CTableDescriptor *ptabDesc, const CColRefSet *pcrsDist) const
 {
+	GPOS_ASSERT(m_fOuterJoin);
 	IMDRelation::Ereldistrpolicy ereldist = ptabDesc->GetRelDistribution();
 
 	if (ereldist == IMDRelation::EreldistrRandom)
-	{
 		return false;
-	}
 	else if (ereldist == IMDRelation::EreldistrMasterOnly)
-	{
 		return true;
-	}
 
 	// now consider hash distributed table
 	CColRefSet *pcrsInnerOutput = pexprInner->DeriveOutputColumns();
@@ -104,7 +101,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 										CXformResult *pxfres,
 										CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -120,20 +117,20 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 	CExpression *pexprAllPredicates = pexprScalar;
 
 	// a select node that sits right on top of the get node (if it exists, NULL otherwise)
-	CExpression *selectThatIsParentOfGet = nullptr;
+	CExpression *selectThatIsParentOfGet = NULL;
 
 	// the logical get node (dynamic or regular get) at the bottom of the inner tree
-	CExpression *pexprGet = nullptr;
+	CExpression *pexprGet = NULL;
 
 	// the highest node of the right child that gets inserted above the index get
 	// into the alternative, or NULL if there is no such node
 	// (this is a project, GbAgg or a select node above a project or GbAgg)
-	CExpression *nodesToInsertAboveIndexGet = nullptr;
+	CExpression *nodesToInsertAboveIndexGet = NULL;
 
 	// the cut-off point for "nodesAboveIndexGet", this node is below nodesAboveIndexGet
 	// but it doesn't get inserted into the alternative anymore
 	// (or NULL, if nodesAboveIndexGet == NULL)
-	CExpression *endOfNodesToInsertAboveIndexGet = nullptr;
+	CExpression *endOfNodesToInsertAboveIndexGet = NULL;
 
 	// Example:
 	//
@@ -163,16 +160,16 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 	//                                                  index/residual preds
 
 	// info on the get node (a get node or a dynamic get)
-	CTableDescriptor *ptabdescInner = nullptr;
-	const CColRefSet *distributionCols = nullptr;
-	CLogicalDynamicGet *popDynamicGet = nullptr;
+	CTableDescriptor *ptabdescInner = NULL;
+	const CColRefSet *distributionCols = NULL;
+	CLogicalDynamicGet *popDynamicGet = NULL;
 	CAutoRef<CColRefSet> groupingColsToCheck;
 
 	// walk down the right child tree, accepting some unary operators
 	// like project and GbAgg and select, until we find a logical get
-	for (CExpression *pexprCurrInnerChild = pexprInner; nullptr == pexprGet;
+	for (CExpression *pexprCurrInnerChild = pexprInner; NULL == pexprGet;
 		 pexprCurrInnerChild =
-			 (nullptr == pexprGet ? (*pexprCurrInnerChild)[0] : nullptr))
+			 (NULL == pexprGet ? (*pexprCurrInnerChild)[0] : NULL))
 	{
 		switch (pexprCurrInnerChild->Pop()->Eopid())
 		{
@@ -224,8 +221,8 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 						CLogicalGbAgg *grbyAggOp = CLogicalGbAgg::PopConvert(
 							pexprCurrInnerChild->Pop());
 
-						GPOS_ASSERT(nullptr != grbyAggOp);
-						if (nullptr != grbyAggOp->Pdrgpcr() &&
+						GPOS_ASSERT(NULL != grbyAggOp);
+						if (NULL != grbyAggOp->Pdrgpcr() &&
 							0 < grbyAggOp->Pdrgpcr()->Size())
 						{
 							// This has grouping cols. We can only do an index join with a groupby
@@ -255,7 +252,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 							return;
 						}
 					}
-					selectThatIsParentOfGet = nullptr;
+					selectThatIsParentOfGet = NULL;
 				}
 				break;
 
@@ -268,7 +265,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 				distributionCols = popGet->PcrsDist();
 				pexprGet = pexprCurrInnerChild;
 
-				if (nullptr != groupingColsToCheck.Value() &&
+				if (NULL != groupingColsToCheck.Value() &&
 					!groupingColsToCheck->ContainsAll(distributionCols))
 				{
 					// the grouping columns are not a superset of the distribution columns
@@ -283,14 +280,6 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 					CLogicalDynamicGet::PopConvert(pexprCurrInnerChild->Pop());
 				ptabdescInner = popDynamicGet->Ptabdesc();
 				distributionCols = popDynamicGet->PcrsDist();
-				// issue https://github.com/apache/cloudberry/issues/567
-				// the DynamicGet also need check the group key contains the distributionCols
-				if (nullptr != groupingColsToCheck.Value() &&
-					!groupingColsToCheck->ContainsAll(distributionCols))
-				{
-					// the grouping columns are not a superset of the distribution columns
-					return;
-				}
 				pexprGet = pexprCurrInnerChild;
 			}
 			break;
@@ -303,7 +292,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 	}
 
 	// handle the select node with additional candidates for index preds, if it exists
-	if (nullptr != selectThatIsParentOfGet)
+	if (NULL != selectThatIsParentOfGet)
 	{
 		pexprAllPredicates = CPredicateUtils::PexprConjunction(
 			mp, pexprAllPredicates, (*selectThatIsParentOfGet)[1]);
@@ -322,7 +311,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 		// yes, there are additional nodes beyond a get with an optional select
 		nodesToInsertAboveIndexGet = pexprInner;
 
-		if (nullptr != selectThatIsParentOfGet)
+		if (NULL != selectThatIsParentOfGet)
 		{
 			// insert the right child nodes, up to but not including, the
 			// select node above the get
@@ -349,7 +338,7 @@ CXformJoin2IndexApplyGeneric::Transform(CXformContext *pxfctxt,
 	CreateHomogeneousIndexApplyAlternatives(
 		mp, pexpr->Pop(), pexprOuter, pexprGet, pexprAllPredicates, pexprScalar,
 		nodesToInsertAboveIndexGet, endOfNodesToInsertAboveIndexGet,
-		ptabdescInner, pxfres,
+		ptabdescInner, popDynamicGet, pxfres,
 		(m_generateBitmapPlans ? IMDIndex::EmdindBitmap
 							   : IMDIndex::EmdindBtree));
 

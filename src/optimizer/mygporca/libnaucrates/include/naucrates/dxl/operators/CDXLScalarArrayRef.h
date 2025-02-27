@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarArrayRef.h
@@ -44,22 +44,23 @@ private:
 	// return type id
 	IMDId *m_return_type_mdid;
 
-public:
-	CDXLScalarArrayRef(const CDXLScalarArrayRef &) = delete;
+	// private copy ctor
+	CDXLScalarArrayRef(const CDXLScalarArrayRef &);
 
+public:
 	// ctor
 	CDXLScalarArrayRef(CMemoryPool *mp, IMDId *elem_type_mdid,
 					   INT type_modifier, IMDId *array_type_mdid,
 					   IMDId *return_type_mdid);
 
 	// dtor
-	~CDXLScalarArrayRef() override;
+	virtual ~CDXLScalarArrayRef();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// element type id
 	IMDId *
@@ -86,24 +87,24 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *dxlnode,
+							 BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarArrayRef *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarArrayRef == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarArrayRef *>(dxl_op);

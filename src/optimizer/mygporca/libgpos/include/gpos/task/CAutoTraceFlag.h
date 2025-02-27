@@ -36,9 +36,10 @@ private:
 	// original value
 	BOOL m_orig;
 
-public:
-	CAutoTraceFlag(const CAutoTraceFlag &) = delete;
+	// no copy ctor
+	CAutoTraceFlag(const CAutoTraceFlag &);
 
+public:
 	// ctor
 	CAutoTraceFlag(ULONG trace, BOOL orig);
 

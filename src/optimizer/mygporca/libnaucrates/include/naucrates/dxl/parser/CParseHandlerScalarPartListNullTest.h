@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Inc.
 //
 //	SAX parse handler class for parsing scalar part list null test
 //---------------------------------------------------------------------------
@@ -21,25 +21,26 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarPartListNullTest : public CParseHandlerScalarOp
 {
 private:
+	// private copy ctor
+	CParseHandlerScalarPartListNullTest(
+		const CParseHandlerScalarPartListNullTest &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarPartListNullTest(
-		const CParseHandlerScalarPartListNullTest &) = delete;
-
 	// ctor
 	CParseHandlerScalarPartListNullTest(CMemoryPool *mp,
 										CParseHandlerManager *parse_handler_mgr,

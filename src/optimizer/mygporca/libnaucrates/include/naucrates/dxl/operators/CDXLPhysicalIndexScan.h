@@ -50,22 +50,23 @@ private:
 	// scan direction of the index
 	EdxlIndexScanDirection m_index_scan_dir;
 
-public:
-	CDXLPhysicalIndexScan(CDXLPhysicalIndexScan &) = delete;
+	// private copy ctor
+	CDXLPhysicalIndexScan(CDXLPhysicalIndexScan &);
 
+public:
 	//ctor
 	CDXLPhysicalIndexScan(CMemoryPool *mp, CDXLTableDescr *table_descr,
 						  CDXLIndexDescr *dxl_index_descr,
 						  EdxlIndexScanDirection idx_scan_direction);
 
 	//dtor
-	~CDXLPhysicalIndexScan() override;
+	virtual ~CDXLPhysicalIndexScan();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// index descriptor
 	virtual const CDXLIndexDescr *GetDXLIndexDescr() const;
@@ -77,14 +78,14 @@ public:
 	virtual EdxlIndexScanDirection GetIndexScanDir() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLPhysicalIndexScan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalIndexScan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalIndexScan *>(dxl_op);
@@ -93,7 +94,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

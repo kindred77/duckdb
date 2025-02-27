@@ -31,13 +31,15 @@ private:
 
 public:
 	// ctor
-	CTimerUser() = default;
+	CTimerUser()
+	{
+	}
 
 	// retrieve elapsed user time in micro-seconds
-	ULONG ElapsedUS() const override;
+	virtual ULONG ElapsedUS() const;
 
 	// restart timer
-	void Restart() override;
+	virtual void Restart();
 
 };	// class CTimerUser
 }  // namespace gpos

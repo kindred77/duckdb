@@ -32,89 +32,54 @@ class CColRefSet;
 //---------------------------------------------------------------------------
 class CLogicalDynamicGet : public CLogicalDynamicGetBase
 {
-protected:
-	// Disjunction of selected child partition's constraints after static pruning
-	CConstraint *m_partition_cnstrs_disj{nullptr};
-
-	// Has done static pruning
-	BOOL m_static_pruned{false};
-
-	// Indexes correspond to partitions
-	IMdIdArray *m_foreign_server_mdids{nullptr};
+private:
+	// private copy ctor
+	CLogicalDynamicGet(const CLogicalDynamicGet &);
 
 public:
-	CLogicalDynamicGet(const CLogicalDynamicGet &) = delete;
-
 	// ctors
 	explicit CLogicalDynamicGet(CMemoryPool *mp);
 
 	CLogicalDynamicGet(CMemoryPool *mp, const CName *pnameAlias,
 					   CTableDescriptor *ptabdesc, ULONG ulPartIndex,
-					   CColRefArray *pdrgpcrOutput,
+					   CColRefArray *colref_array,
 					   CColRef2dArray *pdrgpdrgpcrPart,
-					   IMdIdArray *partition_mdids,
-					   CConstraint *partition_cnstrs_disj, BOOL static_pruned,
-					   IMdIdArray *foreign_server_mdids);
+					   ULONG ulSecondaryPartIndexId, BOOL is_partial,
+					   CPartConstraint *ppartcnstr,
+					   CPartConstraint *ppartcnstrRel);
+
 	CLogicalDynamicGet(CMemoryPool *mp, const CName *pnameAlias,
-					   CTableDescriptor *ptabdesc, ULONG ulPartIndex,
-					   IMdIdArray *partition_mdids,
-					   IMdIdArray *foreign_server_mdids);
+					   CTableDescriptor *ptabdesc, ULONG ulPartIndex);
 
 	// dtor
-	~CLogicalDynamicGet() override;
+	virtual ~CLogicalDynamicGet();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalDynamicGet;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalDynamicGet";
 	}
 
-	// return disjunctive constraint of selected partitions
-	CConstraint *
-	GetPartitionConstraintsDisj() const
-	{
-		return m_partition_cnstrs_disj;
-	}
-
-	// return whether static pruning is performed
-	BOOL
-	FStaticPruned() const
-	{
-		return m_static_pruned;
-	}
-
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
-
-	// returns whether table contains foreign partitions
-	BOOL ContainsForeignParts() const;
-
-	// returns mdid list containing foreign server mdids corresponding to partititons in m_partition_mdids.
-	// Mdid is marked as invalid (0) if not a foreign partition
-	IMdIdArray *
-	ForeignServerMdIds() const
-	{
-		return m_foreign_server_mdids;
-	}
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
@@ -122,42 +87,37 @@ public:
 
 
 	// derive join depth
-	ULONG
+	virtual ULONG
 	DeriveJoinDepth(CMemoryPool *,		 // mp
 					CExpressionHandle &	 // exprhdl
-	) const override
+	) const
 	{
 		return 1;
 	}
 
 	// derive table descriptor
-	CTableDescriptor *
+	virtual CTableDescriptor *
 	DeriveTableDescriptor(CMemoryPool *,	   // mp
 						  CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return m_ptabdesc;
 	}
-
-	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
-
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *,		   // mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
 			 ULONG				   // child_index
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"CLogicalDynamicGet has no children");
-		return nullptr;
+		return NULL;
 	}
 
 	//-------------------------------------------------------------------------------------
@@ -165,23 +125,20 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	// Statistics
 	//-------------------------------------------------------------------------------------
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
-
-	// derive stats from base table using filters on partition and/or index columns
-	IStatistics *PstatsDeriveFilter(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									CExpression *pexprFilter) const;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -194,14 +151,14 @@ public:
 	static CLogicalDynamicGet *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalDynamicGet == pop->Eopid());
 
 		return dynamic_cast<CLogicalDynamicGet *>(pop);
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CLogicalDynamicGet
 

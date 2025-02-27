@@ -34,18 +34,19 @@ private:
 	// child constraint
 	CConstraint *m_pcnstr;
 
-public:
-	CConstraintNegation(const CConstraintNegation &) = delete;
+	// hidden copy ctor
+	CConstraintNegation(const CConstraintNegation &);
 
+public:
 	// ctor
 	CConstraintNegation(CMemoryPool *mp, CConstraint *pcnstr);
 
 	// dtor
-	~CConstraintNegation() override;
+	virtual ~CConstraintNegation();
 
 	// constraint type accessor
-	EConstraintType
-	Ect() const override
+	virtual EConstraintType
+	Ect() const
 	{
 		return CConstraint::EctNegation;
 	}
@@ -58,46 +59,45 @@ public:
 	}
 
 	// is this constraint a contradiction
-	BOOL
-	FContradiction() const override
+	virtual BOOL
+	FContradiction() const
 	{
 		return m_pcnstr->IsConstraintUnbounded();
 	}
 
 	// is this constraint unbounded
-	BOOL
-	IsConstraintUnbounded() const override
+	virtual BOOL
+	IsConstraintUnbounded() const
 	{
 		return m_pcnstr->FContradiction();
 	}
 
 	// scalar expression
-	CExpression *PexprScalar(CMemoryPool *mp) override;
+	virtual CExpression *PexprScalar(CMemoryPool *mp);
 
 	// check if there is a constraint on the given column
-	BOOL
-	FConstraint(const CColRef *colref) const override
+	virtual BOOL
+	FConstraint(const CColRef *colref) const
 	{
 		return m_pcnstr->FConstraint(colref);
 	}
 
 	// return a copy of the constraint with remapped columns
-	CConstraint *PcnstrCopyWithRemappedColumns(CMemoryPool *mp,
-											   UlongToColRefMap *colref_mapping,
-											   BOOL must_exist) override;
+	virtual CConstraint *PcnstrCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// return constraint on a given column
-	CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref);
 
 	// return constraint on a given column set
-	CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs);
 
 	// return a clone of the constraint for a different column
-	CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
-									  CColRef *colref) const override;
+	virtual CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
+											  CColRef *colref) const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CConstraintNegation
 }  // namespace gpopt

@@ -12,8 +12,10 @@
 //		header from memory block;
 //---------------------------------------------------------------------------
 
+#ifdef GPOS_DEBUG
+#include "gpos/error/CFSimulator.h"
+#endif	// GPOS_DEBUG
 #include "gpos/memory/CMemoryPool.h"
-
 #include "gpos/memory/CMemoryPoolManager.h"
 #include "gpos/memory/CMemoryPoolTracker.h"
 #include "gpos/memory/CMemoryVisitorPrint.h"
@@ -26,10 +28,10 @@ using namespace gpos;
 const ULONG_PTR CMemoryPool::m_invalid = ULONG_PTR_MAX;
 
 // get user requested size of allocation
-gpos::ULONG
+ULONG
 CMemoryPool::UserSizeOfAlloc(const void *ptr)
 {
-	GPOS_ASSERT(nullptr != ptr);
+	GPOS_ASSERT(NULL != ptr);
 
 	return CMemoryPoolManager::GetMemoryPoolMgr()->UserSizeOfAlloc(ptr);
 }
@@ -57,7 +59,7 @@ CMemoryPool::OsPrint(IOstream &os)
 	os << "Memory pool: " << this;
 
 	ITask *task = ITask::Self();
-	if (nullptr != task && task->IsTraceSet(EtracePrintMemoryLeakStackTrace))
+	if (NULL != task && task->IsTraceSet(EtracePrintMemoryLeakStackTrace))
 	{
 		os << ", stack trace: " << std::endl;
 		m_stack_desc.AppendTrace(os, 8 /*ulDepth*/);
@@ -89,7 +91,7 @@ CMemoryPool::OsPrint(IOstream &os)
 void
 CMemoryPool::AssertEmpty(IOstream &os)
 {
-	if (SupportsLiveObjectWalk() && nullptr != ITask::Self() &&
+	if (SupportsLiveObjectWalk() && NULL != ITask::Self() &&
 		!GPOS_FTRACE(EtraceDisablePrintMemoryLeak))
 	{
 		CMemoryVisitorPrint visitor(os);

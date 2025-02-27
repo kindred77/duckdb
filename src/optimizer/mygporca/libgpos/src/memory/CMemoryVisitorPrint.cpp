@@ -49,7 +49,9 @@ CMemoryVisitorPrint::CMemoryVisitorPrint(IOstream &os) : m_visits(0), m_os(os)
 //	  Dtor.
 //
 //---------------------------------------------------------------------------
-CMemoryVisitorPrint::~CMemoryVisitorPrint() = default;
+CMemoryVisitorPrint::~CMemoryVisitorPrint()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -76,9 +78,9 @@ CMemoryVisitorPrint::Visit(void *user_addr, SIZE_T user_size, void *total_addr,
 		 << std::endl;
 
 	ITask *task = ITask::Self();
-	if (nullptr != task)
+	if (NULL != task)
 	{
-		if (nullptr != stack_desc &&
+		if (NULL != stack_desc &&
 			task->IsTraceSet(EtracePrintMemoryLeakStackTrace))
 		{
 			m_os << "Stack trace: " << std::endl;

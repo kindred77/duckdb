@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2018 VMware, Inc. or its affiliates.
+//	Copyright 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CProjectStatsProcessor.cpp
@@ -11,7 +11,6 @@
 
 #include "naucrates/statistics/CProjectStatsProcessor.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "naucrates/statistics/CStatisticsUtils.h"
 
 using namespace gpopt;
@@ -24,7 +23,7 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 									  ULongPtrArray *projection_colids,
 									  UlongToIDatumMap *datum_map)
 {
-	GPOS_ASSERT(nullptr != projection_colids);
+	GPOS_ASSERT(NULL != projection_colids);
 
 	CColumnFactory *col_factory = COptCtxt::PoctxtFromTLS()->Pcf();
 
@@ -40,17 +39,17 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 		ULONG colid = *(*projection_colids)[ul];
 		const CHistogram *histogram = input_stats->GetHistogram(colid);
 
-		if (nullptr == histogram)
+		if (NULL == histogram)
 		{
 			// create histogram for the new project column
 			CBucketArray *proj_col_bucket = GPOS_NEW(mp) CBucketArray(mp);
 			CDouble null_freq = 0.0;
 
 			BOOL is_well_defined = false;
-			if (nullptr != datum_map)
+			if (NULL != datum_map)
 			{
 				IDatum *datum = datum_map->Find(&colid);
-				if (nullptr != datum)
+				if (NULL != datum)
 				{
 					is_well_defined = true;
 					if (!datum->IsNull())
@@ -65,9 +64,9 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 				}
 			}
 
-			CHistogram *proj_col_histogram = nullptr;
+			CHistogram *proj_col_histogram = NULL;
 			CColRef *colref = col_factory->LookupColRef(colid);
-			GPOS_ASSERT(nullptr != colref);
+			GPOS_ASSERT(NULL != colref);
 
 			if (0 == proj_col_bucket->Size() &&
 				IMDType::EtiBool == colref->RetrieveType()->GetDatumType())
@@ -94,10 +93,10 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 
 		// look up width
 		const CDouble *width = input_stats->GetWidth(colid);
-		if (nullptr == width)
+		if (NULL == width)
 		{
 			CColRef *colref = col_factory->LookupColRef(colid);
-			GPOS_ASSERT(nullptr != colref);
+			GPOS_ASSERT(NULL != colref);
 
 			CDouble width =
 				CStatisticsUtils::DefaultColumnWidth(colref->RetrieveType());

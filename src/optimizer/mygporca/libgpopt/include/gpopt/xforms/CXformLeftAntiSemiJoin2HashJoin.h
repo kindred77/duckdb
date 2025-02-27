@@ -30,36 +30,38 @@ using namespace gpos;
 class CXformLeftAntiSemiJoin2HashJoin : public CXformImplementation
 {
 private:
-public:
-	CXformLeftAntiSemiJoin2HashJoin(const CXformLeftAntiSemiJoin2HashJoin &) =
-		delete;
+	// private copy ctor
+	CXformLeftAntiSemiJoin2HashJoin(const CXformLeftAntiSemiJoin2HashJoin &);
 
+public:
 	// ctor
 	explicit CXformLeftAntiSemiJoin2HashJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftAntiSemiJoin2HashJoin() override = default;
+	virtual ~CXformLeftAntiSemiJoin2HashJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftAntiSemiJoin2HashJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftAntiSemiJoin2HashJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftAntiSemiJoin2HashJoin
 

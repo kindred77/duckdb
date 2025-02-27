@@ -32,7 +32,7 @@ using namespace gpmd;
 class CBucket;
 
 // dynamic array of buckets
-using CBucketArray = CDynamicPtrArray<CBucket, CleanupDelete>;
+typedef CDynamicPtrArray<CBucket, CleanupDelete> CBucketArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -64,18 +64,20 @@ private:
 	// number of distinct elements in bucket
 	CDouble m_distinct;
 
+	// private copy constructor
+	CBucket(const CBucket &);
+
+	// private assignment operator
+	CBucket &operator=(const CBucket &);
+
 public:
-	CBucket &operator=(const CBucket &) = delete;
-
-	CBucket(const CBucket &) = delete;
-
 	// ctor
 	CBucket(CPoint *bucket_lower_bound, CPoint *bucket_upper_bound,
 			BOOL is_lower_closed, BOOL is_upper_closed, CDouble frequency,
 			CDouble distinct);
 
 	// dtor
-	~CBucket() override;
+	virtual ~CBucket();
 
 	// does bucket contain point
 	BOOL Contains(const CPoint *point) const;
@@ -126,14 +128,14 @@ public:
 
 	// lower point
 	CPoint *
-	GetLowerBound() const override
+	GetLowerBound() const
 	{
 		return m_bucket_lower_bound;
 	}
 
 	// upper point
 	CPoint *
-	GetUpperBound() const override
+	GetUpperBound() const
 	{
 		return m_bucket_upper_bound;
 	}
@@ -165,7 +167,7 @@ public:
 	BOOL IsAfter(const CBucket *bucket) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// construct new bucket with lower bound greater than given point
 	CBucket *MakeBucketGreaterThan(CMemoryPool *mp, CPoint *point) const;
@@ -214,10 +216,10 @@ public:
 		return m_bucket_lower_bound->GetDatum()->StatsMappable();
 	}
 
-	BOOL Equals(const CBucket *bucket) const;
+	BOOL Equals(const CBucket *bucket);
 
-	// generate a data point within bucket boundaries
-	CDouble GetSample(DOUBLE ratio) const;
+	// generate a random data point within bucket boundaries
+	CDouble GetSample(ULONG *seed) const;
 
 	// compare lower bucket boundaries
 	static INT CompareLowerBounds(const CBucket *bucket1,

@@ -91,7 +91,7 @@ void
 CDXLScalarIndexCondList::AssertValid(const CDXLNode *node,
 									 BOOL validate_children) const
 {
-	GPOS_ASSERT(nullptr != node);
+	GPOS_ASSERT(NULL != node);
 
 	if (validate_children)
 	{

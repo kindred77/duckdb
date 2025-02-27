@@ -55,9 +55,10 @@ private:
 	// index type
 	IMDIndex::EmdindexType m_index_type;
 
-public:
-	CIndexDescriptor(const CIndexDescriptor &) = delete;
+	// private copy ctor
+	CIndexDescriptor(const CIndexDescriptor &);
 
+public:
 	// ctor
 	CIndexDescriptor(CMemoryPool *mp, IMDId *pmdidIndex, const CName &name,
 					 CColumnDescriptorArray *pdrgcoldescKeyCols,
@@ -65,7 +66,7 @@ public:
 					 BOOL is_clustered, IMDIndex::EmdindexType emdindt);
 
 	// dtor
-	~CIndexDescriptor() override;
+	virtual ~CIndexDescriptor();
 
 	// number of key columns
 	ULONG Keys() const;
@@ -121,7 +122,7 @@ public:
 										const CTableDescriptor *ptabdesc,
 										const IMDIndex *pmdindex);
 
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CIndexDescriptor
 }  // namespace gpopt

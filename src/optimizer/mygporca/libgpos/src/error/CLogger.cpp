@@ -47,7 +47,9 @@ CLogger::CLogger(ErrorInfoLevel info_level)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogger::~CLogger() = default;
+CLogger::~CLogger()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -165,11 +167,14 @@ CLogger::AppendDate()
 	TIME tm;
 
 	// get local time
-	syslib::GetTimeOfDay(&tv, nullptr /*timezone*/);
+	syslib::GetTimeOfDay(&tv, NULL /*timezone*/);
 	TIME_T rawtime = tv.tv_sec;
-	TIME *t GPOS_ASSERTS_ONLY = clib::Localtime_r(&rawtime, &tm);
+#ifdef GPOS_DEBUG
+	TIME *t =
+#endif	// GPOS_DEBUG
+		clib::Localtime_r(&rawtime, &tm);
 
-	GPOS_ASSERT(nullptr != t && "Failed to get local time");
+	GPOS_ASSERT(NULL != t && "Failed to get local time");
 
 	// format: YYYY-MM-DD HH-MM-SS-UUUUUU TZ
 #ifdef TM_ZONE
@@ -179,11 +184,10 @@ CLogger::AppendDate()
 		tm.tm_sec, tv.tv_usec, tm.tm_zone);
 #else
 	m_entry_wrapper.AppendFormat(
-		GPOS_WSZ_LIT("%04d-%02d-%02d %02d:%02d:%02d:%06d"),
-		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
-		tm.tm_sec, tv.tv_usec);
+    			GPOS_WSZ_LIT("%04d-%02d-%02d %02d:%02d:%02d:%06d"),
+    			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
+    			tm.tm_sec, tv.tv_usec);
 #endif
-	
 }
 
 

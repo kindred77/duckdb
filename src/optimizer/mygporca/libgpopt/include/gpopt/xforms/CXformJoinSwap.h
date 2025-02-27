@@ -33,9 +33,10 @@ template <class TJoinTop, class TJoinBottom>
 class CXformJoinSwap : public CXformExploration
 {
 private:
-public:
-	CXformJoinSwap(const CXformJoinSwap &) = delete;
+	// private copy ctor
+	CXformJoinSwap(const CXformJoinSwap &);
 
+public:
 	// ctor
 	explicit CXformJoinSwap(CMemoryPool *mp)
 		: CXformExploration(
@@ -60,12 +61,14 @@ public:
 	}
 
 	// dtor
-	~CXformJoinSwap() override = default;
+	virtual ~CXformJoinSwap()
+	{
+	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
@@ -73,9 +76,9 @@ public:
 	// actual transform
 	void
 	Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-			  CExpression *pexpr) const override
+			  CExpression *pexpr) const
 	{
-		GPOS_ASSERT(nullptr != pxfctxt);
+		GPOS_ASSERT(NULL != pxfctxt);
 		GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 		GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -83,7 +86,7 @@ public:
 
 		CExpression *pexprResult =
 			CXformUtils::PexprSwapJoins(mp, pexpr, (*pexpr)[0]);
-		if (nullptr == pexprResult)
+		if (NULL == pexprResult)
 		{
 			return;
 		}

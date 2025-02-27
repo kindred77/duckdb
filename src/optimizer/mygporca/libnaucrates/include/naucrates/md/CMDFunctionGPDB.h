@@ -37,7 +37,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// func id
 	IMDId *m_mdid;
@@ -57,6 +57,9 @@ private:
 	// function stability
 	EFuncStbl m_func_stability;
 
+	// function data access
+	EFuncDataAcc m_func_data_access;
+
 	// function strictness (i.e. whether func returns NULL on NULL input)
 	BOOL m_is_strict;
 
@@ -70,8 +73,14 @@ private:
 	// dxl token array for stability
 	Edxltoken m_dxl_func_stability_array[EfsSentinel];
 
+	// dxl token array for data access
+	Edxltoken m_dxl_data_access_array[EfdaSentinel];
+
 	// returns the string representation of the function stability
 	const CWStringConst *GetFuncStabilityStr() const;
+
+	// returns the string representation of the function data access
+	const CWStringConst *GetFuncDataAccessStr() const;
 
 	// serialize the array of output arg types into a comma-separated string
 	CWStringDynamic *GetOutputArgTypeArrayStr() const;
@@ -79,68 +88,81 @@ private:
 	// initialize dxl token arrays
 	void InitDXLTokenArrays();
 
-public:
-	CMDFunctionGPDB(const CMDFunctionGPDB &) = delete;
+	// private copy ctor
+	CMDFunctionGPDB(const CMDFunctionGPDB &);
 
+public:
 	// ctor/dtor
 	CMDFunctionGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 					IMDId *result_type_mdid, IMdIdArray *mdid_array,
-					BOOL ReturnsSet, EFuncStbl func_stability, BOOL is_strict,
+					BOOL ReturnsSet, EFuncStbl func_stability,
+					EFuncDataAcc func_data_access, BOOL is_strict,
 					BOOL is_ndv_preserving, BOOL is_allowed_for_PS);
 
-	~CMDFunctionGPDB() override;
+	virtual ~CMDFunctionGPDB();
 
 	// accessors
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// function id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// function name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// result type
-	IMDId *GetResultTypeMdid() const override;
+	virtual IMDId *GetResultTypeMdid() const;
 
 	// output argument types
-	IMdIdArray *OutputArgTypesMdidArray() const override;
+	virtual IMdIdArray *OutputArgTypesMdidArray() const;
 
 	// does function return NULL on NULL input
-	BOOL
-	IsStrict() const override
+	virtual BOOL
+	IsStrict() const
 	{
 		return m_is_strict;
 	}
 
-	BOOL
-	IsNDVPreserving() const override
+	virtual BOOL
+	IsNDVPreserving() const
 	{
 		return m_is_ndv_preserving;
 	}
 
 	// is this function a lossy cast allowed for Partition selection
-	BOOL
-	IsAllowedForPS() const override
+	virtual BOOL
+	IsAllowedForPS() const
 	{
 		return m_is_allowed_for_PS;
 	}
 
 	// function stability
-	EFuncStbl
-	GetFuncStability() const override
+	virtual EFuncStbl
+	GetFuncStability() const
 	{
 		return m_func_stability;
 	}
 
+	// function data access
+	virtual EFuncDataAcc
+	GetFuncDataAccess() const
+	{
+		return m_func_data_access;
+	}
+
 	// does function return a set of values
-	BOOL ReturnsSet() const override;
+	virtual BOOL ReturnsSet() const;
 
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

@@ -52,15 +52,16 @@ private:
 	// colid produced by the relational child of the AnySubquery operator
 	ULONG m_colid;
 
-public:
-	CDXLScalarSubqueryQuantified(CDXLScalarSubqueryQuantified &) = delete;
+	// private copy ctor
+	CDXLScalarSubqueryQuantified(CDXLScalarSubqueryQuantified &);
 
+public:
 	// ctor
 	CDXLScalarSubqueryQuantified(CMemoryPool *mp, IMDId *scalar_op_mdid,
 								 CMDName *mdname, ULONG colid);
 
 	// dtor
-	~CDXLScalarSubqueryQuantified() override;
+	virtual ~CDXLScalarSubqueryQuantified();
 
 	// scalar operator id
 	IMDId *
@@ -84,13 +85,13 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// conversion function
 	static CDXLScalarSubqueryQuantified *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSubqueryAll == dxl_op->GetDXLOperator() ||
 					EdxlopScalarSubqueryAny == dxl_op->GetDXLOperator());
 
@@ -98,9 +99,9 @@ public:
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return true;
 	}
@@ -108,8 +109,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

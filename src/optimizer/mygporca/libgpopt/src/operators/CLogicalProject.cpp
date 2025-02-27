@@ -18,7 +18,7 @@
 #include "gpopt/base/CConstraintInterval.h"
 #include "gpopt/base/CDefaultComparator.h"
 #include "gpopt/base/CKeyCollection.h"
-#include "gpopt/base/COptCtxt.h"
+#include "gpopt/base/CPartIndexMap.h"
 #include "gpopt/operators/CExpression.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "gpopt/operators/CScalarIdent.h"
@@ -94,7 +94,7 @@ CLogicalProject::PdrgpcrsEquivClassFromScIdent(CMemoryPool *mp,
 											   CExpression *pexprPrEl,
 											   CColRefSet *not_null_columns)
 {
-	GPOS_ASSERT(nullptr != pexprPrEl);
+	GPOS_ASSERT(NULL != pexprPrEl);
 
 	CScalarProjectElement *popPrEl =
 		CScalarProjectElement::PopConvert(pexprPrEl->Pop());
@@ -104,7 +104,7 @@ CLogicalProject::PdrgpcrsEquivClassFromScIdent(CMemoryPool *mp,
 
 	if (EopScalarIdent != pexprScalar->Pop()->Eopid())
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	CScalarIdent *popScIdent = CScalarIdent::PopConvert(pexprScalar->Pop());
@@ -115,7 +115,7 @@ CLogicalProject::PdrgpcrsEquivClassFromScIdent(CMemoryPool *mp,
 
 	if (!CUtils::FConstrainableType(pcrPrEl->RetrieveType()->MDId()))
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	BOOL non_nullable = not_null_columns->FMember(pcrScIdent);
@@ -136,7 +136,7 @@ CLogicalProject::PdrgpcrsEquivClassFromScIdent(CMemoryPool *mp,
 		return pdrgpcrs;
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 
@@ -155,9 +155,9 @@ CLogicalProject::ExtractConstraintFromScConst(
 	CColRefSetArray *pdrgpcrs	   // array of equivalence class
 )
 {
-	GPOS_ASSERT(nullptr != pexprPrEl);
-	GPOS_ASSERT(nullptr != pdrgpcnstr);
-	GPOS_ASSERT(nullptr != pdrgpcrs);
+	GPOS_ASSERT(NULL != pexprPrEl);
+	GPOS_ASSERT(NULL != pdrgpcnstr);
+	GPOS_ASSERT(NULL != pdrgpcrs);
 
 	CScalarProjectElement *popPrEl =
 		CScalarProjectElement::PopConvert(pexprPrEl->Pop());
@@ -207,7 +207,7 @@ CLogicalProject::DerivePropertyConstraint(CMemoryPool *mp,
 {
 	CExpression *pexprPrL = exprhdl.PexprScalarExactChild(1);
 
-	if (nullptr == pexprPrL)
+	if (NULL == pexprPrL)
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
@@ -232,7 +232,7 @@ CLogicalProject::DerivePropertyConstraint(CMemoryPool *mp,
 			CColRefSetArray *pdrgpcrsChild =
 				PdrgpcrsEquivClassFromScIdent(mp, pexprPrEl, not_null_columns);
 
-			if (nullptr != pdrgpcrsChild)
+			if (NULL != pdrgpcrsChild)
 			{
 				// merge with the equivalence classes we have so far
 				CColRefSetArray *pdrgpcrsMerged =
@@ -261,7 +261,7 @@ CLogicalProject::DerivePropertyConstraint(CMemoryPool *mp,
 
 	// equivalence classes coming from child
 	CColRefSetArray *pdrgpcrsChild = ppcChild->PdrgpcrsEquivClasses();
-	if (nullptr != pdrgpcrsChild)
+	if (NULL != pdrgpcrsChild)
 	{
 		// merge with the equivalence classes we have so far
 		CColRefSetArray *pdrgpcrsMerged =
@@ -274,7 +274,7 @@ CLogicalProject::DerivePropertyConstraint(CMemoryPool *mp,
 
 	// constraint coming from child
 	CConstraint *pcnstr = ppcChild->Pcnstr();
-	if (nullptr != pcnstr)
+	if (NULL != pcnstr)
 	{
 		pcnstr->AddRef();
 		pdrgpcnstr->Append(pcnstr);
@@ -363,7 +363,9 @@ CLogicalProject::PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
 			if (datum->StatsMappable())
 			{
 				datum->AddRef();
-				BOOL fInserted GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+				BOOL fInserted =
+#endif
 					phmuldatum->Insert(GPOS_NEW(mp) ULONG(colref->Id()), datum);
 				GPOS_ASSERT(fInserted);
 			}

@@ -20,7 +20,6 @@
 #include "gpos/io/CFileDescriptor.h"
 
 #include "gpopt/base/CAutoOptCtxt.h"
-#include "gpopt/base/CDrvdPropCtxtPlan.h"
 #include "gpopt/base/CQueryContext.h"
 #include "gpopt/cost/ICostModel.h"
 #include "gpopt/engine/CEngine.h"
@@ -115,7 +114,7 @@ void
 COptimizer::DumpSamples(CMemoryPool *mp, CEnumeratorConfig *pec,
 						ULONG ulSessionId, ULONG ulCmdId)
 {
-	GPOS_ASSERT(nullptr != pec);
+	GPOS_ASSERT(NULL != pec);
 
 	CWStringDynamic *str =
 		CDXLUtils::SerializeSamplePlans(mp, pec, true /*indentation*/);
@@ -141,9 +140,9 @@ void
 COptimizer::PrintQueryOrPlan(CMemoryPool *mp, CExpression *pexpr,
 							 CQueryContext *pqc)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
-	if (nullptr != pqc)
+	if (NULL != pqc)
 	{
 		if (GPOS_FTRACE(EopttracePrintQuery))
 		{
@@ -176,7 +175,7 @@ COptimizer::PrintQueryOrPlan(CMemoryPool *mp, CExpression *pexpr,
 				CDatumGenericGPDB *datum = dynamic_cast<CDatumGenericGPDB *>(
 					popScalarConst->GetDatum());
 
-				if (NULL != datum && !datum->IsNull())
+				if (NULL != datum)
 				{
 					const char *select_element_bytes =
 						(const char *) datum->GetByteArrayValue();
@@ -237,17 +236,17 @@ COptimizer::PdxlnOptimize(
 	const CHAR *szMinidumpFileName	// name of minidump file to be created
 )
 {
-	GPOS_ASSERT(nullptr != md_accessor);
-	GPOS_ASSERT(nullptr != query);
-	GPOS_ASSERT(nullptr != query_output_dxlnode_array);
-	GPOS_ASSERT(nullptr != optimizer_config);
+	GPOS_ASSERT(NULL != md_accessor);
+	GPOS_ASSERT(NULL != query);
+	GPOS_ASSERT(NULL != query_output_dxlnode_array);
+	GPOS_ASSERT(NULL != optimizer_config);
 
 	BOOL fMinidump = GPOS_FTRACE(EopttraceMinidump);
 
 	// If minidump was requested, open the minidump file and initialize
 	// minidumper. (We create the minidumper object even if we're not
 	// dumping, but without the Init-call, it will stay inactive.)
-	CMiniDumperDXL mdmp;
+	CMiniDumperDXL mdmp(mp);
 	CAutoP<std::wofstream> wosMinidump;
 	CAutoP<COstreamBasic> osMinidump;
 	if (fMinidump)
@@ -266,7 +265,7 @@ COptimizer::PdxlnOptimize(
 
 		mdmp.Init(osMinidump.Value());
 	}
-	CDXLNode *pdxlnPlan = nullptr;
+	CDXLNode *pdxlnPlan = NULL;
 	CErrorHandlerStandard errhdl;
 	GPOS_TRY_HDL(&errhdl)
 	{
@@ -278,7 +277,7 @@ COptimizer::PdxlnOptimize(
 
 		{
 			optimizer_config->AddRef();
-			if (nullptr != pceeval)
+			if (NULL != pceeval)
 			{
 				pceeval->AddRef();
 			}
@@ -372,7 +371,7 @@ COptimizer::PdxlnOptimize(
 void
 COptimizer::HandleExceptionAfterFinalizingMinidump(CException &ex)
 {
-	if (nullptr != ITask::Self() && !ITask::Self()->GetErrCtxt()->IsPending())
+	if (NULL != ITask::Self() && !ITask::Self()->GetErrCtxt()->IsPending())
 	{
 		// if error context has no pending exception, then minidump creation
 		// might have reset the error,
@@ -424,6 +423,7 @@ COptimizer::PexprOptimize(CMemoryPool *mp, CQueryContext *pqc,
 	GPOS_CHECK_ABORT;
 
 	CExpression *pexprPlan = eng.PexprExtractPlan();
+	(void) pexprPlan->PrppCompute(mp, pqc->Prpp());
 
 	CheckCTEConsistency(mp, pexprPlan);
 

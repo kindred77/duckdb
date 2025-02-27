@@ -31,15 +31,17 @@ class CXformSubqJoin2Apply : public CXformSubqueryUnnest
 {
 private:
 	// hash map between expression and a column reference
-	using ExprToColRefMap =
-		CHashMap<CExpression, CColRef, HashPtr<CExpression>,
-				 EqualPtr<CExpression>, CleanupRelease<CExpression>,
-				 CleanupNULL<CColRef>>;
+	typedef CHashMap<CExpression, CColRef, HashPtr<CExpression>,
+					 EqualPtr<CExpression>, CleanupRelease<CExpression>,
+					 CleanupNULL<CColRef> >
+		ExprToColRefMap;
+
+	// private copy ctor
+	CXformSubqJoin2Apply(const CXformSubqJoin2Apply &);
 
 	// helper to transform function
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr,
-				   BOOL fEnforceCorrelatedApply) const override;
+				   CExpression *pexpr, BOOL fEnforceCorrelatedApply) const;
 
 	// collect subqueries that exclusively use outer/inner child
 	static void CollectSubqueries(CMemoryPool *mp, CExpression *pexpr,
@@ -57,35 +59,33 @@ private:
 											  BOOL fEnforceCorrelatedApply);
 
 public:
-	CXformSubqJoin2Apply(const CXformSubqJoin2Apply &) = delete;
-
 	// ctor
 	explicit CXformSubqJoin2Apply(CMemoryPool *mp);
 
 	// ctor
 	explicit CXformSubqJoin2Apply(CExpression *pexprPattern)
-		: CXformSubqueryUnnest(pexprPattern)
+		: CXformSubqueryUnnest(pexprPattern){};
+
+	// dtor
+	virtual ~CXformSubqJoin2Apply()
 	{
 	}
 
-	// dtor
-	~CXformSubqJoin2Apply() override = default;
-
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSubqJoin2Apply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSubqJoin2Apply";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 };	// class CXformSubqJoin2Apply
 

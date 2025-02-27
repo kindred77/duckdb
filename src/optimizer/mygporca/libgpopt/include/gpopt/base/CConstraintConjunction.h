@@ -39,18 +39,19 @@ private:
 	// mapping colref -> array of child constraints
 	ColRefToConstraintArrayMap *m_phmcolconstr;
 
-public:
-	CConstraintConjunction(const CConstraintConjunction &) = delete;
+	// hidden copy ctor
+	CConstraintConjunction(const CConstraintConjunction &);
 
+public:
 	// ctor
 	CConstraintConjunction(CMemoryPool *mp, CConstraintArray *pdrgpcnstr);
 
 	// dtor
-	~CConstraintConjunction() override;
+	virtual ~CConstraintConjunction();
 
 	// constraint type accessor
-	EConstraintType
-	Ect() const override
+	virtual EConstraintType
+	Ect() const
 	{
 		return CConstraint::EctConjunction;
 	}
@@ -63,35 +64,31 @@ public:
 	}
 
 	// is this constraint a contradiction
-	BOOL FContradiction() const override;
+	virtual BOOL FContradiction() const;
 
 	// scalar expression
-	CExpression *PexprScalar(CMemoryPool *mp) override;
+	virtual CExpression *PexprScalar(CMemoryPool *mp);
 
 	// check if there is a constraint on the given column
-	BOOL FConstraint(const CColRef *colref) const override;
+	virtual BOOL FConstraint(const CColRef *colref) const;
 
 	// return a copy of the constraint with remapped columns
-	CConstraint *PcnstrCopyWithRemappedColumns(CMemoryPool *mp,
-											   UlongToColRefMap *colref_mapping,
-											   BOOL must_exist) override;
+	virtual CConstraint *PcnstrCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// return constraint on a given column
-	CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref);
 
 	// return constraint on a given column set
-	CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs);
 
 	// return a clone of the constraint for a different column
-	CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
-									  CColRef *colref) const override;
-
-	// Returns the constraint for system column gp_segment_id
-	CConstraint *GetConstraintOnSegmentId() const override;
+	virtual CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
+											  CColRef *colref) const;
 
 	// print
-	IOstream &
-	OsPrint(IOstream &os) const override
+	virtual IOstream &
+	OsPrint(IOstream &os) const
 	{
 		return PrintConjunctionDisjunction(os, m_pdrgpcnstr);
 	}

@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -31,9 +32,10 @@ using namespace gpos;
 class CScalarDMLAction : public CScalar
 {
 private:
-public:
-	CScalarDMLAction(const CScalarDMLAction &) = delete;
+	// private copy ctor
+	CScalarDMLAction(const CScalarDMLAction &);
 
+public:
 	// dml action specification
 	enum EDMLAction
 	{
@@ -47,41 +49,43 @@ public:
 	}
 
 	// dtor
-	~CScalarDMLAction() override = default;
+	virtual ~CScalarDMLAction()
+	{
+	}
 	// ident accessors
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarDMLAction;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarDMLAction";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -90,7 +94,7 @@ public:
 	static CScalarDMLAction *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarDMLAction == pop->Eopid());
 
 		return dynamic_cast<CScalarDMLAction *>(pop);

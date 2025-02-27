@@ -15,10 +15,14 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CColRefSetIter.h"
+#include "gpopt/base/CColRefTable.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CExpression.h"
 #include "gpopt/operators/CExpressionHandle.h"
+#include "gpopt/operators/CPatternTree.h"
 #include "gpopt/operators/CPredicateUtils.h"
 #include "naucrates/statistics/CFilterStatsProcessor.h"
+#include "naucrates/statistics/CStatisticsUtils.h"
 using namespace gpopt;
 
 //---------------------------------------------------------------------------
@@ -30,7 +34,7 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CLogicalSelect::CLogicalSelect(CMemoryPool *mp)
-	: CLogicalUnary(mp), m_ptabdesc(nullptr)
+	: CLogicalUnary(mp), m_ptabdesc(NULL)
 {
 	m_phmPexprPartPred = GPOS_NEW(mp) ExprPredToExprPredPartMap(mp);
 }
@@ -96,6 +100,7 @@ CLogicalSelect::PxfsCandidates(CMemoryPool *mp) const
 	(void) xform_set->ExchangeSet(CXform::ExfPushGbWithHavingBelowJoin);
 	(void) xform_set->ExchangeSet(CXform::ExfSelect2IndexGet);
 	(void) xform_set->ExchangeSet(CXform::ExfSelect2DynamicIndexGet);
+	(void) xform_set->ExchangeSet(CXform::ExfSelect2PartialDynamicIndexGet);
 	(void) xform_set->ExchangeSet(CXform::ExfSelect2BitmapBoolOp);
 	(void) xform_set->ExchangeSet(CXform::ExfSelect2DynamicBitmapBoolOp);
 	(void) xform_set->ExchangeSet(CXform::ExfSimplifySelectWithSubquery);
@@ -118,9 +123,8 @@ CLogicalSelect::DeriveMaxCard(CMemoryPool *,  // mp
 {
 	// in case of a false condition or a contradiction, maxcard should be zero
 	CExpression *pexprScalar = exprhdl.PexprScalarRepChild(1);
-	if ((nullptr != pexprScalar &&
-		 (CUtils::FScalarConstFalse(pexprScalar) ||
-		  CUtils::FScalarConstBoolNull(pexprScalar))) ||
+	if ((NULL != pexprScalar && (CUtils::FScalarConstFalse(pexprScalar) ||
+								 CUtils::FScalarConstBoolNull(pexprScalar))) ||
 		exprhdl.DerivePropertyConstraint()->FContradiction())
 	{
 		return CMaxCard(0 /*ull*/);
@@ -160,8 +164,8 @@ CLogicalSelect::PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 
 	// split selection predicate into local predicate and predicate involving outer references
-	CExpression *local_expr = nullptr;
-	CExpression *expr_with_outer_refs = nullptr;
+	CExpression *local_expr = NULL;
+	CExpression *expr_with_outer_refs = NULL;
 
 	// get outer references from expression handle
 	CColRefSet *outer_refs = exprhdl.DeriveOuterReferences();
@@ -176,6 +180,90 @@ CLogicalSelect::PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
 	expr_with_outer_refs->Release();
 
 	return stats;
+}
+
+// compute partition predicate to pass down to n-th child.
+// given an input scalar expression, find out the predicate
+// in the scalar expression which is used for partitioning
+//
+// clang-format off
+// Input Expr:
+//	+--CScalarBoolOp (EboolopAnd)
+//	|--CScalarArrayCmp Any (=)
+//	|  |--CScalarIdent "risk_set_row_id" (2)
+//	|  +--CScalarArray: {eleMDId: (23,1.0), arrayMDId: (1007,1.0) CScalarConst (32) CScalarConst (33) CScalarConst (43) CScalarConst (9) CScalarConst (10) CScalarConst (15) CScalarConst (16) CScalarConst (36) CScalarConst (11) CScalarConst (50) CScalarConst (46) CScalarConst (356) CScalarConst (468) CScalarConst (42)}
+//	+--CScalarCmp (=)
+//	|--CScalarIdent "value_date" (0)
+//	+--CScalarConst (559094400000000.000)
+//
+// Let's say the partition key is on value_date, then the extracted
+// predicate is as below:
+// Output Expr:
+//	+--CScalarCmp (=)
+//	|--CScalarIdent "value_date" (0)
+//	+--CScalarConst (559094400000000.000)
+// clang-format on
+CExpression *
+CLogicalSelect::PexprPartPred(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							  CExpression *,  //pexprInput
+							  ULONG
+#ifdef GPOS_DEBUG
+								  child_index
+#endif	//GPOS_DEBUG
+) const
+{
+	GPOS_ASSERT(0 == child_index);
+
+	CExpression *pexprScalar = exprhdl.PexprScalarExactChild(1 /*child_index*/);
+
+	if (NULL == pexprScalar)
+	{
+		// no exact predicate is available (e.g. when we have a subquery in the predicate)
+		return NULL;
+	}
+
+	// get partition keys
+	CPartInfo *ppartinfo = exprhdl.DerivePartitionInfo();
+	GPOS_ASSERT(NULL != ppartinfo);
+
+	// we assume that the select is right on top of the dynamic get, so there
+	// should be only one part consumer. If there is more, then we are higher up so
+	// we do not push down any predicates
+	if (1 != ppartinfo->UlConsumers())
+	{
+		return NULL;
+	}
+
+	// check if a corresponding predicate has already been cached
+	CExpression *pexprPredOnPartKey = m_phmPexprPartPred->Find(pexprScalar);
+	if (pexprPredOnPartKey != NULL)
+	{
+		// predicate on partition key found in cache
+		pexprPredOnPartKey->AddRef();
+		return pexprPredOnPartKey;
+	}
+
+	CPartKeysArray *pdrgppartkeys = ppartinfo->Pdrgppartkeys(0 /*ulPos*/);
+	const ULONG ulKeySets = pdrgppartkeys->Size();
+	for (ULONG ul = 0; NULL == pexprPredOnPartKey && ul < ulKeySets; ul++)
+	{
+		pexprPredOnPartKey = CPredicateUtils::PexprExtractPredicatesOnPartKeys(
+			mp, pexprScalar, (*pdrgppartkeys)[ul]->Pdrgpdrgpcr(),
+			NULL,  //pcrsAllowedRefs
+			true   //fUseConstraints
+		);
+	}
+
+	if (pexprPredOnPartKey != NULL)
+	{
+		// insert the scalar expression and the corresponding partitioning predicate
+		// in the hashmap
+		pexprPredOnPartKey->AddRef();
+		pexprScalar->AddRef();
+		m_phmPexprPartPred->Insert(pexprScalar, pexprPredOnPartKey);
+	}
+
+	return pexprPredOnPartKey;
 }
 
 // EOF

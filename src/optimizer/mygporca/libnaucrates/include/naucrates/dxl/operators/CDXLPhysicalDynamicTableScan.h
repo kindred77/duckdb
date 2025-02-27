@@ -44,46 +44,48 @@ private:
 	// table descriptor for the scanned table
 	CDXLTableDescr *m_dxl_table_descr;
 
-	IMdIdArray *m_part_mdids;
+	// id of partition index structure
+	ULONG m_part_index_id;
 
-	ULongPtrArray *m_selector_ids = nullptr;
+	// printable partition index id
+	ULONG m_part_index_id_printable;
+
+	// private copy ctor
+	CDXLPhysicalDynamicTableScan(CDXLPhysicalDynamicTableScan &);
 
 public:
-	CDXLPhysicalDynamicTableScan(CDXLPhysicalDynamicTableScan &) = delete;
-
 	// ctor
 	CDXLPhysicalDynamicTableScan(CMemoryPool *mp, CDXLTableDescr *table_descr,
-								 IMdIdArray *part_mdids,
-								 ULongPtrArray *selector_ids);
+								 ULONG part_idx_id,
+								 ULONG part_idx_id_printable);
 
 	// dtor
-	~CDXLPhysicalDynamicTableScan() override;
+	virtual ~CDXLPhysicalDynamicTableScan();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// table descriptor
 	const CDXLTableDescr *GetDXLTableDescr() const;
 
-	IMdIdArray *GetParts() const;
+	// partition index id
+	ULONG GetPartIndexId() const;
 
-	const ULongPtrArray *
-	GetSelectorIds() const
-	{
-		return m_selector_ids;
-	}
+	// printable partition index id
+	ULONG GetPartIndexIdPrintable() const;
+
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLPhysicalDynamicTableScan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalDynamicTableScan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalDynamicTableScan *>(dxl_op);
@@ -92,7 +94,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -24,7 +24,7 @@
 using namespace gpos;
 using namespace gpopt;
 
-static CMemoryPool *mp = nullptr;
+static CMemoryPool *mp = NULL;
 
 
 //---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ gpopt_terminate()
 
 	CMemoryPoolManager::GetMemoryPoolMgr()->Destroy(mp);
 
-	CXformFactory::Shutdown();
+	CXformFactory::Pxff()->Shutdown();
 #endif	// GPOS_DEBUG
 }
 

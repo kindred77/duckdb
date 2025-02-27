@@ -45,46 +45,46 @@ private:
 	// catalog MDId of the function implementing the casting
 	IMDId *m_func_mdid;
 
-public:
-	CDXLScalarCast(const CDXLScalarCast &) = delete;
+	// private copy ctor
+	CDXLScalarCast(const CDXLScalarCast &);
 
+public:
 	// ctor/dtor
 	CDXLScalarCast(CMemoryPool *mp, IMDId *mdid_type, IMDId *func_mdid);
 
-	~CDXLScalarCast() override;
+	virtual ~CDXLScalarCast();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	IMDId *MdidType() const;
 	IMDId *FuncMdId() const;
 
 	// name of the DXL operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// conversion function
 	static CDXLScalarCast *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarCast == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarCast *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 };
 }  // namespace gpdxl
 

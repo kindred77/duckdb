@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 //  Greenplum Database
-//  Copyright (C) 2018 VMware, Inc. or its affiliates.
+//  Copyright (C) 2018 Pivotal Inc.
 //
 //  @filename:
 //      CXformEagerAgg.h
@@ -31,8 +31,6 @@ using namespace gpos;
 class CXformEagerAgg : public CXformExploration
 {
 public:
-	CXformEagerAgg(const CXformEagerAgg &) = delete;
-
 	// ctor
 	explicit CXformEagerAgg(CMemoryPool *mp);
 
@@ -40,24 +38,26 @@ public:
 	explicit CXformEagerAgg(CExpression *exprPattern);
 
 	// dtor
-	~CXformEagerAgg() override = default;
+	virtual ~CXformEagerAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfEagerAgg;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformEagerAgg";
 	}
 
 	// compatibility function for eager aggregation
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfEagerAgg != exfid) &&
 			   (CXform::ExfSplitGbAgg != exfid) &&
@@ -65,56 +65,59 @@ public:
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *expr) const override;
+				   CExpression *expr) const;
 
 	// return true if xform should be applied only once
-	BOOL
-	IsApplyOnce() override
+	virtual BOOL
+	IsApplyOnce()
 	{
 		return true;
 	};
 
 private:
+	// private copy ctor
+	CXformEagerAgg(const CXformEagerAgg &);
+
 	// check if transform can be applied
-	static BOOL CanApplyTransform(CExpression *agg_expr);
+	BOOL CanApplyTransform(CExpression *agg_expr) const;
 
 	// is this aggregate supported for push down?
-	static BOOL CanPushAggBelowJoin(CExpression *scalar_agg_func_expr);
+	BOOL CanPushAggBelowJoin(CExpression *scalar_agg_func_expr) const;
 
 	// generate project lists for the lower and upper aggregates
 	// from all the original aggregates
-	static void PopulateLowerUpperProjectList(
+	void PopulateLowerUpperProjectList(
 		CMemoryPool *mp,			  // memory pool
 		CExpression *orig_proj_list,  // project list of the original aggregate
 		CExpression *
 			*lower_proj_list,  // output project list of the new lower aggregate
 		CExpression *
 			*upper_proj_list  // output project list of the new upper aggregate
-	);
+	) const;
 
 	// generate project element for lower aggregate for a single original aggregate
-	static void PopulateLowerProjectElement(
+	void PopulateLowerProjectElement(
 		CMemoryPool *mp,  // memory pool
 		IMDId *agg_mdid,  // original global aggregate function
 		CWStringConst *agg_name, CExpressionArray *agg_arg_array,
 		BOOL is_distinct,
-		CExpression **lower_proj_elem_expr	// output project element of the new
-											// lower aggregate
-	);
+		CExpression **
+			lower_proj_elem_expr  // output project element of the new lower aggregate
+	) const;
 
 	// generate project element for upper aggregate
-	static void PopulateUpperProjectElement(
+	void PopulateUpperProjectElement(
 		CMemoryPool *mp,  // memory pool
 		IMDId *agg_mdid,  // aggregate mdid to create
 		CWStringConst *agg_name, CColRef *lower_colref, CColRef *output_colref,
 		BOOL is_distinct,
-		CExpression **upper_proj_elem_expr	// output project element of the new
-											// upper aggregate
-	);
+		CExpression **
+			upper_proj_elem_expr  // output project element of the new upper aggregate
+	) const;
 };	// class CXformEagerAgg
 }  // namespace gpopt
 

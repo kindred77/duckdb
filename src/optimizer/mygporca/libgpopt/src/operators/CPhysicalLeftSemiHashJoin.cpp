@@ -31,9 +31,9 @@ using namespace gpopt;
 CPhysicalLeftSemiHashJoin::CPhysicalLeftSemiHashJoin(
 	CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
 	CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-	BOOL is_null_aware, CXform::EXformId origin_xform)
+	CXform::EXformId origin_xform)
 	: CPhysicalHashJoin(mp, pdrgpexprOuterKeys, pdrgpexprInnerKeys,
-						hash_opfamilies, is_null_aware, origin_xform)
+						hash_opfamilies, origin_xform)
 {
 }
 
@@ -46,7 +46,9 @@ CPhysicalLeftSemiHashJoin::CPhysicalLeftSemiHashJoin(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalLeftSemiHashJoin::~CPhysicalLeftSemiHashJoin() = default;
+CPhysicalLeftSemiHashJoin::~CPhysicalLeftSemiHashJoin()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -67,25 +69,25 @@ CPhysicalLeftSemiHashJoin::FProvidesReqdCols(CExpressionHandle &exprhdl,
 	return FOuterProvidesReqdCols(exprhdl, pcrsRequired);
 }
 
-
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalLeftSemiHashJoin::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
 CPartitionPropagationSpec *
 CPhysicalLeftSemiHashJoin::PppsRequired(CMemoryPool *mp,
 										CExpressionHandle &exprhdl,
 										CPartitionPropagationSpec *pppsRequired,
 										ULONG child_index,
 										CDrvdPropArray *pdrgpdpCtxt,
-										ULONG ulOptReq) const
+										ULONG  // ulOptReq
+)
 {
-	return PppsRequiredForJoins(mp, exprhdl, pppsRequired, child_index,
-								pdrgpdpCtxt, ulOptReq);
+	return PppsRequiredJoinChild(mp, exprhdl, pppsRequired, child_index,
+								 pdrgpdpCtxt, false);
 }
 
-// In the following function, we are generating the Derived property :
-// "Partition Propagation Spec" of Right Outer Hash join.
-CPartitionPropagationSpec *
-CPhysicalLeftSemiHashJoin::PppsDerive(CMemoryPool *mp,
-									  CExpressionHandle &exprhdl) const
-{
-	return PppsDeriveForJoins(mp, exprhdl);
-}
 // EOF

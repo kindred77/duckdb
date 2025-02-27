@@ -44,28 +44,30 @@ public:
 	explicit CXformSelect2IndexGet(CMemoryPool *mp);
 
 	// dtor
-	~CXformSelect2IndexGet() override = default;
+	virtual ~CXformSelect2IndexGet()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSelect2IndexGet;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSelect2IndexGet";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 
 };	// class CXformSelect2IndexGet

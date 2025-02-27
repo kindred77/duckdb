@@ -35,19 +35,19 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CPhysicalDynamicIndexScan::CPhysicalDynamicIndexScan(
-	CMemoryPool *mp, CIndexDescriptor *pindexdesc, CTableDescriptor *ptabdesc,
-	ULONG ulOriginOpId, const CName *pnameAlias, CColRefArray *pdrgpcrOutput,
-	ULONG scan_id, CColRef2dArray *pdrgpdrgpcrPart, COrderSpec *pos,
-	IMdIdArray *partition_mdids,
-	ColRefToUlongMapArray *root_col_mapping_per_part)
-	: CPhysicalDynamicScan(mp, ptabdesc, ulOriginOpId, pnameAlias, scan_id,
-						   pdrgpcrOutput, pdrgpdrgpcrPart, partition_mdids,
-						   root_col_mapping_per_part),
+	CMemoryPool *mp, BOOL is_partial, CIndexDescriptor *pindexdesc,
+	CTableDescriptor *ptabdesc, ULONG ulOriginOpId, const CName *pnameAlias,
+	CColRefArray *pdrgpcrOutput, ULONG scan_id, CColRef2dArray *pdrgpdrgpcrPart,
+	ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
+	CPartConstraint *ppartcnstrRel, COrderSpec *pos)
+	: CPhysicalDynamicScan(mp, is_partial, ptabdesc, ulOriginOpId, pnameAlias,
+						   scan_id, pdrgpcrOutput, pdrgpdrgpcrPart,
+						   ulSecondaryScanId, ppartcnstr, ppartcnstrRel),
 	  m_pindexdesc(pindexdesc),
 	  m_pos(pos)
 {
-	GPOS_ASSERT(nullptr != pindexdesc);
-	GPOS_ASSERT(nullptr != pos);
+	GPOS_ASSERT(NULL != pindexdesc);
+	GPOS_ASSERT(NULL != pos);
 }
 
 
@@ -77,7 +77,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalDynamicIndexScan::EpetOrder(CExpressionHandle &,  // exprhdl
 									 const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	if (peo->FCompatible(m_pos))
@@ -148,8 +148,13 @@ CPhysicalDynamicIndexScan::OsPrint(IOstream &os) const
 	os << ")";
 	os << ", Columns: [";
 	CUtils::OsPrintDrgPcr(os, PdrgpcrOutput());
-	os << "] Scan Id: " << ScanId();
+	os << "] Scan Id: " << ScanId() << "." << UlSecondaryScanId();
 
+	if (!Ppartcnstr()->IsConstraintUnbounded())
+	{
+		os << ", ";
+		Ppartcnstr()->OsPrint(os);
+	}
 
 	return os;
 }
@@ -168,15 +173,15 @@ CPhysicalDynamicIndexScan::PstatsDerive(CMemoryPool *mp,
 										CReqdPropPlan *prpplan,
 										IStatisticsArray *stats_ctxt) const
 {
-	GPOS_ASSERT(nullptr != prpplan);
+	GPOS_ASSERT(NULL != prpplan);
 
 	IStatistics *pstatsBaseTable = CStatisticsUtils::DeriveStatsForDynamicScan(
-		mp, exprhdl, ScanId(), prpplan->Pepp()->PppsRequired());
+		mp, exprhdl, ScanId(), prpplan->Pepp()->PpfmDerived());
 
 	// create a conjunction of index condition and additional filters
 	CExpression *pexprScalar = exprhdl.PexprScalarRepChild(0 /*ulChidIndex*/);
-	CExpression *local_expr = nullptr;
-	CExpression *expr_with_outer_refs = nullptr;
+	CExpression *local_expr = NULL;
+	CExpression *expr_with_outer_refs = NULL;
 
 	// get outer references from expression handle
 	CColRefSet *outer_refs = exprhdl.DeriveOuterReferences();

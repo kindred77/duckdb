@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLDirectDispatchInfo.h
@@ -47,16 +47,17 @@ private:
 	// gp_segment_id values rather than hashable datums
 	BOOL m_contains_raw_values;
 
-public:
-	CDXLDirectDispatchInfo(const CDXLDirectDispatchInfo &) = delete;
+	// private copy ctor
+	CDXLDirectDispatchInfo(const CDXLDirectDispatchInfo &);
 
+public:
 	// ctor
 	explicit CDXLDirectDispatchInfo(
 		CDXLDatum2dArray *dispatch_identifer_datum_array,
 		BOOL contains_raw_values);
 
 	// dtor
-	~CDXLDirectDispatchInfo() override;
+	virtual ~CDXLDirectDispatchInfo();
 
 	BOOL
 	FContainsRawValues() const

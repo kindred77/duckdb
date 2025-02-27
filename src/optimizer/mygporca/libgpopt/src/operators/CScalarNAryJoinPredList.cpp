@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2019 VMware, Inc. or its affiliates.
+//	Copyright (C) 2019 Pivotal Inc.
 //
 //	@filename:
 //		CScalarNAryJoinPredList.cpp

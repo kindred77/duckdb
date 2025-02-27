@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformImplementAssert : public CXformImplementation
 {
 private:
-public:
-	CXformImplementAssert(const CXformImplementAssert &) = delete;
+	// private copy ctor
+	CXformImplementAssert(const CXformImplementAssert &);
 
+public:
 	// ctor
 	explicit CXformImplementAssert(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementAssert() override = default;
+	virtual ~CXformImplementAssert()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementAssert;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementAssert";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	virtual void Transform(CXformContext *, CXformResult *,
+						   CExpression *) const;
 
 };	// class CXformImplementAssert
 

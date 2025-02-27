@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformGet2TableScan : public CXformImplementation
 {
 private:
-public:
-	CXformGet2TableScan(const CXformGet2TableScan &) = delete;
+	// private copy ctor
+	CXformGet2TableScan(const CXformGet2TableScan &);
 
+public:
 	// ctor
 	explicit CXformGet2TableScan(CMemoryPool *);
 
 	// dtor
-	~CXformGet2TableScan() override = default;
+	virtual ~CXformGet2TableScan()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGet2TableScan;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGet2TableScan";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformGet2TableScan
 

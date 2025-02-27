@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // Greenplum Database
-// Copyright (C) 2019 VMware, Inc. or its affiliates.
+// Copyright (C) 2019 Pivotal Inc.
 //
 //	@filename:
 //		CJoinOrderDPv2.h
@@ -155,7 +155,7 @@ private:
 		}
 
 		BOOL
-		Satisfies(ULONG pt) const
+		Satisfies(ULONG pt)
 		{
 			return pt == (m_join_order & pt);
 		}
@@ -165,7 +165,7 @@ private:
 			m_join_order |= p.m_join_order;
 		}
 		BOOL
-		IsGreedy() const
+		IsGreedy()
 		{
 			return 0 != (m_join_order & (EJoinOrderQuery + EJoinOrderMincard +
 										 EJoinOrderGreedyAvoidXProd));
@@ -176,25 +176,32 @@ private:
 	// this identifies a group and one expression belonging to that group
 	struct SGroupAndExpression
 	{
-		SGroupInfo *m_group_info{nullptr};
-		ULONG m_expr_index{gpos::ulong_max};
+		SGroupInfo *m_group_info;
+		ULONG m_expr_index;
 
-		SGroupAndExpression() = default;
+		SGroupAndExpression()
+			: m_group_info(NULL), m_expr_index(gpos::ulong_max)
+		{
+		}
 		SGroupAndExpression(SGroupInfo *g, ULONG ix)
 			: m_group_info(g), m_expr_index(ix)
+		{
+		}
+		SGroupAndExpression(const SGroupAndExpression &other)
+			: m_group_info(other.m_group_info), m_expr_index(other.m_expr_index)
 		{
 		}
 		SExpressionInfo *
 		GetExprInfo() const
 		{
 			return m_expr_index == gpos::ulong_max
-					   ? nullptr
+					   ? NULL
 					   : (*m_group_info->m_best_expr_info_array)[m_expr_index];
 		}
 		BOOL
-		IsValid() const
+		IsValid()
 		{
-			return nullptr != m_group_info && gpos::ulong_max != m_expr_index;
+			return NULL != m_group_info && gpos::ulong_max != m_expr_index;
 		}
 		BOOL
 		operator==(const SGroupAndExpression &other) const
@@ -245,11 +252,11 @@ private:
 			  m_left_child_expr(left_child_expr_info),
 			  m_right_child_expr(right_child_expr_info),
 			  m_properties(properties),
-			  m_atom_part_keys_array(nullptr),
+			  m_atom_part_keys_array(NULL),
 			  m_cost(0.0),
 			  m_cost_adj_PS(0.0),
 			  m_atom_base_table_rows(-1.0),
-			  m_contain_PS(nullptr)
+			  m_contain_PS(NULL)
 
 		{
 			m_contain_PS = GPOS_NEW(mp) CBitSet(mp);
@@ -261,16 +268,16 @@ private:
 						SExpressionProperties &properties)
 			: m_expr(expr),
 			  m_properties(properties),
-			  m_atom_part_keys_array(nullptr),
+			  m_atom_part_keys_array(NULL),
 			  m_cost(0.0),
 			  m_cost_adj_PS(0.0),
 			  m_atom_base_table_rows(-1.0),
-			  m_contain_PS(nullptr)
+			  m_contain_PS(NULL)
 		{
 			m_contain_PS = GPOS_NEW(mp) CBitSet(mp);
 		}
 
-		~SExpressionInfo() override
+		~SExpressionInfo()
 		{
 			m_expr->Release();
 			CRefCount::SafeRelease(m_contain_PS);
@@ -278,19 +285,19 @@ private:
 
 		// cost (use -1 for greedy solutions to ensure we keep all of them)
 		CDouble
-		GetCostForHeap() const
+		GetCostForHeap()
 		{
 			return m_properties.IsGreedy() ? -1.0 : GetCost();
 		}
 
 		CDouble
-		GetCost() const
+		GetCost()
 		{
 			return m_cost + m_cost_adj_PS;
 		}
 
 		void
-		UnionPSProperties(SExpressionInfo *other) const
+		UnionPSProperties(SExpressionInfo *other)
 		{
 			m_contain_PS->Union(other->m_contain_PS);
 		}
@@ -302,8 +309,8 @@ private:
 		}
 	};
 
-	using SExpressionInfoArray =
-		CDynamicPtrArray<SExpressionInfo, CleanupRelease<SExpressionInfo>>;
+	typedef CDynamicPtrArray<SExpressionInfo, CleanupRelease<SExpressionInfo> >
+		SExpressionInfoArray;
 
 	//---------------------------------------------------------------------------
 	//	@struct:
@@ -329,27 +336,27 @@ private:
 			m_best_expr_info_array = GPOS_NEW(mp) SExpressionInfoArray(mp);
 		}
 
-		~SGroupInfo() override
+		~SGroupInfo()
 		{
 			m_atoms->Release();
 			m_best_expr_info_array->Release();
 		}
 
 		BOOL
-		IsAnAtom() const
+		IsAnAtom()
 		{
 			return 1 == m_atoms->Size();
 		}
 		CDouble
-		GetCostForHeap() const
+		GetCostForHeap()
 		{
 			return m_lowest_expr_cost;
 		}
 	};
 
 	// dynamic array of SGroupInfo, where each index represents an alternative group of a given level k
-	using SGroupInfoArray =
-		CDynamicPtrArray<SGroupInfo, CleanupRelease<SGroupInfo>>;
+	typedef CDynamicPtrArray<SGroupInfo, CleanupRelease<SGroupInfo> >
+		SGroupInfoArray;
 
 	// info for a join level, the set of all groups representing <m_level>-way joins
 	struct SLevelInfo : public CRefCount
@@ -359,11 +366,11 @@ private:
 		CKHeap<SGroupInfoArray, SGroupInfo> *m_top_k_groups;
 
 		SLevelInfo(ULONG level, SGroupInfoArray *groups)
-			: m_level(level), m_groups(groups), m_top_k_groups(nullptr)
+			: m_level(level), m_groups(groups), m_top_k_groups(NULL)
 		{
 		}
 
-		~SLevelInfo() override
+		~SLevelInfo()
 		{
 			m_groups->Release();
 			CRefCount::SafeRelease(m_top_k_groups);
@@ -374,7 +381,7 @@ private:
 	static ULONG
 	UlHashBitSet(const CBitSet *pbs)
 	{
-		GPOS_ASSERT(nullptr != pbs);
+		GPOS_ASSERT(NULL != pbs);
 
 		return pbs->HashValue();
 	}
@@ -383,28 +390,29 @@ private:
 	static BOOL
 	FEqualBitSet(const CBitSet *pbsFst, const CBitSet *pbsSnd)
 	{
-		GPOS_ASSERT(nullptr != pbsFst);
-		GPOS_ASSERT(nullptr != pbsSnd);
+		GPOS_ASSERT(NULL != pbsFst);
+		GPOS_ASSERT(NULL != pbsSnd);
 
 		return pbsFst->Equals(pbsSnd);
 	}
 
-	using ExpressionToEdgeMap =
-		CHashMap<CExpression, SEdge, CExpression::HashValue, CUtils::Equals,
-				 CleanupRelease<CExpression>, CleanupRelease<SEdge>>;
+	typedef CHashMap<CExpression, SEdge, CExpression::HashValue, CUtils::Equals,
+					 CleanupRelease<CExpression>, CleanupRelease<SEdge> >
+		ExpressionToEdgeMap;
 
 	// dynamic array of SGroupInfos
-	using BitSetToGroupInfoMap =
-		CHashMap<CBitSet, SGroupInfo, UlHashBitSet, FEqualBitSet,
-				 CleanupRelease<CBitSet>, CleanupRelease<SGroupInfo>>;
+	typedef CHashMap<CBitSet, SGroupInfo, UlHashBitSet, FEqualBitSet,
+					 CleanupRelease<CBitSet>, CleanupRelease<SGroupInfo> >
+		BitSetToGroupInfoMap;
 
 	// iterator over group infos in a level
-	using BitSetToGroupInfoMapIter =
-		CHashMapIter<CBitSet, SGroupInfo, UlHashBitSet, FEqualBitSet,
-					 CleanupRelease<CBitSet>, CleanupRelease<SGroupInfo>>;
+	typedef CHashMapIter<CBitSet, SGroupInfo, UlHashBitSet, FEqualBitSet,
+						 CleanupRelease<CBitSet>, CleanupRelease<SGroupInfo> >
+		BitSetToGroupInfoMapIter;
 
 	// dynamic array of SLevelInfos, where each index represents the level
-	using DPv2Levels = CDynamicPtrArray<SLevelInfo, CleanupRelease<SLevelInfo>>;
+	typedef CDynamicPtrArray<SLevelInfo, CleanupRelease<SLevelInfo> >
+		DPv2Levels;
 
 	// an array of an array of groups, organized by level at the first array dimension,
 	// main data structure for dynamic programming
@@ -472,7 +480,7 @@ private:
 
 	void GreedySearchJoinOrders(ULONG left_level, JoinOrderPropType algo);
 
-	void DeriveStats(CExpression *pexpr) override;
+	virtual void DeriveStats(CExpression *pexpr);
 
 	// create a CLogicalJoin and a CExpression to join two groups, for a required property
 	SExpressionInfo *GetJoinExprForProperties(
@@ -485,20 +493,20 @@ private:
 								 SExpressionProperties &result_properties);
 
 	// does "prop" provide all the properties of "other_prop" plus maybe more?
-	static BOOL IsASupersetOfProperties(SExpressionProperties &prop,
-										SExpressionProperties &other_prop);
+	BOOL IsASupersetOfProperties(SExpressionProperties &prop,
+								 SExpressionProperties &other_prop);
 
 	// is one of the properties a subset of the other or are they disjoint?
-	static BOOL ArePropertiesDisjoint(SExpressionProperties &prop,
-									  SExpressionProperties &other_prop);
+	BOOL ArePropertiesDisjoint(SExpressionProperties &prop,
+							   SExpressionProperties &other_prop);
 
 	// get best expression in a group for a given set of properties
-	static SGroupAndExpression GetBestExprForProperties(
-		SGroupInfo *group_info, SExpressionProperties &props);
+	SGroupAndExpression GetBestExprForProperties(SGroupInfo *group_info,
+												 SExpressionProperties &props);
 
 	// add a new property to an existing predicate
-	static void AddNewPropertyToExpr(SExpressionInfo *expr_info,
-									 SExpressionProperties props);
+	void AddNewPropertyToExpr(SExpressionInfo *expr_info,
+							  SExpressionProperties props);
 
 	// enumerate bushy joins (joins where both children are also joins) of level "current_level"
 	void SearchBushyJoinOrders(ULONG current_level);
@@ -540,7 +548,7 @@ public:
 				   ULongPtrArray *childPredIndexes, CColRefSet *outerRefs);
 
 	// dtor
-	~CJoinOrderDPv2() override;
+	virtual ~CJoinOrderDPv2();
 
 	// main handler
 	virtual void PexprExpand();
@@ -549,16 +557,16 @@ public:
 
 	// check for NIJs
 	BOOL IsRightChildOfNIJ(SGroupInfo *groupInfo,
-						   CExpression **onPredToUse = nullptr,
-						   CBitSet **requiredBitsOnLeft = nullptr);
+						   CExpression **onPredToUse = NULL,
+						   CBitSet **requiredBitsOnLeft = NULL);
 
 	// print function
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 
-	static IOstream &OsPrintProperty(IOstream &, SExpressionProperties &);
+	IOstream &OsPrintProperty(IOstream &, SExpressionProperties &) const;
 
-	CXform::EXformId
-	EOriginXForm() const override
+	virtual CXform::EXformId
+	EOriginXForm() const
 	{
 		return CXform::ExfExpandNAryJoinDPv2;
 	}

@@ -89,6 +89,9 @@ private:
 	CTask(CMemoryPool *mp, CTaskContext *task_ctxt, IErrorContext *err_ctxt,
 		  BOOL *cancel);
 
+	// no copy ctor
+	CTask(const CTask &);
+
 	// binding a task structure to a function and its arguments
 	void Bind(void *(*func)(void *), void *arg);
 
@@ -125,21 +128,19 @@ private:
 	}
 
 public:
-	CTask(const CTask &) = delete;
-
 	// dtor
-	~CTask() override;
+	virtual ~CTask();
 
 	// accessor for memory pool, e.g. used for allocating task parameters in
 	CMemoryPool *
-	Pmp() const override
+	Pmp() const
 	{
 		return m_mp;
 	}
 
 	// TLS accessor
 	CTaskLocalStorage &
-	GetTls() override
+	GetTls()
 	{
 		return m_tls;
 	}
@@ -153,32 +154,32 @@ public:
 
 	// task context accessor
 	CTaskContext *
-	GetTaskCtxt() const override
+	GetTaskCtxt() const
 	{
 		return m_task_ctxt;
 	}
 
 	// basic output streams
 	ILogger *
-	GetOutputLogger() const override
+	GetOutputLogger() const
 	{
 		return this->m_task_ctxt->GetOutputLogger();
 	}
 
 	ILogger *
-	GetErrorLogger() const override
+	GetErrorLogger() const
 	{
 		return this->m_task_ctxt->GetErrorLogger();
 	}
 
 	BOOL
-	SetTrace(ULONG trace, BOOL val) override
+	SetTrace(ULONG trace, BOOL val)
 	{
 		return this->m_task_ctxt->SetTrace(trace, val);
 	}
 
 	BOOL
-	IsTraceSet(ULONG trace) override
+	IsTraceSet(ULONG trace)
 	{
 		return this->m_task_ctxt->IsTraceSet(trace);
 	}
@@ -186,7 +187,7 @@ public:
 
 	// locale
 	ELocale
-	Locale() const override
+	Locale() const
 	{
 		return m_task_ctxt->Locale();
 	}
@@ -248,7 +249,7 @@ public:
 
 	// error context
 	IErrorContext *
-	GetErrCtxt() const override
+	GetErrCtxt() const
 	{
 		return m_err_ctxt;
 	}
@@ -262,7 +263,7 @@ public:
 
 	// pending exceptions
 	BOOL
-	HasPendingExceptions() const override
+	HasPendingExceptions() const
 	{
 		return m_err_ctxt->IsPending();
 	}

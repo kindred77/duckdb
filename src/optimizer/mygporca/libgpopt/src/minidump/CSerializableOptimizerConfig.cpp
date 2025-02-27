@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates..
+//	Copyright (C) 2018 Pivotal, Inc..
 //
 //	@filename:
 //		CSerializableOptimizerConfig.cpp
@@ -41,7 +41,7 @@ CSerializableOptimizerConfig::CSerializableOptimizerConfig(
 	CMemoryPool *mp, const COptimizerConfig *optimizer_config)
 	: CSerializable(), m_mp(mp), m_optimizer_config(optimizer_config)
 {
-	GPOS_ASSERT(nullptr != optimizer_config);
+	GPOS_ASSERT(NULL != optimizer_config);
 }
 
 //---------------------------------------------------------------------------
@@ -52,7 +52,9 @@ CSerializableOptimizerConfig::CSerializableOptimizerConfig(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CSerializableOptimizerConfig::~CSerializableOptimizerConfig() = default;
+CSerializableOptimizerConfig::~CSerializableOptimizerConfig()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

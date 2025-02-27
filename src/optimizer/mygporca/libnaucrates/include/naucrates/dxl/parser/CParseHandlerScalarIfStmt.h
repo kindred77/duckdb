@@ -35,20 +35,20 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarIfStmt : public CParseHandlerScalarOp
 {
 private:
+	// private copy ctor
+	CParseHandlerScalarIfStmt(const CParseHandlerScalarIfStmt &);
+
 	// process the start of an element
 	void StartElement(const XMLCh *const element_uri,
 					  const XMLCh *const element_local_name,
-					  const XMLCh *const element_qname,
-					  const Attributes &attr) override;
+					  const XMLCh *const element_qname, const Attributes &attr);
 
 	// process the end of an element
 	void EndElement(const XMLCh *const element_uri,
 					const XMLCh *const element_local_name,
-					const XMLCh *const element_qname) override;
+					const XMLCh *const element_qname);
 
 public:
-	CParseHandlerScalarIfStmt(const CParseHandlerScalarIfStmt &) = delete;
-
 	// ctor
 	CParseHandlerScalarIfStmt(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,

@@ -36,7 +36,7 @@ CLogicalInnerJoin::CLogicalInnerJoin(CMemoryPool *mp,
 									 CXform::EXformId origin_xform)
 	: CLogicalJoin(mp, origin_xform)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 }
 
 
@@ -70,6 +70,10 @@ CLogicalInnerJoin::PxfsCandidates(CMemoryPool *mp) const
 
 	(void) xform_set->ExchangeSet(CXform::ExfImplementInnerJoin);
 	(void) xform_set->ExchangeSet(CXform::ExfSubqJoin2Apply);
+	(void) xform_set->ExchangeSet(
+		CXform::ExfInnerJoin2PartialDynamicIndexGetApply);
+	(void) xform_set->ExchangeSet(
+		CXform::ExfInnerJoinWithInnerSelect2PartialDynamicIndexGetApply);
 	(void) xform_set->ExchangeSet(CXform::ExfJoin2BitmapIndexGetApply);
 	(void) xform_set->ExchangeSet(CXform::ExfJoin2IndexGetApply);
 
@@ -97,7 +101,7 @@ BOOL
 CLogicalInnerJoin::FFewerConj(CMemoryPool *mp, CGroupExpression *pgexprFst,
 							  CGroupExpression *pgexprSnd)
 {
-	if (nullptr == pgexprFst || nullptr == pgexprSnd)
+	if (NULL == pgexprFst || NULL == pgexprSnd)
 	{
 		return false;
 	}

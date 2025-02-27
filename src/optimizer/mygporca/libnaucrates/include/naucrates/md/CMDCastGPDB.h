@@ -32,12 +32,15 @@ using namespace gpdxl;
 class CMDCastGPDB : public IMDCast
 {
 private:
+	// private copy ctor
+	CMDCastGPDB(const CMDCastGPDB &);
+
 protected:
 	// memory pool
 	CMemoryPool *m_mp;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// func id
 	IMDId *m_mdid;
@@ -61,46 +64,48 @@ protected:
 	EmdCoercepathType m_path_type;
 
 public:
-	CMDCastGPDB(const CMDCastGPDB &) = delete;
-
 	// ctor
 	CMDCastGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname, IMDId *mdid_src,
 				IMDId *mdid_dest, BOOL is_binary_coercible,
 				IMDId *mdid_cast_func, EmdCoercepathType path_type = EmdtNone);
 
 	// dtor
-	~CMDCastGPDB() override;
+	virtual ~CMDCastGPDB();
 
 	// accessors
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// cast object id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// cast object name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// source type
-	IMDId *MdidSrc() const override;
+	virtual IMDId *MdidSrc() const;
 
 	// destination type
-	IMDId *MdidDest() const override;
+	virtual IMDId *MdidDest() const;
 
 	// is this a cast between binary coeercible types, i.e. the types are binary compatible
-	BOOL IsBinaryCoercible() const override;
+	virtual BOOL IsBinaryCoercible() const;
 
 	// return the coercion path type
-	EmdCoercepathType GetMDPathType() const override;
+	virtual EmdCoercepathType GetMDPathType() const;
 
 	// cast function id
-	IMDId *GetCastFuncMdId() const override;
+	virtual IMDId *GetCastFuncMdId() const;
 
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

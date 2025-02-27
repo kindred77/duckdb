@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -47,67 +48,68 @@ private:
 	// is operator return type BOOL?
 	BOOL m_fBoolReturnType;
 
-public:
-	CScalarIf(const CScalarIf &) = delete;
+	// private copy ctor
+	CScalarIf(const CScalarIf &);
 
+public:
 	// ctor
 	CScalarIf(CMemoryPool *mp, IMDId *mdid);
 
 	// dtor
-	~CScalarIf() override
+	virtual ~CScalarIf()
 	{
 		m_mdid_type->Release();
 	}
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarIf;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarIf";
 	}
 
 	// the type of the scalar expression
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		return m_mdid_type;
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 
 	// boolean expression evaluation
-	EBoolEvalResult
-	Eber(ULongPtrArray *pdrgpulChildren) const override
+	virtual EBoolEvalResult
+	Eber(ULongPtrArray *pdrgpulChildren) const
 	{
 		return EberNullOnAllNullChildren(pdrgpulChildren);
 	}
@@ -116,7 +118,7 @@ public:
 	static CScalarIf *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarIf == pop->Eopid());
 
 		return dynamic_cast<CScalarIf *>(pop);

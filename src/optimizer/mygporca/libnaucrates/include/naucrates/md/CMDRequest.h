@@ -43,7 +43,7 @@ public:
 	struct SMDFuncRequest;
 
 	// array of type requests
-	using SMDTypeRequestArray = CDynamicPtrArray<SMDTypeRequest, CleanupDelete>;
+	typedef CDynamicPtrArray<SMDTypeRequest, CleanupDelete> SMDTypeRequestArray;
 
 	//---------------------------------------------------------------------------
 	//	@class:
@@ -81,9 +81,10 @@ private:
 	// serialize system id
 	CWStringDynamic *GetStrRepr(CSystemId sysid);
 
-public:
-	CMDRequest(const CMDRequest &) = delete;
+	// private copy ctor
+	CMDRequest(const CMDRequest &);
 
+public:
 	// ctor
 	CMDRequest(CMemoryPool *mp, IMdIdArray *mdid_array,
 			   SMDTypeRequestArray *mdtype_request_array);
@@ -92,7 +93,7 @@ public:
 	CMDRequest(CMemoryPool *mp, SMDTypeRequest *md_type_request);
 
 	// dtor
-	~CMDRequest() override;
+	virtual ~CMDRequest();
 
 	// accessors
 

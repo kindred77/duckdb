@@ -50,9 +50,9 @@ public:
 		ErelstorageHeap,
 		ErelstorageAppendOnlyCols,
 		ErelstorageAppendOnlyRows,
-		ErelstorageForeign,
-		ErelstorageMixedPartitioned,
-		ErelstorageCompositeType,
+		ErelstorageAppendOnlyParquet,
+		ErelstorageExternal,
+		ErelstorageVirtual,
 		ErelstorageSentinel
 	};
 
@@ -83,8 +83,8 @@ protected:
 
 public:
 	// object type
-	Emdtype
-	MDType() const override
+	virtual Emdtype
+	MDType() const
 	{
 		return EmdtRel;
 	}
@@ -142,11 +142,17 @@ public:
 	// return true if a hash distributed table needs to be considered as random
 	virtual BOOL ConvertHashToRandom() const = 0;
 
+	// does this table have oids
+	virtual BOOL HasOids() const = 0;
+
 	// is this a partitioned table
 	virtual BOOL IsPartitioned() const = 0;
 
 	// number of partition columns
 	virtual ULONG PartColumnCount() const = 0;
+
+	// number of partitions
+	virtual ULONG PartitionCount() const = 0;
 
 	// retrieve the partition column at the given position
 	virtual const IMDColumn *PartColAt(ULONG pos) const = 0;
@@ -160,8 +166,17 @@ public:
 	// number of indices
 	virtual ULONG IndexCount() const = 0;
 
+	// number of triggers
+	virtual ULONG TriggerCount() const = 0;
+
 	// retrieve the id of the metadata cache index at the given position
 	virtual IMDId *IndexMDidAt(ULONG pos) const = 0;
+
+	// check if index is partial given its mdid
+	virtual BOOL IsPartialIndex(IMDId *mdid) const;
+
+	// retrieve the id of the metadata cache trigger at the given position
+	virtual IMDId *TriggerMDidAt(ULONG pos) const = 0;
 
 	// number of check constraints
 	virtual ULONG CheckConstraintCount() const = 0;
@@ -170,13 +185,21 @@ public:
 	virtual IMDId *CheckConstraintMDidAt(ULONG pos) const = 0;
 
 	// part constraint
-	virtual CDXLNode *MDPartConstraint() const = 0;
+	virtual IMDPartConstraint *MDPartConstraint() const = 0;
 
-	// child partition oids
+	// external partitions (for partitioned tables)
 	virtual IMdIdArray *
-	ChildPartitionMdids() const
+	GetExternalPartitions() const
 	{
-		return nullptr;
+		return NULL;
+	}
+
+	// contains any external partitions (for partitioned tables only)
+	BOOL
+	HasExternalPartitions() const
+	{
+		return (NULL != GetExternalPartitions() &&
+				GetExternalPartitions()->Size() > 0);
 	}
 
 	// relation distribution policy as a string value
@@ -194,13 +217,10 @@ public:
 		return st == ErelstorageAppendOnlyCols ||
 			   st == ErelstorageAppendOnlyRows;
 	}
-
-	// get oid of foreign server for foreign table
-	virtual IMDId *ForeignServer() const = 0;
 };
 
 // common structure over relation and external relation metadata for index info
-using CMDIndexInfoArray = CDynamicPtrArray<CMDIndexInfo, CleanupRelease>;
+typedef CDynamicPtrArray<CMDIndexInfo, CleanupRelease> CMDIndexInfoArray;
 
 }  // namespace gpmd
 

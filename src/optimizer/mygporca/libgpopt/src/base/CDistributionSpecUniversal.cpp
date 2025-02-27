@@ -1,11 +1,13 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDistributionSpecUniversal.h"
 
 namespace gpopt
 {
-gpopt::CDistributionSpecUniversal::CDistributionSpecUniversal() = default;
+gpopt::CDistributionSpecUniversal::CDistributionSpecUniversal()
+{
+}
 
 CDistributionSpec::EDistributionType
 CDistributionSpecUniversal::Edt() const
@@ -82,7 +84,7 @@ CDistributionSpecUniversal::Edpt() const
 CDistributionSpecUniversal *
 CDistributionSpecUniversal::PdsConvert(CDistributionSpec *pds)
 {
-	GPOS_ASSERT(nullptr != pds);
+	GPOS_ASSERT(NULL != pds);
 	GPOS_ASSERT(EdtAny == pds->Edt());
 
 	return dynamic_cast<CDistributionSpecUniversal *>(pds);

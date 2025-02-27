@@ -12,7 +12,7 @@
 #include "naucrates/dxl/parser/CParseHandlerTableScan.h"
 
 #include "naucrates/dxl/operators/CDXLOperatorFactory.h"
-#include "naucrates/dxl/operators/CDXLPhysicalForeignScan.h"
+#include "naucrates/dxl/operators/CDXLPhysicalExternalScan.h"
 #include "naucrates/dxl/parser/CParseHandlerFactory.h"
 #include "naucrates/dxl/parser/CParseHandlerFilter.h"
 #include "naucrates/dxl/parser/CParseHandlerProjList.h"
@@ -37,7 +37,7 @@ CParseHandlerTableScan::CParseHandlerTableScan(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerPhysicalOp(mp, parse_handler_mgr, parse_handler_root),
-	  m_dxl_op(nullptr)
+	  m_dxl_op(NULL)
 {
 }
 
@@ -87,8 +87,8 @@ CParseHandlerTableScan::StartElement(const XMLCh *const element_local_name,
 	}
 	else
 	{
-		GPOS_ASSERT(EdxltokenPhysicalForeignScan == token_type);
-		m_dxl_op = GPOS_NEW(m_mp) CDXLPhysicalForeignScan(m_mp);
+		GPOS_ASSERT(EdxltokenPhysicalExternalScan == token_type);
+		m_dxl_op = GPOS_NEW(m_mp) CDXLPhysicalExternalScan(m_mp);
 	}
 
 	// create child node parsers in reverse order of their expected occurrence
@@ -176,7 +176,7 @@ CParseHandlerTableScan::EndElement(const XMLCh *const element_local_name,
 	CParseHandlerTableDescr *table_descr_parse_handler =
 		dynamic_cast<CParseHandlerTableDescr *>((*this)[3]);
 
-	GPOS_ASSERT(nullptr != table_descr_parse_handler->GetDXLTableDescr());
+	GPOS_ASSERT(NULL != table_descr_parse_handler->GetDXLTableDescr());
 
 	// set table descriptor
 	CDXLTableDescr *table_descr = table_descr_parse_handler->GetDXLTableDescr();
@@ -184,7 +184,7 @@ CParseHandlerTableScan::EndElement(const XMLCh *const element_local_name,
 	m_dxl_op->SetTableDescriptor(table_descr);
 
 	m_dxl_node = GPOS_NEW(m_mp) CDXLNode(m_mp, m_dxl_op);
-	// set statistics and physical properties
+	// set statictics and physical properties
 	CParseHandlerUtils::SetProperties(m_dxl_node, prop_parse_handler);
 
 	// add constructed children

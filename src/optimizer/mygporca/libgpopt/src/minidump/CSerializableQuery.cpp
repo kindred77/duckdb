@@ -39,8 +39,8 @@ CSerializableQuery::CSerializableQuery(
 	  m_query_output(query_output_dxlnode_array),
 	  m_cte_producers(cte_producers)
 {
-	GPOS_ASSERT(nullptr != query);
-	GPOS_ASSERT(nullptr != query_output_dxlnode_array);
+	GPOS_ASSERT(NULL != query);
+	GPOS_ASSERT(NULL != query_output_dxlnode_array);
 }
 
 
@@ -52,7 +52,9 @@ CSerializableQuery::CSerializableQuery(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CSerializableQuery::~CSerializableQuery() = default;
+CSerializableQuery::~CSerializableQuery()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

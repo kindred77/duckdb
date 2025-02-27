@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CDXLPhysicalValuesScan.cpp
@@ -24,7 +24,9 @@ CDXLPhysicalValuesScan::CDXLPhysicalValuesScan(CMemoryPool *mp)
 }
 
 // dtor
-CDXLPhysicalValuesScan::~CDXLPhysicalValuesScan() = default;
+CDXLPhysicalValuesScan::~CDXLPhysicalValuesScan()
+{
+}
 
 // operator type
 Edxlopid
@@ -43,7 +45,7 @@ CDXLPhysicalValuesScan::GetOpNameStr() const
 CDXLPhysicalValuesScan *
 CDXLPhysicalValuesScan::Cast(CDXLOperator *dxl_op)
 {
-	GPOS_ASSERT(nullptr != dxl_op);
+	GPOS_ASSERT(NULL != dxl_op);
 	GPOS_ASSERT(EdxlopPhysicalValuesScan == dxl_op->GetDXLOperator());
 
 	return dynamic_cast<CDXLPhysicalValuesScan *>(dxl_op);

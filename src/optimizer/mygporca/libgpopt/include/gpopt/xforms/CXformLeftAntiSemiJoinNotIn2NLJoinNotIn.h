@@ -30,36 +30,39 @@ using namespace gpos;
 class CXformLeftAntiSemiJoinNotIn2NLJoinNotIn : public CXformImplementation
 {
 private:
-public:
+	// private copy ctor
 	CXformLeftAntiSemiJoinNotIn2NLJoinNotIn(
-		const CXformLeftAntiSemiJoinNotIn2NLJoinNotIn &) = delete;
+		const CXformLeftAntiSemiJoinNotIn2NLJoinNotIn &);
 
+public:
 	// ctor
 	explicit CXformLeftAntiSemiJoinNotIn2NLJoinNotIn(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftAntiSemiJoinNotIn2NLJoinNotIn() override = default;
+	virtual ~CXformLeftAntiSemiJoinNotIn2NLJoinNotIn()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftAntiSemiJoinNotIn2NLJoinNotIn;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftAntiSemiJoinNotIn2NLJoinNotIn";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftAntiSemiJoinNotIn2NLJoinNotIn
 

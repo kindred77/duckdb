@@ -65,14 +65,17 @@ public:
 	};
 
 private:
-public:
-	CDistributionSpec(const CDistributionSpec &) = delete;
+	// private copy ctor
+	CDistributionSpec(const CDistributionSpec &);
 
+public:
 	// ctor
-	CDistributionSpec() = default;
+	CDistributionSpec()
+	{
+	}
 
 	// dtor
-	~CDistributionSpec() override = default;
+	virtual ~CDistributionSpec(){};
 
 	// distribution type accessor
 	virtual EDistributionType Edt() const = 0;
@@ -81,24 +84,24 @@ public:
 	virtual BOOL FSatisfies(const CDistributionSpec *pds) const = 0;
 
 	// default hash function for distribution spec
-	ULONG
-	HashValue() const override
+	virtual ULONG
+	HashValue() const
 	{
 		ULONG ulEdt = (ULONG) Edt();
 		return gpos::HashValue<ULONG>(&ulEdt);
 	}
 
 	// extract columns used by the distribution spec
-	CColRefSet *
-	PcrsUsed(CMemoryPool *mp) const override
+	virtual CColRefSet *
+	PcrsUsed(CMemoryPool *mp) const
 	{
 		// by default, return an empty set
 		return GPOS_NEW(mp) CColRefSet(mp);
 	}
 
 	// property type
-	EPropSpecType
-	Epst() const override
+	virtual EPropSpecType
+	Epst() const
 	{
 		return EpstDistribution;
 	}
@@ -153,7 +156,7 @@ public:
 		return this;
 	}
 	// print
-	IOstream &OsPrint(IOstream &os) const override = 0;
+	virtual IOstream &OsPrint(IOstream &os) const = 0;
 
 	// return distribution partitioning type
 	virtual EDistributionPartitioningType Edpt() const = 0;
@@ -169,8 +172,8 @@ public:
 };	// class CDistributionSpec
 
 // arrays of distribution spec
-using CDistributionSpecArray =
-	CDynamicPtrArray<CDistributionSpec, CleanupRelease>;
+typedef CDynamicPtrArray<CDistributionSpec, CleanupRelease>
+	CDistributionSpecArray;
 }  // namespace gpopt
 
 #endif	// !GPOPT_IDistributionSpec_H

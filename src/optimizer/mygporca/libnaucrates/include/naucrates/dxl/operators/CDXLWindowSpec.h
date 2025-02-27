@@ -61,7 +61,7 @@ public:
 				   CDXLWindowFrame *window_frame);
 
 	// dtor
-	~CDXLWindowSpec() override;
+	virtual ~CDXLWindowSpec();
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *) const;
@@ -98,7 +98,7 @@ public:
 	}
 };
 
-using CDXLWindowSpecArray = CDynamicPtrArray<CDXLWindowSpec, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLWindowSpec, CleanupRelease> CDXLWindowSpecArray;
 }  // namespace gpdxl
 #endif	// !GPDXL_CDXLWindowSpec_H
 

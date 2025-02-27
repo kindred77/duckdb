@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerScalarOpList.h
@@ -37,8 +37,11 @@ private:
 	// op list type
 	CDXLScalarOpList::EdxlOpListType m_dxl_op_list_type;
 
+	// private copy ctor
+	CParseHandlerScalarOpList(const CParseHandlerScalarOpList &);
+
 	// return the op list type corresponding to the given operator name
-	static CDXLScalarOpList::EdxlOpListType GetDXLOpListType(
+	CDXLScalarOpList::EdxlOpListType GetDXLOpListType(
 		const XMLCh *const element_local_name);
 
 	// process the start of an element
@@ -47,18 +50,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarOpList(const CParseHandlerScalarOpList &) = delete;
-
 	// ctor
 	CParseHandlerScalarOpList(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,

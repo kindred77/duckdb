@@ -54,7 +54,9 @@ CPhysicalNLJoin::CPhysicalNLJoin(CMemoryPool *mp) : CPhysicalJoin(mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalNLJoin::~CPhysicalNLJoin() = default;
+CPhysicalNLJoin::~CPhysicalNLJoin()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -109,11 +111,9 @@ CPhysicalNLJoin::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 	{
 		if (FFirstChildToOptimize(child_index))
 		{
-			// for index nested loop joins, inner child is optimized first.
-			// we should not force materialize inner child, as we use index
-			// on inner relation and reference variables from outer relation.
+			// for index nested loop joins, inner child is optimized first
 			return GPOS_NEW(mp) CRewindabilitySpec(
-				CRewindabilitySpec::ErtRewindable, prsRequired->Emht(), false);
+				CRewindabilitySpec::ErtRewindable, prsRequired->Emht(), true);
 		}
 
 		CRewindabilitySpec *prsOuter =
@@ -191,7 +191,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalNLJoin::EpetOrder(CExpressionHandle &exprhdl,
 						   const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	if (FSortColsInOuterChild(m_mp, exprhdl, peo->PosRequired()))
@@ -200,6 +200,37 @@ CPhysicalNLJoin::EpetOrder(CExpressionHandle &exprhdl,
 	}
 
 	return CEnfdProp::EpetRequired;
+}
+
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalNLJoin::PppsRequiredNLJoinChild
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalNLJoin::PppsRequiredNLJoinChild(
+	CMemoryPool *mp, CExpressionHandle &exprhdl,
+	CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+	CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq)
+{
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	if (1 == ulOptReq)
+	{
+		// request (1): push partition propagation requests to join's children,
+		// do not consider possible dynamic partition elimination using join predicate here,
+		// this is handled by optimization request (0) below
+		return CPhysical::PppsRequiredPushThruNAry(mp, exprhdl, pppsRequired,
+												   child_index);
+	}
+	GPOS_ASSERT(0 == ulOptReq);
+
+	return PppsRequiredJoinChild(mp, exprhdl, pppsRequired, child_index,
+								 pdrgpdpCtxt, true);
 }
 
 

@@ -30,7 +30,7 @@ FORCE_GENERATE_DBGSTR(CXform);
 //---------------------------------------------------------------------------
 CXform::CXform(CExpression *pexpr) : m_pexpr(pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(FCheckPattern(pexpr));
 }
 
@@ -99,12 +99,12 @@ CXform::FCheckPattern(CExpression *pexpr) const
 BOOL
 CXform::FPromising(CMemoryPool *mp, const CXform *pxform, CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pxform);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pxform);
+	GPOS_ASSERT(NULL != pexpr);
 
 	CExpressionHandle exprhdl(mp);
 	exprhdl.Attach(pexpr);
-	exprhdl.DeriveProps(nullptr /*pdpctxt*/);
+	exprhdl.DeriveProps(NULL /*pdpctxt*/);
 
 	return ExfpNone < pxform->Exfp(exprhdl);
 }
@@ -128,31 +128,6 @@ CXform::FEqualIds(const CHAR *szIdOne, const CHAR *szIdTwo)
 
 //---------------------------------------------------------------------------
 //	@function:
-//		CXform::PbsNLJoinXforms
-//
-//	@doc:
-//		Returns a set containing all xforms related to nestloop join.
-//		Caller takes ownership of the returned set
-//
-//---------------------------------------------------------------------------
-CBitSet *
-CXform::PbsNLJoinXforms(CMemoryPool *mp)
-{
-	CBitSet *pbs = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
-	(void) pbs->ExchangeSet(
-		GPOPT_DISABLE_XFORM_TF(CXform::ExfLeftOuterJoin2NLJoin));
-	(void) pbs->ExchangeSet(
-		GPOPT_DISABLE_XFORM_TF(CXform::ExfLeftSemiJoin2NLJoin));
-	(void) pbs->ExchangeSet(
-		GPOPT_DISABLE_XFORM_TF(CXform::ExfLeftAntiSemiJoin2NLJoin));
-	(void) pbs->ExchangeSet(
-		GPOPT_DISABLE_XFORM_TF(CXform::ExfLeftAntiSemiJoinNotIn2NLJoinNotIn));
-
-	return pbs;
-}
-
-//---------------------------------------------------------------------------
-//	@function:
 //		CXform::PbsIndexJoinXforms
 //
 //	@doc:
@@ -164,6 +139,10 @@ CBitSet *
 CXform::PbsIndexJoinXforms(CMemoryPool *mp)
 {
 	CBitSet *pbs = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
+	(void) pbs->ExchangeSet(GPOPT_DISABLE_XFORM_TF(
+		CXform::ExfInnerJoin2PartialDynamicIndexGetApply));
+	(void) pbs->ExchangeSet(GPOPT_DISABLE_XFORM_TF(
+		CXform::ExfInnerJoinWithInnerSelect2PartialDynamicIndexGetApply));
 	(void) pbs->ExchangeSet(
 		GPOPT_DISABLE_XFORM_TF(CXform::ExfJoin2BitmapIndexGetApply));
 	(void) pbs->ExchangeSet(
@@ -195,6 +174,30 @@ CXform::PbsBitmapIndexXforms(CMemoryPool *mp)
 	return pbs;
 }
 
+//---------------------------------------------------------------------------
+//	@function:
+//		CXform::PbsHeterogeneousIndexXforms
+//
+//	@doc:
+//		Returns a set containing all xforms related to heterogeneous indexes.
+//		Caller takes ownership of the returned set
+//
+//---------------------------------------------------------------------------
+CBitSet *
+CXform::PbsHeterogeneousIndexXforms(CMemoryPool *mp)
+{
+	CBitSet *pbs = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
+
+	(void) pbs->ExchangeSet(
+		GPOPT_DISABLE_XFORM_TF(CXform::ExfSelect2PartialDynamicIndexGet));
+	(void) pbs->ExchangeSet(GPOPT_DISABLE_XFORM_TF(
+		CXform::ExfInnerJoin2PartialDynamicIndexGetApply));
+	(void) pbs->ExchangeSet(GPOPT_DISABLE_XFORM_TF(
+		CXform::ExfInnerJoinWithInnerSelect2PartialDynamicIndexGetApply));
+
+	return pbs;
+}
+
 //	returns a set containing all xforms that generate a plan with hash join
 //	Caller takes ownership of the returned set
 CBitSet *
@@ -202,6 +205,8 @@ CXform::PbsHashJoinXforms(CMemoryPool *mp)
 {
 	CBitSet *pbs = GPOS_NEW(mp) CBitSet(mp, EopttraceSentinel);
 
+	(void) pbs->ExchangeSet(
+		GPOPT_DISABLE_XFORM_TF(CXform::ExfInnerJoin2HashJoin));
 	(void) pbs->ExchangeSet(
 		GPOPT_DISABLE_XFORM_TF(CXform::ExfLeftOuterJoin2HashJoin));
 	(void) pbs->ExchangeSet(

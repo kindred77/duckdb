@@ -32,8 +32,8 @@ FORCE_GENERATE_DBGSTR(CJob);
 void
 CJob::Reset()
 {
-	m_pjParent = nullptr;
-	m_pjq = nullptr;
+	m_pjParent = NULL;
+	m_pjq = NULL;
 	m_ulpRefs = 0;
 	m_fInit = false;
 #ifdef GPOS_DEBUG
@@ -54,7 +54,7 @@ BOOL
 CJob::FResumeParent() const
 {
 	GPOS_ASSERT(0 == UlpRefs());
-	GPOS_ASSERT(nullptr != m_pjParent);
+	GPOS_ASSERT(NULL != m_pjParent);
 	GPOS_ASSERT(0 < m_pjParent->UlpRefs());
 
 	// decrement parent's ref counter
@@ -80,7 +80,7 @@ CJob::OsPrint(IOstream &os) const
 {
 	os << "ID=" << Id();
 
-	if (nullptr != PjParent())
+	if (NULL != PjParent())
 	{
 		os << " parent=" << PjParent()->Id() << std::endl;
 	}

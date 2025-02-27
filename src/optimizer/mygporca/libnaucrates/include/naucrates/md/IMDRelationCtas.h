@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		IMDRelationCtas.h
@@ -41,69 +41,76 @@ public:
 	virtual CMDName *GetMdNameSchema() const = 0;
 
 	// is this a partitioned table
-	BOOL
-	IsPartitioned() const override
+	virtual BOOL
+	IsPartitioned() const
 	{
 		return false;
 	}
 
 	// number of partition columns
-	ULONG
-	PartColumnCount() const override
+	virtual ULONG
+	PartColumnCount() const
+	{
+		return 0;
+	}
+
+	// number of partitions
+	virtual ULONG
+	PartitionCount() const
 	{
 		return 0;
 	}
 
 	// retrieve the partition column at the given position
-	const IMDColumn *PartColAt(ULONG  // pos
-	) const override
+	virtual const IMDColumn *PartColAt(ULONG  // pos
+	) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no partition columns");
-		return nullptr;
+		return NULL;
 	}
 
 	// retrieve list of partition types
-	CharPtrArray *
-	GetPartitionTypes() const override
+	virtual CharPtrArray *
+	GetPartitionTypes() const
 	{
 		GPOS_ASSERT(!"CTAS tables have no partition types");
-		return nullptr;
+		return NULL;
 	}
 
 	// retrieve the partition column at the given position
-	CHAR PartTypeAtLevel(ULONG /*pos*/) const override
+	virtual CHAR PartTypeAtLevel(ULONG /*pos*/) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no partition types");
 		return (CHAR) 0;
 	}
 
 	// return true if a hash distributed table needs to be considered as random
-	BOOL
-	ConvertHashToRandom() const override
+	virtual BOOL
+	ConvertHashToRandom() const
 	{
 		return false;
 	}
 
 	// returns the number of key sets
-	ULONG
-	KeySetCount() const override
+	virtual ULONG
+	KeySetCount() const
 	{
 		return 0;
 	}
 
 	// returns the key set at the specified position
-	const ULongPtrArray *KeySetAt(ULONG	 // pos
-	) const override
+	virtual const ULongPtrArray *KeySetAt(ULONG	 // pos
+	) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no keys");
-		return nullptr;
+		return NULL;
 	}
 
 	// part constraint
-	CDXLNode *
-	MDPartConstraint() const override
+	virtual IMDPartConstraint *
+	MDPartConstraint() const
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// CTAS storage options

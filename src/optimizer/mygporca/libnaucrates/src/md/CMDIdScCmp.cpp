@@ -143,7 +143,7 @@ CMDIdScCmp::HashValue() const
 BOOL
 CMDIdScCmp::Equals(const IMDId *mdid) const
 {
-	if (nullptr == mdid || EmdidScCmp != mdid->MdidType())
+	if (NULL == mdid || EmdidScCmp != mdid->MdidType())
 	{
 		return false;
 	}

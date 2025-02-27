@@ -34,7 +34,7 @@ private:
 public:
 	explicit CIdGenerator(ULONG);
 	ULONG next_id();
-	ULONG current_id() const;
+	ULONG current_id();
 };
 }  // namespace gpdxl
 #endif	// GPDXL_CIdGenerator_H

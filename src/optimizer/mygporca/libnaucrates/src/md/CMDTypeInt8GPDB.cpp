@@ -44,41 +44,35 @@ CMDName CMDTypeInt8GPDB::m_mdname(&m_str);
 //---------------------------------------------------------------------------
 CMDTypeInt8GPDB::CMDTypeInt8GPDB(CMemoryPool *mp) : m_mp(mp)
 {
-	m_mdid = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_OID);
+	m_mdid = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_OID);
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution))
 	{
-		m_distr_opfamily =
-			GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_OPFAMILY);
-		m_legacy_distr_opfamily = GPOS_NEW(mp)
-			CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_LEGACY_OPFAMILY);
+		m_distr_opfamily = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_OPFAMILY);
+		m_legacy_distr_opfamily =
+			GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_LEGACY_OPFAMILY);
 	}
 	else
 	{
-		m_distr_opfamily = nullptr;
-		m_legacy_distr_opfamily = nullptr;
+		m_distr_opfamily = NULL;
+		m_legacy_distr_opfamily = NULL;
 	}
-	m_part_opfamily =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_PART_OPFAMILY);
-	m_mdid_op_eq = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_EQ_OP);
-	m_mdid_op_neq =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_NEQ_OP);
-	m_mdid_op_lt = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_LT_OP);
-	m_mdid_op_leq =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_LEQ_OP);
-	m_mdid_op_gt = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_GT_OP);
-	m_mdid_op_geq =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_GEQ_OP);
-	m_mdid_op_cmp =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_COMP_OP);
-	m_mdid_type_array =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_ARRAY_TYPE);
+	m_mdid_op_eq = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_EQ_OP);
+	m_mdid_op_neq = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_NEQ_OP);
+	m_mdid_op_lt = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_LT_OP);
+	m_mdid_op_leq = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_LEQ_OP);
+	m_mdid_op_gt = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_GT_OP);
+	m_mdid_op_geq = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_GEQ_OP);
+	m_mdid_op_cmp = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_COMP_OP);
+	m_mdid_type_array = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_ARRAY_TYPE);
 
-	m_mdid_min = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_AGG_MIN);
-	m_mdid_max = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_AGG_MAX);
-	m_mdid_avg = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_AGG_AVG);
-	m_mdid_sum = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_AGG_SUM);
-	m_mdid_count =
-		GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8_AGG_COUNT);
+	m_mdid_min = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_AGG_MIN);
+	m_mdid_max = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_AGG_MAX);
+	m_mdid_avg = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_AGG_AVG);
+	m_mdid_sum = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_AGG_SUM);
+	m_mdid_count = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8_AGG_COUNT);
+
+	m_dxl_str = CDXLUtils::SerializeMDObj(
+		m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
 
 	GPOS_ASSERT(GPDB_INT8_OID == CMDIdGPDB::CastMdid(m_mdid)->Oid());
 	m_mdid->AddRef();
@@ -99,7 +93,6 @@ CMDTypeInt8GPDB::~CMDTypeInt8GPDB()
 	m_mdid->Release();
 	CRefCount::SafeRelease(m_distr_opfamily);
 	CRefCount::SafeRelease(m_legacy_distr_opfamily);
-	CRefCount::SafeRelease(m_part_opfamily);
 	m_mdid_op_eq->Release();
 	m_mdid_op_neq->Release();
 	m_mdid_op_lt->Release();
@@ -115,21 +108,8 @@ CMDTypeInt8GPDB::~CMDTypeInt8GPDB()
 	m_mdid_sum->Release();
 	m_mdid_count->Release();
 	m_datum_null->Release();
-	if (nullptr != m_dxl_str)
-	{
-		GPOS_DELETE(m_dxl_str);
-	}
-}
 
-const CWStringDynamic *
-CMDTypeInt8GPDB::GetStrRepr()
-{
-	if (nullptr == m_dxl_str)
-	{
-		m_dxl_str = CDXLUtils::SerializeMDObj(
-			m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
-	}
-	return m_dxl_str;
+	GPOS_DELETE(m_dxl_str);
 }
 
 //---------------------------------------------------------------------------
@@ -174,12 +154,6 @@ CMDTypeInt8GPDB::GetDistrOpfamilyMdid() const
 	}
 }
 
-IMDId *
-CMDTypeInt8GPDB::GetPartOpfamilyMdid() const
-{
-	return m_part_opfamily;
-}
-
 //---------------------------------------------------------------------------
 //	@function:
 //		CMDTypeInt8GPDB::Mdname
@@ -221,7 +195,7 @@ CMDTypeInt8GPDB::GetMdidForCmpType(ECmpType cmp_type) const
 			return m_mdid_op_geq;
 		default:
 			GPOS_ASSERT(!"Invalid operator type");
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -250,7 +224,7 @@ CMDTypeInt8GPDB::GetMdidForAggType(EAggType agg_type) const
 			return m_mdid_count;
 		default:
 			GPOS_ASSERT(!"Invalid aggregate type");
-			return nullptr;
+			return NULL;
 	}
 }
 

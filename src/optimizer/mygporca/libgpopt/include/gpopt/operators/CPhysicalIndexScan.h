@@ -44,9 +44,10 @@ private:
 	// order
 	COrderSpec *m_pos;
 
-public:
-	CPhysicalIndexScan(const CPhysicalIndexScan &) = delete;
+	// private copy ctor
+	CPhysicalIndexScan(const CPhysicalIndexScan &);
 
+public:
 	// ctors
 	CPhysicalIndexScan(CMemoryPool *mp, CIndexDescriptor *pindexdesc,
 					   CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
@@ -54,19 +55,19 @@ public:
 					   COrderSpec *pos);
 
 	// dtor
-	~CPhysicalIndexScan() override;
+	virtual ~CPhysicalIndexScan();
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalIndexScan;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalIndexScan";
 	}
@@ -86,10 +87,10 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// index descriptor
 	CIndexDescriptor *
@@ -99,8 +100,8 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
@@ -110,19 +111,29 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *
+	virtual COrderSpec *
 	PosDerive(CMemoryPool *,	   //mp
 			  CExpressionHandle &  //exprhdl
-	) const override
+	) const
 	{
 		m_pos->AddRef();
 		return m_pos;
 	}
 
-	CRewindabilitySpec *
+	// derive partition index map
+	virtual CPartIndexMap *
+	PpimDerive(CMemoryPool *mp,
+			   CExpressionHandle &,	 // exprhdl
+			   CDrvdPropCtxt *		 //pdpctxt
+	) const
+	{
+		return GPOS_NEW(mp) CPartIndexMap(mp);
+	}
+
+	virtual CRewindabilitySpec *
 	PrsDerive(CMemoryPool *mp,
 			  CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		// rewindability of output is always true
 		return GPOS_NEW(mp)
@@ -135,35 +146,35 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	// conversion function
 	static CPhysicalIndexScan *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalIndexScan == pop->Eopid());
 
 		return dynamic_cast<CPhysicalIndexScan *>(pop);
 	}
 
 	// statistics derivation during costing
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *,		   // mp
 				 CExpressionHandle &,  // exprhdl
 				 CReqdPropPlan *,	   // prpplan
 				 IStatisticsArray *	   //stats_ctxt
-	) const override
+	) const
 	{
 		GPOS_ASSERT(
 			!"stats derivation during costing for index scan is invalid");
 
-		return nullptr;
+		return NULL;
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CPhysicalIndexScan
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformPushGbBelowUnion.h
@@ -31,9 +31,10 @@ using namespace gpos;
 class CXformPushGbBelowUnion : public CXformPushGbBelowSetOp<CLogicalUnion>
 {
 private:
-public:
-	CXformPushGbBelowUnion(const CXformPushGbBelowUnion &) = delete;
+	// private copy ctor
+	CXformPushGbBelowUnion(const CXformPushGbBelowUnion &);
 
+public:
 	// ctor
 	explicit CXformPushGbBelowUnion(CMemoryPool *mp)
 		: CXformPushGbBelowSetOp<CLogicalUnion>(mp)
@@ -41,24 +42,26 @@ public:
 	}
 
 	// dtor
-	~CXformPushGbBelowUnion() override = default;
+	virtual ~CXformPushGbBelowUnion()
+	{
+	}
 
 	// Compatibility function
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return ExfPushGbBelowUnion != exfid;
 	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfPushGbBelowUnion;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformPushGbBelowUnion";
 	}

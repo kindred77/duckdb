@@ -40,7 +40,7 @@ IMDRelation::GetDistrPolicyStr(Ereldistrpolicy rel_distr_policy)
 		case EreldistrReplicated:
 			return CDXLTokens::GetDXLTokenStr(EdxltokenRelDistrReplicated);
 		default:
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -65,15 +65,15 @@ IMDRelation::GetStorageTypeStr(IMDRelation::Erelstoragetype rel_storage_type)
 		case ErelstorageAppendOnlyRows:
 			return CDXLTokens::GetDXLTokenStr(
 				EdxltokenRelStorageAppendOnlyRows);
-		case ErelstorageForeign:
-			return CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageForeign);
-		case ErelstorageMixedPartitioned:
+		case ErelstorageAppendOnlyParquet:
 			return CDXLTokens::GetDXLTokenStr(
-				EdxltokenRelStorageMixedPartitioned);
-		case ErelstorageCompositeType:
-			return CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageCompositeType);
+				EdxltokenRelStorageAppendOnlyParquet);
+		case ErelstorageExternal:
+			return CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageExternal);
+		case ErelstorageVirtual:
+			return CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageVirtual);
 		default:
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -109,4 +109,13 @@ IMDRelation::ColumnsToStr(CMemoryPool *mp, ULongPtrArray *colid_array)
 
 	return str;
 }
+
+// check if index is partial given its mdid
+BOOL
+IMDRelation::IsPartialIndex(IMDId *	 // mdid
+) const
+{
+	return false;
+}
+
 // EOF

@@ -48,31 +48,31 @@ private:
 		CMemoryPool *mp, CDistributionSpec *pdsOuter,
 		CDistributionSpec *pdsInner) const;
 
-public:
-	CPhysicalInnerHashJoin(const CPhysicalInnerHashJoin &) = delete;
+	// private copy ctor
+	CPhysicalInnerHashJoin(const CPhysicalInnerHashJoin &);
 
+public:
 	// ctor
 	CPhysicalInnerHashJoin(CMemoryPool *mp,
 						   CExpressionArray *pdrgpexprOuterKeys,
 						   CExpressionArray *pdrgpexprInnerKeys,
-						   IMdIdArray *hash_opfamilies,
-						   BOOL is_null_aware = true,
+						   IMdIdArray *hash_opfamilies = NULL,
 						   CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CPhysicalInnerHashJoin() override;
+	virtual ~CPhysicalInnerHashJoin();
 
 	// ident accessors
 
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalInnerHashJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalInnerHashJoin";
 	}
@@ -87,16 +87,15 @@ public:
 	}
 
 	// derive distribution
-	CDistributionSpec *PdsDerive(CMemoryPool *mp,
-								 CExpressionHandle &exprhdl) const override;
+	virtual CDistributionSpec *PdsDerive(CMemoryPool *mp,
+										 CExpressionHandle &exprhdl) const;
 
-	CPartitionPropagationSpec *PppsRequired(
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
 		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const override;
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
-	CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
 };	// class CPhysicalInnerHashJoin
 
 }  // namespace gpopt

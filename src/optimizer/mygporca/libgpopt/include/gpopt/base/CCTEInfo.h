@@ -15,7 +15,6 @@
 #include "gpos/common/CHashMap.h"
 #include "gpos/common/CStack.h"
 
-#include "gpopt/base/CColRef.h"
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CColumnFactory.h"
 #include "gpopt/operators/CExpression.h"
@@ -24,6 +23,11 @@ namespace gpopt
 {
 // fwd declarations
 class CLogicalCTEConsumer;
+
+// hash map: CColRef -> ULONG
+typedef CHashMap<CColRef, ULONG, CColRef::HashValue, CColRef::Equals,
+				 CleanupNULL<CColRef>, CleanupDelete<ULONG> >
+	ColRefToUlongMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -87,22 +91,22 @@ private:
 	};
 
 	// hash map mapping ULONG -> SConsumerCounter
-	using UlongToConsumerCounterMap =
-		CHashMap<ULONG, SConsumerCounter, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupDelete<SConsumerCounter>>;
+	typedef CHashMap<ULONG, SConsumerCounter, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupDelete<SConsumerCounter> >
+		UlongToConsumerCounterMap;
 
 	// map iterator
-	using UlongToConsumerCounterMapIter =
-		CHashMapIter<ULONG, SConsumerCounter, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupDelete<SConsumerCounter>>;
+	typedef CHashMapIter<ULONG, SConsumerCounter, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupDelete<SConsumerCounter> >
+		UlongToConsumerCounterMapIter;
 
 	// hash map mapping ULONG -> UlongToConsumerCounterMap: maps from CTE producer ID to all consumers inside this CTE
-	using UlongToProducerConsumerMap =
-		CHashMap<ULONG, UlongToConsumerCounterMap, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<UlongToConsumerCounterMap>>;
+	typedef CHashMap<ULONG, UlongToConsumerCounterMap, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<UlongToConsumerCounterMap> >
+		UlongToProducerConsumerMap;
 
 	//-------------------------------------------------------------------
 	//	@struct:
@@ -134,7 +138,7 @@ private:
 					  BOOL fUsed);
 
 		// dtor
-		~CCTEInfoEntry() override;
+		~CCTEInfoEntry();
 
 		// CTE expression
 		CExpression *
@@ -169,16 +173,16 @@ private:
 	};	//class CCTEInfoEntry
 
 	// hash maps mapping ULONG -> CCTEInfoEntry
-	using UlongToCTEInfoEntryMap =
-		CHashMap<ULONG, CCTEInfoEntry, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CCTEInfoEntry>>;
+	typedef CHashMap<ULONG, CCTEInfoEntry, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CCTEInfoEntry> >
+		UlongToCTEInfoEntryMap;
 
 	// map iterator
-	using UlongToCTEInfoEntryMapIter =
-		CHashMapIter<ULONG, CCTEInfoEntry, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupRelease<CCTEInfoEntry>>;
+	typedef CHashMapIter<ULONG, CCTEInfoEntry, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupRelease<CCTEInfoEntry> >
+		UlongToCTEInfoEntryMapIter;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -202,6 +206,9 @@ private:
 	CExpression *PexprPreprocessCTEProducer(
 		const CExpression *pexprCTEProducer);
 
+	// private copy ctor
+	CCTEInfo(const CCTEInfo &);
+
 	// number of consumers of given CTE inside a given parent
 	ULONG UlConsumersInParent(ULONG ulConsumerId, ULONG ulParentId) const;
 
@@ -210,13 +217,11 @@ private:
 							   CStack<ULONG> *pstack);
 
 public:
-	CCTEInfo(const CCTEInfo &) = delete;
-
 	// ctor
 	explicit CCTEInfo(CMemoryPool *mp);
 
 	//dtor
-	~CCTEInfo() override;
+	virtual ~CCTEInfo();
 
 	// logical cte producer with given id
 	CExpression *PexprCTEProducer(ULONG ulCTEId) const;

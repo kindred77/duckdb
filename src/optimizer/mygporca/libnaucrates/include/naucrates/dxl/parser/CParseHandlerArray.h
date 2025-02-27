@@ -35,23 +35,24 @@ class CParseHandlerArray : public CParseHandlerScalarOp
 {
 private:
 	// process the start of an element
-	void StartElement(
+	virtual void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
-	void EndElement(
+	virtual void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
+
+	// private copy ctor
+	CParseHandlerArray(const CParseHandlerArray &);
 
 public:
-	CParseHandlerArray(const CParseHandlerArray &) = delete;
-
 	// ctor
 	CParseHandlerArray(CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 					   CParseHandlerBase *parse_handler_root);

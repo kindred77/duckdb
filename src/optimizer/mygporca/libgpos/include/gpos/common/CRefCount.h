@@ -39,31 +39,33 @@ class CRefCount : public CHeapObject
 {
 private:
 	// reference counter -- first in class to be in sync with Check()
-	ULONG_PTR m_refs{1};
+	ULONG_PTR m_refs;
 
 #ifdef GPOS_DEBUG
 	// sanity check to detect deleted memory
 	void
-	Check() const
+	Check()
 	{
 		// assert that first member of class has not been wiped
 		GPOS_ASSERT(m_refs != GPOS_WIPED_MEM_PATTERN);
 	}
 #endif	// GPOS_DEBUG
 
+	// private copy ctor
+	CRefCount(const CRefCount &);
+
 public:
-	CRefCount(const CRefCount &) = delete;
-
 	// ctor
-	CRefCount() = default;
+	CRefCount() : m_refs(1)
+	{
+	}
 
-	// FIXME: should mark this noexcept in non-assert builds
 	// dtor
-	virtual ~CRefCount() noexcept(false)
+	virtual ~CRefCount()
 	{
 		// enforce strict ref-counting unless we're in a pending exception,
 		// e.g., a ctor has thrown
-		GPOS_ASSERT(nullptr == ITask::Self() ||
+		GPOS_ASSERT(NULL == ITask::Self() ||
 					ITask::Self()->HasPendingExceptions() || 0 == m_refs);
 	}
 
@@ -120,11 +122,19 @@ public:
 	static void
 	SafeRelease(CRefCount *rc)
 	{
-		if (nullptr != rc)
+		if (NULL != rc)
 		{
 			rc->Release();
 		}
 	}
+
+	// print function
+	virtual IOstream &
+	OsPrint(IOstream &os) const
+	{
+		return os;
+	}
+
 
 };	// class CRefCount
 }  // namespace gpos

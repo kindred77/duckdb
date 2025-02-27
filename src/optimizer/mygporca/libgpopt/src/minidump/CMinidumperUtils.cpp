@@ -21,6 +21,7 @@
 #include "gpos/error/CAutoTrace.h"
 #include "gpos/error/CErrorContext.h"
 #include "gpos/error/CErrorHandlerStandard.h"
+#include "gpos/io/COstreamFile.h"
 #include "gpos/memory/CAutoMemoryPool.h"
 #include "gpos/task/CAutoSuspendAbort.h"
 #include "gpos/task/CAutoTraceFlag.h"
@@ -60,13 +61,16 @@ using namespace std;
 CDXLMinidump *
 CMinidumperUtils::PdxlmdLoad(CMemoryPool *mp, const CHAR *file_name)
 {
+	CAutoTraceFlag atf1(EtraceSimulateAbort, false);
+	CAutoTraceFlag atf2(EtraceSimulateOOM, false);
+
 	{
 		CAutoTrace at(mp);
 		at.Os() << "parsing DXL File " << file_name;
 	}
 
 	CParseHandlerDXL *parse_handler_dxl = CDXLUtils::GetParseHandlerForDXLFile(
-		mp, file_name, nullptr /*xsd_file_path*/);
+		mp, file_name, NULL /*xsd_file_path*/);
 
 	CBitSet *pbs = parse_handler_dxl->Pbs();
 	COptimizerConfig *optimizer_config =
@@ -82,42 +86,42 @@ CMinidumperUtils::PdxlmdLoad(CMemoryPool *mp, const CHAR *file_name)
 	ULLONG plan_id = parse_handler_dxl->GetPlanId();
 	ULLONG plan_space_size = parse_handler_dxl->GetPlanSpaceSize();
 
-	if (nullptr != pbs)
+	if (NULL != pbs)
 	{
 		pbs->AddRef();
 	}
 
-	if (nullptr != optimizer_config)
+	if (NULL != optimizer_config)
 	{
 		optimizer_config->AddRef();
 	}
 
-	if (nullptr != query)
+	if (NULL != query)
 	{
 		query->AddRef();
 	}
 
-	if (nullptr != query_output_dxlnode_array)
+	if (NULL != query_output_dxlnode_array)
 	{
 		query_output_dxlnode_array->AddRef();
 	}
 
-	if (nullptr != cte_producers)
+	if (NULL != cte_producers)
 	{
 		cte_producers->AddRef();
 	}
 
-	if (nullptr != mdcache_obj_array)
+	if (NULL != mdcache_obj_array)
 	{
 		mdcache_obj_array->AddRef();
 	}
 
-	if (nullptr != pdrgpsysid)
+	if (NULL != pdrgpsysid)
 	{
 		pdrgpsysid->AddRef();
 	}
 
-	if (nullptr != pdxlnPlan)
+	if (NULL != pdxlnPlan)
 	{
 		pdxlnPlan->AddRef();
 	}
@@ -164,7 +168,7 @@ CMinidumperUtils::GenerateMinidumpFileName(
 		GPOS_CATCH_END;
 	}
 
-	if (nullptr == szMinidumpFileName)
+	if (NULL == szMinidumpFileName)
 	{
 		// generate a time-based file name
 		CUtils::GenerateFileName(buf, "minidumps/Minidump", "mdp", length,
@@ -204,6 +208,11 @@ CMinidumperUtils::GenerateMinidumpFileName(
 void
 CMinidumperUtils::Finalize(CMiniDumperDXL *pmdmp, BOOL fSerializeErrCtx)
 {
+	CAutoTraceFlag atf1(EtraceSimulateAbort, false);
+	CAutoTraceFlag atf2(EtraceSimulateOOM, false);
+	CAutoTraceFlag atf3(EtraceSimulateNetError, false);
+	CAutoTraceFlag atf4(EtraceSimulateIOError, false);
+
 	if (fSerializeErrCtx)
 	{
 		CErrorContext *perrctxt = CTask::Self()->ConvertErrCtxt();
@@ -228,8 +237,8 @@ CMinidumperUtils::PdxlnExecuteMinidump(CMemoryPool *mp, const CHAR *file_name,
 									   COptimizerConfig *optimizer_config,
 									   IConstExprEvaluator *pceeval)
 {
-	GPOS_ASSERT(nullptr != file_name);
-	GPOS_ASSERT(nullptr != optimizer_config);
+	GPOS_ASSERT(NULL != file_name);
+	GPOS_ASSERT(NULL != optimizer_config);
 
 	CAutoTimer at("Minidump", true /*fPrint*/);
 
@@ -263,7 +272,7 @@ CMinidumperUtils::PdxlnExecuteMinidump(CMemoryPool *mp, CDXLMinidump *pdxlmd,
 									   COptimizerConfig *optimizer_config,
 									   IConstExprEvaluator *pceeval)
 {
-	GPOS_ASSERT(nullptr != file_name);
+	GPOS_ASSERT(NULL != file_name);
 
 	// reset metadata ccache
 	CMDCache::Reset();
@@ -292,27 +301,27 @@ CMinidumperUtils::PdxlnExecuteMinidump(
 	const CHAR *file_name, ULONG ulSegments, ULONG ulSessionId, ULONG ulCmdId,
 	COptimizerConfig *optimizer_config, IConstExprEvaluator *pceeval)
 {
-	GPOS_ASSERT(nullptr != md_accessor);
-	GPOS_ASSERT(nullptr != pdxlmd->GetQueryDXLRoot() &&
-				nullptr != pdxlmd->PdrgpdxlnQueryOutput() &&
-				nullptr != pdxlmd->GetCTEProducerDXLArray() &&
+	GPOS_ASSERT(NULL != md_accessor);
+	GPOS_ASSERT(NULL != pdxlmd->GetQueryDXLRoot() &&
+				NULL != pdxlmd->PdrgpdxlnQueryOutput() &&
+				NULL != pdxlmd->GetCTEProducerDXLArray() &&
 				"No query found in Minidump");
-	GPOS_ASSERT(nullptr != pdxlmd->GetMdIdCachedObjArray() &&
-				nullptr != pdxlmd->GetSysidPtrArray() &&
+	GPOS_ASSERT(NULL != pdxlmd->GetMdIdCachedObjArray() &&
+				NULL != pdxlmd->GetSysidPtrArray() &&
 				"No metadata found in Minidump");
-	GPOS_ASSERT(nullptr != optimizer_config);
+	GPOS_ASSERT(NULL != optimizer_config);
 
-	CDXLNode *pdxlnPlan = nullptr;
+	CDXLNode *pdxlnPlan = NULL;
 	CAutoTimer at("Minidump", true /*fPrint*/);
 
 	GPOS_CHECK_ABORT;
 
 	// set trace flags
-	CBitSet *pbsEnabled = nullptr;
-	CBitSet *pbsDisabled = nullptr;
+	CBitSet *pbsEnabled = NULL;
+	CBitSet *pbsDisabled = NULL;
 	SetTraceflags(mp, pdxlmd->Pbs(), &pbsEnabled, &pbsDisabled);
 
-	if (nullptr == pceeval)
+	if (NULL == pceeval)
 	{
 		// disable constant expression evaluation when running minidump since
 		// there no executor to compute the scalar expression
@@ -326,7 +335,7 @@ CMinidumperUtils::PdxlnExecuteMinidump(
 			mp, md_accessor, pdxlmd->GetQueryDXLRoot(),
 			pdxlmd->PdrgpdxlnQueryOutput(), pdxlmd->GetCTEProducerDXLArray(),
 			pceeval, ulSegments, ulSessionId, ulCmdId,
-			nullptr,  // search_stage_array
+			NULL,  // search_stage_array
 			optimizer_config, file_name);
 	}
 	GPOS_CATCH_EX(ex)

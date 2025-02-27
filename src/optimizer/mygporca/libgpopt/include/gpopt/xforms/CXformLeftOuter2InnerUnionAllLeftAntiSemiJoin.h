@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin.h
@@ -51,9 +51,13 @@ private:
 	// if ratio of the cardinalities outer/inner is below this value, we apply the xform
 	static const DOUBLE m_dOuterInnerRatioThreshold;
 
+	// disable copy ctor
+	CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin(
+		const CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin &);
+
 	// check the stats ratio to decide whether to apply the xform or not
-	static BOOL FApplyXformUsingStatsInfo(const IStatistics *outer_stats,
-										  const IStatistics *inner_side_stats);
+	BOOL FApplyXformUsingStatsInfo(const IStatistics *outer_stats,
+								   const IStatistics *inner_side_stats) const;
 
 	// check if the inner expression is of a type which should be considered by this xform
 	static BOOL FValidInnerExpr(CExpression *pexprInner);
@@ -75,45 +79,44 @@ private:
 		CColRefArray **ppdrgpcrProjectOutput);
 
 public:
-	CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin(
-		const CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin &) = delete;
-
 	// ctor
 	explicit CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin() override = default;
+	virtual ~CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin()
+	{
+	}
 
 	// identifier
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftOuter2InnerUnionAllLeftAntiSemiJoin;
 	}
 
 	// return a string for the xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	BOOL
-	FNeedsStats() const override
+	virtual BOOL
+	FNeedsStats() const
 	{
 		return true;
 	}
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 	// return true if xform should be applied only once
-	BOOL IsApplyOnce() override;
+	virtual BOOL IsApplyOnce();
 };
 }  // namespace gpopt
 

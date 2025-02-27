@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CPhysicalHashAggDeduplicate.cpp
@@ -35,12 +35,12 @@ CPhysicalHashAggDeduplicate::CPhysicalHashAggDeduplicate(
 	BOOL fGeneratesDuplicates, BOOL fMultiStage, BOOL isAggFromSplitDQA,
 	CLogicalGbAgg::EAggStage aggStage, BOOL should_enforce_distribution)
 	: CPhysicalHashAgg(mp, colref_array, pdrgpcrMinimal, egbaggtype,
-					   fGeneratesDuplicates, nullptr /*pdrgpcrGbMinusDistinct*/,
+					   fGeneratesDuplicates, NULL /*pdrgpcrGbMinusDistinct*/,
 					   fMultiStage, isAggFromSplitDQA, aggStage,
 					   should_enforce_distribution),
 	  m_pdrgpcrKeys(pdrgpcrKeys)
 {
-	GPOS_ASSERT(nullptr != pdrgpcrKeys);
+	GPOS_ASSERT(NULL != pdrgpcrKeys);
 }
 
 //---------------------------------------------------------------------------

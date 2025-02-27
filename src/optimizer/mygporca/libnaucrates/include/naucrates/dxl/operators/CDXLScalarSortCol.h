@@ -46,20 +46,21 @@ private:
 	// sort nulls before other values
 	BOOL m_must_sort_nulls_first;
 
-public:
-	CDXLScalarSortCol(CDXLScalarSortCol &) = delete;
+	// private copy ctor
+	CDXLScalarSortCol(CDXLScalarSortCol &);
 
+public:
 	// ctor/dtor
 	CDXLScalarSortCol(CMemoryPool *mp, ULONG colid, IMDId *sort_op_id,
 					  CWStringConst *pstrTypeName, BOOL fSortNullsFirst);
 
-	~CDXLScalarSortCol() override;
+	virtual ~CDXLScalarSortCol();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// Id of the sorting column
 	ULONG GetColId() const;
@@ -71,22 +72,22 @@ public:
 	BOOL IsSortedNullsFirst() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// conversion function
 	static CDXLScalarSortCol *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSortCol == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarSortCol *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid function call for this operator");
 		return false;
@@ -95,8 +96,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -25,7 +25,9 @@ FORCE_GENERATE_DBGSTR(gpopt::CDrvdProp);
 
 namespace gpopt
 {
-CDrvdProp::CDrvdProp() = default;
+CDrvdProp::CDrvdProp()
+{
+}
 
 IOstream &
 operator<<(IOstream &os, const CDrvdProp &drvdprop)

@@ -61,15 +61,16 @@ private:
 		// plan properties of corresponding producer
 		CDrvdPropPlan *m_pdpplan;
 
-	public:
-		CCTEReqEntry(const CCTEReqEntry &) = delete;
+		// private copy ctor
+		CCTEReqEntry(const CCTEReqEntry &);
 
+	public:
 		// ctor
 		CCTEReqEntry(ULONG id, CCTEMap::ECteType ect, BOOL fRequired,
 					 CDrvdPropPlan *pdpplan);
 
 		// dtor
-		~CCTEReqEntry() override;
+		virtual ~CCTEReqEntry();
 
 		// cte id
 		ULONG
@@ -106,21 +107,21 @@ private:
 		BOOL Equals(CCTEReqEntry *pcre) const;
 
 		// print function
-		IOstream &OsPrint(IOstream &os) const;
+		virtual IOstream &OsPrint(IOstream &os) const;
 
 	};	// class CCTEReqEntry
 
 	// map CTE id to CTE Req entry
-	using UlongToCTEReqEntryMap =
-		CHashMap<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CCTEReqEntry>>;
+	typedef CHashMap<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CCTEReqEntry> >
+		UlongToCTEReqEntryMap;
 
 	// map iterator
-	using UlongToCTEReqEntryMapIter =
-		CHashMapIter<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupRelease<CCTEReqEntry>>;
+	typedef CHashMapIter<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupRelease<CCTEReqEntry> >
+		UlongToCTEReqEntryMapIter;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -131,17 +132,18 @@ private:
 	// required cte ids (not optional)
 	ULongPtrArray *m_pdrgpulRequired;
 
+	// private copy ctor
+	CCTEReq(const CCTEReq &);
+
 	// lookup info for given cte id
 	CCTEReqEntry *PcreLookup(ULONG ulCteId) const;
 
 public:
-	CCTEReq(const CCTEReq &) = delete;
-
 	// ctor
 	explicit CCTEReq(CMemoryPool *mp);
 
 	// dtor
-	~CCTEReq() override;
+	virtual ~CCTEReq();
 
 	// required cte ids
 	ULongPtrArray *
@@ -165,7 +167,7 @@ public:
 	BOOL
 	Equals(const CCTEReq *pcter) const
 	{
-		GPOS_ASSERT(nullptr != pcter);
+		GPOS_ASSERT(NULL != pcter);
 		return (m_phmcter->Size() == pcter->m_phmcter->Size()) &&
 			   this->FSubset(pcter);
 	}
@@ -195,7 +197,7 @@ public:
 	CDrvdPropPlan *Pdpplan(ULONG ulCteId) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CCTEMap
 

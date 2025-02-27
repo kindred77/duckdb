@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CPhysicalDynamicBitmapTableScan.cpp
@@ -38,13 +38,14 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 CPhysicalDynamicBitmapTableScan::CPhysicalDynamicBitmapTableScan(
-	CMemoryPool *mp, CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
-	const CName *pnameAlias, ULONG scan_id, CColRefArray *pdrgpcrOutput,
-	CColRef2dArray *pdrgpdrgpcrParts, IMdIdArray *partition_mdids,
-	ColRefToUlongMapArray *root_col_mapping_per_part)
-	: CPhysicalDynamicScan(mp, ptabdesc, ulOriginOpId, pnameAlias, scan_id,
-						   pdrgpcrOutput, pdrgpdrgpcrParts, partition_mdids,
-						   root_col_mapping_per_part)
+	CMemoryPool *mp, BOOL is_partial, CTableDescriptor *ptabdesc,
+	ULONG ulOriginOpId, const CName *pnameAlias, ULONG scan_id,
+	CColRefArray *pdrgpcrOutput, CColRef2dArray *pdrgpdrgpcrParts,
+	ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
+	CPartConstraint *ppartcnstrRel)
+	: CPhysicalDynamicScan(mp, is_partial, ptabdesc, ulOriginOpId, pnameAlias,
+						   scan_id, pdrgpcrOutput, pdrgpdrgpcrParts,
+						   ulSecondaryScanId, ppartcnstr, ppartcnstrRel)
 {
 }
 
@@ -75,15 +76,15 @@ CPhysicalDynamicBitmapTableScan::PstatsDerive(
 	CMemoryPool *mp, CExpressionHandle &exprhdl, CReqdPropPlan *prpplan,
 	IStatisticsArray *stats_ctxt) const
 {
-	GPOS_ASSERT(nullptr != prpplan);
+	GPOS_ASSERT(NULL != prpplan);
 
 	IStatistics *pstatsBaseTable = CStatisticsUtils::DeriveStatsForDynamicScan(
-		mp, exprhdl, ScanId(), prpplan->Pepp()->PppsRequired());
+		mp, exprhdl, ScanId(), prpplan->Pepp()->PpfmDerived());
 
 	CExpression *pexprCondChild =
 		exprhdl.PexprScalarRepChild(0 /*ulChidIndex*/);
-	CExpression *local_expr = nullptr;
-	CExpression *expr_with_outer_refs = nullptr;
+	CExpression *local_expr = NULL;
+	CExpression *expr_with_outer_refs = NULL;
 
 	// get outer references from expression handle
 	CColRefSet *outer_refs = exprhdl.DeriveOuterReferences();
@@ -101,4 +102,5 @@ CPhysicalDynamicBitmapTableScan::PstatsDerive(
 
 	return stats;
 }
+
 // EOF

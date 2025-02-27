@@ -28,27 +28,28 @@ namespace gpopt
 class CPhysicalLeftAntiSemiHashJoinNotIn : public CPhysicalLeftAntiSemiHashJoin
 {
 private:
-public:
+	// private copy ctor
 	CPhysicalLeftAntiSemiHashJoinNotIn(
-		const CPhysicalLeftAntiSemiHashJoinNotIn &) = delete;
+		const CPhysicalLeftAntiSemiHashJoinNotIn &);
 
+public:
 	// ctor
 	CPhysicalLeftAntiSemiHashJoinNotIn(
 		CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
-		CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-		BOOL is_null_aware = true,
+		CExpressionArray *pdrgpexprInnerKeys,
+		IMdIdArray *hash_opfamilies = NULL,
 		CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftAntiSemiHashJoinNotIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftAntiSemiHashJoinNotIn";
 	}
@@ -58,16 +59,17 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
-	CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						   CReqdPropPlan *prppInput, ULONG child_index,
-						   CDrvdPropArray *pdrgpdpCtxt,
-						   ULONG ulDistrReq) override;
+	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CDrvdPropArray *pdrgpdpCtxt,
+								   ULONG ulDistrReq);
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------

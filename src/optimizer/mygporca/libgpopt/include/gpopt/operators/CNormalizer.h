@@ -31,6 +31,32 @@ using namespace gpos;
 class CNormalizer
 {
 private:
+	// definition of push through function
+	typedef void(FnPushThru)(CMemoryPool *mp, CExpression *pexprLogical,
+							 CExpression *pexprConj,
+							 CExpression **ppexprResult);
+
+	//---------------------------------------------------------------------------
+	//	@struct:
+	//		SPushThru
+	//
+	//	@doc:
+	//		Mapping of a logical operator to a push through function
+	//
+	//---------------------------------------------------------------------------
+	struct SPushThru
+	{
+		// logical operator id
+		COperator::EOperatorId m_eopid;
+
+		// pointer to push through function
+		FnPushThru *m_pfnpt;
+
+	};	// struct SPushThru
+
+	// array of mappings
+	static const SPushThru m_rgpt[];
+
 	//  return true if second expression is a child of first expression
 	static BOOL FChild(CExpression *pexpr, CExpression *pexprChild);
 
@@ -136,7 +162,7 @@ private:
 	// exist in the given used columns set
 	static CExpression *PexprPullUpProjectElements(
 		CMemoryPool *mp, CExpression *pexpr, CColRefSet *pcrsUsed,
-		CColRefSet *pcrsOutput, CExpressionArray *pdrgpexprPrElPullUp);
+		CColRefSet *pcrsOutput, CExpressionArray **ppdrgpexprPrElPullUp);
 
 #ifdef GPOS_DEBUG
 	// check if the columns used by the operator are a subset of its input columns

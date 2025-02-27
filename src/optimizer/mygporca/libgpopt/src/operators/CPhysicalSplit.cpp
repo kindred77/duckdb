@@ -33,25 +33,31 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CPhysicalSplit::CPhysicalSplit(CMemoryPool *mp, CColRefArray *pdrgpcrDelete,
 							   CColRefArray *pdrgpcrInsert, CColRef *pcrCtid,
-							   CColRef *pcrSegmentId, CColRef *pcrAction)
+							   CColRef *pcrSegmentId, CColRef *pcrAction,
+							   CColRef *pcrTupleOid)
 	: CPhysical(mp),
 	  m_pdrgpcrDelete(pdrgpcrDelete),
 	  m_pdrgpcrInsert(pdrgpcrInsert),
 	  m_pcrCtid(pcrCtid),
 	  m_pcrSegmentId(pcrSegmentId),
 	  m_pcrAction(pcrAction),
-	  m_pcrsRequiredLocal(nullptr)
+	  m_pcrTupleOid(pcrTupleOid),
+	  m_pcrsRequiredLocal(NULL)
 {
-	GPOS_ASSERT(nullptr != pdrgpcrDelete);
-	GPOS_ASSERT(nullptr != pdrgpcrInsert);
+	GPOS_ASSERT(NULL != pdrgpcrDelete);
+	GPOS_ASSERT(NULL != pdrgpcrInsert);
 	GPOS_ASSERT(pdrgpcrInsert->Size() == pdrgpcrDelete->Size());
-	GPOS_ASSERT(nullptr != pcrCtid);
-	GPOS_ASSERT(nullptr != pcrSegmentId);
-	GPOS_ASSERT(nullptr != pcrAction);
+	GPOS_ASSERT(NULL != pcrCtid);
+	GPOS_ASSERT(NULL != pcrSegmentId);
+	GPOS_ASSERT(NULL != pcrAction);
 
 	m_pcrsRequiredLocal = GPOS_NEW(mp) CColRefSet(mp);
 	m_pcrsRequiredLocal->Include(m_pdrgpcrDelete);
 	m_pcrsRequiredLocal->Include(m_pdrgpcrInsert);
+	if (NULL != m_pcrTupleOid)
+	{
+		m_pcrsRequiredLocal->Include(m_pcrTupleOid);
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -127,7 +133,7 @@ CPhysicalSplit::EpetOrder(CExpressionHandle &,	// exprhdl
 #endif	// GPOS_DEBUG
 ) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	// always force sort to be on top of split
@@ -213,6 +219,29 @@ CPhysicalSplit::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPhysicalSplit::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalSplit::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							 CPartitionPropagationSpec *pppsRequired,
+							 ULONG child_index,
+							 CDrvdPropArray *,	//pdrgpdpCtxt,
+							 ULONG				//ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	return CPhysical::PppsRequiredPushThru(mp, exprhdl, pppsRequired,
+										   child_index);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPhysicalSplit::PcteRequired
 //
 //	@doc:
@@ -250,7 +279,7 @@ CPhysicalSplit::FProvidesReqdCols(CExpressionHandle &exprhdl,
 								  ULONG	 // ulOptReq
 ) const
 {
-	GPOS_ASSERT(nullptr != pcrsRequired);
+	GPOS_ASSERT(NULL != pcrsRequired);
 	GPOS_ASSERT(2 == exprhdl.Arity());
 
 	CColRefSet *pcrs = GPOS_NEW(m_mp) CColRefSet(m_mp);
@@ -357,7 +386,7 @@ CPhysicalSplit::PdsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 			return GPOS_NEW(mp) CDistributionSpecRandom();
 		}
 		pcrsHashed->Release();
-	} while (nullptr != (pdsHashed = pdsHashed->PdshashedEquiv()));
+	} while (NULL != (pdsHashed = pdsHashed->PdshashedEquiv()));
 
 	pcrsModified->Release();
 	pcrsDelete->Release();
@@ -418,6 +447,7 @@ CPhysicalSplit::Matches(COperator *pop) const
 		return m_pcrCtid == popSplit->PcrCtid() &&
 			   m_pcrSegmentId == popSplit->PcrSegmentId() &&
 			   m_pcrAction == popSplit->PcrAction() &&
+			   m_pcrTupleOid == popSplit->PcrTupleOid() &&
 			   m_pdrgpcrDelete->Equals(popSplit->PdrgpcrDelete()) &&
 			   m_pdrgpcrInsert->Equals(popSplit->PdrgpcrInsert());
 	}

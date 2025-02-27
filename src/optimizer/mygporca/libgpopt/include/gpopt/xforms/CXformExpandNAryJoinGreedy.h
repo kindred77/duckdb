@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal Software Inc.
 //
 //	@filename:
 //		CXformExpandNAryJoinGreedy.h
@@ -34,45 +34,48 @@ using namespace gpos;
 class CXformExpandNAryJoinGreedy : public CXformExploration
 {
 private:
-public:
-	CXformExpandNAryJoinGreedy(const CXformExpandNAryJoinGreedy &) = delete;
+	// private copy ctor
+	CXformExpandNAryJoinGreedy(const CXformExpandNAryJoinGreedy &);
 
+public:
 	// ctor
 	explicit CXformExpandNAryJoinGreedy(CMemoryPool *pmp);
 
 	// dtor
-	~CXformExpandNAryJoinGreedy() override = default;
+	virtual ~CXformExpandNAryJoinGreedy()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfExpandNAryJoinGreedy;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformExpandNAryJoinGreedy";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	BOOL
-	FNeedsStats() const override
+	virtual BOOL
+	FNeedsStats() const
 	{
 		return true;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 	BOOL
-	IsApplyOnce() override
+	IsApplyOnce()
 	{
 		return true;
 	}

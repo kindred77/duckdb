@@ -21,8 +21,6 @@
 #include "gpopt/engine/CStatisticsConfig.h"
 #include "gpopt/mdcache/CMDKey.h"
 #include "naucrates/md/CSystemId.h"
-#include "naucrates/md/IMDExtStats.h"
-#include "naucrates/md/IMDExtStatsInfo.h"
 #include "naucrates/md/IMDFunction.h"
 #include "naucrates/md/IMDId.h"
 #include "naucrates/md/IMDProvider.h"
@@ -39,8 +37,10 @@ namespace gpmd
 {
 class IMDCacheObject;
 class IMDRelation;
+class IMDRelationExternal;
 class IMDScalarOp;
 class IMDAggregate;
+class IMDTrigger;
 class IMDIndex;
 class IMDCheckConstraint;
 class IMDProvider;
@@ -65,7 +65,7 @@ using namespace gpos;
 using namespace gpmd;
 
 
-using MdidPtr = IMDId *;
+typedef IMDId *MdidPtr;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -90,7 +90,7 @@ class CMDAccessor
 {
 public:
 	// ccache template for mdcache
-	using MDCache = CCache<IMDCacheObject *, CMDKey *>;
+	typedef CCache<IMDCacheObject *, CMDKey *> MDCache;
 
 private:
 	// element in the hashtable of cache accessors maintained by the MD accessor
@@ -99,28 +99,28 @@ private:
 
 
 	// cache accessor for objects in a MD cache
-	using CacheAccessorMD = CCacheAccessor<IMDCacheObject *, CMDKey *>;
+	typedef CCacheAccessor<IMDCacheObject *, CMDKey *> CacheAccessorMD;
 
 	// hashtable for cache accessors indexed by the md id of the accessed object
-	using MDHT = CSyncHashtable<SMDAccessorElem, MdidPtr>;
+	typedef CSyncHashtable<SMDAccessorElem, MdidPtr> MDHT;
 
-	using MDHTAccessor = CSyncHashtableAccessByKey<SMDAccessorElem, MdidPtr>;
+	typedef CSyncHashtableAccessByKey<SMDAccessorElem, MdidPtr> MDHTAccessor;
 
 	// iterator for the cache accessors hashtable
-	using MDHTIter = CSyncHashtableIter<SMDAccessorElem, MdidPtr>;
-	using MDHTIterAccessor =
-		CSyncHashtableAccessByIter<SMDAccessorElem, MdidPtr>;
+	typedef CSyncHashtableIter<SMDAccessorElem, MdidPtr> MDHTIter;
+	typedef CSyncHashtableAccessByIter<SMDAccessorElem, MdidPtr>
+		MDHTIterAccessor;
 
 	// hashtable for MD providers indexed by the source system id
-	using MDPHT = CSyncHashtable<SMDProviderElem, SMDProviderElem>;
+	typedef CSyncHashtable<SMDProviderElem, SMDProviderElem> MDPHT;
 
-	using MDPHTAccessor =
-		CSyncHashtableAccessByKey<SMDProviderElem, SMDProviderElem>;
+	typedef CSyncHashtableAccessByKey<SMDProviderElem, SMDProviderElem>
+		MDPHTAccessor;
 
 	// iterator for the providers hashtable
-	using MDPHTIter = CSyncHashtableIter<SMDProviderElem, SMDProviderElem>;
-	using MDPHTIterAccessor =
-		CSyncHashtableAccessByIter<SMDProviderElem, SMDProviderElem>;
+	typedef CSyncHashtableIter<SMDProviderElem, SMDProviderElem> MDPHTIter;
+	typedef CSyncHashtableAccessByIter<SMDProviderElem, SMDProviderElem>
+		MDPHTIterAccessor;
 
 	// element in the cache accessor hashtable maintained by the MD Accessor
 	struct SMDAccessorElem
@@ -153,7 +153,7 @@ private:
 		}
 
 		// return the key for this hashtable element
-		IMDId *MDId() const;
+		IMDId *MDId();
 
 		// equality function for hash tables
 		static BOOL Equals(const MdidPtr &left_mdid, const MdidPtr &right_mdid);
@@ -222,9 +222,11 @@ private:
 	// this time is currently dominated by serialization time
 	CDouble m_dFetchTime;
 
+	// private copy ctor
+	CMDAccessor(const CMDAccessor &);
+
 	// interface to a MD cache object
-	const IMDCacheObject *GetImdObj(IMDId *mdid,
-									IMDCacheObject::Emdtype mdtype);
+	const IMDCacheObject *GetImdObj(IMDId *mdid);
 
 	// return the type corresponding to the given type info and source system id
 	const IMDType *RetrieveType(CSystemId sysid, IMDType::ETypeInfo type_info);
@@ -268,8 +270,6 @@ private:
 					 const CDXLDatum *dxl_datum);
 
 public:
-	CMDAccessor(const CMDAccessor &) = delete;
-
 	// ctors
 	CMDAccessor(CMemoryPool *mp, MDCache *pcache);
 	CMDAccessor(CMemoryPool *mp, MDCache *pcache, CSystemId sysid,
@@ -294,12 +294,6 @@ public:
 	// register given MD providers
 	void RegisterProviders(const CSystemIdArray *pdrgpsysid,
 						   const CMDProviderArray *pdrgpmdp);
-
-	// interface to an extended stats object from the MD cache
-	const IMDExtStats *RetrieveExtStats(IMDId *mdid);
-
-	// interface to an extended stats metadata object from the MD cache
-	const IMDExtStatsInfo *RetrieveExtStatsInfo(IMDId *mdid);
 
 	// interface to a relation object from the MD cache
 	const IMDRelation *RetrieveRel(IMDId *mdid);
@@ -339,6 +333,9 @@ public:
 	// interface to an aggregate from the MD cache
 	const IMDAggregate *RetrieveAgg(IMDId *mdid);
 
+	// interface to a trigger from the MD cache
+	const IMDTrigger *RetrieveTrigger(IMDId *mdid);
+
 	// interface to an index from the MD cache
 	const IMDIndex *RetrieveIndex(IMDId *mdid);
 
@@ -365,7 +362,7 @@ public:
 			*pcrsHist,	// set of column references for which stats are needed
 		CColRefSet *
 			pcrsWidth,	// set of column references for which the widths are needed
-		CStatisticsConfig *stats_config = nullptr);
+		CStatisticsConfig *stats_config = NULL);
 
 	// serialize object to passed stream
 	void Serialize(COstream &oos);

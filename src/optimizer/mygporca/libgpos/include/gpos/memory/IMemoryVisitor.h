@@ -31,14 +31,19 @@ class CStackDescriptor;
 class IMemoryVisitor
 {
 private:
-public:
-	IMemoryVisitor(IMemoryVisitor &) = delete;
+	// private copy ctor
+	IMemoryVisitor(IMemoryVisitor &);
 
+public:
 	// ctor
-	IMemoryVisitor() = default;
+	IMemoryVisitor()
+	{
+	}
 
 	// dtor
-	virtual ~IMemoryVisitor() = default;
+	virtual ~IMemoryVisitor()
+	{
+	}
 
 	// executed operation during a walk of objects;
 	// file name may be NULL (when debugging is not enabled);

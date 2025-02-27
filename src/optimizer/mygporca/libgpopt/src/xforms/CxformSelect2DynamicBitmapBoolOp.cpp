@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CXformSelect2DynamicBitmapBoolOp.cpp
@@ -54,7 +54,8 @@ CXformSelect2DynamicBitmapBoolOp::CXformSelect2DynamicBitmapBoolOp(
 //
 //---------------------------------------------------------------------------
 CXform::EXformPromise
-CXformSelect2DynamicBitmapBoolOp::Exfp(CExpressionHandle &) const
+CXformSelect2DynamicBitmapBoolOp::Exfp(CExpressionHandle &	// exprhdl
+) const
 {
 	return CXform::ExfpHigh;
 }
@@ -72,21 +73,14 @@ CXformSelect2DynamicBitmapBoolOp::Transform(CXformContext *pxfctxt,
 											CXformResult *pxfres,
 											CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
-	CLogicalDynamicGet *popGet =
-		CLogicalDynamicGet::PopConvert((*pexpr)[0]->Pop());
-	// Do not run if contains foreign partitions, instead run CXformExpandDynamicGetWithForeignPartitions
-	if (popGet->ContainsForeignParts())
-	{
-		return;
-	}
 	CMemoryPool *mp = pxfctxt->Pmp();
 	CExpression *pexprResult = CXformUtils::PexprSelect2BitmapBoolOp(mp, pexpr);
 
-	if (nullptr != pexprResult)
+	if (NULL != pexprResult)
 	{
 		// create a redundant SELECT on top of DynamicIndexGet to be able to use predicate in partition elimination
 		CExpression *pexprRedundantSelect =

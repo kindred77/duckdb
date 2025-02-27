@@ -35,8 +35,8 @@ class IMDAggregate : public IMDCacheObject
 {
 public:
 	// object type
-	Emdtype
-	MDType() const override
+	virtual Emdtype
+	MDType() const
 	{
 		return EmdtAgg;
 	}
@@ -58,9 +58,6 @@ public:
 		// is aggregate hash capable
 		BOOL
 		IsHashAggCapable() const = 0;
-
-	// is aggregate replicate slice execution safe
-	virtual BOOL IsAggRepSafe() const = 0;
 };
 }  // namespace gpmd
 

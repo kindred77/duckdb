@@ -30,9 +30,10 @@ using namespace gpos;
 class CXformGbAgg2StreamAgg : public CXformImplementation
 {
 private:
-public:
-	CXformGbAgg2StreamAgg(const CXformGbAgg2StreamAgg &) = delete;
+	// private copy ctor
+	CXformGbAgg2StreamAgg(const CXformGbAgg2StreamAgg &);
 
+public:
 	// ctor
 	CXformGbAgg2StreamAgg(CMemoryPool *mp);
 
@@ -40,28 +41,30 @@ public:
 	explicit CXformGbAgg2StreamAgg(CExpression *pexprPattern);
 
 	// dtor
-	~CXformGbAgg2StreamAgg() override = default;
+	virtual ~CXformGbAgg2StreamAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAgg2StreamAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAgg2StreamAgg";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformGbAgg2StreamAgg
 

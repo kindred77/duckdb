@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerScalarCoerceViaIO.cpp
@@ -63,7 +63,7 @@ CParseHandlerScalarCoerceViaIO::StartElement(
 				 CDXLTokens::XmlstrToken(EdxltokenScalarCoerceViaIO),
 				 element_local_name))
 	{
-		if (nullptr != m_dxl_node)
+		if (NULL != m_dxl_node)
 		{
 			CWStringDynamic *str = CDXLUtils::CreateDynamicStringFromXMLChArray(
 				m_parse_handler_mgr->GetDXLMemoryManager(), element_local_name);

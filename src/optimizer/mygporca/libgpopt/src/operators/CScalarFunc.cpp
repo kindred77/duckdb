@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
-//	Portions Copyright (c) 2023, HashData Technology Limited.
 //
 //	@filename:
 //		CScalarFunc.cpp
@@ -16,7 +15,6 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CDrvdPropScalar.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/mdcache/CMDAccessorUtils.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "naucrates/md/IMDFunction.h"
@@ -35,10 +33,10 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 CScalarFunc::CScalarFunc(CMemoryPool *mp)
 	: CScalar(mp),
-	  m_func_mdid(nullptr),
-	  m_return_type_mdid(nullptr),
+	  m_func_mdid(NULL),
+	  m_return_type_mdid(NULL),
 	  m_return_type_modifier(default_type_modifier),
-	  m_pstrFunc(nullptr),
+	  m_pstrFunc(NULL),
 	  m_efs(IMDFunction::EfsSentinel),
 	  m_returns_set(false),
 	  m_returns_null_on_null_input(false),
@@ -56,8 +54,7 @@ CScalarFunc::CScalarFunc(CMemoryPool *mp)
 //---------------------------------------------------------------------------
 CScalarFunc::CScalarFunc(CMemoryPool *mp, IMDId *mdid_func,
 						 IMDId *mdid_return_type, INT return_type_modifier,
-						 const CWStringConst *pstrFunc, INT func_format, 
-						 BOOL funcvariadic)
+						 const CWStringConst *pstrFunc)
 	: CScalar(mp),
 	  m_func_mdid(mdid_func),
 	  m_return_type_mdid(mdid_return_type),
@@ -65,9 +62,7 @@ CScalarFunc::CScalarFunc(CMemoryPool *mp, IMDId *mdid_func,
 	  m_pstrFunc(pstrFunc),
 	  m_returns_set(false),
 	  m_returns_null_on_null_input(false),
-	  m_fBoolReturnType(false),
-	  m_func_format(func_format),
-	  m_funcvariadic(funcvariadic)
+	  m_fBoolReturnType(false)
 {
 	GPOS_ASSERT(mdid_func->IsValid());
 	GPOS_ASSERT(mdid_return_type->IsValid());
@@ -82,6 +77,7 @@ CScalarFunc::CScalarFunc(CMemoryPool *mp, IMDId *mdid_func,
 	m_fBoolReturnType =
 		CMDAccessorUtils::FBoolType(md_accessor, m_return_type_mdid);
 }
+
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -215,12 +211,6 @@ CScalarFunc::FHasNonScalarFunction(CExpressionHandle &exprhdl)
 	return m_returns_set || CScalar::FHasNonScalarFunction(exprhdl);
 }
 
-INT
-CScalarFunc::FuncFormat() const
-{
-	return m_func_format;
-}
-
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -257,11 +247,6 @@ CScalarFunc::Eber(ULongPtrArray *pdrgpulChildren) const
 	}
 
 	return EberAny;
-}
-BOOL
-CScalarFunc::IsFuncVariadic() const
-{
-	return m_funcvariadic;
 }
 
 

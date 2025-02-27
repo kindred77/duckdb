@@ -25,7 +25,7 @@
 #include "naucrates/traceflags/traceflags.h"
 
 // Macro for enabling and disabling xforms
-#define GPOPT_DISABLE_XFORM_TF(x) EopttraceDisableXformBase + static_cast<int>(x)
+#define GPOPT_DISABLE_XFORM_TF(x) EopttraceDisableXformBase + x
 #define GPOPT_ENABLE_XFORM(x) GPOS_UNSET_TRACE(GPOPT_DISABLE_XFORM_TF(x))
 #define GPOPT_DISABLE_XFORM(x) GPOS_SET_TRACE(GPOPT_DISABLE_XFORM_TF(x))
 #define GPOPT_FENABLED_XFORM(x) !GPOS_FTRACE(GPOPT_DISABLE_XFORM_TF(x))
@@ -50,9 +50,10 @@ private:
 	// pattern
 	CExpression *m_pexpr;
 
-public:
-	CXform(CXform &) = delete;
+	// private copy ctor
+	CXform(CXform &);
 
+public:
 	// identification
 	//
 	// IMPORTANT: when adding new Xform Ids, please add them near
@@ -79,7 +80,7 @@ public:
 		ExfSelect2Filter,
 		ExfSelect2IndexGet,
 		ExfSelect2DynamicIndexGet,
-		ExfSelect2PartialDynamicIndexGet____removed,
+		ExfSelect2PartialDynamicIndexGet,
 		ExfSimplifySelectWithSubquery,
 		ExfSimplifyProjectWithSubquery,
 		ExfSelect2Apply,
@@ -90,9 +91,9 @@ public:
 		ExfInnerJoin2IndexGetApply____removed,
 		ExfInnerJoin2DynamicIndexGetApply____removed,
 		ExfInnerApplyWithOuterKey2InnerJoin,
-		ExfInnerJoin2NLJoin____removed,
+		ExfInnerJoin2NLJoin,
 		ExfImplementIndexApply,
-		ExfInnerJoin2HashJoin____removed,
+		ExfInnerJoin2HashJoin,
 		ExfInnerApply2InnerJoin,
 		ExfInnerApply2InnerJoinNoCorrelations,
 		ExfImplementInnerCorrelatedApply,
@@ -134,7 +135,7 @@ public:
 		ExfDelete2DML,
 		ExfUpdate2DML,
 		ExfImplementDML,
-		ExfImplementRowTrigger____removed,
+		ExfImplementRowTrigger,
 		ExfImplementSplit,
 		ExfJoinCommutativity,
 		ExfJoinAssociativity,
@@ -177,12 +178,12 @@ public:
 		ExfImplementCTEProducer,
 		ExfImplementCTEConsumer,
 		ExfExpandFullOuterJoin,
-		ExfForeignGet2ForeignScan,
+		ExfExternalGet2ExternalScan,
 		ExfSelect2BitmapBoolOp,
 		ExfSelect2DynamicBitmapBoolOp,
 		ExfImplementBitmapTableGet,
 		ExfImplementDynamicBitmapTableGet,
-		ExfInnerJoin2PartialDynamicIndexGetApply____removed,
+		ExfInnerJoin2PartialDynamicIndexGetApply,
 		ExfLeftOuter2InnerUnionAllLeftAntiSemiJoin,
 		ExfImplementLeftSemiCorrelatedApply,
 		ExfImplementLeftSemiCorrelatedApplyIn,
@@ -196,7 +197,7 @@ public:
 		ExfMaxOneRow2Assert,
 		ExfInnerJoinWithInnerSelect2IndexGetApply____removed,
 		ExfInnerJoinWithInnerSelect2DynamicIndexGetApply____removed,
-		ExfInnerJoinWithInnerSelect2PartialDynamicIndexGetApply____removed,
+		ExfInnerJoinWithInnerSelect2PartialDynamicIndexGetApply,
 		ExfInnerJoin2DynamicBitmapIndexGetApply____removed,
 		ExfInnerJoinWithInnerSelect2BitmapIndexGetApply____removed,
 		ExfInnerJoinWithInnerSelect2DynamicBitmapIndexGetApply____removed,
@@ -218,13 +219,11 @@ public:
 		ExfIndexGet2IndexOnlyScan,
 		ExfJoin2BitmapIndexGetApply,
 		ExfJoin2IndexGetApply,
-		ExfMultiExternalGet2MultiExternalScan____removed,
-		ExfExpandDynamicGetWithExternalPartitions____removed,
+		ExfMultiExternalGet2MultiExternalScan,
+		ExfExpandDynamicGetWithExternalPartitions,
 		ExfLeftJoin2RightJoin,
 		ExfRightOuterJoin2HashJoin,
 		ExfImplementInnerJoin,
-		ExfDynamicForeignGet2DynamicForeignScan,
-		ExfExpandDynamicGetWithForeignPartitions,
 		ExfInvalid,
 		ExfSentinel = ExfInvalid
 	};
@@ -243,7 +242,7 @@ public:
 	explicit CXform(CExpression *pexpr);
 
 	// dtor
-	~CXform() override;
+	virtual ~CXform();
 
 	// ident accessors
 	virtual EXformId Exfid() const = 0;
@@ -295,7 +294,7 @@ public:
 	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const = 0;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 #ifdef GPOS_DEBUG
 
@@ -311,9 +310,6 @@ public:
 	// equality function over xform ids
 	static BOOL FEqualIds(const CHAR *szIdOne, const CHAR *szIdTwo);
 
-	// returns a set containing all xforms related to nl join
-	// caller takes ownership of the returned set
-	static CBitSet *PbsNLJoinXforms(CMemoryPool *mp);
 
 	// returns a set containing all xforms related to index join
 	// caller takes ownership of the returned set
@@ -322,6 +318,10 @@ public:
 	// returns a set containing all xforms related to bitmap indexes
 	// caller takes ownership of the returned set
 	static CBitSet *PbsBitmapIndexXforms(CMemoryPool *mp);
+
+	// returns a set containing all xforms related to heterogeneous indexes
+	// caller takes ownership of the returned set
+	static CBitSet *PbsHeterogeneousIndexXforms(CMemoryPool *mp);
 
 	// returns a set containing all xforms that generate a plan with a hash join
 	// caller takes ownership of the returned set
@@ -358,8 +358,8 @@ operator<<(IOstream &os, CXform &xform)
 }
 
 // shorthands for enum sets and iterators of xform ids
-using CXformSet = CEnumSet<CXform::EXformId, CXform::ExfSentinel>;
-using CXformSetIter = CEnumSetIter<CXform::EXformId, CXform::ExfSentinel>;
+typedef CEnumSet<CXform::EXformId, CXform::ExfSentinel> CXformSet;
+typedef CEnumSetIter<CXform::EXformId, CXform::ExfSentinel> CXformSetIter;
 }  // namespace gpopt
 
 

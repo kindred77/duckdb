@@ -34,7 +34,7 @@ CErrorHandlerStandard::Process(CException exception)
 {
 	CTask *task = CTask::Self();
 
-	GPOS_ASSERT(nullptr != task && "No task in current context");
+	GPOS_ASSERT(NULL != task && "No task in current context");
 
 	IErrorContext *err_ctxt = task->GetErrCtxt();
 	CLogger *log = dynamic_cast<CLogger *>(task->GetErrorLogger());
@@ -46,7 +46,9 @@ CErrorHandlerStandard::Process(CException exception)
 	// print error stack trace
 	if (CException::ExmaSystem == exception.Major() && !err_ctxt->IsRethrown())
 	{
-		if (CException::ExmiIOError == exception.Minor() && 0 < errno)
+		if ((CException::ExmiIOError == exception.Minor() ||
+			 CException::ExmiNetError == exception.Minor()) &&
+			0 < errno)
 		{
 			err_ctxt->AppendErrnoMsg();
 		}

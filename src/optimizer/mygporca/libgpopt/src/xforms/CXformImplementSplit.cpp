@@ -70,7 +70,7 @@ void
 CXformImplementSplit::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 								CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -87,6 +87,7 @@ CXformImplementSplit::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	CColRef *pcrAction = popSplit->PcrAction();
 	CColRef *pcrCtid = popSplit->PcrCtid();
 	CColRef *pcrSegmentId = popSplit->PcrSegmentId();
+	CColRef *pcrTupleOid = popSplit->PcrTupleOid();
 
 	// child of Split operator
 	CExpression *pexprChild = (*pexpr)[0];
@@ -98,7 +99,7 @@ CXformImplementSplit::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	CExpression *pexprAlt = GPOS_NEW(mp) CExpression(
 		mp,
 		GPOS_NEW(mp) CPhysicalSplit(mp, pdrgpcrDelete, pdrgpcrInsert, pcrCtid,
-									pcrSegmentId, pcrAction),
+									pcrSegmentId, pcrAction, pcrTupleOid),
 		pexprChild, pexprProjList);
 	// add alternative to transformation result
 	pxfres->Add(pexprAlt);

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		IStatistics.h
@@ -39,33 +39,35 @@ using namespace gpopt;
 class IStatistics;
 
 // hash map from column id to a histogram
-using UlongToHistogramMap =
-	CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupDelete<CHistogram>>;
+typedef CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupDelete<CHistogram> >
+	UlongToHistogramMap;
 
 // iterator
-using UlongToHistogramMapIter =
-	CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CHistogram>>;
+typedef CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupDelete<CHistogram> >
+	UlongToHistogramMapIter;
 
 // hash map from column ULONG to CDouble
-using UlongToDoubleMap =
-	CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupDelete<CDouble>>;
+typedef CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupDelete<CDouble> >
+	UlongToDoubleMap;
 
 // iterator
-using UlongToDoubleMapIter =
-	CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CDouble>>;
+typedef CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupDelete<CDouble> >
+	UlongToDoubleMapIter;
 
-using UlongToUlongMap =
-	CHashMap<ULONG, ULONG, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupDelete<ULONG>>;
+typedef CHashMap<ULONG, ULONG, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupDelete<ULONG> >
+	UlongToUlongMap;
 
 // hash maps mapping INT -> ULONG
-using IntToUlongMap =
-	CHashMap<INT, ULONG, gpos::HashValue<INT>, gpos::Equals<INT>,
-			 CleanupDelete<INT>, CleanupDelete<ULONG>>;
+typedef CHashMap<INT, ULONG, gpos::HashValue<INT>, gpos::Equals<INT>,
+				 CleanupDelete<INT>, CleanupDelete<ULONG> >
+	IntToUlongMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -78,11 +80,13 @@ using IntToUlongMap =
 class IStatistics : public CRefCount
 {
 private:
+	// private copy ctor
+	IStatistics(const IStatistics &);
+
+	// private assignment operator
+	IStatistics &operator=(IStatistics &);
+
 public:
-	IStatistics &operator=(IStatistics &) = delete;
-
-	IStatistics(const IStatistics &) = delete;
-
 	enum EStatsJoinType
 	{
 		EsjtInnerJoin,
@@ -93,10 +97,14 @@ public:
 	};
 
 	// ctor
-	IStatistics() = default;
+	IStatistics()
+	{
+	}
 
 	// dtor
-	~IStatistics() override = default;
+	virtual ~IStatistics()
+	{
+	}
 
 	// how many rows
 	virtual CDouble Rows() const = 0;
@@ -204,9 +212,18 @@ operator<<(IOstream &os, IStatistics &stats)
 {
 	return stats.OsPrint(os);
 }
+// release istats
+inline void
+CleanupStats(IStatistics *stats)
+{
+	if (NULL != stats)
+	{
+		(dynamic_cast<CRefCount *>(stats))->Release();
+	}
+}
 
 // dynamic array for derived stats
-using IStatisticsArray = CDynamicPtrArray<IStatistics, CleanupRelease>;
+typedef CDynamicPtrArray<IStatistics, CleanupStats> IStatisticsArray;
 }  // namespace gpnaucrates
 
 #endif	// !GPNAUCRATES_IStatistics_H

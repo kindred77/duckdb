@@ -31,42 +31,45 @@ using namespace gpos;
 class CXformExpandFullOuterJoin : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformExpandFullOuterJoin(const CXformExpandFullOuterJoin &);
+
 	// construct a join expression of two CTEs using the given CTE ids
 	// and output columns
-	static CExpression *PexprLogicalJoinOverCTEs(
+	CExpression *PexprLogicalJoinOverCTEs(
 		CMemoryPool *mp, EdxlJoinType edxljointype, ULONG ulLeftCTEId,
 		CColRefArray *pdrgpcrLeft, ULONG ulRightCTEId,
-		CColRefArray *pdrgpcrRight, CExpression *pexprScalar);
+		CColRefArray *pdrgpcrRight, CExpression *pexprScalar) const;
 
 public:
-	CXformExpandFullOuterJoin(const CXformExpandFullOuterJoin &) = delete;
-
 	// ctor
 	explicit CXformExpandFullOuterJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformExpandFullOuterJoin() override = default;
+	virtual ~CXformExpandFullOuterJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfExpandFullOuterJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformExpandFullOuterJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformExpandFullOuterJoin
 }  // namespace gpopt

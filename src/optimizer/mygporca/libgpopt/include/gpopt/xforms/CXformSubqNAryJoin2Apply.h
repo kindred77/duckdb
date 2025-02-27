@@ -34,9 +34,10 @@ using namespace gpos;
 class CXformSubqNAryJoin2Apply : public CXformSubqJoin2Apply
 {
 private:
-public:
-	CXformSubqNAryJoin2Apply(const CXformSubqNAryJoin2Apply &) = delete;
+	// private copy ctor
+	CXformSubqNAryJoin2Apply(const CXformSubqNAryJoin2Apply &);
 
+public:
 	// ctor
 	explicit CXformSubqNAryJoin2Apply(CMemoryPool *mp)
 		: CXformSubqJoin2Apply(
@@ -50,17 +51,19 @@ public:
 	}
 
 	// dtor
-	~CXformSubqNAryJoin2Apply() override = default;
+	virtual ~CXformSubqNAryJoin2Apply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSubqNAryJoin2Apply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSubqNAryJoin2Apply";
 	}

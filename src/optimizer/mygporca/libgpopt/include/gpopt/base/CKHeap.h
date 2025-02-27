@@ -73,17 +73,13 @@ private:
 		ULONG min_element_ix = ix;
 
 		if (exists(left_child_ix) && cost(left_child_ix) < cost(ix))
-		{
 			// left child is better than parent, it becomes the new candidate
 			min_element_ix = left_child_ix;
-		}
 
 		if (exists(right_child_ix) &&
 			cost(right_child_ix) < cost(min_element_ix))
-		{
 			// right child is better than min(parent, left child)
 			min_element_ix = right_child_ix;
-		}
 
 		if (min_element_ix != ix)
 		{
@@ -100,9 +96,7 @@ private:
 		ULONG parent_ix = parent(ix);
 
 		if (!exists(parent_ix))
-		{
 			return;
-		}
 
 		if (cost(ix) < cost(parent_ix))
 		{
@@ -122,9 +116,7 @@ private:
 
 		// now work our way up to the root, calling HeapifyDown
 		for (ULONG ix = start_ix; exists(ix); ix--)
-		{
 			HeapifyDown(ix);
-		}
 
 		m_is_heapified = true;
 	}
@@ -136,7 +128,7 @@ public:
 		m_topk = GPOS_NEW(m_mp) A(m_mp);
 	}
 
-	~CKHeap() override
+	~CKHeap()
 	{
 		m_topk->Release();
 	}
@@ -144,7 +136,7 @@ public:
 	void
 	Insert(E *elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 		// since the cost may change as we find more expressions in the group,
 		// we just append to the array now and heapify at the end
 		GPOS_ASSERT(!m_is_heapified);
@@ -164,7 +156,7 @@ public:
 	{
 		if (0 == m_topk->Size() || m_k <= m_num_returned)
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		m_num_returned++;
@@ -178,13 +170,11 @@ public:
 	{
 		if (0 == m_topk->Size())
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		if (!m_is_heapified)
-		{
 			Heapify();
-		}
 
 		// we want to remove and return the root of the tree, which is the best element
 

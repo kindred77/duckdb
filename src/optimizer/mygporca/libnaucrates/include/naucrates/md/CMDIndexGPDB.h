@@ -49,11 +49,13 @@ private:
 	// is the index clustered
 	BOOL m_clustered;
 
-	// is the index partitioned
-	BOOL m_partitioned;
-
 	// index type
 	EmdindexType m_index_type;
+
+	// index physical type represents the format structure on disk. Indexes on
+	// partitioned tables are stored as "logical" indexes in m_index_type. A
+	// "logical" index may be different than the physical index.
+	EmdindexType m_index_physical_type;
 
 	// type of items returned by index
 	IMDId *m_mdid_item_type;
@@ -67,80 +69,85 @@ private:
 	// operator families for each index key
 	IMdIdArray *m_mdid_opfamilies_array;
 
-	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	// partition constraint
+	IMDPartConstraint *m_mdpart_constraint;
 
-	// Child index oids
-	IMdIdArray *m_child_index_oids;
+	// DXL for object
+	const CWStringDynamic *m_dxl_str;
+
+	// private copy ctor
+	CMDIndexGPDB(const CMDIndexGPDB &);
 
 public:
-	CMDIndexGPDB(const CMDIndexGPDB &) = delete;
-
 	// ctor
 	CMDIndexGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-				 BOOL is_clustered, BOOL is_partitioned,
-				 EmdindexType index_type, IMDId *mdid_item_type,
+				 BOOL is_clustered, EmdindexType index_type,
+				 EmdindexType index_physical_type, IMDId *mdid_item_type,
 				 ULongPtrArray *index_key_cols_array,
 				 ULongPtrArray *included_cols_array,
 				 IMdIdArray *mdid_opfamilies_array,
-				 IMdIdArray *child_index_oids);
+				 IMDPartConstraint *mdpart_constraint);
 
 	// dtor
-	~CMDIndexGPDB() override;
+	virtual ~CMDIndexGPDB();
 
 	// index mdid
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// index name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// is the index clustered
-	BOOL IsClustered() const override;
-
-	// is the index partitioned
-	BOOL IsPartitioned() const override;
+	virtual BOOL IsClustered() const;
 
 	// index type
-	EmdindexType IndexType() const override;
+	virtual EmdindexType IndexType() const;
+
+	// index physical type
+	virtual EmdindexType IndexPhysicalType() const;
 
 	// number of keys
-	ULONG Keys() const override;
+	virtual ULONG Keys() const;
 
 	// return the n-th key column
-	ULONG KeyAt(ULONG pos) const override;
+	virtual ULONG KeyAt(ULONG pos) const;
 
 	// return the position of the key column
-	ULONG GetKeyPos(ULONG column) const override;
+	virtual ULONG GetKeyPos(ULONG column) const;
 
 	// number of included columns
-	ULONG IncludedCols() const override;
+	virtual ULONG IncludedCols() const;
 
 	// return the n-th included column
-	ULONG IncludedColAt(ULONG pos) const override;
+	virtual ULONG IncludedColAt(ULONG pos) const;
 
 	// return the position of the included column
-	ULONG GetIncludedColPos(ULONG column) const override;
+	virtual ULONG GetIncludedColPos(ULONG column) const;
+
+	// part constraint
+	virtual IMDPartConstraint *MDPartConstraint() const;
 
 	// DXL string for index
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// serialize MD index in DXL format given a serializer object
-	void Serialize(gpdxl::CXMLSerializer *) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 	// type id of items returned by the index
-	IMDId *GetIndexRetItemTypeMdid() const override;
+	virtual IMDId *GetIndexRetItemTypeMdid() const;
 
 	// check if given scalar comparison can be used with the index key
 	// at the specified position
-	BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
-					  ULONG key_pos) const override;
-
-	// child index oids
-	IMdIdArray *ChildIndexMdids() const override;
+	virtual BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
+							  ULONG key_pos) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the MD index
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

@@ -37,24 +37,25 @@ private:
 	// the sort operator
 	CDXLPhysicalSort *m_dxl_op;
 
+	// private copy ctor
+	CParseHandlerSort(const CParseHandlerSort &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerSort(const CParseHandlerSort &) = delete;
-
 	// ctor/dtor
 	CParseHandlerSort(CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 					  CParseHandlerBase *parse_handler_root);

@@ -62,7 +62,7 @@ public:
 
 private:
 	// shorthand for job state machine
-	using JSM = CJobStateMachine<EState, estSentinel, EEvent, eevSentinel>;
+	typedef CJobStateMachine<EState, estSentinel, EEvent, eevSentinel> JSM;
 
 	// job state machine
 	JSM m_jsm;
@@ -76,22 +76,23 @@ private:
 	// finalize action
 	static EEvent EevtFinalize(CSchedulerContext *psc, CJob *pj);
 
+	// private copy ctor
+	CJobGroupExpressionImplementation(
+		const CJobGroupExpressionImplementation &);
+
 protected:
 	// schedule transformation jobs for applicable xforms
-	void ScheduleApplicableTransformations(CSchedulerContext *psc) override;
+	virtual void ScheduleApplicableTransformations(CSchedulerContext *psc);
 
 	// schedule implementation jobs for all child groups
-	void ScheduleChildGroupsJobs(CSchedulerContext *psc) override;
+	virtual void ScheduleChildGroupsJobs(CSchedulerContext *psc);
 
 public:
-	CJobGroupExpressionImplementation(
-		const CJobGroupExpressionImplementation &) = delete;
-
 	// ctor
 	CJobGroupExpressionImplementation();
 
 	// dtor
-	~CJobGroupExpressionImplementation() override;
+	virtual ~CJobGroupExpressionImplementation();
 
 	// initialize job
 	void Init(CGroupExpression *pgexpr);
@@ -101,12 +102,12 @@ public:
 							CJob *pjParent);
 
 	// job's function
-	BOOL FExecute(CSchedulerContext *psc) override;
+	BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	IOstream &OsPrint(IOstream &os) const;
 
 	// dump state machine diagram in graphviz format
 	virtual IOstream &
@@ -131,7 +132,7 @@ public:
 	static CJobGroupExpressionImplementation *
 	PjConvert(CJob *pj)
 	{
-		GPOS_ASSERT(nullptr != pj);
+		GPOS_ASSERT(NULL != pj);
 		GPOS_ASSERT(EjtGroupExpressionImplementation == pj->Ejt());
 
 		return dynamic_cast<CJobGroupExpressionImplementation *>(pj);

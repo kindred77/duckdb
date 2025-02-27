@@ -28,47 +28,39 @@ namespace gpopt
 class CPhysicalLeftOuterHashJoin : public CPhysicalHashJoin
 {
 private:
-	// helper for deriving hash join distribution from hashed children
-	CDistributionSpec *PdsDeriveFromHashedChildren(
-		CMemoryPool *mp, CDistributionSpec *pdsOuter,
-		CDistributionSpec *pdsInner) const;
+	// private copy ctor
+	CPhysicalLeftOuterHashJoin(const CPhysicalLeftOuterHashJoin &);
 
 public:
-	CPhysicalLeftOuterHashJoin(const CPhysicalLeftOuterHashJoin &) = delete;
-
 	// ctor
 	CPhysicalLeftOuterHashJoin(
 		CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
-		CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-		BOOL is_null_aware = true,
+		CExpressionArray *pdrgpexprInnerKeys,
+		IMdIdArray *hash_opfamilies = NULL,
 		CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CPhysicalLeftOuterHashJoin() override;
+	virtual ~CPhysicalLeftOuterHashJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftOuterHashJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftOuterHashJoin";
 	}
-
-	// derive distribution
-	CDistributionSpec *PdsDerive(CMemoryPool *mp,
-								 CExpressionHandle &exprhdl) const override;
 
 	// conversion function
 	static CPhysicalLeftOuterHashJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalLeftOuterHashJoin == pop->Eopid());
 
 		return dynamic_cast<CPhysicalLeftOuterHashJoin *>(pop);

@@ -28,7 +28,7 @@ CWString::CWString(ULONG length)
 	: CWStringBase(length,
 				   true	 // owns_memory
 				   ),
-	  m_w_str_buffer(nullptr)
+	  m_w_str_buffer(NULL)
 {
 }
 
@@ -59,7 +59,7 @@ CWString::GetBuffer() const
 void
 CWString::Append(const CWStringBase *str)
 {
-	GPOS_ASSERT(nullptr != str);
+	GPOS_ASSERT(NULL != str);
 	if (0 < str->Length())
 	{
 		AppendBuffer(str->GetBuffer());

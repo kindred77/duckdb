@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CPhysicalSerialUnionAll_H
 #define GPOPT_CPhysicalSerialUnionAll_H
@@ -24,35 +24,37 @@ class CDistributionSpecHashed;
 class CPhysicalSerialUnionAll : public CPhysicalUnionAll
 {
 private:
-public:
-	CPhysicalSerialUnionAll(const CPhysicalSerialUnionAll &) = delete;
+	// private copy ctor
+	CPhysicalSerialUnionAll(const CPhysicalSerialUnionAll &);
 
+public:
 	// ctor
 	CPhysicalSerialUnionAll(CMemoryPool *mp, CColRefArray *pdrgpcrOutput,
-							CColRef2dArray *pdrgpdrgpcrInput);
+							CColRef2dArray *pdrgpdrgpcrInput,
+							ULONG ulScanIdPartialIndex);
 
 	// dtor
-	~CPhysicalSerialUnionAll() override;
+	virtual ~CPhysicalSerialUnionAll();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalSerialUnionAll;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalSerialUnionAll";
 	}
 
 	// distribution matching type
-	CEnfdDistribution::EDistributionMatching
+	virtual CEnfdDistribution::EDistributionMatching
 	Edm(CReqdPropPlan *prppInput,
 		ULONG,			   // child_index
 		CDrvdPropArray *,  //pdrgpdpCtxt
-		ULONG ulOptReq) override
+		ULONG ulOptReq)
 	{
 		if (0 == ulOptReq && CDistributionSpec::EdtHashed ==
 								 prppInput->Ped()->PdsRequired()->Edt())
@@ -67,11 +69,12 @@ public:
 
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
 };	// class CPhysicalSerialUnionAll
 

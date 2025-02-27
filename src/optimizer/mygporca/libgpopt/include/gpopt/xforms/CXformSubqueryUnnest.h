@@ -30,6 +30,9 @@ using namespace gpos;
 class CXformSubqueryUnnest : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformSubqueryUnnest(const CXformSubqueryUnnest &);
+
 protected:
 	// helper for subquery unnesting
 	static CExpression *PexprSubqueryUnnest(CMemoryPool *mp, CExpression *pexpr,
@@ -41,27 +44,25 @@ protected:
 						   BOOL fEnforceCorrelatedApply) const;
 
 public:
-	CXformSubqueryUnnest(const CXformSubqueryUnnest &) = delete;
-
 	// ctor
 	explicit CXformSubqueryUnnest(CExpression *pexprPattern)
-		: CXformExploration(pexprPattern)
+		: CXformExploration(pexprPattern){};
+
+	// dtor
+	virtual ~CXformSubqueryUnnest()
 	{
 	}
 
-	// dtor
-	~CXformSubqueryUnnest() override = default;
-
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 	// is transformation a subquery unnesting (Subquery To Apply) xform?
-	BOOL
-	FSubqueryUnnesting() const override
+	virtual BOOL
+	FSubqueryUnnesting() const
 	{
 		return true;
 	}

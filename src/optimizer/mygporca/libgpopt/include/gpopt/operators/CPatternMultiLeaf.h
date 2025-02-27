@@ -31,34 +31,37 @@ using namespace gpos;
 class CPatternMultiLeaf : public CPattern
 {
 private:
-public:
-	CPatternMultiLeaf(const CPatternMultiLeaf &) = delete;
+	// private copy ctor
+	CPatternMultiLeaf(const CPatternMultiLeaf &);
 
+public:
 	// ctor
 	explicit CPatternMultiLeaf(CMemoryPool *mp) : CPattern(mp)
 	{
 	}
 
 	// dtor
-	~CPatternMultiLeaf() override = default;
+	virtual ~CPatternMultiLeaf()
+	{
+	}
 
 	// check if operator is a pattern leaf
-	BOOL
-	FLeaf() const override
+	virtual BOOL
+	FLeaf() const
 	{
 		return true;
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPatternMultiLeaf;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPatternMultiLeaf";
 	}

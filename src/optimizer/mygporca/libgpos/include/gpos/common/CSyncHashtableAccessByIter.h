@@ -36,19 +36,22 @@ class CSyncHashtableAccessByIter : public CSyncHashtableAccessorBase<T, K>
 
 private:
 	// shorthand for base class
-	using Base = class CSyncHashtableAccessorBase<T, K>;
+	typedef class CSyncHashtableAccessorBase<T, K> Base;
 
 	// target iterator
 	CSyncHashtableIter<T, K> &m_iter;
+
+	// no copy ctor
+	CSyncHashtableAccessByIter<T, K>(const CSyncHashtableAccessByIter<T, K> &);
 
 	// returns the first valid element starting from the given element
 	T *
 	FirstValid(T *value) const
 	{
-		GPOS_ASSERT(nullptr != value);
+		GPOS_ASSERT(NULL != value);
 
 		T *curr = value;
-		while (nullptr != curr &&
+		while (NULL != curr &&
 			   !Base::GetHashTable().IsValid(Base::GetHashTable().Key(curr)))
 		{
 			curr = Base::Next(curr);
@@ -58,10 +61,8 @@ private:
 	}
 
 public:
-	CSyncHashtableAccessByIter(const CSyncHashtableAccessByIter &) = delete;
-
 	// ctor
-	explicit CSyncHashtableAccessByIter(CSyncHashtableIter<T, K> &iter)
+	explicit CSyncHashtableAccessByIter<T, K>(CSyncHashtableIter<T, K> &iter)
 		: Base(iter.m_ht, iter.m_bucket_idx), m_iter(iter)
 	{
 	}

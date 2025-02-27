@@ -56,7 +56,7 @@ private:
 	CDXLNode *m_dxl_node;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 public:
 	// ctor
@@ -64,43 +64,47 @@ public:
 						   IMDId *rel_mdid, CDXLNode *dxlnode);
 
 	// dtor
-	~CMDCheckConstraintGPDB() override;
+	virtual ~CMDCheckConstraintGPDB();
 
 	// check constraint mdid
-	IMDId *
-	MDId() const override
+	virtual IMDId *
+	MDId() const
 	{
 		return m_mdid;
 	}
 
 	// check constraint name
-	CMDName
-	Mdname() const override
+	virtual CMDName
+	Mdname() const
 	{
 		return *m_mdname;
 	}
 
 	// mdid of the relation
-	IMDId *
-	GetRelMdId() const override
+	virtual IMDId *
+	GetRelMdId() const
 	{
 		return m_rel_mdid;
 	}
 
 	// DXL string for check constraint
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// the scalar expression of the check constraint
-	CExpression *GetCheckConstraintExpr(
+	virtual CExpression *GetCheckConstraintExpr(
 		CMemoryPool *mp, CMDAccessor *md_accessor,
-		CColRefArray *colref_array) const override;
+		CColRefArray *colref_array) const;
 
 	// serialize MD check constraint in DXL format given a serializer object
-	void Serialize(gpdxl::CXMLSerializer *) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the MD check constraint
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

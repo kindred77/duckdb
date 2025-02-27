@@ -133,7 +133,7 @@ CAutoTaskProxy::Create(void *(*pfunc)(void *), void *arg, BOOL *cancel)
 
 	// check if caller is a task
 	ITask *task_parent = CWorker::Self()->GetTask();
-	if (nullptr == task_parent)
+	if (NULL == task_parent)
 	{
 		// create new task context
 		task_ctxt = GPOS_NEW(mp) CTaskContext(mp);
@@ -148,7 +148,7 @@ CAutoTaskProxy::Create(void *(*pfunc)(void *), void *arg, BOOL *cancel)
 	CAutoP<CErrorContext> err_ctxt;
 	err_ctxt = GPOS_NEW(mp) CErrorContext();
 	CTask *task = CTask::Self();
-	if (nullptr != task)
+	if (NULL != task)
 	{
 		err_ctxt.Value()->Register(task->ConvertErrCtxt()->GetMiniDumper());
 	}
@@ -212,7 +212,7 @@ CAutoTaskProxy::Schedule(CTask *task)
 GPOS_RESULT
 CAutoTaskProxy::FindFinished(CTask **task)
 {
-	*task = nullptr;
+	*task = NULL;
 
 #ifdef GPOS_DEBUG
 	// check if there is any task scheduled
@@ -223,7 +223,7 @@ CAutoTaskProxy::FindFinished(CTask **task)
 #endif	// GPOS_DEBUG
 
 	// iterate task list
-	for (CTask *cur_task = m_list.First(); nullptr != cur_task;
+	for (CTask *cur_task = m_list.First(); NULL != cur_task;
 		 cur_task = m_list.Next(cur_task))
 	{
 #ifdef GPOS_DEBUG
@@ -269,7 +269,7 @@ CAutoTaskProxy::FindFinished(CTask **task)
 //
 //---------------------------------------------------------------------------
 void
-CAutoTaskProxy::Execute(CTask *task) const
+CAutoTaskProxy::Execute(CTask *task)
 {
 	GPOS_ASSERT(CTask::EtsInit == task->m_status && "Task already scheduled");
 
@@ -280,7 +280,7 @@ CAutoTaskProxy::Execute(CTask *task) const
 	{
 		// get worker of current thread
 		CWorker *worker = CWorker::Self();
-		GPOS_ASSERT(nullptr != worker);
+		GPOS_ASSERT(NULL != worker);
 
 		// execute task
 		worker->Execute(task);
@@ -342,7 +342,7 @@ CAutoTaskProxy::Cancel(CTask *task)
 //
 //---------------------------------------------------------------------------
 void
-CAutoTaskProxy::CheckError(CTask *sub_task) const
+CAutoTaskProxy::CheckError(CTask *sub_task)
 {
 	// sub-task has a pending error
 	if (sub_task->HasPendingExceptions())
@@ -384,6 +384,8 @@ CAutoTaskProxy::CheckError(CTask *sub_task) const
 void
 CAutoTaskProxy::PropagateError(CTask *sub_task)
 {
+	GPOS_ASSERT(m_propagate_error);
+
 	// sub-task must be in error status and have a pending exception
 	GPOS_ASSERT(ITask::EtsError == sub_task->GetStatus() &&
 				sub_task->HasPendingExceptions());
@@ -391,8 +393,7 @@ CAutoTaskProxy::PropagateError(CTask *sub_task)
 	CTask *current_task = CTask::Self();
 
 	// current task must have no pending error
-	GPOS_ASSERT(nullptr != current_task &&
-				!current_task->HasPendingExceptions());
+	GPOS_ASSERT(NULL != current_task && !current_task->HasPendingExceptions());
 
 	IErrorContext *current_err_ctxt = current_task->GetErrCtxt();
 

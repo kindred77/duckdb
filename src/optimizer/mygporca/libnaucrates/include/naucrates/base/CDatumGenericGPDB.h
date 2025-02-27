@@ -57,42 +57,43 @@ private:
 	// double value used for statistic computation
 	CDouble m_stats_comp_val_double;
 
-public:
-	CDatumGenericGPDB(const CDatumGenericGPDB &) = delete;
+	// private copy ctor
+	CDatumGenericGPDB(const CDatumGenericGPDB &);
 
+public:
 	// ctor
 	CDatumGenericGPDB(CMemoryPool *mp, IMDId *mdid, INT type_modifier,
 					  const void *src, ULONG size, BOOL is_null,
 					  LINT stats_comp_val_int, CDouble stats_comp_val_double);
 
 	// dtor
-	~CDatumGenericGPDB() override;
+	virtual ~CDatumGenericGPDB();
 
 	// accessor of metadata type id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// accessor of size
-	ULONG Size() const override;
+	virtual ULONG Size() const;
 
 	// accessor of is null
-	BOOL IsNull() const override;
+	virtual BOOL IsNull() const;
 
 	// return string representation
-	const CWStringConst *GetStrRepr(CMemoryPool *mp) const override;
+	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function for datums
-	BOOL Matches(const IDatum *datum) const override;
+	virtual BOOL Matches(const IDatum *datum) const;
 
 	// copy datum
-	IDatum *MakeCopy(CMemoryPool *mp) const override;
+	virtual IDatum *MakeCopy(CMemoryPool *mp) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// accessor to bytearray, creates a copy
 	virtual BYTE *MakeCopyOfValue(CMemoryPool *mp, ULONG *pulLength) const;
@@ -100,11 +101,11 @@ public:
 	// statistics related APIs
 
 	// can datum be mapped to a double
-	BOOL IsDatumMappableToDouble() const override;
+	virtual BOOL IsDatumMappableToDouble() const;
 
 	// map to double for stats computation
-	CDouble
-	GetDoubleMapping() const override
+	virtual CDouble
+	GetDoubleMapping() const
 	{
 		GPOS_ASSERT(IsDatumMappableToDouble());
 
@@ -112,11 +113,11 @@ public:
 	}
 
 	// can datum be mapped to LINT
-	BOOL IsDatumMappableToLINT() const override;
+	virtual BOOL IsDatumMappableToLINT() const;
 
 	// map to LINT for statistics computation
-	LINT
-	GetLINTMapping() const override
+	virtual LINT
+	GetLINTMapping() const
 	{
 		GPOS_ASSERT(IsDatumMappableToLINT());
 
@@ -124,26 +125,26 @@ public:
 	}
 
 	// byte array representation of datum
-	const BYTE *GetByteArrayValue() const override;
+	virtual const BYTE *GetByteArrayValue() const;
 
 	// stats equality
-	BOOL StatsAreEqual(const IDatum *datum) const override;
+	virtual BOOL StatsAreEqual(const IDatum *datum) const;
 
 	// does the datum need to be padded before statistical derivation
-	BOOL NeedsPadding() const override;
+	virtual BOOL NeedsPadding() const;
 
 	// return the padded datum
-	IDatum *MakePaddedDatum(CMemoryPool *mp, ULONG col_len) const override;
+	virtual IDatum *MakePaddedDatum(CMemoryPool *mp, ULONG col_len) const;
 
 	// does datum support like predicate
-	BOOL
-	SupportsLikePredicate() const override
+	virtual BOOL
+	SupportsLikePredicate() const
 	{
 		return true;
 	}
 
 	// return the default scale factor of like predicate
-	CDouble GetLikePredicateScaleFactor() const override;
+	virtual CDouble GetLikePredicateScaleFactor() const;
 
 	// default selectivity of the trailing wildcards
 	virtual CDouble GetTrailingWildcardSelectivity(const BYTE *pba,

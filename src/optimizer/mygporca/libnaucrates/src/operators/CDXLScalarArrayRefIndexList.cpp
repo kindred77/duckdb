@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarArrayRefIndexList.cpp
@@ -111,7 +111,7 @@ CDXLScalarArrayRefIndexList::GetDXLIndexListBoundStr(
 
 		default:
 			GPOS_ASSERT("Invalid array bound");
-			return nullptr;
+			return NULL;
 	}
 }
 

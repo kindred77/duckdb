@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -35,30 +36,33 @@ private:
 	// defined column reference
 	CColRef *m_pcr;
 
+	// private copy ctor
+	CScalarProjectElement(const CScalarProjectElement &);
+
 
 public:
-	CScalarProjectElement(const CScalarProjectElement &) = delete;
-
 	// ctor
 	CScalarProjectElement(CMemoryPool *mp, CColRef *colref)
 		: CScalar(mp), m_pcr(colref)
 	{
-		GPOS_ASSERT(nullptr != colref);
+		GPOS_ASSERT(NULL != colref);
 	}
 
 	// dtor
-	~CScalarProjectElement() override = default;
+	virtual ~CScalarProjectElement()
+	{
+	}
 
 	// identity accessor
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarProjectElement;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarProjectElement";
 	}
@@ -71,24 +75,23 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// return locally defined columns
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsDefined(CMemoryPool *mp,
 				CExpressionHandle &	 // exprhdl
-				) override
+	)
 	{
 		CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
 		pcrs->Include(m_pcr);
@@ -100,21 +103,21 @@ public:
 	static CScalarProjectElement *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarProjectElement == pop->Eopid());
 
-		return dynamic_cast<CScalarProjectElement *>(pop);
+		return reinterpret_cast<CScalarProjectElement *>(pop);
 	}
 
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		GPOS_ASSERT(!"Invalid function call: CScalarProjectElemet::MdidType()");
-		return nullptr;
+		return NULL;
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CScalarProjectElement
 

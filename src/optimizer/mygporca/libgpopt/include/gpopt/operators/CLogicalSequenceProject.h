@@ -54,9 +54,10 @@ private:
 	// set the flag indicating that SeqPrj has specified frame specs
 	void SetHasFrameSpecs(CMemoryPool *mp);
 
-public:
-	CLogicalSequenceProject(const CLogicalSequenceProject &) = delete;
+	// private copy ctor
+	CLogicalSequenceProject(const CLogicalSequenceProject &);
 
+public:
 	// ctor
 	CLogicalSequenceProject(CMemoryPool *mp, CDistributionSpec *pds,
 							COrderSpecArray *pdrgpos,
@@ -66,18 +67,18 @@ public:
 	explicit CLogicalSequenceProject(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalSequenceProject() override;
+	virtual ~CLogicalSequenceProject();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalSequenceProject;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalSequenceProject";
 	}
@@ -118,13 +119,12 @@ public:
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL FCanPullProjectionsUp(ULONG  //child_index
-	) const override
+	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	) const
 	{
 		return false;
 	}
@@ -134,25 +134,25 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &exprhdl);
 
 	// derive outer references
-	CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
-									  CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
+											  CExpressionHandle &exprhdl);
 
 	// dervive keys
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
@@ -162,23 +162,24 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// remove outer references from Order By/ Partition By clauses, and return a new operator
 	CLogicalSequenceProject *PopRemoveLocalOuterRefs(
@@ -191,7 +192,7 @@ public:
 	static CLogicalSequenceProject *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalSequenceProject == pop->Eopid());
 
 		return dynamic_cast<CLogicalSequenceProject *>(pop);

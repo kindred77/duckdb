@@ -32,35 +32,36 @@ using namespace gpos;
 class CDXLScalarLimitOffset : public CDXLScalar
 {
 private:
-public:
-	CDXLScalarLimitOffset(const CDXLScalarLimitOffset &) = delete;
+	// private copy ctor
+	CDXLScalarLimitOffset(const CDXLScalarLimitOffset &);
 
+public:
 	// ctor/dtor
 	explicit CDXLScalarLimitOffset(CMemoryPool *mp);
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// conversion function
 	static CDXLScalarLimitOffset *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarLimitOffset == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarLimitOffset *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid function call for a container operator");
 		return false;
@@ -69,8 +70,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

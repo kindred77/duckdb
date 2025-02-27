@@ -39,10 +39,8 @@ using namespace gpos;
 //  	the CMemoryPoolManager global instance
 //
 //---------------------------------------------------------------------------
-CAutoMemoryPool::CAutoMemoryPool(ELeakCheck leak_check_type GPOS_ASSERTS_ONLY)
-#ifdef GPOS_DEBUG
+CAutoMemoryPool::CAutoMemoryPool(ELeakCheck leak_check_type)
 	: m_leak_check_type(leak_check_type)
-#endif
 {
 	m_mp = CMemoryPoolManager::GetMemoryPoolMgr()->CreateMemoryPool();
 }
@@ -62,7 +60,7 @@ CMemoryPool *
 CAutoMemoryPool::Detach()
 {
 	CMemoryPool *mp = m_mp;
-	m_mp = nullptr;
+	m_mp = NULL;
 
 	return mp;
 }
@@ -78,9 +76,9 @@ CAutoMemoryPool::Detach()
 //		(2) no checking while pending exception indicated and no pending exception
 //
 //---------------------------------------------------------------------------
-CAutoMemoryPool::~CAutoMemoryPool() noexcept(false)
+CAutoMemoryPool::~CAutoMemoryPool()
 {
-	if (nullptr == m_mp)
+	if (NULL == m_mp)
 	{
 		return;
 	}
@@ -93,7 +91,7 @@ CAutoMemoryPool::~CAutoMemoryPool() noexcept(false)
 	ITask *task = ITask::Self();
 
 	// ElcExc must be used inside tasks only
-	GPOS_ASSERT_IMP(ElcExc == m_leak_check_type, nullptr != task);
+	GPOS_ASSERT_IMP(ElcExc == m_leak_check_type, NULL != task);
 
 	GPOS_TRY
 	{

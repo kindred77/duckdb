@@ -31,12 +31,12 @@ class CReqdPropPlan;
 class CReqdPropRelational;
 
 // dynamic array for operators
-using COperatorArray = CDynamicPtrArray<COperator, CleanupRelease>;
+typedef CDynamicPtrArray<COperator, CleanupRelease> COperatorArray;
 
 // hash map mapping CColRef -> CColRef
-using ColRefToColRefMap =
-	CHashMap<CColRef, CColRef, CColRef::HashValue, CColRef::Equals,
-			 CleanupNULL<CColRef>, CleanupNULL<CColRef>>;
+typedef CHashMap<CColRef, CColRef, CColRef::HashValue, CColRef::Equals,
+				 CleanupNULL<CColRef>, CleanupNULL<CColRef> >
+	ColRefToColRefMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -49,6 +49,9 @@ using ColRefToColRefMap =
 class COperator : public CRefCount, public DbgPrintMixin<COperator>
 {
 private:
+	// private copy ctor
+	COperator(COperator &);
+
 protected:
 	// operator id that is unique over all instances of all operator types
 	// for the current query
@@ -77,13 +80,11 @@ protected:
 	static ULONG m_aulOpIdCounter;
 
 public:
-	COperator(COperator &) = delete;
-
 	// identification
 	enum EOperatorId
 	{
 		EopLogicalGet,
-		EopLogicalForeignGet,
+		EopLogicalExternalGet,
 		EopLogicalIndexGet,
 		EopLogicalBitmapTableGet,
 		EopLogicalSelect,
@@ -133,9 +134,11 @@ public:
 		EopLogicalUpdate,
 		EopLogicalDML,
 		EopLogicalSplit,
+		EopLogicalRowTrigger,
 		EopLogicalPartitionSelector,
 		EopLogicalAssert,
 		EopLogicalMaxOneRow,
+		EopLogicalMultiExternalGet,
 
 		EopScalarCmp,
 		EopScalarIsDistinctFrom,
@@ -184,7 +187,7 @@ public:
 		EopScalarBitmapBoolOp,
 
 		EopPhysicalTableScan,
-		EopPhysicalForeignScan,
+		EopPhysicalExternalScan,
 		EopPhysicalIndexScan,
 		EopPhysicalIndexOnlyScan,
 		EopPhysicalBitmapTableScan,
@@ -238,11 +241,13 @@ public:
 		EopPhysicalComputeScalar,
 		EopPhysicalSpool,
 		EopPhysicalPartitionSelector,
+		EopPhysicalPartitionSelectorDML,
 
 		EopPhysicalConstTableGet,
 
 		EopPhysicalDML,
 		EopPhysicalSplit,
+		EopPhysicalRowTrigger,
 
 		EopPhysicalAssert,
 
@@ -254,9 +259,7 @@ public:
 
 		EopLogicalDynamicBitmapTableGet,
 		EopPhysicalDynamicBitmapTableScan,
-
-		EopLogicalDynamicForeignGet,
-		EopPhysicalDynamicForeignScan,
+		EopPhysicalMultiExternalScan,
 
 		EopSentinel
 	};
@@ -284,7 +287,9 @@ public:
 	explicit COperator(CMemoryPool *mp);
 
 	// dtor
-	~COperator() override = default;
+	virtual ~COperator()
+	{
+	}
 
 	// the id of the operator
 	ULONG

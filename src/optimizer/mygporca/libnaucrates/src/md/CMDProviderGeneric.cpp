@@ -38,11 +38,11 @@ using namespace gpmd;
 CMDProviderGeneric::CMDProviderGeneric(CMemoryPool *mp)
 {
 	// TODO:  - Jan 25, 2012; those should not be tied to a particular system
-	m_mdid_int2 = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT2);
-	m_mdid_int4 = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT4);
-	m_mdid_int8 = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_INT8);
-	m_mdid_bool = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_BOOL);
-	m_mdid_oid = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, GPDB_OID);
+	m_mdid_int2 = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT2);
+	m_mdid_int4 = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT4);
+	m_mdid_int8 = GPOS_NEW(mp) CMDIdGPDB(GPDB_INT8);
+	m_mdid_bool = GPOS_NEW(mp) CMDIdGPDB(GPDB_BOOL);
+	m_mdid_oid = GPOS_NEW(mp) CMDIdGPDB(GPDB_OID);
 }
 
 //---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ CMDProviderGeneric::MDId(IMDType::ETypeInfo type_info) const
 			return m_mdid_oid;
 
 		default:
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -106,9 +106,9 @@ CMDProviderGeneric::MDId(IMDType::ETypeInfo type_info) const
 //
 //---------------------------------------------------------------------------
 CSystemId
-CMDProviderGeneric::SysidDefault()
+CMDProviderGeneric::SysidDefault() const
 {
-	return CSystemId(IMDId::EmdidGeneral, GPMD_GPDB_SYSID);
+	return CSystemId(IMDId::EmdidGPDB, GPMD_GPDB_SYSID);
 }
 
 // EOF

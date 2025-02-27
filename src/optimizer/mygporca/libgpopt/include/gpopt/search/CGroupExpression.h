@@ -40,7 +40,7 @@ class CGroupExpression : public CRefCount,
 public:
 #ifdef GPOS_DEBUG
 	// debug print; for interactive debugging sessions only
-	void DbgPrintWithProperties() const;
+	void DbgPrintWithProperties();
 #endif	// GPOS_DEBUG
 
 	// states of a group expression
@@ -67,62 +67,70 @@ public:
 	};
 
 	// type definition of cost context hash table
-	using ShtCC = CSyncHashtable<CCostContext, OPTCTXT_PTR>;
+	typedef CSyncHashtable<CCostContext,  // entry
+						   OPTCTXT_PTR /* search key */>
+		ShtCC;
 
 private:
 	// definition of context hash table accessor
-	using ShtAcc = CSyncHashtableAccessByKey<CCostContext, OPTCTXT_PTR>;
+	typedef CSyncHashtableAccessByKey<CCostContext,	 // entry
+									  OPTCTXT_PTR>
+		ShtAcc;
 
 	// definition of context hash table iter
-	using ShtIter = CSyncHashtableIter<CCostContext, OPTCTXT_PTR>;
+	typedef CSyncHashtableIter<CCostContext,  // entry
+							   OPTCTXT_PTR>
+		ShtIter;
 
 	// definition of context hash table iter accessor
-	using ShtAccIter = CSyncHashtableAccessByIter<CCostContext, OPTCTXT_PTR>;
+	typedef CSyncHashtableAccessByIter<CCostContext,  // entry
+									   OPTCTXT_PTR>
+		ShtAccIter;
 
 	// map of partial plans to their costs
-	using PartialPlanToCostMap =
-		CHashMap<CPartialPlan, CCost, CPartialPlan::HashValue,
-				 CPartialPlan::Equals, CleanupRelease<CPartialPlan>,
-				 CleanupDelete<CCost>>;
+	typedef CHashMap<CPartialPlan, CCost, CPartialPlan::HashValue,
+					 CPartialPlan::Equals, CleanupRelease<CPartialPlan>,
+					 CleanupDelete<CCost> >
+		PartialPlanToCostMap;
 
 
 	// expression id
-	ULONG m_id{GPOPT_INVALID_GEXPR_ID};
+	ULONG m_id;
 
 	// duplicate group expression
 	CGroupExpression *m_pgexprDuplicate;
 
 	// operator class
-	COperator *m_pop{nullptr};
+	COperator *m_pop;
 
 	// array of child groups
-	CGroupArray *m_pdrgpgroup{nullptr};
+	CGroupArray *m_pdrgpgroup;
 
 	// sorted array of children groups for faster comparison
 	// of order-insensitive operators
-	CGroupArray *m_pdrgpgroupSorted{nullptr};
+	CGroupArray *m_pdrgpgroupSorted;
 
 	// back pointer to group
-	CGroup *m_pgroup{nullptr};
+	CGroup *m_pgroup;
 
 	// id of xform that generated group expression
-	CXform::EXformId m_exfidOrigin{CXform::ExfInvalid};
+	CXform::EXformId m_exfidOrigin;
 
 	// group expression that generated current group expression via xform
-	CGroupExpression *m_pgexprOrigin{nullptr};
+	CGroupExpression *m_pgexprOrigin;
 
 	// flag to indicate if group expression was created as a node at some
 	// intermediate level when origin expression was inserted to memo
-	BOOL m_fIntermediate{false};
+	BOOL m_fIntermediate;
 
 	// state of group expression
-	EState m_estate{estUnexplored};
+	EState m_estate;
 
 	// optimization level
-	EOptimizationLevel m_eol{EolLow};
+	EOptimizationLevel m_eol;
 
 	// map of partial plans to their cost lower bound
-	PartialPlanToCostMap *m_ppartialplancostmap{nullptr};
+	PartialPlanToCostMap *m_ppartialplancostmap;
 
 	// circular dependency state
 	ECircularDependency m_ecirculardependency;
@@ -137,8 +145,8 @@ private:
 	void SetId(ULONG id);
 
 	// print transformation
-	static void PrintXform(CMemoryPool *mp, CXform *pxform, CExpression *pexpr,
-						   CXformResult *pxfres, ULONG ulNumResults);
+	void PrintXform(CMemoryPool *mp, CXform *pxform, CExpression *pexpr,
+					CXformResult *pxfres, ULONG ulNumResults);
 
 	// preprocessing before applying transformation
 	void PreprocessTransform(CMemoryPool *pmpLocal, CMemoryPool *pmpGlobal,
@@ -146,10 +154,10 @@ private:
 
 	// postprocessing after applying transformation
 	void PostprocessTransform(CMemoryPool *pmpLocal, CMemoryPool *pmpGlobal,
-							  CXform *pxform) const;
+							  CXform *pxform);
 
 	// costing scheme
-	static CCost CostCompute(CMemoryPool *mp, CCostContext *pcc);
+	CCost CostCompute(CMemoryPool *mp, CCostContext *pcc) const;
 
 	// set optimization level of group expression
 	void SetOptimizationLevel();
@@ -167,20 +175,32 @@ private:
 	// print group expression cost contexts
 	IOstream &OsPrintCostContexts(IOstream &os, const CHAR *szPrefix) const;
 
+	// private copy ctor
+	CGroupExpression(const CGroupExpression &);
+
 	//private dummy ctor; used for creating invalid gexpr
-	CGroupExpression() = default;
+	CGroupExpression()
+		: m_id(GPOPT_INVALID_GEXPR_ID),
+		  m_pop(NULL),
+		  m_pdrgpgroup(NULL),
+		  m_pdrgpgroupSorted(NULL),
+		  m_pgroup(NULL),
+		  m_exfidOrigin(CXform::ExfInvalid),
+		  m_pgexprOrigin(NULL),
+		  m_fIntermediate(false),
+		  m_estate(estUnexplored),
+		  m_eol(EolLow),
+		  m_ppartialplancostmap(NULL){};
 
 
 public:
-	CGroupExpression(const CGroupExpression &) = delete;
-
 	// ctor
 	CGroupExpression(CMemoryPool *mp, COperator *pop, CGroupArray *pdrgpgroup,
 					 CXform::EXformId exfid, CGroupExpression *pgexprOrigin,
 					 BOOL fIntermediate);
 
 	// dtor
-	~CGroupExpression() override;
+	~CGroupExpression();
 
 	// duplicate group expression accessor
 	CGroupExpression *
@@ -193,7 +213,7 @@ public:
 	void
 	SetDuplicate(CGroupExpression *pgexpr)
 	{
-		GPOS_ASSERT(nullptr != pgexpr);
+		GPOS_ASSERT(NULL != pgexpr);
 
 		m_pgexprDuplicate = pgexpr;
 	}
@@ -237,7 +257,7 @@ public:
 	CGroup *
 	operator[](ULONG ulPos) const
 	{
-		GPOS_ASSERT(nullptr != m_pdrgpgroup);
+		GPOS_ASSERT(NULL != m_pdrgpgroup);
 
 		CGroup *pgroup = (*m_pdrgpgroup)[ulPos];
 
@@ -387,7 +407,7 @@ public:
 									   BOOL fComputeRootStats = true);
 
 	// print driver
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 	IOstream &OsPrintWithPrefix(IOstream &os, const CHAR *prefix) const;
 
 	// link for list in Group

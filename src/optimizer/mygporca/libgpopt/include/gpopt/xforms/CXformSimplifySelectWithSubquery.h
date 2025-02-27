@@ -33,10 +33,10 @@ using namespace gpos;
 class CXformSimplifySelectWithSubquery : public CXformSimplifySubquery
 {
 private:
-public:
-	CXformSimplifySelectWithSubquery(const CXformSimplifySelectWithSubquery &) =
-		delete;
+	// private copy ctor
+	CXformSimplifySelectWithSubquery(const CXformSimplifySelectWithSubquery &);
 
+public:
 	// ctor
 	explicit CXformSimplifySelectWithSubquery(CMemoryPool *mp)
 		:  // pattern
@@ -51,32 +51,34 @@ public:
 	}
 
 	// dtor
-	~CXformSimplifySelectWithSubquery() override = default;
+	virtual ~CXformSimplifySelectWithSubquery()
+	{
+	}
 
 	// Compatibility function for simplifying aggregates
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSimplifySelectWithSubquery != exfid);
 	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSimplifySelectWithSubquery;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSimplifySelectWithSubquery";
 	}
 
 	// is transformation a subquery unnesting (Subquery To Apply) xform?
-	BOOL
-	FSubqueryUnnesting() const override
+	virtual BOOL
+	FSubqueryUnnesting() const
 	{
 		return true;
 	}

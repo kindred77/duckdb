@@ -13,7 +13,6 @@
 
 #include "naucrates/dxl/operators/CDXLNode.h"
 #include "naucrates/dxl/xml/CXMLSerializer.h"
-#include "naucrates/md/IMDCacheObject.h"
 
 using namespace gpos;
 using namespace gpdxl;
@@ -35,8 +34,8 @@ CDXLPhysicalIndexScan::CDXLPhysicalIndexScan(
 	  m_dxl_index_descr(dxl_index_descr),
 	  m_index_scan_dir(idx_scan_direction)
 {
-	GPOS_ASSERT(nullptr != m_dxl_table_descr);
-	GPOS_ASSERT(nullptr != m_dxl_index_descr);
+	GPOS_ASSERT(NULL != m_dxl_table_descr);
+	GPOS_ASSERT(NULL != m_dxl_index_descr);
 }
 
 //---------------------------------------------------------------------------
@@ -149,12 +148,6 @@ CDXLPhysicalIndexScan::SerializeToDXL(CXMLSerializer *xml_serializer,
 	// serialize children
 	node->SerializeChildrenToDXL(xml_serializer);
 
-	// serialize partition mdids (null in this case)
-	IMdIdArray *empty = GPOS_NEW(m_mp) IMdIdArray(m_mp);
-	IMDCacheObject::SerializeMDIdList(
-		xml_serializer, empty, CDXLTokens::GetDXLTokenStr(EdxltokenPartitions),
-		CDXLTokens::GetDXLTokenStr(EdxltokenPartition));
-	empty->Release();
 	// serialize index descriptor
 	m_dxl_index_descr->SerializeToDXL(xml_serializer);
 
@@ -185,13 +178,13 @@ CDXLPhysicalIndexScan::AssertValid(const CDXLNode *node,
 	GPOS_ASSERT(3 == node->Arity());
 
 	// assert validity of the index descriptor
-	GPOS_ASSERT(nullptr != m_dxl_index_descr);
-	GPOS_ASSERT(nullptr != m_dxl_index_descr->MdName());
+	GPOS_ASSERT(NULL != m_dxl_index_descr);
+	GPOS_ASSERT(NULL != m_dxl_index_descr->MdName());
 	GPOS_ASSERT(m_dxl_index_descr->MdName()->GetMDName()->IsValid());
 
 	// assert validity of the table descriptor
-	GPOS_ASSERT(nullptr != m_dxl_table_descr);
-	GPOS_ASSERT(nullptr != m_dxl_table_descr->MdName());
+	GPOS_ASSERT(NULL != m_dxl_table_descr);
+	GPOS_ASSERT(NULL != m_dxl_table_descr->MdName());
 	GPOS_ASSERT(m_dxl_table_descr->MdName()->GetMDName()->IsValid());
 
 	CDXLNode *index_cond_dxlnode = (*node)[EdxlisIndexCondition];

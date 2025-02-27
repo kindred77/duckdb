@@ -37,23 +37,22 @@ CScalarAggFunc::CScalarAggFunc(CMemoryPool *mp, IMDId *pmdidAggFunc,
 							   const CWStringConst *pstrAggFunc,
 							   BOOL is_distinct, EAggfuncStage eaggfuncstage,
 							   BOOL fSplit, EAggfuncKind aggkind,
-							   ULongPtrArray *argtypes, BOOL fRepSafe)
+							   IMDId *gp_agg_mdid)
 	: CScalar(mp),
 	  m_pmdidAggFunc(pmdidAggFunc),
 	  m_pmdidResolvedRetType(resolved_rettype),
-	  m_return_type_mdid(nullptr),
+	  m_return_type_mdid(NULL),
 	  m_pstrAggFunc(pstrAggFunc),
 	  m_is_distinct(is_distinct),
 	  m_aggkind(aggkind),
-	  m_argtypes(argtypes),
 	  m_eaggfuncstage(eaggfuncstage),
 	  m_fSplit(fSplit),
-	  m_fRepSafe(fRepSafe)
+	  m_gp_agg_mdid(gp_agg_mdid)
 {
-	GPOS_ASSERT(nullptr != pmdidAggFunc);
-	GPOS_ASSERT(nullptr != pstrAggFunc);
+	GPOS_ASSERT(NULL != pmdidAggFunc);
+	GPOS_ASSERT(NULL != pstrAggFunc);
 	GPOS_ASSERT(pmdidAggFunc->IsValid());
-	GPOS_ASSERT_IMP(nullptr != resolved_rettype, resolved_rettype->IsValid());
+	GPOS_ASSERT_IMP(NULL != resolved_rettype, resolved_rettype->IsValid());
 	GPOS_ASSERT(EaggfuncstageSentinel > eaggfuncstage);
 
 	// store id of type obtained by looking up MD cache
@@ -192,14 +191,14 @@ IMDId *
 CScalarAggFunc::PmdidLookupReturnType(IMDId *pmdidAggFunc, BOOL fGlobal,
 									  CMDAccessor *pmdaInput)
 {
-	GPOS_ASSERT(nullptr != pmdidAggFunc);
+	GPOS_ASSERT(NULL != pmdidAggFunc);
 	CMDAccessor *md_accessor = pmdaInput;
 
-	if (nullptr == md_accessor)
+	if (NULL == md_accessor)
 	{
 		md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 	}
-	GPOS_ASSERT(nullptr != md_accessor);
+	GPOS_ASSERT(NULL != md_accessor);
 
 	// get aggregate function return type from the MD cache
 	const IMDAggregate *pmdagg = md_accessor->RetrieveAgg(pmdidAggFunc);

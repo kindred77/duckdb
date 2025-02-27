@@ -37,25 +37,26 @@ private:
 	// constant
 	IDatum *m_pdatum;
 
-public:
-	CScalarConst(const CScalarConst &) = delete;
+	// private copy ctor
+	CScalarConst(const CScalarConst &);
 
+public:
 	// ctor
 	CScalarConst(CMemoryPool *mp, IDatum *datum);
 
 	// dtor
-	~CScalarConst() override;
+	virtual ~CScalarConst();
 
 	// identity accessor
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarConst;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarConst";
 	}
@@ -68,24 +69,24 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -94,22 +95,22 @@ public:
 	static CScalarConst *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarConst == pop->Eopid());
 
-		return dynamic_cast<CScalarConst *>(pop);
+		return reinterpret_cast<CScalarConst *>(pop);
 	}
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// is the given expression a scalar cast of a constant
 	static BOOL FCastedConst(CExpression *pexpr);

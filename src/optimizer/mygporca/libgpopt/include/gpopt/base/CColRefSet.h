@@ -25,17 +25,17 @@ namespace gpopt
 class CColRefSet;
 
 // short hand for colref set array
-using CColRefSetArray = CDynamicPtrArray<CColRefSet, CleanupRelease>;
+typedef CDynamicPtrArray<CColRefSet, CleanupRelease> CColRefSetArray;
 
 // hash map mapping CColRef -> CColRefSet
-using ColRefToColRefSetMap =
-	CHashMap<CColRef, CColRefSet, CColRef::HashValue, CColRef::Equals,
-			 CleanupNULL<CColRef>, CleanupRelease<CColRefSet>>;
+typedef CHashMap<CColRef, CColRefSet, CColRef::HashValue, CColRef::Equals,
+				 CleanupNULL<CColRef>, CleanupRelease<CColRefSet> >
+	ColRefToColRefSetMap;
 
 // hash map mapping INT -> CColRef
-using IntToColRefMap =
-	CHashMap<INT, CColRef, gpos::HashValue<INT>, gpos::Equals<INT>,
-			 CleanupDelete<INT>, CleanupNULL<CColRef>>;
+typedef CHashMap<INT, CColRef, gpos::HashValue<INT>, gpos::Equals<INT>,
+				 CleanupDelete<INT>, CleanupNULL<CColRef> >
+	IntToColRefMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -75,7 +75,7 @@ public:
 			   ULONG ulSizeBits = GPOPT_COLREFSET_SIZE);
 
 	// dtor
-	~CColRefSet() override;
+	~CColRefSet();
 
 	// determine if bit is set
 	BOOL FMember(const CColRef *colref) const;
@@ -127,7 +127,7 @@ public:
 	ULONG HashValue();
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 	IOstream &OsPrint(IOstream &os, ULONG ulLenMax) const;
 
 	// extract all column ids

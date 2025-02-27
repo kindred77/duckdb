@@ -15,11 +15,8 @@
 #define GPDXL_CDXLPhysicalAppend_H
 
 #include "gpos/base.h"
-#include "gpos/common/CBitSet.h"
-#include "gpos/common/CDynamicPtrArray.h"
 
 #include "naucrates/dxl/operators/CDXLPhysical.h"
-#include "naucrates/dxl/operators/CDXLTableDescr.h"
 
 namespace gpdxl
 {
@@ -44,74 +41,34 @@ class CDXLPhysicalAppend : public CDXLPhysical
 {
 private:
 	// is the append node used in an update/delete statement
-	BOOL m_used_in_upd_del = false;
+	BOOL m_used_in_upd_del;
 
 	// TODO:  - Apr 12, 2011; find a better name (and comments) for this variable
-	BOOL m_is_zapped = false;
+	BOOL m_is_zapped;
 
-	// scan id from the CPhysicalDynamicTableScan (a.k.a part_index_id)
-	// when m_scan_id != gpos::ulong_max
-	ULONG m_scan_id = gpos::ulong_max;
-
-	// table descr of the root partitioned table (when translated from a CPhysicalDynamicTableScan)
-	CDXLTableDescr *m_dxl_table_descr = nullptr;
-
-	ULongPtrArray *m_selector_ids = nullptr;
+	// private copy ctor
+	CDXLPhysicalAppend(const CDXLPhysicalAppend &);
 
 public:
-	CDXLPhysicalAppend(const CDXLPhysicalAppend &) = delete;
-
 	// ctor/dtor
 	CDXLPhysicalAppend(CMemoryPool *mp, BOOL fIsTarget, BOOL fIsZapped);
 
-	// ctor for partitioned table scan
-	CDXLPhysicalAppend(CMemoryPool *mp, BOOL fIsTarget, BOOL fIsZapped,
-					   ULONG scan_id, CDXLTableDescr *dxl_table_desc,
-					   ULongPtrArray *selector_ids);
-
-	// dtor
-	~CDXLPhysicalAppend() override;
-
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	BOOL IsUsedInUpdDel() const;
 	BOOL IsZapped() const;
 
-	CDXLTableDescr *
-	GetDXLTableDesc() const
-	{
-		return m_dxl_table_descr;
-	}
-
-	void
-	SetDXLTableDesc(CDXLTableDescr *dxl_table_desc)
-	{
-		m_dxl_table_descr = dxl_table_desc;
-	}
-
-	ULONG
-	GetScanId() const
-	{
-		return m_scan_id;
-	}
-
-	const ULongPtrArray *
-	GetSelectorIds() const
-	{
-		return m_selector_ids;
-	}
-
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalAppend *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalAppend == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalAppend *>(dxl_op);
@@ -120,7 +77,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

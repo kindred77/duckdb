@@ -37,6 +37,8 @@ class CParseHandlerScalarOpExpr : public CParseHandlerScalarOp
 {
 private:
 	ULONG m_num_of_children;
+	// private copy ctor
+	CParseHandlerScalarOpExpr(const CParseHandlerScalarOpExpr &);
 
 	// process the start of an element
 	void StartElement(
@@ -44,18 +46,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarOpExpr(const CParseHandlerScalarOpExpr &) = delete;
-
 	// ctor/dtor
 	CParseHandlerScalarOpExpr(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,

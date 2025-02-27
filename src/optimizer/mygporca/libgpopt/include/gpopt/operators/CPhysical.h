@@ -21,7 +21,6 @@
 #include "gpopt/base/CEnfdPartitionPropagation.h"
 #include "gpopt/base/CEnfdRewindability.h"
 #include "gpopt/base/COrderSpec.h"
-#include "gpopt/base/CPartitionPropagationSpec.h"
 #include "gpopt/base/CRewindabilitySpec.h"
 #include "gpopt/operators/COperator.h"
 
@@ -34,8 +33,10 @@ namespace gpopt
 using namespace gpos;
 
 // arrays of unsigned integer arrays
-using UlongPtrArray = CDynamicPtrArray<ULONG_PTR, CleanupDeleteArray>;
+typedef CDynamicPtrArray<ULONG_PTR, CleanupDeleteArray> UlongPtrArray;
 
+// forward declaration
+class CPartIndexMap;
 class CTableDescriptor;
 class CCTEMap;
 
@@ -88,9 +89,10 @@ private:
 		// index of scalar child to be used when computing required columns
 		ULONG m_ulScalarChildIndex;
 
-	public:
-		CReqdColsRequest(const CReqdColsRequest &) = delete;
+		// private copy ctor
+		CReqdColsRequest(const CReqdColsRequest &);
 
+	public:
 		// ctor
 		CReqdColsRequest(CColRefSet *pcrsRequired, ULONG child_index,
 						 ULONG ulScalarChildIndex)
@@ -98,11 +100,11 @@ private:
 			  m_ulChildIndex(child_index),
 			  m_ulScalarChildIndex(ulScalarChildIndex)
 		{
-			GPOS_ASSERT(nullptr != pcrsRequired);
+			GPOS_ASSERT(NULL != pcrsRequired);
 		}
 
 		// dtor
-		~CReqdColsRequest() override
+		virtual ~CReqdColsRequest()
 		{
 			m_pcrsRequired->Release();
 		}
@@ -138,10 +140,10 @@ private:
 	};	// class CReqdColsRequest
 
 	// map of incoming required columns request to computed column sets
-	using ReqdColsReqToColRefSetMap =
-		CHashMap<CReqdColsRequest, CColRefSet, CReqdColsRequest::HashValue,
-				 CReqdColsRequest::Equals, CleanupRelease<CReqdColsRequest>,
-				 CleanupRelease<CColRefSet>>;
+	typedef CHashMap<CReqdColsRequest, CColRefSet, CReqdColsRequest::HashValue,
+					 CReqdColsRequest::Equals, CleanupRelease<CReqdColsRequest>,
+					 CleanupRelease<CColRefSet> >
+		ReqdColsReqToColRefSetMap;
 
 	// hash map of child columns requests
 	ReqdColsReqToColRefSetMap *m_phmrcr;
@@ -160,6 +162,9 @@ private:
 
 	// update number of requests of a given property
 	void UpdateOptRequests(ULONG ulPropIndex, ULONG ulRequests);
+
+	// private copy ctor
+	CPhysical(const CPhysical &);
 
 	// check whether we can push a part table requirement to a given child, given
 	// the knowledge of where the part index id is defined
@@ -236,6 +241,23 @@ protected:
 										   CRewindabilitySpec *prsRequired,
 										   ULONG child_index);
 
+	// pass partition propagation requirement to the child
+	static CPartitionPropagationSpec *PppsRequiredPushThru(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired, ULONG child_index);
+
+	// pass partition propagation requirement to the children of an n-ary operator
+	static CPartitionPropagationSpec *PppsRequiredPushThruNAry(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired, ULONG child_index);
+
+	// helper function for pushing unresolved partition propagation in unary
+	// operators
+	static CPartitionPropagationSpec *PppsRequiredPushThruUnresolvedUnary(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired,
+		EPropogatePartConstraint eppcPropogate, CColRefSet *filter_cols);
+
 	// pass cte requirement to the child
 	static CCTEReq *PcterPushThru(CCTEReq *pcter);
 
@@ -259,11 +281,29 @@ protected:
 	static BOOL FUnaryProvidesReqdCols(CExpressionHandle &exprhdl,
 									   CColRefSet *pcrsRequired);
 
+	// helper for common case of passing through partition index map
+	static CPartIndexMap *PpimPassThruOuter(CExpressionHandle &exprhdl);
+
+	// helper for common case of passing through partition filter map
+	static CPartFilterMap *PpfmPassThruOuter(CExpressionHandle &exprhdl);
+
+	// combine derived part filter maps of relational children
+	static CPartFilterMap *PpfmDeriveCombineRelational(
+		CMemoryPool *mp, CExpressionHandle &exprhdl);
+
+	// helper for common case of combining partition index maps of all relational children
+	static CPartIndexMap *PpimDeriveCombineRelational(
+		CMemoryPool *mp, CExpressionHandle &exprhdl);
+
 	// Generate a singleton distribution spec request
 	static CDistributionSpec *PdsRequireSingleton(CMemoryPool *mp,
 												  CExpressionHandle &exprhdl,
 												  CDistributionSpec *pds,
 												  ULONG child_index);
+
+	// helper to compute skew estimate based on given stats and distribution spec
+	static CDouble GetSkew(IStatistics *stats, CDistributionSpec *pds);
+
 
 	// return true if the given column set includes any of the columns defined by
 	// the unary node, as given by the handle
@@ -284,34 +324,29 @@ protected:
 		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 public:
-	CPhysical(const CPhysical &) = delete;
-
 	// ctor
 	explicit CPhysical(CMemoryPool *mp);
 
 	// dtor
-	~CPhysical() override
+	virtual ~CPhysical()
 	{
 		CRefCount::SafeRelease(m_phmrcr);
 		CRefCount::SafeRelease(m_pdrgpulpOptReqsExpanded);
 	}
 
-	// helper to compute skew estimate based on given stats and distribution spec
-	static CDouble GetSkew(IStatistics *stats, CDistributionSpec *pds);
-
 	// type of operator
-	BOOL
-	FPhysical() const override
+	virtual BOOL
+	FPhysical() const
 	{
 		GPOS_ASSERT(!FLogical() && !FScalar() && !FPattern());
 		return true;
 	}
 
 	// create base container of derived properties
-	CDrvdProp *PdpCreate(CMemoryPool *mp) const override;
+	virtual CDrvdProp *PdpCreate(CMemoryPool *mp) const;
 
 	// create base container of required properties
-	CReqdProp *PrpCreate(CMemoryPool *mp) const override;
+	virtual CReqdProp *PrpCreate(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
@@ -348,12 +383,11 @@ public:
 											CDrvdPropArray *pdrgpdpCtxt,
 											ULONG ulOptReq) const = 0;
 
-	// compute required partition propoagation spec of the n-th child
+	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
 		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const;
-
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) = 0;
 
 	// required properties: check if required columns are included in output columns
 	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
@@ -380,9 +414,14 @@ public:
 	virtual CRewindabilitySpec *PrsDerive(CMemoryPool *mp,
 										  CExpressionHandle &exprhdl) const = 0;
 
-	// derived properties: derive partition propagation spec
-	virtual CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
+	// derive partition index map
+	virtual CPartIndexMap *PpimDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  CDrvdPropCtxt *pdpctxt) const = 0;
+
+	// derive partition filter map
+	virtual CPartFilterMap *PpfmDerive(CMemoryPool *mp,
+									   CExpressionHandle &exprhdl) const = 0;
 
 	// derive cte map
 	virtual CCTEMap *PcmDerive(CMemoryPool *mp,
@@ -407,7 +446,8 @@ public:
 
 	// return partition propagation property enforcing type for this operator
 	virtual CEnfdProp::EPropEnforcingType EpetPartitionPropagation(
-		CExpressionHandle &exprhdl, const CEnfdPartitionPropagation *per) const;
+		CExpressionHandle &exprhdl,
+		const CEnfdPartitionPropagation *pepp) const;
 
 	// order matching type
 	virtual CEnfdOrder::EOrderMatching Eom(CReqdPropPlan *prppInput,
@@ -496,15 +536,14 @@ public:
 		const CExpressionHandle &exprhdl) const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CPhysical *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(pop->FPhysical());
 
 		return dynamic_cast<CPhysical *>(pop);

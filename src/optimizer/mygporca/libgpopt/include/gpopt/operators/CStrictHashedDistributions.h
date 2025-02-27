@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CHashedDistributions_H
 #define GPOPT_CHashedDistributions_H

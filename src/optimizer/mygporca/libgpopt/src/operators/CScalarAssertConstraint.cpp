@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarAssertConstraint.cpp
@@ -13,7 +13,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "naucrates/md/IMDTypeBool.h"
 
 using namespace gpopt;
@@ -31,7 +30,7 @@ CScalarAssertConstraint::CScalarAssertConstraint(CMemoryPool *mp,
 												 CWStringBase *pstrErrorMsg)
 	: CScalar(mp), m_pstrErrorMsg(pstrErrorMsg)
 {
-	GPOS_ASSERT(nullptr != pstrErrorMsg);
+	GPOS_ASSERT(NULL != pstrErrorMsg);
 }
 
 //---------------------------------------------------------------------------

@@ -47,8 +47,6 @@ protected:
 							  CColRefArray *pdrgpcrGrp) const;
 
 public:
-	CLogicalGbAgg(const CLogicalGbAgg &) = delete;
-
 	// the below enum specifically covers only 2 & 3 stage
 	// scalar dqa, as they are used to find the one having
 	// better cost context, rest of the aggs falls in others
@@ -108,18 +106,18 @@ public:
 	}
 
 	// dtor
-	~CLogicalGbAgg() override;
+	virtual ~CLogicalGbAgg();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalGbAgg;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalGbAgg";
 	}
@@ -132,10 +130,10 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// grouping columns accessor
 	CColRefArray *
@@ -173,37 +171,35 @@ public:
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *,
-									CExpressionHandle &) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *, CExpressionHandle &);
 
 	// derive outer references
-	CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
-									  CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
+											  CExpressionHandle &exprhdl);
 
 	// derive not null columns
-	CColRefSet *DeriveNotNullColumns(CMemoryPool *mp,
-									 CExpressionHandle &exprhdl) const override;
+	virtual CColRefSet *DeriveNotNullColumns(CMemoryPool *mp,
+											 CExpressionHandle &exprhdl) const;
 
 	// derive key collections
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *DerivePropertyConstraint(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CPropConstraint *DerivePropertyConstraint(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// compute required stats columns of the n-th child
 	//-------------------------------------------------------------------------------------
@@ -211,24 +207,25 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CColRefSet *pcrsInput,
-						 ULONG child_index) const override;
+	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CColRefSet *pcrsInput,
+								 ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -241,7 +238,7 @@ public:
 	static CLogicalGbAgg *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalGbAgg == pop->Eopid() ||
 					EopLogicalGbAggDeduplicate == pop->Eopid());
 
@@ -249,7 +246,7 @@ public:
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// derive statistics
 	static IStatistics *PstatsDerive(CMemoryPool *mp, IStatistics *child_stats,
@@ -262,6 +259,9 @@ public:
 									  COperator::EGbAggType egbaggtype);
 
 private:
+	// private copy ctor
+	CLogicalGbAgg(const CLogicalGbAgg &);
+
 	// array of grouping columns
 	CColRefArray *m_pdrgpcr;
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CLogicalMaxOneRow.h
@@ -29,9 +29,10 @@ namespace gpopt
 class CLogicalMaxOneRow : public CLogical
 {
 private:
-public:
-	CLogicalMaxOneRow(const CLogicalMaxOneRow &) = delete;
+	// private copy ctor
+	CLogicalMaxOneRow(const CLogicalMaxOneRow &);
 
+public:
 	// ctors
 	explicit CLogicalMaxOneRow(CMemoryPool *mp) : CLogical(mp)
 	{
@@ -39,49 +40,51 @@ public:
 
 
 	// dtor
-	~CLogicalMaxOneRow() override = default;
+	virtual ~CLogicalMaxOneRow()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalMaxOneRow;
 	}
 
 	// name of operator
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalMaxOneRow";
 	}
 
 	// match function;
-	BOOL
-	Matches(COperator *pop) const override
+	virtual BOOL
+	Matches(COperator *pop) const
 	{
 		return (Eopid() == pop->Eopid());
 	}
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL FCanPullProjectionsUp(ULONG  //child_index
-	) const override
+	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	) const
 	{
 		return false;
 	}
@@ -91,64 +94,62 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *
+	virtual CColRefSet *
 	DeriveOutputColumns(CMemoryPool *,	// mp
-						CExpressionHandle &exprhdl) override
+						CExpressionHandle &exprhdl)
 	{
 		return PcrsDeriveOutputPassThru(exprhdl);
 	}
 
 	// derive partition consumer info
-	CPartInfo *
-	DerivePartitionInfo(CMemoryPool *mp,
-						CExpressionHandle &exprhdl) const override
+	virtual CPartInfo *
+	DerivePartitionInfo(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpartinfoDeriveCombine(mp, exprhdl);
 	}
 
 	// dervive keys
-	CKeyCollection *
+	virtual CKeyCollection *
 	DeriveKeyCollection(CMemoryPool *,	// mp
-						CExpressionHandle &exprhdl) const override
+						CExpressionHandle &exprhdl) const
 	{
 		return PkcDeriveKeysPassThru(exprhdl, 0 /* ulChild */);
 	}
 
 	// derive max card
-	CMaxCard
+	virtual CMaxCard
 	DeriveMaxCard(CMemoryPool *,	   // mp,
 				  CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CMaxCard(1 /*ull*/);
 	}
 
 	// derive constraint property
-	CPropConstraint *
-	DerivePropertyConstraint(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CPropConstraint *
+	DerivePropertyConstraint(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintFromPredicates(mp, exprhdl);
 	}
 
 	// promise level for stat derivation
-	EStatPromise Esp(CExpressionHandle &exprhdl) const override;
+	virtual EStatPromise Esp(CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CColRefSet *pcrsInput,
-						 ULONG child_index) const override;
+	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CColRefSet *pcrsInput,
+								 ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -158,16 +159,17 @@ public:
 	static CLogicalMaxOneRow *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalMaxOneRow == pop->Eopid());
 
-		return dynamic_cast<CLogicalMaxOneRow *>(pop);
+		return reinterpret_cast<CLogicalMaxOneRow *>(pop);
 	}
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *  // stats_ctxt
-	) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *  // stats_ctxt
+	) const;
 
 
 };	// class CLogicalMaxOneRow

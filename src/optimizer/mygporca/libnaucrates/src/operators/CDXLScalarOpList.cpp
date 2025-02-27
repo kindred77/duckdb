@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarOpList.cpp
@@ -63,6 +63,10 @@ CDXLScalarOpList::GetOpNameStr() const
 	{
 		case EdxloplistEqFilterList:
 			dxl_token = EdxltokenPartLevelEqFilterList;
+			break;
+
+		case EdxloplistEqFilterElemList:
+			dxl_token = EdxltokenPartLevelEqFilterElemList;
 			break;
 
 		case EdxloplistFilterList:

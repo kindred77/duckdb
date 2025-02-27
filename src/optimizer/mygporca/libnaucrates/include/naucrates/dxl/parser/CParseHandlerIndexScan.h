@@ -38,20 +38,23 @@ private:
 	// index scan direction
 	EdxlIndexScanDirection m_index_scan_dir;
 
+	// private copy ctor
+	CParseHandlerIndexScan(const CParseHandlerIndexScan &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 protected:
 	// common StartElement functionality for IndexScan and IndexOnlyScan
@@ -60,12 +63,10 @@ protected:
 
 	// common EndElement functionality for IndexScan and IndexOnlyScan
 	void EndElementHelper(const XMLCh *const element_local_name,
-						  Edxltoken token_type,
-						  ULongPtrArray *selector_ids = nullptr);
+						  Edxltoken token_type, ULONG part_idx_id = 0,
+						  ULONG part_idx_id_printable = 0);
 
 public:
-	CParseHandlerIndexScan(const CParseHandlerIndexScan &) = delete;
-
 	// ctor
 	CParseHandlerIndexScan(CMemoryPool *mp,
 						   CParseHandlerManager *parse_handler_mgr,

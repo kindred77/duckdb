@@ -28,40 +28,42 @@ namespace gpopt
 class CPhysicalInnerNLJoin : public CPhysicalNLJoin
 {
 private:
-public:
-	CPhysicalInnerNLJoin(const CPhysicalInnerNLJoin &) = delete;
+	// private copy ctor
+	CPhysicalInnerNLJoin(const CPhysicalInnerNLJoin &);
 
+public:
 	// ctor
 	explicit CPhysicalInnerNLJoin(CMemoryPool *mp);
 
 	// dtor
-	~CPhysicalInnerNLJoin() override;
+	virtual ~CPhysicalInnerNLJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalInnerNLJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalInnerNLJoin";
 	}
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
-	CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						   CReqdPropPlan *prppInput, ULONG child_index,
-						   CDrvdPropArray *pdrgpdpCtxt,
-						   ULONG ulDistrReq) override;
+	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CDrvdPropArray *pdrgpdpCtxt,
+								   ULONG ulDistrReq);
 
 	// conversion function
 	static CPhysicalInnerNLJoin *

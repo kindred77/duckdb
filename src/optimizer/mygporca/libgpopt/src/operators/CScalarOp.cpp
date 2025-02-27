@@ -15,7 +15,6 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CDrvdPropScalar.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/mdcache/CMDAccessorUtils.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "naucrates/md/IMDScalarOp.h"
@@ -146,7 +145,7 @@ CScalarOp::GetReturnTypeMdId() const
 IMDId *
 CScalarOp::MdidType() const
 {
-	if (nullptr != m_return_type_mdid)
+	if (NULL != m_return_type_mdid)
 	{
 		return m_return_type_mdid;
 	}

@@ -32,35 +32,38 @@ using namespace gpos;
 class CXformInlineCTEConsumer : public CXformExploration
 {
 private:
-public:
-	CXformInlineCTEConsumer(const CXformInlineCTEConsumer &) = delete;
+	// private copy ctor
+	CXformInlineCTEConsumer(const CXformInlineCTEConsumer &);
 
+public:
 	// ctor
 	explicit CXformInlineCTEConsumer(CMemoryPool *mp);
 
 	// dtor
-	~CXformInlineCTEConsumer() override = default;
+	virtual ~CXformInlineCTEConsumer()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfInlineCTEConsumer;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformInlineCTEConsumer";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformInlineCTEConsumer
 }  // namespace gpopt

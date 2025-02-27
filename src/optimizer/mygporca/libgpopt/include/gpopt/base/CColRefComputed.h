@@ -34,25 +34,26 @@ using namespace gpmd;
 class CColRefComputed : public CColRef
 {
 private:
-public:
-	CColRefComputed(const CColRefComputed &) = delete;
+	// private copy ctor
+	CColRefComputed(const CColRefComputed &);
 
+public:
 	// ctor
 	CColRefComputed(const IMDType *pmdtype, INT type_modifier, ULONG id,
 					const CName *pname);
 
 	// dtor
-	~CColRefComputed() override;
+	virtual ~CColRefComputed();
 
-	CColRef::Ecolreftype
-	Ecrt() const override
+	virtual CColRef::Ecolreftype
+	Ecrt() const
 	{
 		return CColRef::EcrtComputed;
 	}
 
 	// is column a system column?
 	BOOL
-	IsSystemCol() const override
+	IsSystemCol() const
 	{
 		// we cannot introduce system columns as computed column
 		return false;
@@ -60,7 +61,7 @@ public:
 
 	// is column a distribution column?
 	BOOL
-	IsDistCol() const override
+	IsDistCol() const
 	{
 		// we cannot introduce distribution columns as computed column
 		return false;

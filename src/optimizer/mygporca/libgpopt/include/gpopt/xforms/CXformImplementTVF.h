@@ -30,9 +30,10 @@ using namespace gpos;
 class CXformImplementTVF : public CXformImplementation
 {
 private:
-public:
-	CXformImplementTVF(const CXformImplementTVF &) = delete;
+	// private copy ctor
+	CXformImplementTVF(const CXformImplementTVF &);
 
+public:
 	// ctor
 	explicit CXformImplementTVF(CMemoryPool *mp);
 
@@ -40,28 +41,30 @@ public:
 	explicit CXformImplementTVF(CExpression *pexprPattern);
 
 	// dtor
-	~CXformImplementTVF() override = default;
+	virtual ~CXformImplementTVF()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementTVF;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementTVF";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformImplementTVF
 

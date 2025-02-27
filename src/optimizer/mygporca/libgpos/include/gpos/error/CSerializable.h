@@ -28,9 +28,10 @@ namespace gpos
 class CSerializable : CStackObject
 {
 private:
-public:
-	CSerializable(const CSerializable &) = delete;
+	// private copy ctor
+	CSerializable(const CSerializable &);
 
+public:
 	// ctor
 	CSerializable();
 

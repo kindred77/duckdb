@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+//	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
 //	@filename:
 //	       	clibwrapper.h
@@ -27,7 +27,7 @@ namespace gpos
 {
 namespace clib
 {
-using Comparator = INT (*)(const void *, const void *);
+typedef INT (*Comparator)(const void *, const void *);
 
 // compare a specified number of bytes of two regions of memory
 INT Memcmp(const void *left, const void *right, SIZE_T num_bytes);
@@ -91,8 +91,7 @@ INT Vswprintf(WCHAR *wcstr, SIZE_T max_len, const WCHAR *format,
 			  VA_LIST vaArgs);
 
 // format string
-INT Vsnprintf(CHAR *src, SIZE_T size, const CHAR *format, VA_LIST vaArgs)
-	GPOS_ATTRIBUTE_PRINTF(3, 0);
+INT Vsnprintf(CHAR *src, SIZE_T size, const CHAR *format, VA_LIST vaArgs);
 
 // return string describing error number
 void Strerror_r(INT errnum, CHAR *buf, SIZE_T buf_len);

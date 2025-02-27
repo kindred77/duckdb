@@ -43,11 +43,17 @@ private:
 	// name of the index
 	CMDName *m_mdname;
 
+	// mdid of the indexed relation
+	IMDId *m_rel_mdid;
+
 	// is the index clustered
 	BOOL m_clustered;
 
 	// index type
 	IMDIndex::EmdindexType m_index_type;
+
+	// index physical type
+	IMDIndex::EmdindexType m_index_physical_type;
 
 	// type id of index items
 	// for instance, for bitmap indexes, this is the type id of the bitmap
@@ -59,8 +65,17 @@ private:
 	// included columns
 	ULongPtrArray *m_included_cols_array;
 
-	// child index oids parse handler
-	CParseHandlerBase *m_child_indexes_parse_handler;
+	// index part constraint
+	CMDPartConstraintGPDB *m_part_constraint;
+
+	// levels that include default partitions
+	ULongPtrArray *m_level_with_default_part_array;
+
+	// is constraint unbounded
+	BOOL m_part_constraint_unbounded;
+
+	// private copy ctor
+	CParseHandlerMDIndex(const CParseHandlerMDIndex &);
 
 	// process the start of an element
 	void StartElement(
@@ -68,18 +83,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerMDIndex(const CParseHandlerMDIndex &) = delete;
-
 	// ctor
 	CParseHandlerMDIndex(CMemoryPool *mp,
 						 CParseHandlerManager *parse_handler_mgr,

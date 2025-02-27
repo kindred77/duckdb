@@ -30,6 +30,9 @@ namespace gpopt
 class CPhysicalMotion : public CPhysical
 {
 private:
+	// private copy ctor
+	CPhysicalMotion(const CPhysicalMotion &);
+
 protected:
 	// ctor
 	explicit CPhysicalMotion(CMemoryPool *mp) : CPhysical(mp)
@@ -37,88 +40,101 @@ protected:
 	}
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 public:
-	CPhysicalMotion(const CPhysicalMotion &) = delete;
-
 	// output distribution accessor
 	virtual CDistributionSpec *Pds() const = 0;
 
 	// check if optimization contexts is valid
-	BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
-					   COptimizationContextArray *pdrgpocChild) const override;
+	virtual BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
+							   COptimizationContextArray *pdrgpocChild) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required ctes of the n-th child
-	CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						  CCTEReq *pcter, ULONG child_index,
-						  CDrvdPropArray *pdrgpdpCtxt,
-						  ULONG ulOptReq) const override;
+	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								  CCTEReq *pcter, ULONG child_index,
+								  CDrvdPropArray *pdrgpdpCtxt,
+								  ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
-	CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
-									CExpressionHandle &,   // exprhdl
-									CRewindabilitySpec *,  // prsRequired
-									ULONG,				   // child_index
-									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const override;
+	virtual CRewindabilitySpec *PrsRequired(
+		CMemoryPool *mp,
+		CExpressionHandle &,   // exprhdl
+		CRewindabilitySpec *,  // prsRequired
+		ULONG,				   // child_index
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const;
 
-	// compute required partition propoagation spec of the n-th child
-	CPartitionPropagationSpec *PppsRequired(
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
 		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const override;
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive distribution
-	CDistributionSpec *PdsDerive(CMemoryPool *mp,
-								 CExpressionHandle &exprhdl) const override;
+	virtual CDistributionSpec *PdsDerive(CMemoryPool *mp,
+										 CExpressionHandle &exprhdl) const;
 
 	// derive rewindability
-	CRewindabilitySpec *PrsDerive(CMemoryPool *mp,
-								  CExpressionHandle &exprhdl) const override;
+	virtual CRewindabilitySpec *PrsDerive(CMemoryPool *mp,
+										  CExpressionHandle &exprhdl) const;
 
-	// derived properties: derive partition propagation spec
-	CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	// derive partition index map
+	virtual CPartIndexMap *
+	PpimDerive(CMemoryPool *,  // mp
+			   CExpressionHandle &exprhdl,
+			   CDrvdPropCtxt *	//pdpctxt
+	) const
+	{
+		return PpimPassThruOuter(exprhdl);
+	}
+
+	// derive partition filter map
+	virtual CPartFilterMap *
+	PpfmDerive(CMemoryPool *,  // mp
+			   CExpressionHandle &exprhdl) const
+	{
+		return PpfmPassThruOuter(exprhdl);
+	}
+
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return distribution property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetDistribution(
-		CExpressionHandle &exprhdl,
-		const CEnfdDistribution *ped) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetDistribution(
+		CExpressionHandle &exprhdl, const CEnfdDistribution *ped) const;
 
 	// return rewindability property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetRewindability(
+	virtual CEnfdProp::EPropEnforcingType EpetRewindability(
 		CExpressionHandle &,		// exprhdl
 		const CEnfdRewindability *	// per
-	) const override;
+	) const;
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	BOOL
-	FPassThruStats() const override
+	virtual BOOL
+	FPassThruStats() const
 	{
 		return true;
 	}

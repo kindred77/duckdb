@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
-//	Portions Copyright (c) 2023, HashData Technology Limited.
 //
 //	@filename:
 //		CDXLScalarFuncExpr.cpp
@@ -31,15 +30,12 @@ using namespace gpdxl;
 //---------------------------------------------------------------------------
 CDXLScalarFuncExpr::CDXLScalarFuncExpr(CMemoryPool *mp, IMDId *mdid_func,
 									   IMDId *mdid_return_type,
-									   INT return_type_modifier, BOOL fRetSet,
-									   INT func_format, BOOL funcvariadic)
+									   INT return_type_modifier, BOOL fRetSet)
 	: CDXLScalar(mp),
 	  m_func_mdid(mdid_func),
 	  m_return_type_mdid(mdid_return_type),
 	  m_return_type_modifier(return_type_modifier),
-	  m_returns_set(fRetSet),
-	  m_func_format(func_format),
-	  m_funcvariadic(funcvariadic)
+	  m_returns_set(fRetSet)
 {
 	GPOS_ASSERT(m_func_mdid->IsValid());
 	GPOS_ASSERT(m_return_type_mdid->IsValid());
@@ -135,33 +131,6 @@ CDXLScalarFuncExpr::ReturnsSet() const
 {
 	return m_returns_set;
 }
-//---------------------------------------------------------------------------
-//	@function:
-//		CDXLScalarFuncExpr::IsFuncVariadic
-//
-//	@doc:
-//		Returns whether the function is variadic
-//
-//---------------------------------------------------------------------------
-BOOL
-CDXLScalarFuncExpr::IsFuncVariadic() const
-{
-	return m_funcvariadic;
-}
-
-//---------------------------------------------------------------------------
-//	@function:
-//		CDXLScalarFuncExpr::FuncFormat
-//
-//	@doc:
-//		Returns how to display function expr
-//
-//---------------------------------------------------------------------------
-INT
-CDXLScalarFuncExpr::FuncFormat() const
-{
-	return m_func_format;
-}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -185,8 +154,6 @@ CDXLScalarFuncExpr::SerializeToDXL(CXMLSerializer *xml_serializer,
 		CDXLTokens::GetDXLTokenStr(EdxltokenFuncRetSet), m_returns_set);
 	m_return_type_mdid->Serialize(xml_serializer,
 								  CDXLTokens::GetDXLTokenStr(EdxltokenTypeId));
-	xml_serializer->AddAttribute(
-		CDXLTokens::GetDXLTokenStr(EdxltokenFuncVariadic), m_funcvariadic);
 
 	if (default_type_modifier != TypeModifier())
 	{

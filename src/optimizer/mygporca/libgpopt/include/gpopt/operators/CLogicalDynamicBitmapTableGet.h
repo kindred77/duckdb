@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CLogicalDynamicBitmapTableGet.h
@@ -42,85 +42,84 @@ private:
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
 	ULONG m_ulOriginOpId;
 
-public:
-	CLogicalDynamicBitmapTableGet(const CLogicalDynamicBitmapTableGet &) =
-		delete;
+	// private copy ctor
+	CLogicalDynamicBitmapTableGet(const CLogicalDynamicBitmapTableGet &);
 
+public:
 	// ctors
-	CLogicalDynamicBitmapTableGet(CMemoryPool *mp, CTableDescriptor *ptabdesc,
-								  ULONG ulOriginOpId,
-								  const CName *pnameTableAlias,
-								  ULONG ulPartIndex,
-								  CColRefArray *pdrgpcrOutput,
-								  CColRef2dArray *pdrgpdrgpcrPart,
-								  IMdIdArray *partition_mdids);
+	CLogicalDynamicBitmapTableGet(
+		CMemoryPool *mp, CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
+		const CName *pnameTableAlias, ULONG ulPartIndex,
+		CColRefArray *pdrgpcrOutput, CColRef2dArray *pdrgpdrgpcrPart,
+		ULONG ulSecondaryPartIndexId, BOOL is_partial,
+		CPartConstraint *ppartcnstr, CPartConstraint *ppartcnstrRel);
 
 	explicit CLogicalDynamicBitmapTableGet(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalDynamicBitmapTableGet() override;
+	virtual ~CLogicalDynamicBitmapTableGet();
 
 	// identifier
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalDynamicBitmapTableGet;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalDynamicBitmapTableGet";
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// derive outer references
-	CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
-									  CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
+											  CExpressionHandle &exprhdl);
 
 	// derive constraint property
-	CPropConstraint *DerivePropertyConstraint(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CPropConstraint *DerivePropertyConstraint(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// compute required stat columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
 			 ULONG				   // child_index
-	) const override
+	) const
 	{
 		return GPOS_NEW(mp) CColRefSet(mp);
 	}
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -133,13 +132,13 @@ public:
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// conversion
 	static CLogicalDynamicBitmapTableGet *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalDynamicBitmapTableGet == pop->Eopid());
 
 		return dynamic_cast<CLogicalDynamicBitmapTableGet *>(pop);

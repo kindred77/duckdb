@@ -39,7 +39,9 @@ CPhysicalLeftAntiSemiNLJoin::CPhysicalLeftAntiSemiNLJoin(CMemoryPool *mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalLeftAntiSemiNLJoin::~CPhysicalLeftAntiSemiNLJoin() = default;
+CPhysicalLeftAntiSemiNLJoin::~CPhysicalLeftAntiSemiNLJoin()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -58,6 +60,27 @@ CPhysicalLeftAntiSemiNLJoin::FProvidesReqdCols(CExpressionHandle &exprhdl,
 {
 	// left anti semi join only propagates columns from left child
 	return FOuterProvidesReqdCols(exprhdl, pcrsRequired);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalLeftAntiSemiNLJoin::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalLeftAntiSemiNLJoin::PppsRequired(
+	CMemoryPool *mp, CExpressionHandle &exprhdl,
+	CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+	CDrvdPropArray *,  // pdrgpdpCtxt,
+	ULONG			   // ulOptReq
+)
+{
+	// no partition elimination for LASJ: push request to the respective child
+	return CPhysical::PppsRequiredPushThruNAry(mp, exprhdl, pppsRequired,
+											   child_index);
 }
 
 // EOF

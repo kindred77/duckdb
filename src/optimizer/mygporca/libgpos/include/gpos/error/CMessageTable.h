@@ -28,17 +28,18 @@ namespace gpos
 class CMessageTable
 {
 	// short hand for message tables
-	using MessageTable = CSyncHashtable<CMessage, CException>;
+	typedef CSyncHashtable<CMessage, CException> MessageTable;
 
 	// short hand for message table accessor
-	using MTAccessor = CSyncHashtableAccessByKey<CMessage, CException>;
+	typedef CSyncHashtableAccessByKey<CMessage, CException> MTAccessor;
 
 	// message hashtable
 	MessageTable m_hash_table;
 
-public:
-	CMessageTable(const CMessageTable &) = delete;
+	// private copy ctor
+	CMessageTable(const CMessageTable &);
 
+public:
 	// ctor
 	CMessageTable(CMemoryPool *mp, ULONG size, ELocale locale);
 

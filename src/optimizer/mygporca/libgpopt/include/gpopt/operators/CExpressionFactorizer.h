@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CExpressionFactorizer.h
@@ -43,38 +43,39 @@ class CExpressionFactorizer
 {
 private:
 	// map expression to a count, used in factorization
-	using ExprMap =
-		CHashMap<CExpression, ULONG, CExpression::HashValue, CUtils::Equals,
-				 CleanupRelease<CExpression>, CleanupDelete<ULONG>>;
+	typedef CHashMap<CExpression, ULONG, CExpression::HashValue, CUtils::Equals,
+					 CleanupRelease<CExpression>, CleanupDelete<ULONG> >
+		ExprMap;
 
 	// map operators to an array of expression arrays, corresponding to
 	// a disjunction of expressions on columns created by that operator
-	using SourceToArrayPosMap =
-		CHashMap<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CExpressionArrays>>;
+	typedef CHashMap<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CExpressionArrays> >
+		SourceToArrayPosMap;
 
 	// iterator for map of operator to disjunctive form representation
-	using SourceToArrayPosMapIter =
-		CHashMapIter<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupRelease<CExpressionArrays>>;
+	typedef CHashMapIter<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupRelease<CExpressionArrays> >
+		SourceToArrayPosMapIter;
 
 	// map columns to an array of expression arrays, corresponding to
 	// a disjunction of expressions using that column
-	using ColumnToArrayPosMap =
-		CHashMap<CColRef, CExpressionArrays, gpos::HashPtr<CColRef>,
-				 gpos::EqualPtr<CColRef>, CleanupNULL<CColRef>,
-				 CleanupRelease<CExpressionArrays>>;
+	typedef CHashMap<CColRef, CExpressionArrays, gpos::HashPtr<CColRef>,
+					 gpos::EqualPtr<CColRef>, CleanupNULL<CColRef>,
+					 CleanupRelease<CExpressionArrays> >
+		ColumnToArrayPosMap;
 
 	// iterator for map of column to disjunctive form representation
-	using ColumnToArrayPosMapIter =
-		CHashMapIter<CColRef, CExpressionArrays, gpos::HashPtr<CColRef>,
-					 gpos::EqualPtr<CColRef>, CleanupNULL<CColRef>,
-					 CleanupRelease<CExpressionArrays>>;
+	typedef CHashMapIter<CColRef, CExpressionArrays, gpos::HashPtr<CColRef>,
+						 gpos::EqualPtr<CColRef>, CleanupNULL<CColRef>,
+						 CleanupRelease<CExpressionArrays> >
+		ColumnToArrayPosMapIter;
 
-	using PexprProcessDisj = CExpression *(*) (CMemoryPool *, CExpression *,
-											   CExpression *);
+	typedef CExpression *(*PexprProcessDisj)(
+		CMemoryPool *mp, CExpression *pexpr,
+		CExpression *pexprLowestLogicalAncestor);
 
 	// helper for determining if given expression factor should be added to factors array
 	static void AddFactor(CMemoryPool *mp, CExpression *pexpr,

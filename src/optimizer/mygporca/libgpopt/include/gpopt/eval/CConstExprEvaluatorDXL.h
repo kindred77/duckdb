@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CConstExprEvaluatorDXL.h
@@ -59,22 +59,23 @@ private:
 	// translates DXL coming from the evaluator back to CExpression
 	CTranslatorDXLToExpr m_trdxl2expr;
 
-public:
-	CConstExprEvaluatorDXL(const CConstExprEvaluatorDXL &) = delete;
+	// private copy ctor
+	CConstExprEvaluatorDXL(const CConstExprEvaluatorDXL &);
 
+public:
 	// ctor
 	CConstExprEvaluatorDXL(CMemoryPool *mp, CMDAccessor *md_accessor,
 						   IConstDXLNodeEvaluator *pconstdxleval);
 
 	// dtor
-	~CConstExprEvaluatorDXL() override;
+	virtual ~CConstExprEvaluatorDXL();
 
 	// evaluate the given expression and return the result as a new expression
 	// caller takes ownership of returned expression
-	CExpression *PexprEval(CExpression *pexpr) override;
+	virtual CExpression *PexprEval(CExpression *pexpr);
 
 	// Returns true iff the evaluator can evaluate expressions
-	BOOL FCanEvalExpressions() override;
+	virtual BOOL FCanEvalExpressions();
 };
 }  // namespace gpopt
 

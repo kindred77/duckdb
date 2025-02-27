@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarMinMax.cpp
@@ -80,7 +80,7 @@ CDXLScalarMinMax::GetOpNameStr() const
 		case EmmtMax:
 			return CDXLTokens::GetDXLTokenStr(EdxltokenScalarMax);
 		default:
-			return nullptr;
+			return NULL;
 	}
 }
 

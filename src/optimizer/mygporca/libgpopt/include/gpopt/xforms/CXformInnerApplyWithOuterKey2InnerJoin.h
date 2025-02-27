@@ -33,42 +33,45 @@ using namespace gpos;
 class CXformInnerApplyWithOuterKey2InnerJoin : public CXformExploration
 {
 private:
-public:
+	// private copy ctor
 	CXformInnerApplyWithOuterKey2InnerJoin(
-		const CXformInnerApplyWithOuterKey2InnerJoin &) = delete;
+		const CXformInnerApplyWithOuterKey2InnerJoin &);
 
+public:
 	// ctor
 	explicit CXformInnerApplyWithOuterKey2InnerJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformInnerApplyWithOuterKey2InnerJoin() override = default;
+	virtual ~CXformInnerApplyWithOuterKey2InnerJoin()
+	{
+	}
 
 	// transformation promise
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfInnerApplyWithOuterKey2InnerJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformInnerApplyWithOuterKey2InnerJoin";
 	}
 
 	// is transformation an Apply decorrelation (Apply To Join) xform?
-	BOOL
-	FApplyDecorrelating() const override
+	virtual BOOL
+	FApplyDecorrelating() const
 	{
 		return true;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 
 };	// class CXformInnerApplyWithOuterKey2InnerJoin

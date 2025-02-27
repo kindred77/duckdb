@@ -34,7 +34,10 @@ GPOS_CPL_ASSERT(GPOS_ERROR_MESSAGE_BUFFER_SIZE <= GPOS_LOG_ENTRY_BUFFER_SIZE);
 //---------------------------------------------------------------------------
 CErrorContext::CErrorContext(CMiniDumper *mini_dumper_handle)
 	: m_exception(CException::m_invalid_exception),
-
+	  m_severity(CException::ExsevError),
+	  m_pending(false),
+	  m_rethrown(false),
+	  m_serializing(false),
 	  m_static_buffer(m_error_msg, GPOS_ARRAY_SIZE(m_error_msg)),
 	  m_mini_dumper_handle(mini_dumper_handle)
 {
@@ -90,19 +93,17 @@ void
 CErrorContext::Record(CException &exc, VA_LIST vl)
 {
 	if (m_serializing)
-	{
 		return;
-	}
 
-//#ifdef GPOS_DEBUG
+#ifdef GPOS_DEBUG
 	if (m_pending)
 	{
 		// reset pending flag so we can throw from here
 		m_pending = false;
 
-		GPOS_ASSERT_FIXME(!"Pending error unhandled when raising new error");
+		GPOS_ASSERT(!"Pending error unhandled when raising new error");
 	}
-//#endif	// GPOS_DEBUG
+#endif	// GPOS_DEBUG
 
 	m_pending = true;
 	m_exception = exc;
@@ -138,7 +139,9 @@ CErrorContext::AppendErrnoMsg()
 {
 	GPOS_ASSERT(m_pending);
 	GPOS_ASSERT(GPOS_MATCH_EX(m_exception, CException::ExmaSystem,
-							  CException::ExmiIOError));
+							  CException::ExmiIOError) ||
+				GPOS_MATCH_EX(m_exception, CException::ExmaSystem,
+							  CException::ExmiNetError));
 	GPOS_ASSERT(0 < errno && "Errno has not been set");
 
 	// get errno description
@@ -170,7 +173,7 @@ CErrorContext::CopyPropErrCtxt(const IErrorContext *err_ctxt)
 	// copy error message
 	m_static_buffer.Reset();
 	m_static_buffer.Append(
-		&(dynamic_cast<const CErrorContext *>(err_ctxt)->m_static_buffer));
+		&(reinterpret_cast<const CErrorContext *>(err_ctxt)->m_static_buffer));
 
 	// copy severity
 	m_severity = err_ctxt->GetSeverity();
@@ -189,12 +192,9 @@ void
 CErrorContext::Serialize()
 {
 	if (m_serializing)
-	{
 		return;
-	}
 
-	if (nullptr == m_mini_dumper_handle ||
-		m_serializable_objects_list.IsEmpty())
+	if (NULL == m_mini_dumper_handle || m_serializable_objects_list.IsEmpty())
 	{
 		return;
 	}
@@ -211,7 +211,7 @@ CErrorContext::Serialize()
 	m_mini_dumper_handle->SerializeEntryHeader();
 
 	for (CSerializable *serializable_obj = m_serializable_objects_list.First();
-		 nullptr != serializable_obj;
+		 NULL != serializable_obj;
 		 serializable_obj = m_serializable_objects_list.Next(serializable_obj))
 	{
 		serializable_obj->Serialize(oos);

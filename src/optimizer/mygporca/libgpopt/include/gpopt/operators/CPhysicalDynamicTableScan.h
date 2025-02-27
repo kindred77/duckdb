@@ -28,51 +28,52 @@ namespace gpopt
 class CPhysicalDynamicTableScan : public CPhysicalDynamicScan
 {
 private:
-public:
-	CPhysicalDynamicTableScan(const CPhysicalDynamicTableScan &) = delete;
+	// private copy ctor
+	CPhysicalDynamicTableScan(const CPhysicalDynamicTableScan &);
 
+public:
 	// ctors
-	CPhysicalDynamicTableScan(CMemoryPool *mp, const CName *pnameAlias,
-							  CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
-							  ULONG scan_id, CColRefArray *pdrgpcrOutput,
+	CPhysicalDynamicTableScan(CMemoryPool *mp, BOOL is_partial,
+							  const CName *pname, CTableDescriptor *ptabdesc,
+							  ULONG ulOriginOpId, ULONG scan_id,
+							  CColRefArray *colref_array,
 							  CColRef2dArray *pdrgpdrgpcrParts,
-							  IMdIdArray *partition_mdids,
-							  ColRefToUlongMapArray *root_col_mapping_per_part);
+							  ULONG ulSecondaryScanId,
+							  CPartConstraint *ppartcnstr,
+							  CPartConstraint *ppartcnstrRel);
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalDynamicTableScan;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalDynamicTableScan";
 	}
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	// statistics derivation during costing
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  CReqdPropPlan *prpplan,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  CReqdPropPlan *prpplan,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// conversion function
 	static CPhysicalDynamicTableScan *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalDynamicTableScan == pop->Eopid());
 
 		return dynamic_cast<CPhysicalDynamicTableScan *>(pop);
 	}
-
-	CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
 
 };	// class CPhysicalDynamicTableScan
 

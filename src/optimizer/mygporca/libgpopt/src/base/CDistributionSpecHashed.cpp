@@ -44,17 +44,17 @@ CDistributionSpecHashed::CDistributionSpecHashed(CExpressionArray *pdrgpexpr,
 	: m_pdrgpexpr(pdrgpexpr),
 	  m_opfamilies(opfamilies),
 	  m_fNullsColocated(fNullsColocated),
-	  m_pdshashedEquiv(nullptr),
-	  m_equiv_hash_exprs(nullptr)
+	  m_pdshashedEquiv(NULL),
+	  m_equiv_hash_exprs(NULL)
 {
-	GPOS_ASSERT(nullptr != pdrgpexpr);
+	GPOS_ASSERT(NULL != pdrgpexpr);
 	GPOS_ASSERT(0 < pdrgpexpr->Size());
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution) &&
-		nullptr == opfamilies)
+		NULL == opfamilies)
 	{
 		PopulateDefaultOpfamilies();
 	}
-	GPOS_ASSERT(m_opfamilies == nullptr ||
+	GPOS_ASSERT(m_opfamilies == NULL ||
 				m_opfamilies->Size() == m_pdrgpexpr->Size());
 }
 
@@ -73,15 +73,16 @@ CDistributionSpecHashed::CDistributionSpecHashed(
 	  m_opfamilies(opfamilies),
 	  m_fNullsColocated(fNullsColocated),
 	  m_pdshashedEquiv(pdshashedEquiv),
-	  m_equiv_hash_exprs(nullptr)
+	  m_equiv_hash_exprs(NULL)
 {
-	GPOS_ASSERT(nullptr != pdrgpexpr);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+	GPOS_ASSERT(0 < pdrgpexpr->Size());
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution) &&
-		nullptr == opfamilies)
+		NULL == opfamilies)
 	{
 		PopulateDefaultOpfamilies();
 	}
-	GPOS_ASSERT(m_opfamilies == nullptr ||
+	GPOS_ASSERT(m_opfamilies == NULL ||
 				m_opfamilies->Size() == m_pdrgpexpr->Size());
 }
 
@@ -113,7 +114,7 @@ CDistributionSpecHashed::PopulateDefaultOpfamilies()
 		IMDId *mdid_type = CScalar::PopConvert(expr->Pop())->MdidType();
 		IMDId *mdid_opfamily =
 			mda->RetrieveType(mdid_type)->GetDistrOpfamilyMdid();
-		GPOS_ASSERT(nullptr != mdid_opfamily && mdid_opfamily->IsValid());
+		GPOS_ASSERT(NULL != mdid_opfamily && mdid_opfamily->IsValid());
 		mdid_opfamily->AddRef();
 		m_opfamilies->Append(mdid_opfamily);
 	}
@@ -140,7 +141,7 @@ CDistributionSpecHashed::PdsCopyWithRemappedColumns(
 			mp, colref_mapping, must_exist));
 	}
 
-	if (nullptr == m_pdshashedEquiv)
+	if (NULL == m_pdshashedEquiv)
 	{
 		return GPOS_NEW(mp)
 			CDistributionSpecHashed(pdrgpexpr, m_fNullsColocated);
@@ -151,7 +152,7 @@ CDistributionSpecHashed::PdsCopyWithRemappedColumns(
 		mp, colref_mapping, must_exist);
 	CDistributionSpecHashed *pdshashed =
 		CDistributionSpecHashed::PdsConvert(pds);
-	if (nullptr != m_opfamilies)
+	if (NULL != m_opfamilies)
 	{
 		m_opfamilies->AddRef();
 	}
@@ -165,7 +166,7 @@ CDistributionSpec *
 CDistributionSpecHashed::StripEquivColumns(CMemoryPool *mp)
 {
 	m_pdrgpexpr->AddRef();
-	if (nullptr != m_opfamilies)
+	if (NULL != m_opfamilies)
 	{
 		m_opfamilies->AddRef();
 	}
@@ -198,7 +199,7 @@ CDistributionSpecHashed::FDistributionSpecHashedOnlyOnGpSegmentId() const
 BOOL
 CDistributionSpecHashed::FSatisfies(const CDistributionSpec *pds) const
 {
-	if (nullptr != m_pdshashedEquiv && m_pdshashedEquiv->FSatisfies(pds))
+	if (NULL != m_pdshashedEquiv && m_pdshashedEquiv->FSatisfies(pds))
 	{
 		return true;
 	}
@@ -237,7 +238,7 @@ CDistributionSpecHashed::FSatisfies(const CDistributionSpec *pds) const
 		// in the following query:
 		//
 		// SELECT * FROM t t1, t t2 WHERE t1.gp_segment_id=t2.id;
-		if (nullptr == pdsHashed->HashSpecEquivExprs())
+		if (NULL == pdsHashed->HashSpecEquivExprs())
 		{
 			return true;
 		}
@@ -273,7 +274,7 @@ CDistributionSpecHashed::FMatchSubset(
 	{
 		CExpression *pexprOwn = CCastUtils::PexprWithoutBinaryCoercibleCasts(
 			(*m_pdrgpexpr)[ulOuter]);
-		IMDId *opfamily_own = nullptr;
+		IMDId *opfamily_own = NULL;
 
 		BOOL fFound = false;
 		CExpressionArrays *equiv_hash_exprs = pdsHashed->HashSpecEquivExprs();
@@ -282,7 +283,7 @@ CDistributionSpecHashed::FMatchSubset(
 			CExpression *pexprOther =
 				CCastUtils::PexprWithoutBinaryCoercibleCasts(
 					(*(pdsHashed->m_pdrgpexpr))[ulInner]);
-			IMDId *opfamily_other = nullptr;
+			IMDId *opfamily_other = NULL;
 
 			if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution))
 			{
@@ -312,7 +313,7 @@ CDistributionSpecHashed::FMatchSubset(
 				}
 			}
 
-			if (nullptr != equiv_hash_exprs && equiv_hash_exprs->Size() > 0)
+			if (NULL != equiv_hash_exprs && equiv_hash_exprs->Size() > 0)
 			{
 				GPOS_ASSERT(false == fFound);
 				CExpressionArray *equiv_distribution_exprs =
@@ -348,7 +349,7 @@ CDistributionSpecHashed *
 CDistributionSpecHashed::PdshashedExcludeColumns(CMemoryPool *mp,
 												 CColRefSet *pcrs)
 {
-	GPOS_ASSERT(nullptr != pcrs);
+	GPOS_ASSERT(NULL != pcrs);
 
 	CExpressionArray *pdrgpexprNew = GPOS_NEW(mp) CExpressionArray(mp);
 	const ULONG ulExprs = m_pdrgpexpr->Size();
@@ -374,7 +375,7 @@ CDistributionSpecHashed::PdshashedExcludeColumns(CMemoryPool *mp,
 	if (0 == pdrgpexprNew->Size())
 	{
 		pdrgpexprNew->Release();
-		return nullptr;
+		return NULL;
 	}
 
 	return GPOS_NEW(mp)
@@ -401,10 +402,10 @@ CDistributionSpecHashed::AppendEnforcers(CMemoryPool *mp,
 										 CExpressionArray *pdrgpexpr,
 										 CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != prpp);
-	GPOS_ASSERT(nullptr != pdrgpexpr);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != prpp);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(!GPOS_FTRACE(EopttraceDisableMotions));
 	GPOS_ASSERT(
 		this == prpp->Ped()->PdsRequired() &&
@@ -417,21 +418,10 @@ CDistributionSpecHashed::AppendEnforcers(CMemoryPool *mp,
 	}
 
 	// add a hashed distribution enforcer
-	// if the distribution spec request isn't met, always enforce nulls colocation
-
-	CDistributionSpecHashed *this_copy = this;
-	if (this->FNullsColocated())
-	{
-		this_copy->AddRef();
-	}
-	else
-	{
-		this_copy = this->Copy(mp, true);
-	}
-
+	AddRef();
 	pexpr->AddRef();
 	CExpression *pexprMotion = GPOS_NEW(mp) CExpression(
-		mp, GPOS_NEW(mp) CPhysicalMotionHashDistribute(mp, this_copy), pexpr);
+		mp, GPOS_NEW(mp) CPhysicalMotionHashDistribute(mp, this), pexpr);
 	pdrgpexpr->Append(pexprMotion);
 }
 
@@ -448,10 +438,8 @@ ULONG
 CDistributionSpecHashed::HashValue() const
 {
 	CDistributionSpecHashed *equiv_spec = this->PdshashedEquiv();
-	if (nullptr != equiv_spec)
-	{
+	if (NULL != equiv_spec)
 		return equiv_spec->HashValue();
-	}
 
 	ULONG ulHash = (ULONG) Edt();
 
@@ -464,7 +452,7 @@ CDistributionSpecHashed::HashValue() const
 		ulHash = gpos::CombineHashes(ulHash, CExpression::HashValue(pexpr));
 	}
 
-	if (nullptr != m_opfamilies && m_opfamilies->Size() > 0)
+	if (NULL != m_opfamilies && m_opfamilies->Size() > 0)
 	{
 		for (ULONG ul = 0; ul < m_opfamilies->Size(); ul++)
 		{
@@ -473,7 +461,7 @@ CDistributionSpecHashed::HashValue() const
 		}
 	}
 
-	if (nullptr != m_equiv_hash_exprs && m_equiv_hash_exprs->Size() > 0)
+	if (NULL != m_equiv_hash_exprs && m_equiv_hash_exprs->Size() > 0)
 	{
 		for (ULONG ul = 0; ul < m_equiv_hash_exprs->Size(); ul++)
 		{
@@ -518,7 +506,7 @@ BOOL
 CDistributionSpecHashed::FMatchHashedDistribution(
 	const CDistributionSpecHashed *pdshashed) const
 {
-	GPOS_ASSERT(nullptr != pdshashed);
+	GPOS_ASSERT(NULL != pdshashed);
 
 	if (m_pdrgpexpr->Size() != pdshashed->m_pdrgpexpr->Size() ||
 		!FNullsColocatedCompatible(pdshashed) ||
@@ -536,11 +524,9 @@ CDistributionSpecHashed::FMatchHashedDistribution(
 	for (ULONG ul = 0; ul < length; ul++)
 	{
 		CExpressionArrays *all_equiv_exprs = pdshashed->HashSpecEquivExprs();
-		CExpressionArray *equiv_distribution_exprs = nullptr;
-		if (nullptr != all_equiv_exprs && all_equiv_exprs->Size() > 0)
-		{
+		CExpressionArray *equiv_distribution_exprs = NULL;
+		if (NULL != all_equiv_exprs && all_equiv_exprs->Size() > 0)
 			equiv_distribution_exprs = (*all_equiv_exprs)[ul];
-		}
 		CExpression *pexprLeft = (*(pdshashed->m_pdrgpexpr))[ul];
 		CExpression *pexprRight = (*m_pdrgpexpr)[ul];
 		BOOL fSuccess = CUtils::Equals(pexprLeft, pexprRight);
@@ -581,12 +567,12 @@ CDistributionSpecHashed::Matches(const CDistributionSpec *pds) const
 	const CDistributionSpecHashed *pdshashed =
 		CDistributionSpecHashed::PdsConvert(pds);
 
-	if (nullptr != m_pdshashedEquiv && m_pdshashedEquiv->Matches(pdshashed))
+	if (NULL != m_pdshashedEquiv && m_pdshashedEquiv->Matches(pdshashed))
 	{
 		return true;
 	}
 
-	if (nullptr != pdshashed->PdshashedEquiv() &&
+	if (NULL != pdshashed->PdshashedEquiv() &&
 		pdshashed->PdshashedEquiv()->Matches(this))
 	{
 		return true;
@@ -601,9 +587,7 @@ CDistributionSpecHashed::Equals(const CDistributionSpec *input_spec) const
 	GPOS_CHECK_STACK_SIZE;
 
 	if (input_spec->Edt() != Edt())
-	{
 		return false;
-	}
 
 	const CDistributionSpecHashed *other_spec =
 		CDistributionSpecHashed::PdsConvert(input_spec);
@@ -611,23 +595,19 @@ CDistributionSpecHashed::Equals(const CDistributionSpec *input_spec) const
 	CDistributionSpecHashed *spec_equiv = this->PdshashedEquiv();
 	CDistributionSpecHashed *other_spec_equiv = other_spec->PdshashedEquiv();
 	// if one of the spec has equivalent spec and other doesn't, they are not equal
-	if ((spec_equiv != nullptr && other_spec_equiv == nullptr) ||
-		(spec_equiv == nullptr && other_spec_equiv != nullptr))
-	{
+	if ((spec_equiv != NULL && other_spec_equiv == NULL) ||
+		(spec_equiv == NULL && other_spec_equiv != NULL))
 		return false;
-	}
 
 	BOOL equals = true;
 	// if both the specs has equivalent specs, compare them
-	if (nullptr != spec_equiv && nullptr != other_spec_equiv)
+	if (NULL != spec_equiv && NULL != other_spec_equiv)
 	{
 		equals = spec_equiv->Equals(other_spec_equiv);
 	}
 	// if the equivalent spec are not equal, the spec objects are not equal
 	if (!equals)
-	{
 		return false;
-	}
 
 	if (!CUtils::Equals(m_opfamilies, other_spec->m_opfamilies))
 	{
@@ -641,9 +621,7 @@ CDistributionSpecHashed::Equals(const CDistributionSpec *input_spec) const
 		CUtils::Equals(m_pdrgpexpr, other_spec->m_pdrgpexpr);
 
 	if (!matches)
-	{
 		return false;
-	}
 
 	// compare the equivalent expression arrays
 	CExpressionArrays *spec_equiv_exprs = m_equiv_hash_exprs;
@@ -668,12 +646,12 @@ CDistributionSpecHashed::PdshashedMaximal(CMemoryPool *mp,
 										  CColRefArray *colref_array,
 										  BOOL fNullsColocated)
 {
-	GPOS_ASSERT(nullptr != colref_array);
+	GPOS_ASSERT(NULL != colref_array);
 	GPOS_ASSERT(0 < colref_array->Size());
 
 	CColRefArray *pdrgpcrHashable =
 		CUtils::PdrgpcrRedistributableSubset(mp, colref_array);
-	CDistributionSpecHashed *pdshashed = nullptr;
+	CDistributionSpecHashed *pdshashed = NULL;
 	if (0 < pdrgpcrHashable->Size())
 	{
 		CExpressionArray *pdrgpexpr =
@@ -715,7 +693,7 @@ CDistributionSpecHashed::ComputeEquivHashExprs(
 {
 	CExpressionArray *distribution_exprs = m_pdrgpexpr;
 	CExpressionArrays *equiv_distribution_all_exprs = m_equiv_hash_exprs;
-	if (nullptr == equiv_distribution_all_exprs)
+	if (NULL == equiv_distribution_all_exprs)
 	{
 		// array which holds equivalent scalar expression for each of the distribution key
 		equiv_distribution_all_exprs = GPOS_NEW(mp) CExpressionArrays(mp);
@@ -746,12 +724,12 @@ CDistributionSpecHashed::ComputeEquivHashExprs(
 			// there is only one colref in the set
 			const CColRef *distribution_colref =
 				distribution_expr_cols->PcrAny();
-			GPOS_ASSERT(nullptr != distribution_colref);
+			GPOS_ASSERT(NULL != distribution_colref);
 			CColRefSet *equiv_cols =
 				expression_handle.DerivePropertyConstraint()->PcrsEquivClass(
 					distribution_colref);
 			// if there are equivalent columns, then we have a chance to create equivalent distribution exprs
-			if (nullptr != equiv_cols)
+			if (NULL != equiv_cols)
 			{
 				CColRefSetIter equiv_cols_iter(*equiv_cols);
 				while (equiv_cols_iter.Advance())
@@ -786,7 +764,7 @@ CDistributionSpecHashed::ComputeEquivHashExprs(
 							(*original_predicate_expr)[1]);
 					// if the predicate is a = b, and a is the current distribution expr,
 					// then the equivalent expr is b
-					CExpression *equiv_distribution_expr = nullptr;
+					CExpression *equiv_distribution_expr = NULL;
 					if (CUtils::Equals(left_distribution_expr,
 									   distribution_expr))
 					{
@@ -813,59 +791,42 @@ CDistributionSpecHashed::ComputeEquivHashExprs(
 	}
 	GPOS_ASSERT(equiv_distribution_all_exprs->Size() == m_pdrgpexpr->Size());
 	m_equiv_hash_exprs = equiv_distribution_all_exprs;
-
-	if (nullptr != m_pdshashedEquiv)
-	{
-		m_pdshashedEquiv->ComputeEquivHashExprs(mp, expression_handle);
-	}
 }
 
 CDistributionSpecHashed *
 CDistributionSpecHashed::Copy(CMemoryPool *mp)
 {
-	if (nullptr != m_pdrgpexpr)
+	CExpressionArray *distribution_exprs = this->Pdrgpexpr();
+	CExpressionArrays *equiv_distribution_exprs =
+		GPOS_NEW(mp) CExpressionArrays(mp);
+	CDistributionSpecHashed *pds = this;
+	while (pds)
 	{
-		m_pdrgpexpr->AddRef();
+		CExpressionArray *distribution_exprs = pds->Pdrgpexpr();
+		distribution_exprs->AddRef();
+		equiv_distribution_exprs->Append(distribution_exprs);
+		pds = pds->PdshashedEquiv();
 	}
 
-	if (nullptr != m_opfamilies)
+	CDistributionSpecHashed *spec = NULL;
+	for (ULONG ul = 1; ul < equiv_distribution_exprs->Size(); ul++)
 	{
-		m_opfamilies->AddRef();
+		CExpressionArray *distribution_exprs = (*equiv_distribution_exprs)[ul];
+		distribution_exprs->AddRef();
+		spec = GPOS_NEW(mp) CDistributionSpecHashed(
+			distribution_exprs, this->FNullsColocated(), spec);
 	}
 
-	CDistributionSpecHashed *result = GPOS_NEW(mp)
-		CDistributionSpecHashed(m_pdrgpexpr, m_fNullsColocated, m_opfamilies);
-
-	if (nullptr != m_pdshashedEquiv)
-	{
-		result->m_pdshashedEquiv = m_pdshashedEquiv->Copy(mp);
-	}
-
-	return result;
-}
-
-CDistributionSpecHashed *
-CDistributionSpecHashed::Copy(CMemoryPool *mp, BOOL fNullsColocated)
-{
-	if (nullptr != m_pdrgpexpr)
-	{
-		m_pdrgpexpr->AddRef();
-	}
-
-	if (nullptr != m_opfamilies)
+	distribution_exprs->AddRef();
+	if (NULL != m_opfamilies)
 	{
 		m_opfamilies->AddRef();
 	}
-
-	CDistributionSpecHashed *result = GPOS_NEW(mp)
-		CDistributionSpecHashed(m_pdrgpexpr, fNullsColocated, m_opfamilies);
-
-	if (nullptr != m_pdshashedEquiv)
-	{
-		result->m_pdshashedEquiv = m_pdshashedEquiv->Copy(mp, fNullsColocated);
-	}
-
-	return result;
+	CDistributionSpecHashed *spec_copy = GPOS_NEW(mp) CDistributionSpecHashed(
+		distribution_exprs, this->FNullsColocated(), spec, m_opfamilies);
+	equiv_distribution_exprs->Release();
+	GPOS_ASSERT(NULL != spec_copy);
+	return spec_copy;
 }
 //---------------------------------------------------------------------------
 //	@function:
@@ -925,14 +886,13 @@ CDistributionSpecHashed::OsPrintWithPrefix(IOstream &os,
 
 	os << " ]";
 
-	if (nullptr != m_pdshashedEquiv &&
-		GPOS_FTRACE(EopttracePrintEquivDistrSpecs))
+	if (NULL != m_pdshashedEquiv && GPOS_FTRACE(EopttracePrintEquivDistrSpecs))
 	{
 		os << ", equiv. dist: ";
 		m_pdshashedEquiv->OsPrint(os);
 	}
 
-	if (nullptr != m_equiv_hash_exprs && m_equiv_hash_exprs->Size() > 0 &&
+	if (NULL != m_equiv_hash_exprs && m_equiv_hash_exprs->Size() > 0 &&
 		GPOS_FTRACE(EopttracePrintEquivDistrSpecs))
 	{
 		os << "," << std::endl;
@@ -950,7 +910,7 @@ CDistributionSpecHashed::OsPrintWithPrefix(IOstream &os,
 		}
 	}
 
-	if (nullptr != m_opfamilies && m_opfamilies->Size() > 0)
+	if (NULL != m_opfamilies && m_opfamilies->Size() > 0)
 	{
 		os << ", opfamilies: ";
 		for (ULONG ul = 0; ul < m_opfamilies->Size(); ul++)
@@ -980,67 +940,49 @@ CDistributionSpecHashed::GetAllDistributionExprs(CMemoryPool *mp)
 	return all_distribution_exprs;
 }
 
-// return a new spec created by merging the current with the input spec
-// this spec: {spec 1} -> {spec 2} -> {spec 3}
-// other spec: {spec 4} -> {spec 5}
-// output spec: {spec 5} -> {spec 4} -> {spec 3} -> {spec 2} -> {spec 1}
-// The counter intuitive sequence of linked list concatenation was preserved
-// to ensure minimal plan change. Ideally, plan choice shouldn't depend on
-// the traversal order of equivalent distribution specs. But in reality, our
-// code was so written, likely unintentionally, that the traversal order does
-// matter.
+// create a new spec and which marks the other incoming specs
+// as equivalent
 CDistributionSpecHashed *
 CDistributionSpecHashed::Combine(CMemoryPool *mp,
 								 CDistributionSpecHashed *other_spec)
 {
-	if (nullptr == other_spec)
+	CExpressionArrays *distribution_exprs = this->GetAllDistributionExprs(mp);
+	CExpressionArrays *other_distribution_exprs =
+		other_spec->GetAllDistributionExprs(mp);
+	CExpressionArrays *all_distribution_exprs =
+		CUtils::GetCombinedExpressionArrays(mp, distribution_exprs,
+											other_distribution_exprs);
+
+	CDistributionSpecHashed *combined_hashed_spec = NULL;
+	for (ULONG ul = 0; ul < all_distribution_exprs->Size(); ul++)
 	{
-		return this;
+		CExpressionArray *exprs = (*all_distribution_exprs)[ul];
+#ifdef GPOS_DEBUG
+		// ensure that all the spec has the same size
+		GPOS_ASSERT(this->Pdrgpexpr()->Size() == exprs->Size());
+#endif
+		exprs->AddRef();
+		if (NULL != m_opfamilies)
+		{
+			m_opfamilies->AddRef();
+		}
+		combined_hashed_spec = GPOS_NEW(mp) CDistributionSpecHashed(
+			exprs, this->FNullsColocated(), combined_hashed_spec, m_opfamilies);
 	}
-
-	CDistributionSpecHashed *combined_spec = other_spec->Copy(mp);
-	CDistributionSpecHashed *prev = nullptr, *next = nullptr;
-
-	while (nullptr != combined_spec)
-	{
-		next = combined_spec->m_pdshashedEquiv;
-		combined_spec->m_pdshashedEquiv = prev;
-		prev = combined_spec;
-		combined_spec = next;
-	}
-	combined_spec = prev;
-
-	CDistributionSpecHashed *this_copy = this->Copy(mp);
-	prev = nullptr, next = nullptr;
-
-	while (nullptr != this_copy)
-	{
-		next = this_copy->m_pdshashedEquiv;
-		this_copy->m_pdshashedEquiv = prev;
-		prev = this_copy;
-		this_copy = next;
-	}
-	this_copy = prev;
-
-	next = combined_spec;
-
-	while (nullptr != next->m_pdshashedEquiv)
-	{
-		next = next->m_pdshashedEquiv;
-	}
-
-	next->m_pdshashedEquiv = this_copy;
-
-	return combined_spec;
+	all_distribution_exprs->Release();
+	distribution_exprs->Release();
+	other_distribution_exprs->Release();
+	GPOS_ASSERT(NULL != combined_hashed_spec);
+	return combined_hashed_spec;
 }
 
 // check if the equivalent spec (if any) has no matching columns with the main spec
 BOOL
-CDistributionSpecHashed::HasCompleteEquivSpec(CMemoryPool *mp) const
+CDistributionSpecHashed::HasCompleteEquivSpec(CMemoryPool *mp)
 {
 	CDistributionSpecHashed *pdshashedEquiv = this->PdshashedEquiv();
 
-	if (nullptr != pdshashedEquiv)
+	if (NULL != pdshashedEquiv)
 	{
 		CColRefSet *pcrshashed = this->PcrsUsed(mp);
 		CColRefSet *pcrshashedEquiv = pdshashedEquiv->PcrsUsed(mp);
@@ -1075,7 +1017,7 @@ CDistributionSpecHashed::TryToCompleteEquivSpec(
 		CExpression *pexpr = (*pdrgpexprHashed)[ul];
 		CExpression *pexprMatching =
 			CUtils::PexprMatchEqualityOrINDF(pexpr, pdrgpexprPred);
-		if (nullptr != pexprMatching &&
+		if (NULL != pexprMatching &&
 			outerRefs->FIntersects(pexprMatching->DeriveUsedColumns()))
 		{
 			// we are able to replace an original expression with one that refers to outer
@@ -1096,7 +1038,7 @@ CDistributionSpecHashed::TryToCompleteEquivSpec(
 	if (num_orig_exprs_used == size)
 	{
 		pdrgpexprResult->Release();
-		return nullptr;
+		return NULL;
 	}
 
 	GPOS_ASSERT(pdrgpexprResult->Size() == pdrgpexprHashed->Size());
@@ -1115,7 +1057,7 @@ CDistributionSpecHashed::MakeHashedDistrSpec(
 	CDistributionSpecHashed *pdshashedEquiv, IMdIdArray *opfamilies)
 {
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution) &&
-		nullptr == opfamilies)
+		NULL == opfamilies)
 	{
 		CMDAccessor *mda = COptCtxt::PoctxtFromTLS()->Pmda();
 		opfamilies = GPOS_NEW(mp) IMdIdArray(mp);
@@ -1125,10 +1067,10 @@ CDistributionSpecHashed::MakeHashedDistrSpec(
 			IMDId *mdid_type = CScalar::PopConvert(expr->Pop())->MdidType();
 			IMDId *mdid_opfamily =
 				mda->RetrieveType(mdid_type)->GetDistrOpfamilyMdid();
-			if (nullptr == mdid_opfamily)
+			if (NULL == mdid_opfamily)
 			{
 				opfamilies->Release();
-				return nullptr;
+				return NULL;
 			}
 			mdid_opfamily->AddRef();
 			opfamilies->Append(mdid_opfamily);

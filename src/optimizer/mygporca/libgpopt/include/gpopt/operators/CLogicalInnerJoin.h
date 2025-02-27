@@ -31,27 +31,30 @@ class CColRefSet;
 class CLogicalInnerJoin : public CLogicalJoin
 {
 private:
-public:
-	CLogicalInnerJoin(const CLogicalInnerJoin &) = delete;
+	// private copy ctor
+	CLogicalInnerJoin(const CLogicalInnerJoin &);
 
+public:
 	// ctor
 	explicit CLogicalInnerJoin(
 		CMemoryPool *mp, CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CLogicalInnerJoin() override = default;
+	virtual ~CLogicalInnerJoin()
+	{
+	}
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalInnerJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalInnerJoin";
 	}
@@ -61,21 +64,19 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive not nullable columns
-	CColRefSet *
-	DeriveNotNullColumns(CMemoryPool *mp,
-						 CExpressionHandle &exprhdl) const override
+	virtual CColRefSet *
+	DeriveNotNullColumns(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PcrsDeriveNotNullCombineLogical(mp, exprhdl);
 	}
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
-	DerivePropertyConstraint(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CPropConstraint *
+	DerivePropertyConstraint(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintFromPredicates(mp, exprhdl);
 	}
@@ -85,7 +86,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -95,7 +96,7 @@ public:
 	static CLogicalInnerJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalInnerJoin == pop->Eopid());
 
 		return dynamic_cast<CLogicalInnerJoin *>(pop);

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software Inc.
 //
 //	@filename:
 //		CXformRemoveSubqDistinct.cpp
@@ -90,8 +90,8 @@ CXformRemoveSubqDistinct::Transform(CXformContext *pxfctxt,
 									CXformResult *pxfres,
 									CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
 	CMemoryPool *mp = pxfctxt->Pmp();
@@ -104,7 +104,7 @@ CXformRemoveSubqDistinct::Transform(CXformContext *pxfctxt,
 		// only consider removing distinct when there is no aggregation functions
 		if (0 == pexprGbAggProjectList->Arity())
 		{
-			CExpression *pexprNewScalar = nullptr;
+			CExpression *pexprNewScalar = NULL;
 			CExpression *pexprRelChild = (*pexprGbAgg)[0];
 			pexprRelChild->AddRef();
 

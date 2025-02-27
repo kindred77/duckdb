@@ -30,47 +30,48 @@ using namespace gpos;
 class CScalarSubqueryExistential : public CScalar
 {
 private:
-public:
-	CScalarSubqueryExistential(const CScalarSubqueryExistential &) = delete;
+	// private copy ctor
+	CScalarSubqueryExistential(const CScalarSubqueryExistential &);
 
+public:
 	// ctor
 	CScalarSubqueryExistential(CMemoryPool *mp);
 
 	// dtor
-	~CScalarSubqueryExistential() override;
+	virtual ~CScalarSubqueryExistential();
 
 	// return the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// derive partition consumer info
-	CPartInfo *PpartinfoDerive(CMemoryPool *mp,
-							   CExpressionHandle &exprhdl) const override;
+	virtual CPartInfo *PpartinfoDerive(CMemoryPool *mp,
+									   CExpressionHandle &exprhdl) const;
 
 	// conversion function
 	static CScalarSubqueryExistential *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSubqueryExists == pop->Eopid() ||
 					EopScalarSubqueryNotExists == pop->Eopid());
 

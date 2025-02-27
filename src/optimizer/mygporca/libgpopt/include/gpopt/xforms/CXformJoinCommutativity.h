@@ -30,43 +30,46 @@ using namespace gpos;
 class CXformJoinCommutativity : public CXformExploration
 {
 private:
-public:
-	CXformJoinCommutativity(const CXformJoinCommutativity &) = delete;
+	// private copy ctor
+	CXformJoinCommutativity(const CXformJoinCommutativity &);
 
+public:
 	// ctor
 	explicit CXformJoinCommutativity(CMemoryPool *mp);
 
 	// dtor
-	~CXformJoinCommutativity() override = default;
+	virtual ~CXformJoinCommutativity()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfJoinCommutativity;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformJoinCommutativity";
 	}
 
 	// compatibility function
-	BOOL FCompatible(CXform::EXformId exfid) override;
+	BOOL FCompatible(CXform::EXformId exfid);
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformJoinCommutativity
 

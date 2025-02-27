@@ -35,11 +35,11 @@ class COptimizationContext;
 class CDrvdPropPlan;
 
 // optimization context pointer definition
-using OPTCTXT_PTR = COptimizationContext *;
+typedef COptimizationContext *OPTCTXT_PTR;
 
 // array of optimization contexts
-using COptimizationContextArray =
-	CDynamicPtrArray<COptimizationContext, CleanupRelease>;
+typedef CDynamicPtrArray<COptimizationContext, CleanupRelease>
+	COptimizationContextArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -66,37 +66,37 @@ public:
 
 private:
 	// memory pool
-	CMemoryPool *m_mp{nullptr};
+	CMemoryPool *m_mp;
 
 	// private copy ctor
 	COptimizationContext(const COptimizationContext &);
 
 	// unique id within owner group, used for debugging
-	ULONG m_id{GPOPT_INVALID_OPTCTXT_ID};
+	ULONG m_id;
 
 	// back pointer to owner group, used for debugging
-	CGroup *m_pgroup{nullptr};
+	CGroup *m_pgroup;
 
 	// required plan properties
-	CReqdPropPlan *m_prpp{nullptr};
+	CReqdPropPlan *m_prpp;
 
 	// required relational properties -- used for stats computation during costing
-	CReqdPropRelational *m_prprel{nullptr};
+	CReqdPropRelational *m_prprel;
 
 	// stats of previously optimized expressions
-	IStatisticsArray *m_pdrgpstatCtxt{nullptr};
+	IStatisticsArray *m_pdrgpstatCtxt;
 
 	// index of search stage where context is generated
-	ULONG m_ulSearchStageIndex{0};
+	ULONG m_ulSearchStageIndex;
 
 	// best cost context under the optimization context
-	CCostContext *m_pccBest{nullptr};
+	CCostContext *m_pccBest;
 
 	// optimization context state
-	EState m_estate{estUnoptimized};
+	EState m_estate;
 
 	// is there a multi-stage Agg plan satisfying required properties
-	BOOL m_fHasMultiStageAggPlan{false};
+	BOOL m_fHasMultiStageAggPlan;
 
 	// context's optimization job queue
 	CJobQueue m_jqOptimization;
@@ -105,11 +105,22 @@ private:
 	BOOL FMatchSortColumns(const COptimizationContext *poc) const;
 
 	// private dummy ctor; used for creating invalid context
-	COptimizationContext() = default;
+	COptimizationContext()
+		: m_mp(NULL),
+		  m_id(GPOPT_INVALID_OPTCTXT_ID),
+		  m_pgroup(NULL),
+		  m_prpp(NULL),
+		  m_prprel(NULL),
+		  m_pdrgpstatCtxt(NULL),
+		  m_ulSearchStageIndex(0),
+		  m_pccBest(NULL),
+		  m_estate(estUnoptimized),
+		  m_fHasMultiStageAggPlan(false){};
 
 	// check if Agg node should be optimized for the given context
-	static BOOL FOptimizeAgg(CGroupExpression *pgexprParent,
-							 CGroupExpression *pgexprAgg);
+	static BOOL FOptimizeAgg(CMemoryPool *mp, CGroupExpression *pgexprParent,
+							 CGroupExpression *pgexprAgg,
+							 COptimizationContext *poc, ULONG ulSearchStages);
 
 	// check if Sort node should be optimized for the given context
 	static BOOL FOptimizeSort(CMemoryPool *mp, CGroupExpression *pgexprParent,
@@ -138,20 +149,24 @@ public:
 			*stats_ctxt,  // stats of previously optimized expressions
 		ULONG ulSearchStageIndex)
 		: m_mp(mp),
+		  m_id(GPOPT_INVALID_OPTCTXT_ID),
 		  m_pgroup(pgroup),
 		  m_prpp(prpp),
 		  m_prprel(prprel),
 		  m_pdrgpstatCtxt(stats_ctxt),
-		  m_ulSearchStageIndex(ulSearchStageIndex)
+		  m_ulSearchStageIndex(ulSearchStageIndex),
+		  m_pccBest(NULL),
+		  m_estate(estUnoptimized),
+		  m_fHasMultiStageAggPlan(false)
 	{
-		GPOS_ASSERT(nullptr != pgroup);
-		GPOS_ASSERT(nullptr != prpp);
-		GPOS_ASSERT(nullptr != prprel);
-		GPOS_ASSERT(nullptr != stats_ctxt);
+		GPOS_ASSERT(NULL != pgroup);
+		GPOS_ASSERT(NULL != prpp);
+		GPOS_ASSERT(NULL != prprel);
+		GPOS_ASSERT(NULL != stats_ctxt);
 	}
 
 	// dtor
-	~COptimizationContext() override;
+	virtual ~COptimizationContext();
 
 	// best group expression accessor
 	CGroupExpression *PgexprBest() const;
@@ -258,7 +273,7 @@ public:
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 	IOstream &OsPrintWithPrefix(IOstream &os, const CHAR *szPrefix) const;
 
 	// check equality of optimization contexts
@@ -273,7 +288,7 @@ public:
 	static ULONG
 	HashValue(const COptimizationContext &oc)
 	{
-		GPOS_ASSERT(nullptr != oc.Prpp());
+		GPOS_ASSERT(NULL != oc.Prpp());
 
 		return oc.Prpp()->HashValue();
 	}

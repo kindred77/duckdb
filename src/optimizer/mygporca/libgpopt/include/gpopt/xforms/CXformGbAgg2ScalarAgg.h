@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformGbAgg2ScalarAgg : public CXformImplementation
 {
 private:
-public:
-	CXformGbAgg2ScalarAgg(const CXformGbAgg2ScalarAgg &) = delete;
+	// private copy ctor
+	CXformGbAgg2ScalarAgg(const CXformGbAgg2ScalarAgg &);
 
+public:
 	// ctor
 	CXformGbAgg2ScalarAgg(CMemoryPool *mp);
 
 	// dtor
-	~CXformGbAgg2ScalarAgg() override = default;
+	virtual ~CXformGbAgg2ScalarAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAgg2ScalarAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAgg2ScalarAgg";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformGbAgg2ScalarAgg
 

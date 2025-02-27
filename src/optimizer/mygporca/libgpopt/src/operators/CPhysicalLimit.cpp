@@ -38,10 +38,10 @@ CPhysicalLimit::CPhysicalLimit(CMemoryPool *mp, COrderSpec *pos, BOOL fGlobal,
 	  m_fGlobal(fGlobal),
 	  m_fHasCount(fHasCount),
 	  m_top_limit_under_dml(fTopLimitUnderDML),
-	  m_pcrsSort(nullptr)
+	  m_pcrsSort(NULL)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pos);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pos);
 
 	m_pcrsSort = m_pos->PcrsUsed(mp);
 }
@@ -158,7 +158,7 @@ CPhysicalLimit::PdsRequired(CMemoryPool *, CExpressionHandle &,
 	GPOS_RAISE(
 		CException::ExmaInvalid, CException::ExmiInvalid,
 		GPOS_WSZ_LIT("PdsRequired should not be called for CPhysicalLimit"));
-	return nullptr;
+	return NULL;
 }
 
 CEnfdDistribution *
@@ -264,6 +264,38 @@ CPhysicalLimit::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 	}
 
 	return PrsPassThru(mp, exprhdl, prsRequired, child_index);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalLimit::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalLimit::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							 CPartitionPropagationSpec *pppsRequired,
+							 ULONG
+#ifdef GPOS_DEBUG
+								 child_index
+#endif
+							 ,
+							 CDrvdPropArray *,	//pdrgpdpCtxt
+							 ULONG				//ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	// limit should not push predicate below it as it will generate wrong results
+	// for example, the following two queries are not equivalent.
+	// Q1: select * from (select * from foo order by a limit 1) x where x.a = 10
+	// Q2: select * from (select * from foo where a = 10 order by a limit 1) x
+
+	return CPhysical::PppsRequiredPushThruUnresolvedUnary(
+		mp, exprhdl, pppsRequired, CPhysical::EppcProhibited, NULL);
 }
 
 //---------------------------------------------------------------------------
@@ -388,7 +420,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalLimit::EpetOrder(CExpressionHandle &,	// exprhdl
 						  const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	if (peo->FCompatible(m_pos))
@@ -414,7 +446,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalLimit::EpetDistribution(CExpressionHandle &exprhdl,
 								 const CEnfdDistribution *ped) const
 {
-	GPOS_ASSERT(nullptr != ped);
+	GPOS_ASSERT(NULL != ped);
 
 	// get distribution delivered by the limit node
 	CDistributionSpec *pds = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Pds();

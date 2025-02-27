@@ -29,41 +29,43 @@ namespace gpdxl
 class CDXLScalarDMLAction : public CDXLScalar
 {
 private:
-public:
-	CDXLScalarDMLAction(const CDXLScalarDMLAction &) = delete;
+	// private copy ctor
+	CDXLScalarDMLAction(const CDXLScalarDMLAction &);
 
+public:
 	// ctor/dtor
 	explicit CDXLScalarDMLAction(CMemoryPool *mp);
 
-	~CDXLScalarDMLAction() override = default;
+	virtual ~CDXLScalarDMLAction()
+	{
+	}
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLScalarDMLAction *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarDMLAction == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarDMLAction *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

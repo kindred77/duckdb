@@ -38,27 +38,28 @@ class CParseHandlerScalarBoolExpr : public CParseHandlerScalarOp
 private:
 	EdxlBoolExprType m_dxl_bool_type;
 
+	// private copy ctor
+	CParseHandlerScalarBoolExpr(const CParseHandlerScalarBoolExpr &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 	// parse the bool type from the Xerces xml string
 	static EdxlBoolExprType GetDxlBoolTypeStr(const XMLCh *xmlszBoolType);
 
 public:
-	CParseHandlerScalarBoolExpr(const CParseHandlerScalarBoolExpr &) = delete;
-
 	// ctor
 	CParseHandlerScalarBoolExpr(CMemoryPool *mp,
 								CParseHandlerManager *parse_handler_mgr,

@@ -32,20 +32,24 @@ using namespace gpmd;
 class CDXLIndexDescr : public CRefCount
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// id and version information for the table
 	IMDId *m_mdid;
 
 	// index name
 	CMDName *m_mdname;
 
-public:
-	CDXLIndexDescr(const CDXLIndexDescr &) = delete;
+	// private copy ctor
+	CDXLIndexDescr(const CDXLIndexDescr &);
 
+public:
 	// ctor
-	CDXLIndexDescr(IMDId *mdid, CMDName *mdname);
+	CDXLIndexDescr(CMemoryPool *mp, IMDId *mdid, CMDName *mdname);
 
 	// dtor
-	~CDXLIndexDescr() override;
+	virtual ~CDXLIndexDescr();
 
 	// accessors
 	const CMDName *MdName() const;

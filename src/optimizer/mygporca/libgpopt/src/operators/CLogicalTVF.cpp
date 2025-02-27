@@ -33,11 +33,11 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CLogicalTVF::CLogicalTVF(CMemoryPool *mp)
 	: CLogical(mp),
-	  m_func_mdid(nullptr),
-	  m_return_type_mdid(nullptr),
-	  m_pstr(nullptr),
-	  m_pdrgpcoldesc(nullptr),
-	  m_pdrgpcrOutput(nullptr),
+	  m_func_mdid(NULL),
+	  m_return_type_mdid(NULL),
+	  m_pstr(NULL),
+	  m_pdrgpcoldesc(NULL),
+	  m_pdrgpcrOutput(NULL),
 	  m_efs(IMDFunction::EfsImmutable),
 	  m_returns_set(true)
 {
@@ -61,11 +61,11 @@ CLogicalTVF::CLogicalTVF(CMemoryPool *mp, IMDId *mdid_func,
 	  m_return_type_mdid(mdid_return_type),
 	  m_pstr(str),
 	  m_pdrgpcoldesc(pdrgpcoldesc),
-	  m_pdrgpcrOutput(nullptr)
+	  m_pdrgpcrOutput(NULL)
 {
 	GPOS_ASSERT(mdid_return_type->IsValid());
-	GPOS_ASSERT(nullptr != str);
-	GPOS_ASSERT(nullptr != pdrgpcoldesc);
+	GPOS_ASSERT(NULL != str);
+	GPOS_ASSERT(NULL != pdrgpcoldesc);
 
 	// generate a default column set for the list of column descriptors
 	m_pdrgpcrOutput = PdrgpcrCreateMapping(mp, pdrgpcoldesc, UlOpId());
@@ -106,9 +106,9 @@ CLogicalTVF::CLogicalTVF(CMemoryPool *mp, IMDId *mdid_func,
 {
 	GPOS_ASSERT(mdid_func->IsValid());
 	GPOS_ASSERT(mdid_return_type->IsValid());
-	GPOS_ASSERT(nullptr != str);
-	GPOS_ASSERT(nullptr != pdrgpcoldesc);
-	GPOS_ASSERT(nullptr != pdrgpcrOutput);
+	GPOS_ASSERT(NULL != str);
+	GPOS_ASSERT(NULL != pdrgpcoldesc);
+	GPOS_ASSERT(NULL != pdrgpcrOutput);
 
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 	const IMDFunction *pmdfunc = md_accessor->RetrieveFunc(m_func_mdid);
@@ -195,7 +195,7 @@ CLogicalTVF::PopCopyWithRemappedColumns(CMemoryPool *mp,
 										UlongToColRefMap *colref_mapping,
 										BOOL must_exist)
 {
-	CColRefArray *pdrgpcrOutput = nullptr;
+	CColRefArray *pdrgpcrOutput = NULL;
 	if (must_exist)
 	{
 		pdrgpcrOutput =

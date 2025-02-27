@@ -50,30 +50,36 @@ private:
 	void Execute(CTask *task);
 
 	// check for abort request
-	void CheckForAbort(const CHAR *file, ULONG line_num) override;
+	void CheckForAbort(const CHAR *file, ULONG line_num);
+
+#ifdef GPOS_FPSIMULATOR
+	// simulate abort request, log abort injection
+	void SimulateAbort(const CHAR *file, ULONG line_num);
+#endif	// GPOS_FPSIMULATOR
+
+	// no copy ctor
+	CWorker(const CWorker &);
 
 public:
-	CWorker(const CWorker &) = delete;
-
 	// ctor
 	CWorker(ULONG stack_size, ULONG_PTR stack_start);
 
 	// dtor
-	~CWorker() override;
+	virtual ~CWorker();
 
 	// stack start accessor
 	inline ULONG_PTR
-	GetStackStart() const override
+	GetStackStart() const
 	{
 		return m_stack_start;
 	}
 
 	// stack check
-	BOOL CheckStackSize(ULONG request = 0) const override;
+	BOOL CheckStackSize(ULONG request = 0) const;
 
 	// accessor
 	inline CTask *
-	GetTask() override
+	GetTask()
 	{
 		return m_task;
 	}

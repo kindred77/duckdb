@@ -30,34 +30,37 @@ using namespace gpos;
 class CPatternTree : public CPattern
 {
 private:
-public:
-	CPatternTree(const CPatternTree &) = delete;
+	// private copy ctor
+	CPatternTree(const CPatternTree &);
 
+public:
 	// ctor
 	explicit CPatternTree(CMemoryPool *mp) : CPattern(mp)
 	{
 	}
 
 	// dtor
-	~CPatternTree() override = default;
+	virtual ~CPatternTree()
+	{
+	}
 
 	// check if operator is a pattern leaf
-	BOOL
-	FLeaf() const override
+	virtual BOOL
+	FLeaf() const
 	{
 		return false;
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPatternTree;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPatternTree";
 	}

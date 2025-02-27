@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CMDProviderMemory.h
@@ -38,9 +38,9 @@ class CMDProviderMemory : public IMDProvider
 {
 protected:
 	// hash map of serialized MD objects indexed by their MD id
-	using MDIdToSerializedMDIdMap =
-		CHashMap<IMDId, CWStringDynamic, IMDId::MDIdHash, IMDId::MDIdCompare,
-				 CleanupRelease, CleanupDelete>;
+	typedef CHashMap<IMDId, CWStringDynamic, IMDId::MDIdHash,
+					 IMDId::MDIdCompare, CleanupRelease, CleanupDelete>
+		MDIdToSerializedMDIdMap;
 
 	// metadata objects indexed by their metadata id
 	MDIdToSerializedMDIdMap *m_mdmap;
@@ -60,20 +60,16 @@ public:
 	CMDProviderMemory(CMemoryPool *mp, const CHAR *file_name);
 
 	//dtor
-	~CMDProviderMemory() override;
+	virtual ~CMDProviderMemory();
 
 	// returns the DXL string of the requested metadata object
-	CWStringBase *GetMDObjDXLStr(CMemoryPool *mp, CMDAccessor *md_accessor,
-								 IMDId *mdid) const override;
-
-	// returns the requested metadata object
-	IMDCacheObject *GetMDObj(CMemoryPool *mp, CMDAccessor *md_accessor,
-							 IMDId *mdid,
-							 IMDCacheObject::Emdtype mdtype) const override;
+	virtual CWStringBase *GetMDObjDXLStr(CMemoryPool *mp,
+										 CMDAccessor *md_accessor,
+										 IMDId *mdid) const;
 
 	// return the mdid for the specified system id and type
-	IMDId *MDId(CMemoryPool *mp, CSystemId sysid,
-				IMDType::ETypeInfo type_info) const override;
+	virtual IMDId *MDId(CMemoryPool *mp, CSystemId sysid,
+						IMDType::ETypeInfo type_info) const;
 };
 }  // namespace gpmd
 

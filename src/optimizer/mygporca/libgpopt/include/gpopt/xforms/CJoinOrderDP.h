@@ -57,7 +57,7 @@ private:
 		SComponentPair(CBitSet *pbsFst, CBitSet *pbsSnd);
 
 		// dtor
-		~SComponentPair() override;
+		~SComponentPair();
 
 		// hashing function
 		static ULONG HashValue(const SComponentPair *pcomppair);
@@ -71,7 +71,7 @@ private:
 	static ULONG
 	UlHashBitSet(const CBitSet *pbs)
 	{
-		GPOS_ASSERT(nullptr != pbs);
+		GPOS_ASSERT(NULL != pbs);
 
 		return pbs->HashValue();
 	}
@@ -80,27 +80,28 @@ private:
 	static BOOL
 	FEqualBitSet(const CBitSet *pbsFst, const CBitSet *pbsSnd)
 	{
-		GPOS_ASSERT(nullptr != pbsFst);
-		GPOS_ASSERT(nullptr != pbsSnd);
+		GPOS_ASSERT(NULL != pbsFst);
+		GPOS_ASSERT(NULL != pbsSnd);
 
 		return pbsFst->Equals(pbsSnd);
 	}
 
 	// hash map from component to best join order
-	using BitSetToExpressionMap =
-		CHashMap<CBitSet, CExpression, UlHashBitSet, FEqualBitSet,
-				 CleanupRelease<CBitSet>, CleanupRelease<CExpression>>;
+	typedef CHashMap<CBitSet, CExpression, UlHashBitSet, FEqualBitSet,
+					 CleanupRelease<CBitSet>, CleanupRelease<CExpression> >
+		BitSetToExpressionMap;
 
 	// hash map from component pair to connecting edges
-	using ComponentPairToExpressionMap =
-		CHashMap<SComponentPair, CExpression, SComponentPair::HashValue,
-				 SComponentPair::Equals, CleanupRelease<SComponentPair>,
-				 CleanupRelease<CExpression>>;
+	typedef CHashMap<SComponentPair, CExpression, SComponentPair::HashValue,
+					 SComponentPair::Equals, CleanupRelease<SComponentPair>,
+					 CleanupRelease<CExpression> >
+		ComponentPairToExpressionMap;
 
 	// hash map from expression to cost of best join order
-	using ExpressionToCostMap =
-		CHashMap<CExpression, CDouble, CExpression::HashValue, CUtils::Equals,
-				 CleanupRelease<CExpression>, CleanupDelete<CDouble>>;
+	typedef CHashMap<CExpression, CDouble, CExpression::HashValue,
+					 CUtils::Equals, CleanupRelease<CExpression>,
+					 CleanupDelete<CDouble> >
+		ExpressionToCostMap;
 
 	// lookup table for links
 	ComponentPairToExpressionMap *m_phmcomplink;
@@ -155,7 +156,7 @@ private:
 	CDouble DCost(CExpression *pexpr);
 
 	// derive stats on given expression
-	void DeriveStats(CExpression *pexpr) override;
+	virtual void DeriveStats(CExpression *pexpr);
 
 	// add expression to cost map
 	void InsertExpressionCost(CExpression *pexpr, CDouble dCost,
@@ -175,7 +176,7 @@ public:
 				 CExpressionArray *pdrgpexprConjuncts);
 
 	// dtor
-	~CJoinOrderDP() override;
+	virtual ~CJoinOrderDP();
 
 	// main handler
 	virtual CExpression *PexprExpand();
@@ -188,13 +189,14 @@ public:
 	}
 
 	// print function
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 
-	CXform::EXformId
-	EOriginXForm() const override
+	virtual CXform::EXformId
+	EOriginXForm() const
 	{
 		return CXform::ExfExpandNAryJoinDP;
 	}
+
 
 };	// class CJoinOrderDP
 

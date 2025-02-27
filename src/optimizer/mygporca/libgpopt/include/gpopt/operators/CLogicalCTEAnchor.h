@@ -32,9 +32,10 @@ private:
 	// cte identifier
 	ULONG m_id;
 
-public:
-	CLogicalCTEAnchor(const CLogicalCTEAnchor &) = delete;
+	// private copy ctor
+	CLogicalCTEAnchor(const CLogicalCTEAnchor &);
 
+public:
 	// ctor
 	explicit CLogicalCTEAnchor(CMemoryPool *mp);
 
@@ -42,17 +43,19 @@ public:
 	CLogicalCTEAnchor(CMemoryPool *mp, ULONG id);
 
 	// dtor
-	~CLogicalCTEAnchor() override = default;
+	virtual ~CLogicalCTEAnchor()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalCTEAnchor;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalCTEAnchor";
 	}
@@ -65,24 +68,24 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -92,53 +95,53 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &exprhdl);
 
 	// dervive keys
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
 
 	// derive partition consumer info
-	CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
-								   CExpressionHandle &exprhdl) const override;
+	virtual CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl) const;
 
 	// compute required stats columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *,		   // mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *pcrsInput,
 			 ULONG	// child_index
-	) const override
+	) const
 	{
 		return PcrsStatsPassThru(pcrsInput);
 	}
 
 	// derive statistics
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *,	 //mp,
 				 CExpressionHandle &exprhdl,
 				 IStatisticsArray *	 //stats_ctxt
-	) const override
+	) const
 	{
 		return PstatsPassThruOuter(exprhdl);
 	}
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -148,7 +151,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 
@@ -156,14 +159,14 @@ public:
 	static CLogicalCTEAnchor *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalCTEAnchor == pop->Eopid());
 
 		return dynamic_cast<CLogicalCTEAnchor *>(pop);
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CLogicalCTEAnchor
 

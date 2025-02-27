@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CParseHandlerPhysicalBitmapTableScan.cpp
@@ -49,6 +49,5 @@ CParseHandlerPhysicalBitmapTableScan::EndElement(
 	const XMLCh *const	// element_qname
 )
 {
-	EndElementHelper(element_local_name, EdxltokenPhysicalBitmapTableScan,
-					 nullptr);
+	EndElementHelper(element_local_name, EdxltokenPhysicalBitmapTableScan);
 }

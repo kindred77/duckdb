@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-//	Cloudberry Database
+//	Greenplum Database
 //	Copyright (C) 2012 EMC Corp
 //
 //	@filename:
@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformUpdate2DML : public CXformExploration
 {
 private:
-public:
-	CXformUpdate2DML(const CXformUpdate2DML &) = delete;
+	// private copy ctor
+	CXformUpdate2DML(const CXformUpdate2DML &);
 
+public:
 	// ctor
 	explicit CXformUpdate2DML(CMemoryPool *mp);
 
 	// dtor
-	~CXformUpdate2DML() override = default;
+	virtual ~CXformUpdate2DML()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfUpdate2DML;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformUpdate2DML";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformUpdate2DML
 }  // namespace gpopt

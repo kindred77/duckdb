@@ -18,6 +18,7 @@
 #include "naucrates/dxl/xml/CXMLSerializer.h"
 #include "naucrates/exception.h"
 #include "naucrates/md/CMDRelationGPDB.h"
+#include "naucrates/md/IMDPartConstraint.h"
 #include "naucrates/md/IMDScalarOp.h"
 
 using namespace gpdxl;
@@ -32,39 +33,41 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CMDIndexGPDB::CMDIndexGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-						   BOOL is_clustered, BOOL is_partitioned,
-						   EmdindexType index_type, IMDId *mdid_item_type,
+						   BOOL is_clustered, IMDIndex::EmdindexType index_type,
+						   IMDIndex::EmdindexType index_physical_type,
+						   IMDId *mdid_item_type,
 						   ULongPtrArray *index_key_cols_array,
 						   ULongPtrArray *included_cols_array,
 						   IMdIdArray *mdid_opfamilies_array,
-						   IMdIdArray *child_index_oids)
+						   IMDPartConstraint *mdpart_constraint)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),
 	  m_clustered(is_clustered),
-	  m_partitioned(is_partitioned),
 	  m_index_type(index_type),
+	  m_index_physical_type(index_physical_type),
 	  m_mdid_item_type(mdid_item_type),
 	  m_index_key_cols_array(index_key_cols_array),
 	  m_included_cols_array(included_cols_array),
 	  m_mdid_opfamilies_array(mdid_opfamilies_array),
-	  m_child_index_oids(child_index_oids)
+	  m_mdpart_constraint(mdpart_constraint)
 {
 	GPOS_ASSERT(mdid->IsValid());
 	GPOS_ASSERT(IMDIndex::EmdindSentinel > index_type);
-	GPOS_ASSERT(nullptr != index_key_cols_array);
+	GPOS_ASSERT(NULL != index_key_cols_array);
 	GPOS_ASSERT(0 < index_key_cols_array->Size());
-	GPOS_ASSERT(nullptr != included_cols_array);
-	GPOS_ASSERT_IMP(nullptr != mdid_item_type,
+	GPOS_ASSERT(NULL != included_cols_array);
+	GPOS_ASSERT_IMP(NULL != mdid_item_type,
 					IMDIndex::EmdindBitmap == index_type ||
 						IMDIndex::EmdindBtree == index_type ||
 						IMDIndex::EmdindGist == index_type ||
-						IMDIndex::EmdindGin == index_type ||
-						IMDIndex::EmdindBrin == index_type ||
-						IMDIndex::EmdindHash == index_type);
+						IMDIndex::EmdindGin == index_type);
 	GPOS_ASSERT_IMP(IMDIndex::EmdindBitmap == index_type,
-					nullptr != mdid_item_type && mdid_item_type->IsValid());
-	GPOS_ASSERT(nullptr != mdid_opfamilies_array);
+					NULL != mdid_item_type && mdid_item_type->IsValid());
+	GPOS_ASSERT(NULL != mdid_opfamilies_array);
+
+	m_dxl_str = CDXLUtils::SerializeMDObj(
+		m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
 }
 
 //---------------------------------------------------------------------------
@@ -78,28 +81,15 @@ CMDIndexGPDB::CMDIndexGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 CMDIndexGPDB::~CMDIndexGPDB()
 {
 	GPOS_DELETE(m_mdname);
-	if (nullptr != m_dxl_str)
-	{
-		GPOS_DELETE(m_dxl_str);
-	}
+	GPOS_DELETE(m_dxl_str);
 	m_mdid->Release();
 	CRefCount::SafeRelease(m_mdid_item_type);
 	m_index_key_cols_array->Release();
 	m_included_cols_array->Release();
 	m_mdid_opfamilies_array->Release();
-	CRefCount::SafeRelease(m_child_index_oids);
+	CRefCount::SafeRelease(m_mdpart_constraint);
 }
 
-const CWStringDynamic *
-CMDIndexGPDB::GetStrRepr()
-{
-	if (nullptr == m_dxl_str)
-	{
-		m_dxl_str = CDXLUtils::SerializeMDObj(
-			m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
-	}
-	return m_dxl_str;
-}
 //---------------------------------------------------------------------------
 //	@function:
 //		CMDIndexGPDB::MDId
@@ -144,20 +134,6 @@ CMDIndexGPDB::IsClustered() const
 
 //---------------------------------------------------------------------------
 //	@function:
-//		CMDIndexGPDB::IsPartitioned
-//
-//	@doc:
-//		Is the index partitioned
-//
-//---------------------------------------------------------------------------
-BOOL
-CMDIndexGPDB::IsPartitioned() const
-{
-	return m_partitioned;
-}
-
-//---------------------------------------------------------------------------
-//	@function:
 //		CMDIndexGPDB::IndexType
 //
 //	@doc:
@@ -168,6 +144,20 @@ IMDIndex::EmdindexType
 CMDIndexGPDB::IndexType() const
 {
 	return m_index_type;
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CMDIndexGPDB::IndexPhysicalType
+//
+//	@doc:
+//		Index physical type
+//
+//---------------------------------------------------------------------------
+IMDIndex::EmdindexType
+CMDIndexGPDB::IndexPhysicalType() const
+{
+	return m_index_physical_type;
 }
 
 //---------------------------------------------------------------------------
@@ -276,6 +266,19 @@ CMDIndexGPDB::GetIncludedColPos(ULONG column) const
 	return gpos::ulong_max;
 }
 
+//---------------------------------------------------------------------------
+//	@function:
+//		CMDIndexGPDB::MDPartConstraint
+//
+//	@doc:
+//		Return the part constraint
+//
+//---------------------------------------------------------------------------
+IMDPartConstraint *
+CMDIndexGPDB::MDPartConstraint() const
+{
+	return m_mdpart_constraint;
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -301,7 +304,10 @@ CMDIndexGPDB::Serialize(CXMLSerializer *xml_serializer) const
 
 	xml_serializer->AddAttribute(CDXLTokens::GetDXLTokenStr(EdxltokenIndexType),
 								 GetDXLStr(m_index_type));
-	if (nullptr != m_mdid_item_type)
+	xml_serializer->AddAttribute(
+		CDXLTokens::GetDXLTokenStr(EdxltokenIndexPhysicalType),
+		GetDXLStr(m_index_physical_type));
+	if (NULL != m_mdid_item_type)
 	{
 		m_mdid_item_type->Serialize(
 			xml_serializer, CDXLTokens::GetDXLTokenStr(EdxltokenIndexItemType));
@@ -326,11 +332,9 @@ CMDIndexGPDB::Serialize(CXMLSerializer *xml_serializer) const
 					  CDXLTokens::GetDXLTokenStr(EdxltokenOpfamilies),
 					  CDXLTokens::GetDXLTokenStr(EdxltokenOpfamily));
 
-	if (IsPartitioned())
+	if (NULL != m_mdpart_constraint)
 	{
-		SerializeMDIdList(xml_serializer, m_child_index_oids,
-						  CDXLTokens::GetDXLTokenStr(EdxltokenPartitions),
-						  CDXLTokens::GetDXLTokenStr(EdxltokenPartition));
+		m_mdpart_constraint->Serialize(xml_serializer);
 	}
 
 	xml_serializer->CloseElement(
@@ -356,6 +360,8 @@ CMDIndexGPDB::DebugPrint(IOstream &os) const
 
 	os << "Index name: " << (Mdname()).GetMDName()->GetBuffer() << std::endl;
 	os << "Index type: " << GetDXLStr(m_index_type)->GetBuffer() << std::endl;
+	os << "Physical Index type: "
+	   << GetDXLStr(m_index_physical_type)->GetBuffer() << std::endl;
 
 	os << "Index keys: ";
 	for (ULONG ul = 0; ul < Keys(); ul++)
@@ -410,7 +416,7 @@ CMDIndexGPDB::GetIndexRetItemTypeMdid() const
 BOOL
 CMDIndexGPDB::IsCompatible(const IMDScalarOp *md_scalar_op, ULONG key_pos) const
 {
-	GPOS_ASSERT(nullptr != md_scalar_op);
+	GPOS_ASSERT(NULL != md_scalar_op);
 	GPOS_ASSERT(key_pos < m_mdid_opfamilies_array->Size());
 
 	// check if the index opfamily for the key at the given position is one of
@@ -429,12 +435,5 @@ CMDIndexGPDB::IsCompatible(const IMDScalarOp *md_scalar_op, ULONG key_pos) const
 
 	return false;
 }
-
-IMdIdArray *
-CMDIndexGPDB::ChildIndexMdids() const
-{
-	return m_child_index_oids;
-}
-
 
 // EOF

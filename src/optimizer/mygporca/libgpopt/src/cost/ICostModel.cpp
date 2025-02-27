@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		ICostModel.cpp
@@ -15,7 +15,7 @@
 #include "gpopt/cost/CCostModelGPDB.h"
 
 using namespace gpopt;
-//using namespace gpdbcost;
+using namespace gpdbcost;
 
 // default number segments for the cost model
 #define GPOPT_DEFAULT_SEGMENT_COUNT 2
@@ -44,9 +44,9 @@ ICostModel::PcmDefault(CMemoryPool *mp)
 //
 //---------------------------------------------------------------------------
 void
-ICostModel::SetParams(ICostModelParamsArray *pdrgpcp) const
+ICostModel::SetParams(ICostModelParamsArray *pdrgpcp)
 {
-	if (nullptr == pdrgpcp)
+	if (NULL == pdrgpcp)
 	{
 		return;
 	}

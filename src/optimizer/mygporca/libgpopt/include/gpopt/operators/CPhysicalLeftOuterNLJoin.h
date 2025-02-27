@@ -28,25 +28,26 @@ namespace gpopt
 class CPhysicalLeftOuterNLJoin : public CPhysicalNLJoin
 {
 private:
-public:
-	CPhysicalLeftOuterNLJoin(const CPhysicalLeftOuterNLJoin &) = delete;
+	// private copy ctor
+	CPhysicalLeftOuterNLJoin(const CPhysicalLeftOuterNLJoin &);
 
+public:
 	// ctor
 	explicit CPhysicalLeftOuterNLJoin(CMemoryPool *mp);
 
 	// dtor
-	~CPhysicalLeftOuterNLJoin() override;
+	virtual ~CPhysicalLeftOuterNLJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftOuterNLJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftOuterNLJoin";
 	}

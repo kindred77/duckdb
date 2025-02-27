@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLDatumInt2.h
@@ -43,24 +43,25 @@ private:
 	// int2 value
 	SINT m_val;
 
-public:
-	CDXLDatumInt2(const CDXLDatumInt2 &) = delete;
+	// private copy ctor
+	CDXLDatumInt2(const CDXLDatumInt2 &);
 
+public:
 	// ctor
 	CDXLDatumInt2(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, SINT val);
 
 	// dtor
-	~CDXLDatumInt2() override = default;
+	virtual ~CDXLDatumInt2(){};
 
 	// accessor of int value
 	SINT Value() const;
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumInt2;
 	}
@@ -69,7 +70,7 @@ public:
 	static CDXLDatumInt2 *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::EdxldatumInt2 == dxl_datum->GetDatumType());
 
 		return dynamic_cast<CDXLDatumInt2 *>(dxl_datum);

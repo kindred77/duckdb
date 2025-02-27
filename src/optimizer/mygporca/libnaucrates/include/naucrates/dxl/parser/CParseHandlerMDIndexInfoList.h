@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerMDIndexInfoList.h
@@ -33,31 +33,32 @@ private:
 	// list of indexinfo
 	CMDIndexInfoArray *m_mdindex_info_array;
 
+	// private copy ctor
+	CParseHandlerMDIndexInfoList(const CParseHandlerMDIndexInfoList &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerMDIndexInfoList(const CParseHandlerMDIndexInfoList &) = delete;
-
 	// ctor
 	CParseHandlerMDIndexInfoList(CMemoryPool *mp,
 								 CParseHandlerManager *parse_handler_mgr,
 								 CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerMDIndexInfoList() override;
+	virtual ~CParseHandlerMDIndexInfoList();
 
 	// returns array of indexinfo
 	CMDIndexInfoArray *GetMdIndexInfoArray();

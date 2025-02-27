@@ -41,19 +41,20 @@ private:
 	// alias
 	const CMDName *m_mdname;
 
-public:
-	CDXLScalarProjElem(CDXLScalarProjElem &) = delete;
+	// private copy ctor
+	CDXLScalarProjElem(CDXLScalarProjElem &);
 
+public:
 	// ctor/dtor
 	CDXLScalarProjElem(CMemoryPool *mp, ULONG id, const CMDName *mdname);
 
-	~CDXLScalarProjElem() override;
+	virtual ~CDXLScalarProjElem();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// id of the proj element
 	ULONG Id() const;
@@ -62,11 +63,11 @@ public:
 	const CMDName *GetMdNameAlias() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// check if given column is defined by operator
-	BOOL
-	IsColDefined(ULONG colid) const override
+	virtual BOOL
+	IsColDefined(ULONG colid) const
 	{
 		return (Id() == colid);
 	}
@@ -75,16 +76,16 @@ public:
 	static CDXLScalarProjElem *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarProjectElem == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarProjElem *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid function call on a container operator");
 		return false;
@@ -92,8 +93,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

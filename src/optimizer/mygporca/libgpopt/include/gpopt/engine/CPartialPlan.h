@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CPartialPlan.h
@@ -54,21 +54,24 @@ private:
 	// index of known child plan
 	ULONG m_ulChildIndex;
 
+	// private copy ctor
+	CPartialPlan(const CPartialPlan &);
+
 	// extract costing info from children
 	void ExtractChildrenCostingInfo(CMemoryPool *mp, ICostModel *pcm,
 									CExpressionHandle &exprhdl,
 									ICostModel::SCostingInfo *pci);
 
+	// raise exception if the stats object is NULL
+	void RaiseExceptionIfStatsNull(IStatistics *stats);
 
 public:
-	CPartialPlan(const CPartialPlan &) = delete;
-
 	// ctor
 	CPartialPlan(CGroupExpression *pgexpr, CReqdPropPlan *prpp,
 				 CCostContext *pccChild, ULONG child_index);
 
 	// dtor
-	~CPartialPlan() override;
+	virtual ~CPartialPlan();
 
 	// group expression accessor
 	CGroupExpression *

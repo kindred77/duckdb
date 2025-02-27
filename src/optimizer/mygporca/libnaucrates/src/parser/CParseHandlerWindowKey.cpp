@@ -33,7 +33,7 @@ CParseHandlerWindowKey::CParseHandlerWindowKey(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
-	  m_dxl_window_key_gen(nullptr)
+	  m_dxl_window_key_gen(NULL)
 {
 }
 
@@ -55,8 +55,8 @@ CParseHandlerWindowKey::StartElement(const XMLCh *const element_uri,
 		XMLString::compareString(CDXLTokens::XmlstrToken(EdxltokenWindowKey),
 								 element_local_name))
 	{
-		GPOS_ASSERT(nullptr == m_dxl_window_key_gen);
-		m_dxl_window_key_gen = GPOS_NEW(m_mp) CDXLWindowKey();
+		GPOS_ASSERT(NULL == m_dxl_window_key_gen);
+		m_dxl_window_key_gen = GPOS_NEW(m_mp) CDXLWindowKey(m_mp);
 
 		// parse handler for the sorting column list
 		CParseHandlerBase *sort_col_list_parse_handler =
@@ -119,7 +119,7 @@ CParseHandlerWindowKey::EndElement(const XMLCh *const,	// element_uri,
 		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiDXLUnexpectedTag,
 				   str->GetBuffer());
 	}
-	GPOS_ASSERT(nullptr != m_dxl_window_key_gen);
+	GPOS_ASSERT(NULL != m_dxl_window_key_gen);
 	GPOS_ASSERT(1 <= this->Length());
 
 	CParseHandlerSortColList *sort_col_list_parse_handler =

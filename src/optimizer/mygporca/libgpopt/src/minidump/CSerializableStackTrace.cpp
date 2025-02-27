@@ -45,7 +45,9 @@ CSerializableStackTrace::CSerializableStackTrace() : CSerializable()
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CSerializableStackTrace::~CSerializableStackTrace() = default;
+CSerializableStackTrace::~CSerializableStackTrace()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

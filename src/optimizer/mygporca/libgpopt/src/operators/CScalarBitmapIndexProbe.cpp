@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarBitmapIndexProbe.cpp
@@ -41,9 +41,9 @@ CScalarBitmapIndexProbe::CScalarBitmapIndexProbe(CMemoryPool *mp,
 												 IMDId *pmdidBitmapType)
 	: CScalar(mp), m_pindexdesc(pindexdesc), m_pmdidBitmapType(pmdidBitmapType)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pindexdesc);
-	GPOS_ASSERT(nullptr != pmdidBitmapType);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pindexdesc);
+	GPOS_ASSERT(NULL != pmdidBitmapType);
 }
 
 //---------------------------------------------------------------------------

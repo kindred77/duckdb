@@ -36,20 +36,23 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerLogicalGet : public CParseHandlerLogicalOp
 {
 private:
+	// private copy ctor
+	CParseHandlerLogicalGet(const CParseHandlerLogicalGet &);
+
 	// process the start of an element
-	void StartElement(
+	virtual void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
-	void EndElement(
+	virtual void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 protected:
 	// start element helper function
@@ -61,8 +64,6 @@ protected:
 					Edxltoken token_type);
 
 public:
-	CParseHandlerLogicalGet(const CParseHandlerLogicalGet &) = delete;
-
 	// ctor
 	CParseHandlerLogicalGet(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,

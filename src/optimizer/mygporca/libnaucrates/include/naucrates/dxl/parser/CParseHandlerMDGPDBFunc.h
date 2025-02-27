@@ -54,6 +54,9 @@ private:
 	// function stability
 	CMDFunctionGPDB::EFuncStbl m_func_stability;
 
+	// function data access
+	CMDFunctionGPDB::EFuncDataAcc m_func_data_access;
+
 	// function strictness (i.e. whether func returns NULL on NULL input)
 	BOOL m_is_strict;
 
@@ -61,27 +64,31 @@ private:
 
 	BOOL m_is_allowed_for_PS;
 
+	// private copy ctor
+	CParseHandlerMDGPDBFunc(const CParseHandlerMDGPDBFunc &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 	// parse function stability property from XML string
-	static CMDFunctionGPDB::EFuncStbl ParseFuncStability(const XMLCh *xml_val);
+	CMDFunctionGPDB::EFuncStbl ParseFuncStability(const XMLCh *xml_val);
+
+	// parse function data access property from XML string
+	CMDFunctionGPDB::EFuncDataAcc ParseFuncDataAccess(const XMLCh *xml_val);
 
 public:
-	CParseHandlerMDGPDBFunc(const CParseHandlerMDGPDBFunc &) = delete;
-
 	// ctor
 	CParseHandlerMDGPDBFunc(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,

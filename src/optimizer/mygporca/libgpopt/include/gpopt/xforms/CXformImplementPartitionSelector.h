@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CXformImplementPartitionSelector.h
@@ -30,41 +30,43 @@ using namespace gpos;
 class CXformImplementPartitionSelector : public CXformImplementation
 {
 private:
-public:
-	CXformImplementPartitionSelector(const CXformImplementPartitionSelector &) =
-		delete;
+	// private copy ctor
+	CXformImplementPartitionSelector(const CXformImplementPartitionSelector &);
 
+public:
 	// ctor
 	explicit CXformImplementPartitionSelector(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementPartitionSelector() override = default;
+	virtual ~CXformImplementPartitionSelector()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementPartitionSelector;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementPartitionSelector";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  //exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	virtual void Transform(CXformContext *, CXformResult *,
+						   CExpression *) const;
 
 };	// class CXformImplementPartitionSelector
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // Greenplum Database
-// Copyright (C) 2019 VMware, Inc. or its affiliates.
+// Copyright (C) 2019 Pivotal Inc.
 //
 //	@filename:
 //		CXformExpandNAryJoinDPv2.cpp
@@ -78,8 +78,8 @@ CXformExpandNAryJoinDPv2::Transform(CXformContext *pxfctxt,
 									CXformResult *pxfres,
 									CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -103,11 +103,11 @@ CXformExpandNAryJoinDPv2::Transform(CXformContext *pxfctxt,
 	// a lookup table for each child whether it is a non-inner join
 	CLogicalNAryJoin *naryJoin = CLogicalNAryJoin::PopConvert(pexpr->Pop());
 	CExpression *pexprScalar = (*pexpr)[arity - 1];
-	CExpressionArray *innerJoinPreds = nullptr;
+	CExpressionArray *innerJoinPreds = NULL;
 	CExpressionArray *onPreds = GPOS_NEW(mp) CExpressionArray(mp);
-	ULongPtrArray *childPredIndexes = nullptr;
+	ULongPtrArray *childPredIndexes = NULL;
 
-	if (nullptr != CScalarNAryJoinPredList::PopConvert(pexprScalar->Pop()))
+	if (NULL != CScalarNAryJoinPredList::PopConvert(pexprScalar->Pop()))
 	{
 		innerJoinPreds =
 			CPredicateUtils::PdrgpexprConjuncts(mp, (*pexprScalar)[0]);
@@ -119,7 +119,7 @@ CXformExpandNAryJoinDPv2::Transform(CXformContext *pxfctxt,
 		}
 
 		childPredIndexes = naryJoin->GetLojChildPredIndexes();
-		GPOS_ASSERT(nullptr != childPredIndexes);
+		GPOS_ASSERT(NULL != childPredIndexes);
 		childPredIndexes->AddRef();
 	}
 	else
@@ -137,9 +137,9 @@ CXformExpandNAryJoinDPv2::Transform(CXformContext *pxfctxt,
 	jodp.PexprExpand();
 
 	// Retrieve top K join orders from jodp and add as alternatives
-	CExpression *nextJoinOrder = nullptr;
+	CExpression *nextJoinOrder = NULL;
 
-	while (nullptr != (nextJoinOrder = jodp.GetNextOfTopK()))
+	while (NULL != (nextJoinOrder = jodp.GetNextOfTopK()))
 	{
 		CExpression *pexprNormalized =
 			CNormalizer::PexprNormalize(mp, nextJoinOrder);

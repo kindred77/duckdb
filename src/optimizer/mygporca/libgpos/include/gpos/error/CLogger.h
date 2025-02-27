@@ -62,6 +62,9 @@ private:
 	// report logging failure
 	void ReportFailure();
 
+	// no copy ctor
+	CLogger(const CLogger &);
+
 protected:
 	// accessor for system error buffer
 	CHAR *
@@ -71,24 +74,22 @@ protected:
 	}
 
 public:
-	CLogger(const CLogger &) = delete;
-
 	// ctor
 	explicit CLogger(ErrorInfoLevel info_level = ILogger::EeilMsgHeaderStack);
 
 	// dtor
-	~CLogger() override;
+	virtual ~CLogger();
 
 	// error level accessor
-	ErrorInfoLevel
-	InfoLevel() const override
+	virtual ErrorInfoLevel
+	InfoLevel() const
 	{
 		return m_info_level;
 	}
 
 	// set error info level
-	void
-	SetErrorInfoLevel(ErrorInfoLevel info_level) override
+	virtual void
+	SetErrorInfoLevel(ErrorInfoLevel info_level)
 	{
 		m_info_level = info_level;
 	}

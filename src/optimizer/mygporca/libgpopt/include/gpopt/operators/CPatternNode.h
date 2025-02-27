@@ -34,11 +34,13 @@ public:
 		EmtSentinel
 	};
 
+private:
+	// private copy ctor
+	CPatternNode(COperator &);
+
 	enum EMatchType m_match;
 
 public:
-	CPatternNode(COperator &) = delete;
-
 	// ctor
 	explicit CPatternNode(CMemoryPool *mp, enum EMatchType matchType)
 		: CPattern(mp), m_match(matchType)
@@ -46,19 +48,21 @@ public:
 	}
 
 	// dtor
-	~CPatternNode() override = default;
+	virtual ~CPatternNode()
+	{
+	}
 
 	// match function
 	BOOL
-	Matches(COperator *pop) const override
+	Matches(COperator *pop) const
 	{
 		return Eopid() == pop->Eopid() &&
 			   m_match == static_cast<CPatternNode *>(pop)->m_match;
 	}
 
 	// check if operator is a pattern leaf
-	BOOL
-	FLeaf() const override
+	virtual BOOL
+	FLeaf() const
 	{
 		return false;
 	}
@@ -67,28 +71,28 @@ public:
 	static CPatternNode *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(COperator::EopPatternNode == pop->Eopid());
 
 		return static_cast<CPatternNode *>(pop);
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPatternNode;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPatternNode";
 	}
 
 	BOOL
-	MatchesOperator(enum COperator::EOperatorId opid) const
+	MatchesOperator(enum COperator::EOperatorId opid)
 	{
 		switch (m_match)
 		{

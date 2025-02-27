@@ -40,7 +40,9 @@ CDXLLogicalLimit::CDXLLogicalLimit(CMemoryPool *mp, BOOL top_limit_under_dml)
 //		Destructor
 //
 //---------------------------------------------------------------------------
-CDXLLogicalLimit::~CDXLLogicalLimit() = default;
+CDXLLogicalLimit::~CDXLLogicalLimit()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

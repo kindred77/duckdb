@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerMDRelationCtas.cpp
@@ -40,7 +40,7 @@ CParseHandlerMDRelationCtas::CParseHandlerMDRelationCtas(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerMDRelation(mp, parse_handler_mgr, parse_handler_root),
-	  m_vartypemod_array(nullptr)
+	  m_vartypemod_array(NULL)
 {
 }
 
@@ -75,7 +75,7 @@ CParseHandlerMDRelationCtas::StartElement(const XMLCh *const,
 
 	const XMLCh *xml_str_schema =
 		attrs.getValue(CDXLTokens::XmlstrToken(EdxltokenSchema));
-	if (nullptr != xml_str_schema)
+	if (NULL != xml_str_schema)
 	{
 		m_mdname_schema = CDXLUtils::CreateMDNameFromXMLChar(
 			m_parse_handler_mgr->GetDXLMemoryManager(), xml_str_schema);
@@ -85,6 +85,16 @@ CParseHandlerMDRelationCtas::StartElement(const XMLCh *const,
 	m_is_temp_table = CDXLOperatorFactory::ExtractConvertAttrValueToBool(
 		m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
 		EdxltokenRelTemporary, EdxltokenRelation);
+
+	// parse whether relation has oids
+	const XMLCh *xml_str_has_oids =
+		attrs.getValue(CDXLTokens::XmlstrToken(EdxltokenRelHasOids));
+	if (NULL != xml_str_has_oids)
+	{
+		m_has_oids = CDXLOperatorFactory::ConvertAttrValueToBool(
+			m_parse_handler_mgr->GetDXLMemoryManager(), xml_str_has_oids,
+			EdxltokenRelHasOids, EdxltokenRelation);
+	}
 
 	// parse storage type
 	const XMLCh *xml_str_storage_type = CDXLOperatorFactory::ExtractAttrValue(
@@ -167,11 +177,10 @@ CParseHandlerMDRelationCtas::EndElement(const XMLCh *const,	 // element_uri,
 	CParseHandlerMetadataIdList *opclasses_parse_handler =
 		dynamic_cast<CParseHandlerMetadataIdList *>((*this)[3]);
 
-	GPOS_ASSERT(nullptr != md_cols_parse_handler->GetMdColArray());
-	GPOS_ASSERT(nullptr !=
-				ctas_options_parse_handler->GetDxlCtasStorageOption());
-	GPOS_ASSERT(nullptr != opfamilies_parse_handler->GetMdIdArray());
-	GPOS_ASSERT(nullptr != opclasses_parse_handler->GetMdIdArray());
+	GPOS_ASSERT(NULL != md_cols_parse_handler->GetMdColArray());
+	GPOS_ASSERT(NULL != ctas_options_parse_handler->GetDxlCtasStorageOption());
+	GPOS_ASSERT(NULL != opfamilies_parse_handler->GetMdIdArray());
+	GPOS_ASSERT(NULL != opclasses_parse_handler->GetMdIdArray());
 
 	CMDColumnArray *md_col_array = md_cols_parse_handler->GetMdColArray();
 	CDXLCtasStorageOptions *dxl_ctas_storage_options =
@@ -192,7 +201,7 @@ CParseHandlerMDRelationCtas::EndElement(const XMLCh *const,	 // element_uri,
 
 
 	m_imd_obj = GPOS_NEW(m_mp) CMDRelationCtasGPDB(
-		m_mp, m_mdid, m_mdname_schema, m_mdname, m_is_temp_table,
+		m_mp, m_mdid, m_mdname_schema, m_mdname, m_is_temp_table, m_has_oids,
 		m_rel_storage_type, m_rel_distr_policy, md_col_array, m_distr_col_array,
 		distr_opfamilies, distr_opclasses, m_key_sets_arrays,
 		dxl_ctas_storage_options, m_vartypemod_array);

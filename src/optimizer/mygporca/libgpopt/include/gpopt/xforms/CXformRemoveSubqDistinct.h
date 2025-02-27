@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software Inc.
 //
 //	@filename:
 //		CXformRemoveSubqDistinct.h
@@ -22,35 +22,38 @@ using namespace gpos;
 class CXformRemoveSubqDistinct : public CXformExploration
 {
 private:
-public:
-	CXformRemoveSubqDistinct(const CXformRemoveSubqDistinct &) = delete;
+	// private copy ctor
+	CXformRemoveSubqDistinct(const CXformRemoveSubqDistinct &);
 
+public:
 	// ctor
 	explicit CXformRemoveSubqDistinct(CMemoryPool *mp);
 
 	// dtor
-	~CXformRemoveSubqDistinct() override = default;
+	virtual ~CXformRemoveSubqDistinct()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfRemoveSubqDistinct;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformRemoveSubqDistinct";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformRemoveSubqDistinct
 

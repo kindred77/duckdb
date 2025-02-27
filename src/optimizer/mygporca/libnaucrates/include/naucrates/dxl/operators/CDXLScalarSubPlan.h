@@ -66,26 +66,27 @@ private:
 	// does test expression contain outer param
 	BOOL m_outer_param;
 
-public:
-	CDXLScalarSubPlan(CDXLScalarSubPlan &) = delete;
+	// private copy ctor
+	CDXLScalarSubPlan(CDXLScalarSubPlan &);
 
+public:
 	// ctor/dtor
 	CDXLScalarSubPlan(CMemoryPool *mp, IMDId *first_col_type_mdid,
 					  CDXLColRefArray *dxl_colref_array,
 					  EdxlSubPlanType dxl_subplan_type,
 					  CDXLNode *dxlnode_test_expr, BOOL outer_param = false);
 
-	~CDXLScalarSubPlan() override;
+	virtual ~CDXLScalarSubPlan();
 
 	// Operator type
 	Edxlopid
-	GetDXLOperator() const override
+	GetDXLOperator() const
 	{
 		return EdxlopScalarSubPlan;
 	}
 
 	// Operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// type of first output column
 	IMDId *GetFirstColTypeMdId() const;
@@ -118,21 +119,21 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarSubPlan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSubPlan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarSubPlan *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 	// return a string representation of Subplan type
 	const CWStringConst *GetSubplanTypeStr() const;
@@ -140,8 +141,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

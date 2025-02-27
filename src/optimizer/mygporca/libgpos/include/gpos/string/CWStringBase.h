@@ -43,6 +43,9 @@ class CMemoryPool;
 class CWStringBase
 {
 private:
+	// private copy ctor
+	CWStringBase(const CWStringBase &);
+
 protected:
 	// represents end-of-wide-string character
 	static const WCHAR m_empty_wcstr;
@@ -54,11 +57,9 @@ protected:
 	BOOL m_owns_memory;
 
 	// checks whether the string is byte-wise equal to a given string literal
-	virtual BOOL EqualsWChars(const WCHAR *w_str_buffer) const;
+	virtual BOOL Equals(const WCHAR *w_str_buffer) const;
 
 public:
-	CWStringBase(const CWStringBase &) = delete;
-
 	// ctor
 	CWStringBase(ULONG length, BOOL owns_memory)
 		: m_length(length), m_owns_memory(owns_memory)
@@ -66,7 +67,9 @@ public:
 	}
 
 	// dtor
-	virtual ~CWStringBase() = default;
+	virtual ~CWStringBase()
+	{
+	}
 
 	// deep copy of the string
 	virtual CWStringConst *Copy(CMemoryPool *mp) const;

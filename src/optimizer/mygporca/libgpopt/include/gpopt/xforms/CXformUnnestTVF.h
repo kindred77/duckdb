@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-//	Cloudberry Database
+//	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
 //	@filename:
@@ -30,6 +30,9 @@ using namespace gpos;
 class CXformUnnestTVF : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformUnnestTVF(const CXformUnnestTVF &);
+
 	// helper for mapping subquery function arguments into columns
 	static CColRefArray *PdrgpcrSubqueries(CMemoryPool *mp,
 										   CExpression *pexprCTEProducer,
@@ -40,34 +43,34 @@ private:
 											   CExpression *pexprTVF);
 
 public:
-	CXformUnnestTVF(const CXformUnnestTVF &) = delete;
-
 	// ctor
 	explicit CXformUnnestTVF(CMemoryPool *mp);
 
 	// dtor
-	~CXformUnnestTVF() override = default;
+	virtual ~CXformUnnestTVF()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfUnnestTVF;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformUnnestTVF";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformUnnestTVF
 

@@ -30,9 +30,10 @@ namespace gpopt
 class CLogicalInnerCorrelatedApply : public CLogicalInnerApply
 {
 private:
-public:
-	CLogicalInnerCorrelatedApply(const CLogicalInnerCorrelatedApply &) = delete;
+	// private copy ctor
+	CLogicalInnerCorrelatedApply(const CLogicalInnerCorrelatedApply &);
 
+public:
 	// ctor
 	CLogicalInnerCorrelatedApply(CMemoryPool *mp, CColRefArray *pdrgpcrInner,
 								 EOperatorId eopidOriginSubq);
@@ -41,36 +42,37 @@ public:
 	explicit CLogicalInnerCorrelatedApply(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalInnerCorrelatedApply() override = default;
+	virtual ~CLogicalInnerCorrelatedApply()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalInnerCorrelatedApply;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalInnerCorrelatedApply";
 	}
 
 	// applicable transformations
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// return true if operator is a correlated apply
-	BOOL
-	FCorrelated() const override
+	virtual BOOL
+	FCorrelated() const
 	{
 		return true;
 	}
@@ -79,7 +81,7 @@ public:
 	static CLogicalInnerCorrelatedApply *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalInnerCorrelatedApply == pop->Eopid());
 
 		return dynamic_cast<CLogicalInnerCorrelatedApply *>(pop);

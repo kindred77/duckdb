@@ -31,41 +31,44 @@ using namespace gpos;
 class CScalarProjectList : public CScalar
 {
 private:
-public:
-	CScalarProjectList(const CScalarProjectList &) = delete;
+	// private copy ctor
+	CScalarProjectList(const CScalarProjectList &);
 
+public:
 	// ctor
 	explicit CScalarProjectList(CMemoryPool *mp);
 
 	// dtor
-	~CScalarProjectList() override = default;
+	virtual ~CScalarProjectList()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarProjectList;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarProjectList";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -74,17 +77,17 @@ public:
 	static CScalarProjectList *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarProjectList == pop->Eopid());
 
-		return dynamic_cast<CScalarProjectList *>(pop);
+		return reinterpret_cast<CScalarProjectList *>(pop);
 	}
 
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		GPOS_ASSERT(!"Invalid function call: CScalarProjectList::MdidType()");
-		return nullptr;
+		return NULL;
 	}
 
 	// return number of distinct aggs in project list attached to given handle
@@ -99,9 +102,6 @@ public:
 	// check if a project list has a scalar func
 	static BOOL FHasScalarFunc(CExpressionHandle &exprhdl);
 
-	// check if a project list has only replication safe agg funcs
-	static BOOL FContainsOnlyReplicationSafeAggFuncs(
-		CExpressionHandle &exprhdl);
 };	// class CScalarProjectList
 
 }  // namespace gpopt

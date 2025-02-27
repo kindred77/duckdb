@@ -35,24 +35,25 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerIndexCondList : public CParseHandlerScalarOp
 {
 private:
+	// private copy ctor
+	CParseHandlerIndexCondList(const CParseHandlerIndexCondList &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerIndexCondList(const CParseHandlerIndexCondList &) = delete;
-
 	// ctor
 	CParseHandlerIndexCondList(CMemoryPool *mp,
 							   CParseHandlerManager *parse_handler_mgr,

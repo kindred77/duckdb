@@ -30,18 +30,19 @@ using namespace gpos;
 class CXformImplementation : public CXform
 {
 private:
-public:
-	CXformImplementation(const CXformImplementation &) = delete;
+	// private copy ctor
+	CXformImplementation(const CXformImplementation &);
 
+public:
 	// ctor
 	explicit CXformImplementation(CExpression *);
 
 	// dtor
-	~CXformImplementation() override;
+	virtual ~CXformImplementation();
 
 	// type of operator
-	BOOL
-	FImplementation() const override
+	virtual BOOL
+	FImplementation() const
 	{
 		GPOS_ASSERT(!FSubstitution() && !FExploration());
 		return true;

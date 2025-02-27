@@ -119,10 +119,10 @@ CDistributionSpecReplicated::AppendEnforcers(CMemoryPool *mp,
 											 CExpressionArray *pdrgpexpr,
 											 CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != prpp);
-	GPOS_ASSERT(nullptr != pdrgpexpr);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != prpp);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(!GPOS_FTRACE(EopttraceDisableMotions));
 	GPOS_ASSERT(
 		this == prpp->Ped()->PdsRequired() &&
@@ -136,10 +136,8 @@ CDistributionSpecReplicated::AppendEnforcers(CMemoryPool *mp,
 	}
 
 	pexpr->AddRef();
-	CExpression *pexprMotion = GPOS_NEW(mp) CExpression(
-		mp,
-		GPOS_NEW(mp) CPhysicalMotionBroadcast(mp, m_ignore_broadcast_threshold),
-		pexpr);
+	CExpression *pexprMotion = GPOS_NEW(mp)
+		CExpression(mp, GPOS_NEW(mp) CPhysicalMotionBroadcast(mp), pexpr);
 	pdrgpexpr->Append(pexprMotion);
 }
 // EOF

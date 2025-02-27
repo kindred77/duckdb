@@ -51,7 +51,7 @@ class CParseHandlerDXL;
 class CDXLMemoryManager;
 class CQueryToDXLResult;
 
-using CStatisticsArray = CDynamicPtrArray<CStatistics, CleanupRelease>;
+typedef CDynamicPtrArray<CStatistics, CleanupRelease> CStatisticsArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -291,11 +291,6 @@ CDXLUtils::Serialize(CMemoryPool *mp,
 					 const CDynamicPtrArray<T, CleanupFn> *dynamic_ptr_array)
 {
 	CAutoP<CWStringDynamic> string_var(GPOS_NEW(mp) CWStringDynamic(mp));
-
-	if (nullptr == dynamic_ptr_array)
-	{
-		return string_var.Reset();
-	}
 
 	ULONG length = dynamic_ptr_array->Size();
 	for (ULONG ul = 0; ul < length; ul++)

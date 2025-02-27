@@ -39,6 +39,12 @@ using namespace gpopt;
 class CStatsPredPoint : public CStatsPred
 {
 private:
+	// private copy ctor
+	CStatsPredPoint(const CStatsPredPoint &);
+
+	// private assignment operator
+	CStatsPredPoint &operator=(CStatsPredPoint &);
+
 	// comparison type
 	CStatsPred::EStatsCmpType m_stats_cmp_type;
 
@@ -50,10 +56,6 @@ private:
 								   IDatum *datum);
 
 public:
-	CStatsPredPoint &operator=(CStatsPredPoint &) = delete;
-
-	CStatsPredPoint(const CStatsPredPoint &) = delete;
-
 	// ctor
 	CStatsPredPoint(ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
 					CPoint *point);
@@ -63,7 +65,7 @@ public:
 					CStatsPred::EStatsCmpType stats_cmp_type, IDatum *datum);
 
 	// dtor
-	~CStatsPredPoint() override
+	virtual ~CStatsPredPoint()
 	{
 		m_pred_point->Release();
 	}
@@ -83,8 +85,8 @@ public:
 	}
 
 	// filter type id
-	EStatsPredType
-	GetPredStatsType() const override
+	virtual EStatsPredType
+	GetPredStatsType() const
 	{
 		return CStatsPred::EsptPoint;
 	}
@@ -93,7 +95,7 @@ public:
 	static CStatsPredPoint *
 	ConvertPredStats(CStatsPred *pred_stats)
 	{
-		GPOS_ASSERT(nullptr != pred_stats);
+		GPOS_ASSERT(NULL != pred_stats);
 		GPOS_ASSERT(CStatsPred::EsptPoint == pred_stats->GetPredStatsType());
 
 		return dynamic_cast<CStatsPredPoint *>(pred_stats);

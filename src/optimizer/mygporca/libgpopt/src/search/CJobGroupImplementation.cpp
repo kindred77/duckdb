@@ -91,7 +91,9 @@ const WCHAR
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobGroupImplementation::CJobGroupImplementation() = default;
+CJobGroupImplementation::CJobGroupImplementation()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -102,7 +104,9 @@ CJobGroupImplementation::CJobGroupImplementation() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CJobGroupImplementation::~CJobGroupImplementation() = default;
+CJobGroupImplementation::~CJobGroupImplementation()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -151,7 +155,7 @@ CJobGroupImplementation::FScheduleGroupExpressions(CSchedulerContext *psc)
 
 	// iterate on expression and schedule them as needed
 	CGroupExpression *pgexpr = PgexprFirstUnsched();
-	while (nullptr != pgexpr)
+	while (NULL != pgexpr)
 	{
 		if (!pgexpr->FTransitioned(CGroupExpression::estImplemented) &&
 			!pgexpr->ContainsCircularDependencies())

@@ -31,7 +31,10 @@ class CFileDescriptor
 {
 private:
 	// file descriptor
-	INT m_file_descriptor{GPOS_FILE_DESCR_INVALID};
+	INT m_file_descriptor;
+
+	// no copy ctor
+	CFileDescriptor(const CFileDescriptor &);
 
 protected:
 	// ctor -- accessible through inheritance only
@@ -54,8 +57,6 @@ protected:
 	void CloseFile();
 
 public:
-	CFileDescriptor(const CFileDescriptor &) = delete;
-
 	// check if file is open
 	BOOL
 	IsFileOpen() const

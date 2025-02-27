@@ -15,7 +15,6 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CColRefTable.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalarFunc.h"
 
 
@@ -91,7 +90,7 @@ CScalarIdent::PopCopyWithRemappedColumns(CMemoryPool *mp,
 {
 	ULONG id = m_pcr->Id();
 	CColRef *colref = colref_mapping->Find(&id);
-	if (nullptr == colref)
+	if (NULL == colref)
 	{
 		if (must_exist)
 		{
@@ -100,7 +99,9 @@ CScalarIdent::PopCopyWithRemappedColumns(CMemoryPool *mp,
 
 			colref = col_factory->PcrCopy(m_pcr);
 
-			BOOL result GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+			BOOL result =
+#endif	// GPOS_DEBUG
 				colref_mapping->Insert(GPOS_NEW(mp) ULONG(id), colref);
 			GPOS_ASSERT(result);
 		}
@@ -144,7 +145,7 @@ CScalarIdent::TypeModifier() const
 BOOL
 CScalarIdent::FCastedScId(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	// cast(col1)
 	if (COperator::EopScalarCast == pexpr->Pop()->Eopid())
@@ -161,8 +162,8 @@ CScalarIdent::FCastedScId(CExpression *pexpr)
 BOOL
 CScalarIdent::FCastedScId(CExpression *pexpr, CColRef *colref)
 {
-	GPOS_ASSERT(nullptr != pexpr);
-	GPOS_ASSERT(nullptr != colref);
+	GPOS_ASSERT(NULL != pexpr);
+	GPOS_ASSERT(NULL != colref);
 
 	if (!FCastedScId(pexpr))
 	{
@@ -186,7 +187,7 @@ CScalarIdent::FCastedScId(CExpression *pexpr, CColRef *colref)
 BOOL
 CScalarIdent::FAllowedFuncScId(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (COperator::EopScalarFunc == pexpr->Pop()->Eopid() &&
 		pexpr->Arity() > 0 &&
@@ -203,8 +204,8 @@ CScalarIdent::FAllowedFuncScId(CExpression *pexpr)
 BOOL
 CScalarIdent::FAllowedFuncScId(CExpression *pexpr, CColRef *colref)
 {
-	GPOS_ASSERT(nullptr != pexpr);
-	GPOS_ASSERT(nullptr != colref);
+	GPOS_ASSERT(NULL != pexpr);
+	GPOS_ASSERT(NULL != colref);
 
 	if (!FAllowedFuncScId(pexpr))
 	{

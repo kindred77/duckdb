@@ -37,7 +37,7 @@ CEnfdRewindability::CEnfdRewindability(CRewindabilitySpec *prs,
 									   ERewindabilityMatching erm)
 	: m_prs(prs), m_erm(erm)
 {
-	GPOS_ASSERT(nullptr != prs);
+	GPOS_ASSERT(NULL != prs);
 	GPOS_ASSERT(ErmSentinel > erm);
 }
 
@@ -69,7 +69,7 @@ CEnfdRewindability::~CEnfdRewindability()
 BOOL
 CEnfdRewindability::FCompatible(CRewindabilitySpec *prs) const
 {
-	GPOS_ASSERT(nullptr != prs);
+	GPOS_ASSERT(NULL != prs);
 
 	switch (m_erm)
 	{

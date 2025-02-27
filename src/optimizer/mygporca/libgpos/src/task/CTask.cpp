@@ -36,21 +36,21 @@ CTask::CTask(CMemoryPool *mp, CTaskContext *task_ctxt, IErrorContext *err_ctxt,
 	: m_mp(mp),
 	  m_task_ctxt(task_ctxt),
 	  m_err_ctxt(err_ctxt),
-	  m_err_handle(nullptr),
-	  m_func(nullptr),
-	  m_arg(nullptr),
-	  m_res(nullptr),
+	  m_err_handle(NULL),
+	  m_func(NULL),
+	  m_arg(NULL),
+	  m_res(NULL),
 	  m_status(EtsInit),
 	  m_cancel(cancel),
 	  m_cancel_local(false),
 	  m_abort_suspend_count(false),
 	  m_reported(false)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != task_ctxt);
-	GPOS_ASSERT(nullptr != err_ctxt);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != task_ctxt);
+	GPOS_ASSERT(NULL != err_ctxt);
 
-	if (nullptr == cancel)
+	if (NULL == cancel)
 	{
 		m_cancel = &m_cancel_local;
 	}
@@ -90,7 +90,7 @@ CTask::~CTask()
 void
 CTask::Bind(void *(*func)(void *), void *arg)
 {
-	GPOS_ASSERT(nullptr != func);
+	GPOS_ASSERT(NULL != func);
 
 	m_func = func;
 	m_arg = arg;
@@ -177,7 +177,7 @@ CTask::SetStatus(ETaskStatus ets)
 //		Check if task has been scheduled
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CTask::IsScheduled() const
 {
 	switch (m_status)
@@ -207,7 +207,7 @@ CTask::IsScheduled() const
 //		Check if task finished executing
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CTask::IsFinished() const
 {
 	switch (m_status)
@@ -247,7 +247,7 @@ CTask::ResumeAbort()
 #ifdef GPOS_DEBUG
 	CWorker *worker = CWorker::Self();
 
-	GPOS_ASSERT(nullptr != worker);
+	GPOS_ASSERT(NULL != worker);
 #endif
 }
 
@@ -263,8 +263,8 @@ CTask::ResumeAbort()
 //		Check if task has expected status
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
-CTask::CheckStatus(gpos::BOOL completed)
+BOOL
+CTask::CheckStatus(BOOL completed)
 {
 	GPOS_ASSERT(!IsCanceled());
 	if (completed)

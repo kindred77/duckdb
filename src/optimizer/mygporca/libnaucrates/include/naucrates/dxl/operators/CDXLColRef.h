@@ -31,7 +31,7 @@ class CXMLSerializer;
 class CDXLColRef;
 
 // arrays of column references
-using CDXLColRefArray = CDynamicPtrArray<CDXLColRef, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLColRef, CleanupRelease> CDXLColRefArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -44,6 +44,9 @@ using CDXLColRefArray = CDynamicPtrArray<CDXLColRef, CleanupRelease>;
 class CDXLColRef : public CRefCount
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// name
 	CMDName *m_mdname;
 
@@ -56,13 +59,15 @@ private:
 	// column type modifier
 	INT m_iTypeModifer;
 
+	// private copy ctor
+	CDXLColRef(const CDXLColRef &);
+
 public:
-	CDXLColRef(const CDXLColRef &) = delete;
-
 	// ctor/dtor
-	CDXLColRef(CMDName *mdname, ULONG id, IMDId *mdid_type, INT type_modifier);
+	CDXLColRef(CMemoryPool *mp, CMDName *mdname, ULONG id, IMDId *mdid_type,
+			   INT type_modifier);
 
-	~CDXLColRef() override;
+	~CDXLColRef();
 
 	// accessors
 	const CMDName *MdName() const;

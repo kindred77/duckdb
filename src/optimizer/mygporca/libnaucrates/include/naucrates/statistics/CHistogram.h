@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CHistogram.h
@@ -29,7 +29,7 @@ namespace gpnaucrates
 {
 // type definitions
 // array of doubles
-using CDoubleArray = CDynamicPtrArray<CDouble, CleanupDelete>;
+typedef CDynamicPtrArray<CDouble, CleanupDelete> CDoubleArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -41,26 +41,28 @@ using CDoubleArray = CDynamicPtrArray<CDouble, CleanupDelete>;
 class CHistogram : public gpos::DbgPrintMixin<CHistogram>
 {
 	// hash map from column id to a histogram
-	using UlongToHistogramMap =
-		CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CHistogram>>;
+	typedef CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupDelete<CHistogram> >
+		UlongToHistogramMap;
 
 	// iterator
-	using UlongToHistogramMapIter =
-		CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupDelete<CHistogram>>;
+	typedef CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupDelete<CHistogram> >
+		UlongToHistogramMapIter;
 
 	// hash map from column ULONG to CDouble
-	using UlongToDoubleMap =
-		CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CDouble>>;
+	typedef CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupDelete<CDouble> >
+		UlongToDoubleMap;
 
 	// iterator
-	using UlongToDoubleMapIter =
-		CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupDelete<CDouble>>;
+	typedef CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupDelete<CDouble> >
+		UlongToDoubleMapIter;
 
 private:
 	// shared memory pool
@@ -94,6 +96,12 @@ private:
 
 	// is column statistics missing in the database
 	BOOL m_is_col_stats_missing;
+
+	// private copy ctor
+	CHistogram(const CHistogram &);
+
+	// private assignment operator
+	CHistogram &operator=(const CHistogram &);
 
 	// return an array buckets after applying equality filter on the histogram buckets
 	CBucketArray *MakeBucketsWithEqualityFilter(CPoint *point) const;
@@ -134,10 +142,6 @@ private:
 
 	// accessor for n-th bucket
 	CBucket *operator[](ULONG) const;
-
-	// Populate sample ratio within each bucket
-	void GetSampleRate(DOUBLE left, DOUBLE right, DOUBLE *sample_rate,
-					   ULONG index);
 
 	// compute skew estimate
 	void ComputeSkew();
@@ -205,24 +209,21 @@ private:
 
 		// used for sorting in the binary heap
 		CDouble
-		DCost() const
+		DCost()
 		{
 			return m_similarity_factor;
 		}
 		CDouble
-		GetCostForHeap() const
+		GetCostForHeap()
 		{
 			return DCost();
 		}
 	};
-	using SAdjBucketBoundaryArray =
-		CDynamicPtrArray<SAdjBucketBoundary, CleanupDelete<SAdjBucketBoundary>>;
+	typedef CDynamicPtrArray<SAdjBucketBoundary,
+							 CleanupDelete<SAdjBucketBoundary> >
+		SAdjBucketBoundaryArray;
 
 public:
-	CHistogram &operator=(const CHistogram &) = delete;
-
-	CHistogram(const CHistogram &) = delete;
-
 	// ctors
 	explicit CHistogram(CMemoryPool *mp, CBucketArray *histogram_buckets,
 						BOOL is_well_defined = true);
@@ -305,19 +306,18 @@ public:
 											CDouble *num_output_rows) const;
 
 	// cleanup residual buckets
-	static void CleanupResidualBucket(CBucket *bucket, BOOL bucket_is_residual);
+	void CleanupResidualBucket(CBucket *bucket, BOOL bucket_is_residual) const;
 
 	// get the next bucket for union / union all
-	static CBucket *GetNextBucket(const CHistogram *histogram,
-								  CBucket *new_bucket,
-								  BOOL *target_bucket_is_residual,
-								  ULONG *current_bucket_index);
+	CBucket *GetNextBucket(const CHistogram *histogram, CBucket *new_bucket,
+						   BOOL *target_bucket_is_residual,
+						   ULONG *current_bucket_index) const;
 
 	// number of buckets
 	ULONG
 	GetNumBuckets() const
 	{
-		GPOS_ASSERT(m_histogram_buckets != nullptr);
+		GPOS_ASSERT(m_histogram_buckets != NULL);
 		return m_histogram_buckets->Size();
 	}
 
@@ -345,7 +345,7 @@ public:
 	}
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// total frequency from buckets and null fraction
 	CDouble GetFrequency() const;

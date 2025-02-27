@@ -6,7 +6,7 @@
 //		CParseHandlerScalarSortGroupClause.cpp
 //
 //	@doc:
-//		Implementation of the SAX parse handler class for parsing value list.
+//		Implementation of the SAX parse handler class for parsing sort group clause.
 //---------------------------------------------------------------------------
 
 #include "naucrates/dxl/parser/CParseHandlerScalarSortGroupClause.h"

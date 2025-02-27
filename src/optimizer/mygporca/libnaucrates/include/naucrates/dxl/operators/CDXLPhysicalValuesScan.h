@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CDXLPhysicalValuesScan.h
@@ -29,24 +29,25 @@ enum EdxlnVal
 class CDXLPhysicalValuesScan : public CDXLPhysical
 {
 private:
-public:
-	CDXLPhysicalValuesScan(CDXLPhysicalValuesScan &) = delete;
+	// private copy ctor
+	CDXLPhysicalValuesScan(CDXLPhysicalValuesScan &);
 
+public:
 	// ctor
 	CDXLPhysicalValuesScan(CMemoryPool *mp);
 
 	// dtor
-	~CDXLPhysicalValuesScan() override;
+	virtual ~CDXLPhysicalValuesScan();
 
 	// get operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// get operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalValuesScan *Cast(CDXLOperator *dxl_op);
@@ -54,7 +55,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

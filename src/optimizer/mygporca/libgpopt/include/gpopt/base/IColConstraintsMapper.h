@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_IColConstraintsMapper_H
 #define GPOPT_IColConstraintsMapper_H
@@ -15,7 +15,7 @@ class IColConstraintsMapper : public CRefCount
 public:
 	virtual CConstraintArray *PdrgPcnstrLookup(CColRef *colref) = 0;
 
-	~IColConstraintsMapper() override = 0;
+	virtual ~IColConstraintsMapper() = 0;
 };
 }  // namespace gpopt
 

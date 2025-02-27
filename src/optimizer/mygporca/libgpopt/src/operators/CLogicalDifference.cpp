@@ -58,7 +58,9 @@ CLogicalDifference::CLogicalDifference(CMemoryPool *mp,
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogicalDifference::~CLogicalDifference() = default;
+CLogicalDifference::~CLogicalDifference()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -174,7 +176,7 @@ CLogicalDifference::PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
 		mp, LASJ_stats,
 		(*m_pdrgpdrgpcrInput)[0],  // we group by the columns of the first child
 		pdrgpulComputedCols,	   // no computed columns for set ops
-		nullptr					   // no keys, use all grouping cols
+		NULL					   // no keys, use all grouping cols
 	);
 
 	// clean up

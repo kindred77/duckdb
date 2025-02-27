@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Software, Inc.
 //
 //	@filename:
 //		CDrvdPropCtxt.cpp
@@ -19,6 +19,12 @@
 
 namespace gpopt
 {
+IOstream &
+operator<<(IOstream &os, CDrvdPropCtxt &drvdpropctxt)
+{
+	return drvdpropctxt.OsPrint(os);
+}
+
 }  // namespace gpopt
 
 // EOF

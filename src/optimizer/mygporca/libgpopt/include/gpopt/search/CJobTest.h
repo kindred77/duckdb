@@ -44,16 +44,16 @@ public:
 
 private:
 	// test type
-	ETestType m_ett{EttSpawn};
+	ETestType m_ett;
 
 	// number of job spawning rounds
-	ULONG m_ulRounds{gpos::ulong_max};
+	ULONG m_ulRounds;
 
 	// spawning fanout
-	ULONG m_ulFanout{gpos::ulong_max};
+	ULONG m_ulFanout;
 
 	// CPU-burning iterations per job
-	ULONG m_ulIters{gpos::ulong_max};
+	ULONG m_ulIters;
 
 	// iteration counter
 	static ULONG_PTR m_ulpCnt;
@@ -71,21 +71,21 @@ private:
 	BOOL FQueue(CSchedulerContext *psc);
 
 	// burn some CPU to simulate actual work
-	void Loop() const;
+	void Loop();
 
 public:
 	// ctor
 	CJobTest();
 
 	// dtor
-	~CJobTest() override;
+	virtual ~CJobTest();
 
 	// execution
-	BOOL FExecute(CSchedulerContext *psc) override;
+	virtual BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 	// printer
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 #endif	// GPOS_DEBUG
 
 	// set execution parameters
@@ -119,7 +119,7 @@ public:
 	static CJobTest *
 	PjConvert(CJob *pj)
 	{
-		GPOS_ASSERT(nullptr != pj);
+		GPOS_ASSERT(NULL != pj);
 		GPOS_ASSERT(EjtTest == pj->Ejt());
 
 		return dynamic_cast<CJobTest *>(pj);

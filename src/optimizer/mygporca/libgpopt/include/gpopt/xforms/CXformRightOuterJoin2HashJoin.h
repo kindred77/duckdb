@@ -6,7 +6,7 @@
 //		CXformRightOuterJoin2HashJoin.h
 //
 //	@doc:
-//		Transform right outer join to right outer hash join
+//		Transform left outer join to left outer hash join
 //---------------------------------------------------------------------------
 #ifndef GPOPT_CXformRightOuterJoin2HashJoin_H
 #define GPOPT_CXformRightOuterJoin2HashJoin_H
@@ -24,43 +24,46 @@ using namespace gpos;
 //		CXformRightOuterJoin2HashJoin
 //
 //	@doc:
-//		Transform right outer join to right outer hash join
+//		Transform left outer join to left outer hash join
 //
 //---------------------------------------------------------------------------
 class CXformRightOuterJoin2HashJoin : public CXformImplementation
 {
 private:
-public:
-	CXformRightOuterJoin2HashJoin(const CXformRightOuterJoin2HashJoin &) =
-		delete;
+	// private copy ctor
+	CXformRightOuterJoin2HashJoin(const CXformRightOuterJoin2HashJoin &);
 
+
+public:
 	// ctor
 	explicit CXformRightOuterJoin2HashJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformRightOuterJoin2HashJoin() override = default;
+	virtual ~CXformRightOuterJoin2HashJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfRightOuterJoin2HashJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformRightOuterJoin2HashJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformRightOuterJoin2HashJoin
 

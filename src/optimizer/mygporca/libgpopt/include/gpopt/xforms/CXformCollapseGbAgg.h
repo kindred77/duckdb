@@ -31,35 +31,37 @@ using namespace gpos;
 class CXformCollapseGbAgg : public CXformExploration
 {
 private:
-public:
-	CXformCollapseGbAgg(const CXformCollapseGbAgg &) = delete;
+	// private copy ctor
+	CXformCollapseGbAgg(const CXformCollapseGbAgg &);
 
+public:
 	// ctor
 	explicit CXformCollapseGbAgg(CMemoryPool *mp);
 
 	// dtor
-	~CXformCollapseGbAgg() override = default;
+	virtual ~CXformCollapseGbAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfCollapseGbAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformCollapseGbAgg";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformCollapseGbAgg
 

@@ -32,22 +32,24 @@ using namespace gpopt;
 class CStatsPredArrayCmp : public CStatsPred
 {
 private:
+	// private copy ctor
+	CStatsPredArrayCmp(const CStatsPredArrayCmp &);
+
+	// private assignment operator
+	CStatsPredArrayCmp &operator=(CStatsPredArrayCmp &);
+
 	// comparison type
 	CStatsPred::EStatsCmpType m_stats_cmp_type;
 
 	CPointArray *m_points;
 
 public:
-	CStatsPredArrayCmp &operator=(CStatsPredArrayCmp &) = delete;
-
-	CStatsPredArrayCmp(const CStatsPredArrayCmp &) = delete;
-
 	// ctor
 	CStatsPredArrayCmp(ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
 					   CPointArray *points);
 
 	// dtor
-	~CStatsPredArrayCmp() override
+	virtual ~CStatsPredArrayCmp()
 	{
 		m_points->Release();
 	}
@@ -60,8 +62,8 @@ public:
 	}
 
 	// filter type id
-	EStatsPredType
-	GetPredStatsType() const override
+	virtual EStatsPredType
+	GetPredStatsType() const
 	{
 		return CStatsPred::EsptArrayCmp;
 	}
@@ -76,7 +78,7 @@ public:
 	static CStatsPredArrayCmp *
 	ConvertPredStats(CStatsPred *pred_stats)
 	{
-		GPOS_ASSERT(nullptr != pred_stats);
+		GPOS_ASSERT(NULL != pred_stats);
 		GPOS_ASSERT(CStatsPred::EsptArrayCmp == pred_stats->GetPredStatsType());
 
 		return dynamic_cast<CStatsPredArrayCmp *>(pred_stats);

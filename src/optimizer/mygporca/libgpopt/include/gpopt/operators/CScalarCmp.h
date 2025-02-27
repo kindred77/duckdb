@@ -58,7 +58,7 @@ public:
 			   IMDType::ECmpType cmp_type);
 
 	// dtor
-	~CScalarCmp() override
+	virtual ~CScalarCmp()
 	{
 		m_mdid_op->Release();
 		GPOS_DELETE(m_pstrOp);
@@ -66,8 +66,8 @@ public:
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarCmp;
 	}
@@ -80,28 +80,28 @@ public:
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarCmp";
 	}
 
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -110,7 +110,7 @@ public:
 	BOOL FCommutative() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// name of the comparison operator
 	const CWStringConst *Pstr() const;
@@ -119,23 +119,23 @@ public:
 	IMDId *MdIdOp() const;
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// conversion function
 	static CScalarCmp *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarCmp == pop->Eopid());
 
 		return dynamic_cast<CScalarCmp *>(pop);
 	}
 
 	// get commuted scalar comparision operator
-	virtual CScalarCmp *PopCommutedOp(CMemoryPool *mp);
+	virtual CScalarCmp *PopCommutedOp(CMemoryPool *mp, COperator *pop);
 
 	// get the string representation of a metadata object
 	static CWStringConst *Pstr(CMemoryPool *mp, CMDAccessor *md_accessor,

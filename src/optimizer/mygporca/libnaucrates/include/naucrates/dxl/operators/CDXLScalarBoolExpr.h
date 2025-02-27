@@ -44,40 +44,41 @@ private:
 	// operator type
 	const EdxlBoolExprType m_bool_type;
 
-public:
-	CDXLScalarBoolExpr(const CDXLScalarBoolExpr &) = delete;
+	// private copy ctor
+	CDXLScalarBoolExpr(const CDXLScalarBoolExpr &);
 
+public:
 	// ctor/dtor
 	explicit CDXLScalarBoolExpr(CMemoryPool *mp,
 								const EdxlBoolExprType bool_type);
 
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// BoolExpr operator type
 	EdxlBoolExprType GetDxlBoolTypeStr() const;
 
 	// name of the DXL operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const override;
+	void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// conversion function
 	static CDXLScalarBoolExpr *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarBoolExpr == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarBoolExpr *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return true;
 	}
@@ -85,8 +86,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

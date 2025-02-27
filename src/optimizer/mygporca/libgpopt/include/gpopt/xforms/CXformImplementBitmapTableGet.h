@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CXformImplementBitmapTableGet
@@ -35,36 +35,38 @@ namespace gpopt
 class CXformImplementBitmapTableGet : public CXformImplementation
 {
 private:
-public:
-	CXformImplementBitmapTableGet(const CXformImplementBitmapTableGet &) =
-		delete;
+	// disable copy ctor
+	CXformImplementBitmapTableGet(const CXformImplementBitmapTableGet &);
 
+public:
 	// ctor
 	explicit CXformImplementBitmapTableGet(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementBitmapTableGet() override = default;
+	virtual ~CXformImplementBitmapTableGet()
+	{
+	}
 
 	// identifier
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementBitmapTableGet;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementBitmapTableGet";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformImplementBitmapTableGet
 }  // namespace gpopt

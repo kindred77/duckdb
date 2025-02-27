@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		ICostModelParams.h
@@ -74,7 +74,7 @@ public:
 		}
 
 		// dtor
-		virtual ~SCostParam() = default;
+		virtual ~SCostParam(){};
 
 		// return param identifier
 		ULONG
@@ -131,8 +131,6 @@ public:
 	virtual BOOL Equals(ICostModelParams *pcm) const = 0;
 
 	virtual const CHAR *SzNameLookup(ULONG id) const = 0;
-
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 };
 }  // namespace gpopt
 

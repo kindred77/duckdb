@@ -30,7 +30,7 @@ class CParseHandlerPhysicalOp;
 class CDXLMemoryManager;
 
 // stack of parse handlers
-using ParseHandlerStack = CStack<CParseHandlerBase>;
+typedef CStack<CParseHandlerBase> ParseHandlerStack;
 
 
 //---------------------------------------------------------------------------
@@ -63,10 +63,11 @@ private:
 	// check for aborts at regular intervals
 	void CheckForAborts();
 
+	// private copy ctor
+	CParseHandlerManager(const CParseHandlerManager &);
+
 
 public:
-	CParseHandlerManager(const CParseHandlerManager &) = delete;
-
 	// ctor/dtor
 	CParseHandlerManager(CDXLMemoryManager *, SAX2XMLReader *);
 	~CParseHandlerManager();

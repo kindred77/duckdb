@@ -30,25 +30,27 @@ using namespace gpos;
 class CStatsPredConj : public CStatsPred
 {
 private:
+	// private copy ctor
+	CStatsPredConj(const CStatsPredConj &);
+
+	// private assignment operator
+	CStatsPredConj &operator=(CStatsPredConj &);
+
 	// array of filters
 	CStatsPredPtrArry *m_conj_pred_stats_array;
 
 public:
-	CStatsPredConj &operator=(CStatsPredConj &) = delete;
-
-	CStatsPredConj(const CStatsPredConj &) = delete;
-
 	// ctor
 	explicit CStatsPredConj(CStatsPredPtrArry *pdrgpstatspred);
 
 	// dtor
-	~CStatsPredConj() override
+	virtual ~CStatsPredConj()
 	{
 		m_conj_pred_stats_array->Release();
 	}
 
 	// the column identifier on which the predicates are on
-	ULONG GetColId() const override;
+	virtual ULONG GetColId() const;
 
 	// total number of predicates in the conjunction
 	ULONG
@@ -70,8 +72,8 @@ public:
 	CStatsPred *GetPredStats(ULONG pos) const;
 
 	// filter type id
-	EStatsPredType
-	GetPredStatsType() const override
+	virtual EStatsPredType
+	GetPredStatsType() const
 	{
 		return CStatsPred::EsptConj;
 	}
@@ -80,7 +82,7 @@ public:
 	static CStatsPredConj *
 	ConvertPredStats(CStatsPred *pred_stats)
 	{
-		GPOS_ASSERT(nullptr != pred_stats);
+		GPOS_ASSERT(NULL != pred_stats);
 		GPOS_ASSERT(CStatsPred::EsptConj == pred_stats->GetPredStatsType());
 
 		return dynamic_cast<CStatsPredConj *>(pred_stats);

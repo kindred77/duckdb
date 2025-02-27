@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal, Inc.
 //
 //	@filename:
 //		CHashSet.h
@@ -66,13 +66,14 @@ private:
 		// does hash set element own object?
 		BOOL m_owns_object;
 
-	public:
-		CHashSetElem(const CHashSetElem &) = delete;
+		// private copy ctor
+		CHashSetElem(const CHashSetElem &);
 
+	public:
 		// ctor
 		CHashSetElem(T *value, BOOL fOwn) : m_value(value), m_owns_object(fOwn)
 		{
-			GPOS_ASSERT(nullptr != value);
+			GPOS_ASSERT(NULL != value);
 		}
 
 		// dtor
@@ -111,22 +112,25 @@ private:
 	ULONG m_size;
 
 	// each hash chain is an array of hashset elements
-	using HashSetElemArray = CDynamicPtrArray<CHashSetElem, CleanupDelete>;
+	typedef CDynamicPtrArray<CHashSetElem, CleanupDelete> HashSetElemArray;
 	HashSetElemArray **m_chains;
 
 	// array for elements
 	// We use CleanupNULL because the elements are owned by the hash table
-	using Elements = CDynamicPtrArray<T, CleanupNULL>;
+	typedef CDynamicPtrArray<T, CleanupNULL> Elements;
 	Elements *const m_elements;
 
 	IntPtrArray *const m_filled_chains;
+
+	// private copy ctor
+	CHashSet(const CHashSet<T, HashFn, EqFn, CleanupFn> &);
 
 	// lookup appropriate hash chain in static table, may be NULL if
 	// no elements have been inserted yet
 	HashSetElemArray **
 	GetChain(const T *value) const
 	{
-		GPOS_ASSERT(nullptr != m_chains);
+		GPOS_ASSERT(NULL != m_chains);
 		return &m_chains[HashFn(value) % m_num_chains];
 	}
 
@@ -148,22 +152,20 @@ private:
 	Lookup(const T *value) const
 	{
 		CHashSetElem hse(const_cast<T *>(value), false /*fOwn*/);
-		CHashSetElem *found_hse = nullptr;
+		CHashSetElem *found_hse = NULL;
 		HashSetElemArray **chain = GetChain(value);
-		if (nullptr != *chain)
+		if (NULL != *chain)
 		{
 			found_hse = (*chain)->Find(&hse);
-			GPOS_ASSERT_IMP(nullptr != found_hse, *found_hse == hse);
+			GPOS_ASSERT_IMP(NULL != found_hse, *found_hse == hse);
 		}
 
 		return found_hse;
 	}
 
 public:
-	CHashSet(const CHashSet &) = delete;
-
 	// ctor
-	CHashSet(CMemoryPool *mp, ULONG size = 127)
+	CHashSet<T, HashFn, EqFn, CleanupFn>(CMemoryPool *mp, ULONG size = 127)
 		: m_mp(mp),
 		  m_num_chains(size),
 		  m_size(0),
@@ -177,7 +179,7 @@ public:
 	}
 
 	// dtor
-	~CHashSet() override
+	~CHashSet<T, HashFn, EqFn, CleanupFn>()
 	{
 		// release all hash chains
 		Clear();
@@ -197,7 +199,7 @@ public:
 		}
 
 		HashSetElemArray **chain = GetChain(value);
-		if (nullptr == *chain)
+		if (NULL == *chain)
 		{
 			*chain = GPOS_NEW(m_mp) HashSetElemArray(m_mp);
 			INT chain_idx = HashFn(value) % m_num_chains;
@@ -219,11 +221,11 @@ public:
 	{
 		CHashSetElem hse(const_cast<T *>(value), false /*fOwn*/);
 		HashSetElemArray **chain = GetChain(value);
-		if (nullptr != *chain)
+		if (NULL != *chain)
 		{
 			CHashSetElem *found_hse = (*chain)->Find(&hse);
 
-			return (nullptr != found_hse);
+			return (NULL != found_hse);
 		}
 
 		return false;

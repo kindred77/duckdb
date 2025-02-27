@@ -33,10 +33,31 @@ class CXformSimplifySubquery : public CXformExploration
 {
 private:
 	// definition of simplification function
-	using FnSimplify = BOOL(CMemoryPool *, CExpression *, CExpression **);
+	typedef BOOL(FnSimplify)(CMemoryPool *mp, CExpression *, CExpression **);
 
 	// definition of matching function
-	using FnMatch = BOOL(COperator *);
+	typedef BOOL(FnMatch)(COperator *);
+
+	//---------------------------------------------------------------------------
+	//	@struct:
+	//		SSimplifySubqueryMapping
+	//
+	//	@doc:
+	//		Mapping of a simplify function to matching function
+	//
+	//---------------------------------------------------------------------------
+	struct SSimplifySubqueryMapping
+	{
+		// simplification function
+		FnSimplify *m_pfnsimplify;
+
+		// matching function
+		FnMatch *m_pfnmatch;
+
+	};	// struct SSimplifySubqueryMapping
+
+	// array of mappings
+	static const SSimplifySubqueryMapping m_rgssm[];
 
 	// transform existential subqueries to count(*) subqueries
 	static BOOL FSimplifyExistential(CMemoryPool *mp, CExpression *pexprScalar,
@@ -47,32 +68,28 @@ private:
 									CExpression **ppexprNewScalar);
 
 	// main driver, transform existential/quantified subqueries to count(*) subqueries
-	static BOOL FSimplifySubqueryRecursive(CMemoryPool *mp,
-										   CExpression *pexprScalar,
-										   CExpression **ppexprNewScalar,
-										   FnSimplify *pfnsimplify,
-										   FnMatch *pfnmatch);
+	static BOOL FSimplify(CMemoryPool *mp, CExpression *pexprScalar,
+						  CExpression **ppexprNewScalar,
+						  FnSimplify *pfnsimplify, FnMatch *pfnmatch);
 
-	static CExpression *FSimplifySubquery(CMemoryPool *mp,
-										  CExpression *pexprInput,
-										  FnSimplify *pfnsimplify,
-										  FnMatch *pfnmatch);
+	// private copy ctor
+	CXformSimplifySubquery(const CXformSimplifySubquery &);
 
 public:
-	CXformSimplifySubquery(const CXformSimplifySubquery &) = delete;
-
 	// ctor
 	explicit CXformSimplifySubquery(CExpression *pexprPattern);
 
 	// dtor
-	~CXformSimplifySubquery() override = default;
+	virtual ~CXformSimplifySubquery()
+	{
+	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 
 };	// class CXformSimplifySubquery

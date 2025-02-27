@@ -32,28 +32,31 @@ namespace gpdxl
 class CDXLPhysicalIndexOnlyScan : public CDXLPhysicalIndexScan
 {
 private:
-public:
-	CDXLPhysicalIndexOnlyScan(CDXLPhysicalIndexOnlyScan &) = delete;
+	// private copy ctor
+	CDXLPhysicalIndexOnlyScan(CDXLPhysicalIndexOnlyScan &);
 
+public:
 	//ctor
 	CDXLPhysicalIndexOnlyScan(CMemoryPool *mp, CDXLTableDescr *table_descr,
 							  CDXLIndexDescr *dxl_index_descr,
 							  EdxlIndexScanDirection idx_scan_direction);
 
 	//dtor
-	~CDXLPhysicalIndexOnlyScan() override = default;
+	virtual ~CDXLPhysicalIndexOnlyScan()
+	{
+	}
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// conversion function
 	static CDXLPhysicalIndexOnlyScan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalIndexOnlyScan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalIndexOnlyScan *>(dxl_op);

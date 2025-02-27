@@ -35,30 +35,31 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerLogicalJoin : public CParseHandlerLogicalOp
 {
 private:
+	// private copy ctor
+	CParseHandlerLogicalJoin(const CParseHandlerLogicalJoin &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerLogicalJoin(const CParseHandlerLogicalJoin &) = delete;
-
 	// ctor/dtor
 	CParseHandlerLogicalJoin(CMemoryPool *mp,
 							 CParseHandlerManager *parse_handler_mgr,
 							 CParseHandlerBase *parse_handler_root);
 
-	~CParseHandlerLogicalJoin() override;
+	~CParseHandlerLogicalJoin();
 };
 }  // namespace gpdxl
 

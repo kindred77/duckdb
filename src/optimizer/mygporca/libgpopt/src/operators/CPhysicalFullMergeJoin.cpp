@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2019 VMware, Inc. or its affiliates.
+//	Copyright (C) 2019 Pivotal Software, Inc.
 //
 //	@filename:
 //		CPhysicalFullMergeJoin.cpp
@@ -28,15 +28,15 @@ using namespace gpopt;
 // ctor
 CPhysicalFullMergeJoin::CPhysicalFullMergeJoin(
 	CMemoryPool *mp, CExpressionArray *outer_merge_clauses,
-	CExpressionArray *inner_merge_clauses, IMdIdArray *, BOOL,
+	CExpressionArray *inner_merge_clauses, IMdIdArray *,
 	CXform::EXformId origin_xform)
 	: CPhysicalJoin(mp, origin_xform),
 	  m_outer_merge_clauses(outer_merge_clauses),
 	  m_inner_merge_clauses(inner_merge_clauses)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != outer_merge_clauses);
-	GPOS_ASSERT(nullptr != inner_merge_clauses);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != outer_merge_clauses);
+	GPOS_ASSERT(NULL != inner_merge_clauses);
 	GPOS_ASSERT(outer_merge_clauses->Size() == inner_merge_clauses->Size());
 
 	// There is one request per col, up to the max number of requests
@@ -55,25 +55,24 @@ CPhysicalFullMergeJoin::~CPhysicalFullMergeJoin()
 }
 
 CDistributionSpec *
-CPhysicalFullMergeJoin::PdsRequired(CMemoryPool *mp GPOS_UNUSED,
-									CExpressionHandle &exprhdl GPOS_UNUSED,
-									CDistributionSpec *pdsRequired GPOS_UNUSED,
-									ULONG child_index GPOS_UNUSED,
+CPhysicalFullMergeJoin::PdsRequired(CMemoryPool * /*mp*/,
+									CExpressionHandle & /*exprhdl*/,
+									CDistributionSpec * /*pdsRequired*/,
+									ULONG /*child_index*/,
 									CDrvdPropArray *,  //pdrgpdpCtxt,
-									ULONG ulOptReq GPOS_UNUSED) const
+									ULONG /*ulOptReq*/) const
 {
 	GPOS_RAISE(
 		CException::ExmaInvalid, CException::ExmiInvalid,
 		GPOS_WSZ_LIT(
 			"PdsRequired should not be called for CPhysicalFullMergeJoin"));
-	return nullptr;
+	return NULL;
 }
 
 CEnfdDistribution *
 CPhysicalFullMergeJoin::Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
 							CReqdPropPlan *prppInput, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt GPOS_UNUSED,
-							ULONG ulOptReq)
+							CDrvdPropArray * /*pdrgpdpCtxt*/, ULONG ulOptReq)
 {
 	GPOS_ASSERT(2 > child_index);
 
@@ -218,7 +217,7 @@ CPhysicalFullMergeJoin::EpetOrder(CExpressionHandle &, const CEnfdOrder *
 #endif	// GPOS_DEBUG
 ) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	// merge join is not order-preserving, at least in
@@ -255,24 +254,22 @@ CPhysicalFullMergeJoin::PdsDerive(CMemoryPool *mp,
 
 		// Create a hash spec similar to the outer spec, but with fNullsColocated = false because
 		// nulls appear as the results get computed, so we cannot verify that they will be colocated.
-		CDistributionSpecHashed *pdsDeriveOuter =
-			pdshashedOuter->Copy(mp, false /* fNullsCollocated*/);
+		pdshashedOuter->Pdrgpexpr()->AddRef();
+		CDistributionSpecHashed *pds = GPOS_NEW(mp) CDistributionSpecHashed(
+			pdshashedOuter->Pdrgpexpr(), false /* fNullsCollocated */);
 
 		// NB: Logic is similar to CPhysicalInnerHashJoin::PdsDeriveFromHashedChildren()
 		if (pdshashedOuter->IsCoveredBy(m_outer_merge_clauses) &&
 			pdshashedInner->IsCoveredBy(m_inner_merge_clauses))
 		{
-			CDistributionSpecHashed *pdsDeriveInner =
-				pdshashedInner->Copy(mp, false /* fNullsCollocated*/);
 			CDistributionSpecHashed *pdsCombined =
-				pdsDeriveOuter->Combine(mp, pdsDeriveInner);
-			pdsDeriveOuter->Release();
-			pdsDeriveInner->Release();
+				pds->Combine(mp, pdshashedInner);
+			pds->Release();
 			return pdsCombined;
 		}
 		else
 		{
-			return pdsDeriveOuter;
+			return pds;
 		}
 	}
 

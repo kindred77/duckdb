@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CStatsPredUnsupported.h
@@ -37,11 +37,12 @@ private:
 	CDouble m_default_scale_factor;
 
 	// initialize the scale factor of the predicate
-	static CDouble InitScaleFactor();
+	CDouble InitScaleFactor();
+
+	// private copy ctor
+	CStatsPredUnsupported(const CStatsPredUnsupported &);
 
 public:
-	CStatsPredUnsupported(const CStatsPredUnsupported &) = delete;
-
 	// ctors
 	CStatsPredUnsupported(ULONG colid,
 						  CStatsPred::EStatsCmpType stats_pred_type);
@@ -50,8 +51,8 @@ public:
 						  CDouble default_scale_factor);
 
 	// filter type id
-	CStatsPred::EStatsPredType
-	GetPredStatsType() const override
+	virtual CStatsPred::EStatsPredType
+	GetPredStatsType() const
 	{
 		return CStatsPred::EsptUnsupported;
 	}
@@ -73,7 +74,7 @@ public:
 	static CStatsPredUnsupported *
 	ConvertPredStats(CStatsPred *pred_stats)
 	{
-		GPOS_ASSERT(nullptr != pred_stats);
+		GPOS_ASSERT(NULL != pred_stats);
 		GPOS_ASSERT(CStatsPred::EsptUnsupported ==
 					pred_stats->GetPredStatsType());
 

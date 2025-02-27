@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CConstExprEvaluatorDXL.cpp
@@ -22,7 +22,6 @@
 #include "gpopt/exception.h"
 #include "gpopt/mdcache/CMDAccessor.h"
 #include "gpopt/operators/CExpression.h"
-#include "gpopt/operators/CPredicateUtils.h"
 
 using namespace gpdxl;
 using namespace gpmd;
@@ -42,7 +41,7 @@ CConstExprEvaluatorDXL::CConstExprEvaluatorDXL(
 	CMemoryPool *mp, CMDAccessor *md_accessor,
 	IConstDXLNodeEvaluator *pconstdxleval)
 	: m_pconstdxleval(pconstdxleval),
-	  m_trexpr2dxl(mp, md_accessor, nullptr /*pdrgpiSegments*/,
+	  m_trexpr2dxl(mp, md_accessor, NULL /*pdrgpiSegments*/,
 				   false /*fInitColumnFactory*/),
 	  m_trdxl2expr(mp, md_accessor, false /*fInitColumnFactory*/)
 {
@@ -56,7 +55,9 @@ CConstExprEvaluatorDXL::CConstExprEvaluatorDXL(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CConstExprEvaluatorDXL::~CConstExprEvaluatorDXL() = default;
+CConstExprEvaluatorDXL::~CConstExprEvaluatorDXL()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -70,7 +71,7 @@ CConstExprEvaluatorDXL::~CConstExprEvaluatorDXL() = default;
 CExpression *
 CConstExprEvaluatorDXL::PexprEval(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (!CPredicateUtils::FCompareConstToConstIgnoreCast(pexpr))
 	{
@@ -82,8 +83,8 @@ CConstExprEvaluatorDXL::PexprEval(CExpression *pexpr)
 	GPOS_ASSERT(EdxloptypeScalar ==
 				pdxlnResult->GetOperator()->GetDXLOperatorType());
 
-	CExpression *pexprResult = m_trdxl2expr.PexprTranslateScalar(
-		pdxlnResult, nullptr /*colref_array*/);
+	CExpression *pexprResult =
+		m_trdxl2expr.PexprTranslateScalar(pdxlnResult, NULL /*colref_array*/);
 	pdxlnResult->Release();
 	pdxlnExpr->Release();
 

@@ -30,36 +30,38 @@ using namespace gpos;
 class CXformLeftSemiJoin2CrossProduct : public CXformExploration
 {
 private:
-public:
-	CXformLeftSemiJoin2CrossProduct(const CXformLeftSemiJoin2CrossProduct &) =
-		delete;
+	// private copy ctor
+	CXformLeftSemiJoin2CrossProduct(const CXformLeftSemiJoin2CrossProduct &);
 
+public:
 	// ctor
 	explicit CXformLeftSemiJoin2CrossProduct(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftSemiJoin2CrossProduct() override = default;
+	virtual ~CXformLeftSemiJoin2CrossProduct()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftSemiJoin2CrossProduct;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftSemiJoin2CrossProduct";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftSemiJoin2CrossProduct
 

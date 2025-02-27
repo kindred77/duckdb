@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CLogicalLeftAntiSemiCorrelatedApplyNotIn.h
@@ -33,10 +33,11 @@ class CLogicalLeftAntiSemiCorrelatedApplyNotIn
 	: public CLogicalLeftAntiSemiApplyNotIn
 {
 private:
-public:
+	// private copy ctor
 	CLogicalLeftAntiSemiCorrelatedApplyNotIn(
-		const CLogicalLeftAntiSemiCorrelatedApplyNotIn &) = delete;
+		const CLogicalLeftAntiSemiCorrelatedApplyNotIn &);
 
+public:
 	// ctor
 	explicit CLogicalLeftAntiSemiCorrelatedApplyNotIn(CMemoryPool *mp)
 		: CLogicalLeftAntiSemiApplyNotIn(mp)
@@ -52,18 +53,20 @@ public:
 	}
 
 	// dtor
-	~CLogicalLeftAntiSemiCorrelatedApplyNotIn() override = default;
+	virtual ~CLogicalLeftAntiSemiCorrelatedApplyNotIn()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftAntiSemiCorrelatedApplyNotIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftAntiSemiCorrelatedApplyNotIn";
 	}
@@ -73,29 +76,28 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// return true if operator is a correlated apply
-	BOOL
-	FCorrelated() const override
+	virtual BOOL
+	FCorrelated() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CLogicalLeftAntiSemiCorrelatedApplyNotIn *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftAntiSemiCorrelatedApplyNotIn == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftAntiSemiCorrelatedApplyNotIn *>(pop);

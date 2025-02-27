@@ -37,14 +37,16 @@ using namespace gpopt;
 class CPoint : public CRefCount, public DbgPrintMixin<CPoint>
 {
 private:
+	// private copy ctor
+	CPoint(const CPoint &);
+
+	// private assignment operator
+	CPoint &operator=(CPoint &);
+
 	// datum corresponding to the point
 	IDatum *m_datum;
 
 public:
-	CPoint &operator=(CPoint &) = delete;
-
-	CPoint(const CPoint &) = delete;
-
 	// c'tor
 	explicit CPoint(IDatum *);
 
@@ -80,10 +82,10 @@ public:
 	CDouble Width(const CPoint *, BOOL include_lower, BOOL include_upper) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// d'tor
-	~CPoint() override
+	virtual ~CPoint()
 	{
 		m_datum->Release();
 	}
@@ -99,7 +101,7 @@ public:
 };	// class CPoint
 
 // array of CPoints
-using CPointArray = CDynamicPtrArray<CPoint, CleanupRelease>;
+typedef CDynamicPtrArray<CPoint, CleanupRelease> CPointArray;
 }  // namespace gpnaucrates
 
 #endif	// !GPNAUCRATES_CPoint_H

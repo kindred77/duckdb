@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CExpressionUtils.cpp
@@ -53,10 +53,10 @@ CExpressionUtils::UnnestChild(
 	CExpressionArray *pdrgpexpr	 // array to append results to
 )
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(child_index < pexpr->Arity());
-	GPOS_ASSERT(nullptr != pdrgpexpr);
+	GPOS_ASSERT(NULL != pdrgpexpr);
 
 	CExpression *pexprChild = (*pexpr)[child_index];
 
@@ -93,12 +93,13 @@ void
 CExpressionUtils::AppendChildren(CMemoryPool *mp, CExpression *pexpr,
 								 CExpressionArray *pdrgpexpr)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pexpr);
-	GPOS_ASSERT(nullptr != pdrgpexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pexpr);
+	GPOS_ASSERT(NULL != pdrgpexpr);
 
 	CExpressionArray *pdrgpexprChildren = PdrgpexprUnnestChildren(mp, pexpr);
-	CUtils::AddRefAppend(pdrgpexpr, pdrgpexprChildren);
+	CUtils::AddRefAppend<CExpression, CleanupRelease>(pdrgpexpr,
+													  pdrgpexprChildren);
 	pdrgpexprChildren->Release();
 }
 
@@ -116,8 +117,8 @@ CExpressionUtils::PdrgpexprUnnestChildren(CMemoryPool *mp, CExpression *pexpr)
 {
 	// protect against stack overflow during recursion
 	GPOS_CHECK_STACK_SIZE;
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pexpr);
 
 	// compute flags for cases where we may have nested predicates
 	BOOL fAnd = CPredicateUtils::FAnd(pexpr);
@@ -147,8 +148,8 @@ CExpressionUtils::PexprUnnest(CMemoryPool *mp, CExpression *pexpr)
 {
 	// protect against stack overflow during recursion
 	GPOS_CHECK_STACK_SIZE;
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (CPredicateUtils::FNot(pexpr))
 	{
@@ -188,14 +189,14 @@ CExpressionUtils::PexprUnnest(CMemoryPool *mp, CExpression *pexpr)
 CExpression *
 CExpressionUtils::PexprPushNotOneLevel(CMemoryPool *mp, CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	BOOL fAnd = CPredicateUtils::FAnd(pexpr);
 	BOOL fOr = CPredicateUtils::FOr(pexpr);
 
 	if (fAnd || fOr)
 	{
-		COperator *popNew = nullptr;
+		COperator *popNew = NULL;
 
 		if (fOr)
 		{
@@ -253,8 +254,8 @@ CExpressionUtils::PexprDedupChildren(CMemoryPool *mp, CExpression *pexpr)
 {
 	// protect against stack overflow during recursion
 	GPOS_CHECK_STACK_SIZE;
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pexpr);
 
 	// recursively process children
 	const ULONG arity = pexpr->Arity();
@@ -288,67 +289,5 @@ CExpressionUtils::PexprDedupChildren(CMemoryPool *mp, CExpression *pexpr)
 	COperator *pop = pexpr->Pop();
 	pop->AddRef();
 	return GPOS_NEW(mp) CExpression(mp, pop, pdrgpexprChildren);
-}
-
-// if the expression is a LogicalSelect and contains correlated EXISTS/ANY subqueries,
-// extract those subqueries and return the derived constraint property from subqueries.
-// this is useful when we try to infer and propagate predicates from subquery to outer
-// relation. returns null if the expression doesn't satisfy aforementioned requirements.
-CPropConstraint *
-CExpressionUtils::GetPropConstraintFromSubquery(CMemoryPool *mp,
-												CExpression *pexpr)
-{
-	GPOS_ASSERT(nullptr != pexpr);
-	if (pexpr->Pop()->Eopid() != COperator::EopLogicalSelect)
-	{
-		return nullptr;
-	}
-
-	CExpression *filter = (*pexpr)[1];
-	CExpressionArray *subqueries = GPOS_NEW(mp) CExpressionArray(mp);
-
-	if (CUtils::FCorrelatedExistsAnySubquery(filter))
-	{
-		filter->AddRef();
-		subqueries->Append(filter);
-	}
-	else if (CPredicateUtils::FAnd(filter))
-	{
-		const ULONG arity = filter->Arity();
-		for (ULONG ul = 0; ul < arity; ul++)
-		{
-			CExpression *childFilter = (*filter)[ul];
-			if (CUtils::FCorrelatedExistsAnySubquery(childFilter))
-			{
-				childFilter->AddRef();
-				subqueries->Append(childFilter);
-			}
-		}
-	}
-	else
-	{
-		subqueries->Release();
-		return nullptr;
-	}
-
-	if (subqueries->Size() == 0)
-	{
-		subqueries->Release();
-		return nullptr;
-	}
-
-	CExpression *exprSubquery =
-		CPredicateUtils::PexprConjunction(mp, subqueries);
-	CColRefSetArray *colRefSetArray = nullptr;
-	CConstraint *pcnstr =
-		CConstraint::PcnstrFromScalarExpr(mp, exprSubquery, &colRefSetArray);
-	exprSubquery->Release();
-
-	if (nullptr == pcnstr)
-	{
-		CRefCount::SafeRelease(colRefSetArray);
-		return nullptr;
-	}
-	return GPOS_NEW(mp) CPropConstraint(mp, colRefSetArray, pcnstr);
 }
 // EOF

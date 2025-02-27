@@ -13,7 +13,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CLogicalCTEConsumer.h"
 #include "gpopt/operators/CLogicalSelect.h"
 #include "gpopt/operators/CNormalizer.h"
@@ -71,7 +70,7 @@ CXformInlineCTEConsumerUnderSelect::Transform(CXformContext *pxfctxt,
 											  CXformResult *pxfres,
 											  CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -100,7 +99,7 @@ CXformInlineCTEConsumerUnderSelect::Transform(CXformContext *pxfctxt,
 	CMemoryPool *mp = pxfctxt->Pmp();
 
 	// inline consumer
-	GPOS_ASSERT(nullptr != popConsumer->Phmulcr());
+	GPOS_ASSERT(NULL != popConsumer->Phmulcr());
 	CExpression *pexprInlinedConsumer = popConsumer->PexprInlined();
 	pexprInlinedConsumer->AddRef();
 	pexprScalar->AddRef();

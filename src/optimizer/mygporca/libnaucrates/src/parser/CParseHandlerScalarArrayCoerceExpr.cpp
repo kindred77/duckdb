@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerScalarArrayCoerceExpr.cpp
@@ -63,7 +63,7 @@ CParseHandlerScalarArrayCoerceExpr::StartElement(
 				 CDXLTokens::XmlstrToken(EdxltokenScalarArrayCoerceExpr),
 				 element_local_name))
 	{
-		if (nullptr != m_dxl_node)
+		if (NULL != m_dxl_node)
 		{
 			CWStringDynamic *str = CDXLUtils::CreateDynamicStringFromXMLChArray(
 				m_parse_handler_mgr->GetDXLMemoryManager(), element_local_name);
@@ -85,15 +85,7 @@ CParseHandlerScalarArrayCoerceExpr::StartElement(
 				m_parse_handler_mgr, this);
 		m_parse_handler_mgr->ActivateParseHandler(child_parse_handler);
 
-		// parse handler for exprelem scalar node
-		CParseHandlerBase *exprelem_parse_handler =
-			CParseHandlerFactory::GetParseHandler(
-				m_mp, CDXLTokens::XmlstrToken(EdxltokenScalar),
-				m_parse_handler_mgr, this);
-		m_parse_handler_mgr->ActivateParseHandler(exprelem_parse_handler);
-
 		// store parse handler
-		this->Append(exprelem_parse_handler);
 		this->Append(child_parse_handler);
 	}
 	else
@@ -129,15 +121,12 @@ CParseHandlerScalarArrayCoerceExpr::EndElement(
 		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiDXLUnexpectedTag,
 				   str->GetBuffer());
 	}
-	GPOS_ASSERT(2 == this->Length());
+	GPOS_ASSERT(1 == this->Length());
 
 	// add constructed child from child parse handlers
 	CParseHandlerScalarOp *child_parse_handler =
 		dynamic_cast<CParseHandlerScalarOp *>((*this)[0]);
 	AddChildFromParseHandler(child_parse_handler);
-	CParseHandlerScalarOp *elemexpr_parse_handler =
-		dynamic_cast<CParseHandlerScalarOp *>((*this)[1]);
-	AddChildFromParseHandler(elemexpr_parse_handler);
 
 	// deactivate handler
 	m_parse_handler_mgr->DeactivateHandler();

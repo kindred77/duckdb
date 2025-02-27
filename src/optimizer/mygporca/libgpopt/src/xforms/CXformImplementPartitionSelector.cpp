@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CXformImplementPartitionSelector.cpp
@@ -15,6 +15,7 @@
 
 #include "gpopt/operators/CLogicalPartitionSelector.h"
 #include "gpopt/operators/CPatternLeaf.h"
+#include "gpopt/operators/CPhysicalPartitionSelectorDML.h"
 
 using namespace gpopt;
 
@@ -48,10 +49,10 @@ CXformImplementPartitionSelector::CXformImplementPartitionSelector(
 //---------------------------------------------------------------------------
 void
 CXformImplementPartitionSelector::Transform(CXformContext *pxfctxt,
-											CXformResult *pxfres GPOS_UNUSED,
+											CXformResult *pxfres,
 											CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -74,12 +75,25 @@ CXformImplementPartitionSelector::Transform(CXformContext *pxfctxt,
 	for (ULONG ul = 0; ul < ulLevels; ul++)
 	{
 		CExpression *pexprFilter = popSelector->PexprPartFilter(ul);
-		GPOS_ASSERT(nullptr != pexprFilter);
+		GPOS_ASSERT(NULL != pexprFilter);
 		pexprFilter->AddRef();
-		BOOL fInserted GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+		BOOL fInserted =
+#endif
 			phmulexprFilter->Insert(GPOS_NEW(mp) ULONG(ul), pexprFilter);
 		GPOS_ASSERT(fInserted);
 	}
+
+	// assemble physical operator
+	CPhysicalPartitionSelectorDML *popPhysicalPartitionSelector =
+		GPOS_NEW(mp) CPhysicalPartitionSelectorDML(mp, mdid, phmulexprFilter,
+												   popSelector->PcrOid());
+
+	CExpression *pexprPartitionSelector = GPOS_NEW(mp)
+		CExpression(mp, popPhysicalPartitionSelector, pexprRelational);
+
+	// add alternative to results
+	pxfres->Add(pexprPartitionSelector);
 }
 
 // EOF

@@ -30,53 +30,55 @@ using namespace gpos;
 class CPattern : public COperator
 {
 private:
-public:
-	CPattern(const CPattern &) = delete;
+	// private copy ctor
+	CPattern(const CPattern &);
 
+public:
 	// ctor
 	explicit CPattern(CMemoryPool *mp) : COperator(mp)
 	{
 	}
 
 	// dtor
-	~CPattern() override = default;
+	virtual ~CPattern()
+	{
+	}
 
 	// type of operator
-	BOOL
-	FPattern() const override
+	virtual BOOL
+	FPattern() const
 	{
 		GPOS_ASSERT(!FPhysical() && !FScalar() && !FLogical());
 		return true;
 	}
 
 	// create derived properties container
-	CDrvdProp *PdpCreate(CMemoryPool *mp) const override;
+	virtual CDrvdProp *PdpCreate(CMemoryPool *mp) const;
 
 	// create required properties container
-	CReqdProp *PrpCreate(CMemoryPool *mp) const override;
+	virtual CReqdProp *PrpCreate(CMemoryPool *mp) const;
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// check if operator is a pattern leaf
 	virtual BOOL FLeaf() const = 0;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CPattern *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(pop->FPattern());
 
-		return dynamic_cast<CPattern *>(pop);
+		return reinterpret_cast<CPattern *>(pop);
 	}
 
 	// helper to check multi-node pattern

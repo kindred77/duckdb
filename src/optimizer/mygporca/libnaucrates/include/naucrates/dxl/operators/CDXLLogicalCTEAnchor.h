@@ -31,17 +31,18 @@ private:
 	// cte id
 	ULONG m_id;
 
-public:
-	CDXLLogicalCTEAnchor(CDXLLogicalCTEAnchor &) = delete;
+	// private copy ctor
+	CDXLLogicalCTEAnchor(CDXLLogicalCTEAnchor &);
 
+public:
 	// ctor
 	CDXLLogicalCTEAnchor(CMemoryPool *mp, ULONG id);
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// cte identifier
 	ULONG
@@ -51,21 +52,21 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLLogicalCTEAnchor *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalCTEAnchor == dxl_op->GetDXLOperator());
 		return dynamic_cast<CDXLLogicalCTEAnchor *>(dxl_op);
 	}

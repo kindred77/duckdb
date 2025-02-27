@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLLogicalCTAS.h
@@ -67,6 +67,9 @@ private:
 	// is this a temporary table
 	BOOL m_is_temp_table;
 
+	// does table have oids
+	BOOL m_has_oids;
+
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
 
@@ -77,9 +80,10 @@ private:
 	// typemod records type-specific, e.g. the maximum length of a character column
 	IntPtrArray *m_vartypemod_array;
 
-public:
-	CDXLLogicalCTAS(const CDXLLogicalCTAS &) = delete;
+	// private copy ctor
+	CDXLLogicalCTAS(const CDXLLogicalCTAS &);
 
+public:
 	// ctor
 	CDXLLogicalCTAS(CMemoryPool *mp, IMDId *mdid, CMDName *mdname_schema,
 					CMDName *mdname_rel, CDXLColDescrArray *dxl_col_descr_array,
@@ -87,19 +91,19 @@ public:
 					IMDRelation::Ereldistrpolicy rel_distr_policy,
 					ULongPtrArray *distr_column_pos_array,
 					IMdIdArray *distr_opfamilies, IMdIdArray *distr_opclasses,
-					BOOL fTemporary,
+					BOOL fTemporary, BOOL fHasOids,
 					IMDRelation::Erelstoragetype rel_storage_type,
 					ULongPtrArray *src_colids_array,
 					IntPtrArray *vartypemod_array);
 
 	// dtor
-	~CDXLLogicalCTAS() override;
+	virtual ~CDXLLogicalCTAS();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// mdid of table to create
 	IMDId *
@@ -185,6 +189,13 @@ public:
 		return m_is_temp_table;
 	}
 
+	// does the table have oids
+	BOOL
+	HasOids() const
+	{
+		return m_has_oids;
+	}
+
 	// CTAS storage options
 	CDXLCtasStorageOptions *
 	GetDxlCtasStorageOption() const
@@ -195,22 +206,21 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// check if given column is defined by operator
-	BOOL IsColDefined(ULONG colid) const override;
+	virtual BOOL IsColDefined(ULONG colid) const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLLogicalCTAS *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalCTAS == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalCTAS *>(dxl_op);

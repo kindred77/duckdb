@@ -32,9 +32,9 @@ using namespace gpopt;
 CPhysicalRightOuterHashJoin::CPhysicalRightOuterHashJoin(
 	CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
 	CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-	BOOL is_null_aware, CXform::EXformId origin_xform)
+	CXform::EXformId origin_xform)
 	: CPhysicalHashJoin(mp, pdrgpexprOuterKeys, pdrgpexprInnerKeys,
-						hash_opfamilies, is_null_aware, origin_xform)
+						hash_opfamilies, origin_xform)
 {
 	ULONG ulDistrReqs = 1 + NumDistrReq();
 	SetDistrRequests(ulDistrReqs);
@@ -50,7 +50,41 @@ CPhysicalRightOuterHashJoin::CPhysicalRightOuterHashJoin(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalRightOuterHashJoin::~CPhysicalRightOuterHashJoin() = default;
+CPhysicalRightOuterHashJoin::~CPhysicalRightOuterHashJoin()
+{
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalRightOuterHashJoin::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalRightOuterHashJoin::PppsRequired(
+	CMemoryPool *mp, CExpressionHandle &exprhdl,
+	CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+	CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq)
+{
+	// This is identical to the inner join partition request
+	if (1 == ulOptReq)
+	{
+		// request (1): push partition propagation requests to join's children,
+		// do not consider possible dynamic partition elimination using join predicate here,
+		// this is handled by optimization request (0) below
+		return CPhysical::PppsRequiredPushThruNAry(mp, exprhdl, pppsRequired,
+												   child_index);
+	}
+
+	// request (0): push partition progagation requests to join child considering
+	// DPE possibility. For HJ, PS request is pushed to the inner child if there
+	// is a consumer (DTS) on the outer side of the join.
+	GPOS_ASSERT(0 == ulOptReq);
+	return PppsRequiredJoinChild(mp, exprhdl, pppsRequired, child_index,
+								 pdrgpdpCtxt, false);
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -119,24 +153,5 @@ CPhysicalRightOuterHashJoin::CreateOptRequests(CMemoryPool *mp)
 	SetDistrRequests(ulDistrReqs);
 
 	SetPartPropagateRequests(2);
-}
-
-CPartitionPropagationSpec *
-CPhysicalRightOuterHashJoin::PppsRequired(
-	CMemoryPool *mp, CExpressionHandle &exprhdl,
-	CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-	CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const
-{
-	return PppsRequiredForJoins(mp, exprhdl, pppsRequired, child_index,
-								pdrgpdpCtxt, ulOptReq);
-}
-
-// In the following function, we are generating the Derived property :
-// "Partition Propagation Spec" of Right Outer Hash join.
-CPartitionPropagationSpec *
-CPhysicalRightOuterHashJoin::PppsDerive(CMemoryPool *mp,
-										CExpressionHandle &exprhdl) const
-{
-	return PppsDeriveForJoins(mp, exprhdl);
 }
 // EOF

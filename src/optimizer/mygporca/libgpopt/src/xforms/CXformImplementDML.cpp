@@ -66,7 +66,7 @@ void
 CXformImplementDML::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 							  CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -86,9 +86,10 @@ CXformImplementDML::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	pbsModified->AddRef();
 
 	CColRef *pcrAction = popDML->PcrAction();
+	CColRef *pcrTableOid = popDML->PcrTableOid();
 	CColRef *pcrCtid = popDML->PcrCtid();
 	CColRef *pcrSegmentId = popDML->PcrSegmentId();
-	BOOL fSplit = popDML->FSplit();
+	CColRef *pcrTupleOid = popDML->PcrTupleOid();
 
 	// child of DML operator
 	CExpression *pexprChild = (*pexpr)[0];
@@ -97,9 +98,9 @@ CXformImplementDML::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	// create physical DML
 	CExpression *pexprAlt = GPOS_NEW(mp) CExpression(
 		mp,
-		GPOS_NEW(mp)
-			CPhysicalDML(mp, edmlop, ptabdesc, pdrgpcrSource, pbsModified,
-						 pcrAction, pcrCtid, pcrSegmentId, fSplit),
+		GPOS_NEW(mp) CPhysicalDML(mp, edmlop, ptabdesc, pdrgpcrSource,
+								  pbsModified, pcrAction, pcrTableOid, pcrCtid,
+								  pcrSegmentId, pcrTupleOid),
 		pexprChild);
 	// add alternative to transformation result
 	pxfres->Add(pexprAlt);

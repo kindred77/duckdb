@@ -58,6 +58,7 @@ enum Edxltoken
 	EdxltokenCostModelType,
 	EdxltokenSegmentsForCosting,
 	EdxltokenHint,
+	EdxltokenMinNumOfPartsToRequireSortOnInsert,
 	EdxltokenJoinArityForAssociativityCommutativity,
 	EdxltokenArrayExpansionThreshold,
 	EdxltokenJoinOrderDPThreshold,
@@ -65,7 +66,6 @@ enum Edxltoken
 	EdxltokenEnforceConstraintsOnDML,
 	EdxltokenPushGroupByBelowSetopThreshold,
 	EdxltokenXformBindThreshold,
-	EdxltokenSkewFactor,
 	EdxltokenMaxStatsBuckets,
 	EdxltokenWindowOids,
 	EdxltokenOidRowNumber,
@@ -87,7 +87,8 @@ enum Edxltoken
 	EdxltokenPhysicalTableScan,
 	EdxltokenPhysicalBitmapTableScan,
 	EdxltokenPhysicalDynamicBitmapTableScan,
-	EdxltokenPhysicalForeignScan,
+	EdxltokenPhysicalExternalScan,
+	EdxltokenPhysicalMultiExternalScan,
 	EdxltokenPhysicalIndexScan,
 	EdxltokenPhysicalIndexOnlyScan,
 	EdxltokenPhysicalHashJoin,
@@ -106,14 +107,13 @@ enum Edxltoken
 	EdxltokenPhysicalAggregate,
 	EdxltokenPhysicalAppend,
 	EdxltokenPhysicalMaterialize,
-	EdxltokenPhysicalDynamicForeignScan,
 	EdxltokenPhysicalSequence,
 	EdxltokenPhysicalDynamicTableScan,
 	EdxltokenPhysicalDynamicIndexScan,
 	EdxltokenPhysicalTVF,
 	EdxltokenPhysicalWindow,
 	EdxltokenPhysicalPartitionSelector,
-	EdxltokenPhysicalPartitionSelectorId,
+	EdxltokenPhysicalPartitionSelectorLevels,
 	EdxltokenPhysicalPartitionSelectorScanId,
 	EdxltokenPhysicalValuesScan,
 
@@ -213,11 +213,20 @@ enum Edxltoken
 	EdxltokenScalarOpList,
 
 	EdxltokenPartLevelEqFilterList,
+	EdxltokenPartLevelEqFilterElemList,
 	EdxltokenPartLevelFilterList,
 	EdxltokenPartLevel,
+	EdxltokenScalarPartOid,
 	EdxltokenScalarPartDefault,
+	EdxltokenScalarPartBound,
+	EdxltokenScalarPartBoundLower,
+	EdxltokenScalarPartBoundInclusion,
+	EdxltokenScalarPartBoundOpen,
+	EdxltokenScalarPartListValues,
+	EdxltokenScalarPartListNullTest,
 	EdxltokenScalarResidualFilter,
-	EdxltokenScalarPartFilterExpr,
+	EdxltokenScalarPropagationExpr,
+	EdxltokenScalarPrintableFilter,
 	EdxltokenScalarBitmapIndexProbe,
 	EdxltokenScalarValuesList,
 
@@ -233,7 +242,6 @@ enum Edxltoken
 	EdxltokenWindowFrameSpec,
 	EdxltokenWindowFSRow,
 	EdxltokenWindowFSRange,
-	EdxltokenWindowFSGroups,
 
 	EdxltokenWindowLeadingBoundary,
 	EdxltokenWindowTrailingBoundary,
@@ -251,12 +259,6 @@ enum Edxltoken
 	EdxltokenWindowESCurrentRow,
 	EdxltokenWindowESGroup,
 	EdxltokenWindowESTies,
-
-	EdxltokenWindowStartInRangeOid,
-	EdxltokenWindowEndInRangeOid,
-	EdxltokenWindowInRangeColl,
-	EdxltokenWindowInRangeAsc,
-	EdxltokenWindowInRangeNullsFirst,
 
 	EdxltokenWindowrefOid,
 	EdxltokenWindowrefDistinct,
@@ -279,6 +281,7 @@ enum Edxltoken
 	EdxltokenTypeMod,
 	EdxltokenCoercionForm,
 	EdxltokenLocation,
+	EdxltokenElementFunc,
 	EdxltokenIsExplicit,
 
 	EdxltokenJoinType,
@@ -300,8 +303,8 @@ enum Edxltoken
 
 	EdxltokenAggrefOid,
 	EdxltokenAggrefDistinct,
-	EdxltokenAggrefArgTypes,
 	EdxltokenAggrefKind,
+	EdxltokenAggrefGpAggOid,
 	EdxltokenAggrefStage,
 	EdxltokenAggrefLookups,
 	EdxltokenAggrefStageNormal,
@@ -359,13 +362,14 @@ enum Edxltoken
 	EdxltokenCmaxColName,
 	EdxltokenTableOidColName,
 	EdxltokenGpSegmentIdColName,
-	EdxltokenGpForeignServerColName,
 
 	EdxltokenActionColId,
+	EdxltokenOidColId,
 	EdxltokenCtidColId,
 	EdxltokenGpSegmentIdColId,
 	EdxltokenTupleOidColId,
-	EdxltokenSplitUpdate,
+	EdxltokenUpdatePreservesOids,
+	EdxltokenInputSorted,
 
 	EdxltokenInputSegments,
 	EdxltokenOutputSegments,
@@ -379,7 +383,6 @@ enum Edxltoken
 
 	EdxltokenAppendIsTarget,
 	EdxltokenAppendIsZapped,
-	EdxltokenSelectorIds,
 
 	EdxltokenOpNo,
 	EdxltokenOpName,
@@ -393,7 +396,6 @@ enum Edxltoken
 
 	EdxltokenFuncId,
 	EdxltokenFuncRetSet,
-	EdxltokenFuncVariadic,
 
 
 	EdxltokenSortOpId,
@@ -441,15 +443,14 @@ enum Edxltoken
 
 	// metadata-related constants
 	EdxltokenRelation,
+	EdxltokenRelationExternal,
 	EdxltokenRelationCTAS,
 	EdxltokenName,
 	EdxltokenSchema,
 	EdxltokenTablespace,
 	EdxltokenOid,
-	EdxltokenKind,
 	EdxltokenVersion,
 	EdxltokenMdid,
-	EdxltokenLockMode,
 	EdxltokenMDTypeRequest,
 	EdxltokenTypeInfo,
 	EdxltokenFuncInfo,
@@ -457,34 +458,25 @@ enum Edxltoken
 	EdxltokenRelationStats,
 	EdxltokenColumnStats,
 	EdxltokenColumnStatsBucket,
-	EdxltokenRelationExtendedStats,
-	EdxltokenExtendedStats,
-	EdxltokenExtendedStatsInfo,
-	EdxltokenMVDependencyList,
-	EdxltokenMVDependency,
-	EdxltokenMVNDistinctList,
-	EdxltokenMVNDistinct,
-	EdxltokenDegree,
-	EdxltokenFrom,
-	EdxltokenTo,
 	EdxltokenEmptyRelation,
 	EdxltokenIsNull,
 	EdxltokenLintValue,
 	EdxltokenDoubleValue,
-	EdxltokenAssignedQueryIdForTargetRel,
 
 	EdxltokenRelTemporary,
+	EdxltokenRelHasOids,
 
 	EdxltokenRelStorageType,
 	EdxltokenRelStorageHeap,
 	EdxltokenRelStorageAppendOnlyCols,
 	EdxltokenRelStorageAppendOnlyRows,
-	EdxltokenRelStorageMixedPartitioned,
-	EdxltokenRelStorageForeign,
-	EdxltokenRelStorageCompositeType,
+	EdxltokenRelStorageAppendOnlyParquet,
+	EdxltokenRelStorageVirtual,
+	EdxltokenRelStorageExternal,
 
 	EdxltokenPartKeys,
 	EdxltokenPartTypes,
+	EdxltokenNumLeafPartitions,
 
 	EdxltokenRelDistrPolicy,
 	EdxltokenRelDistrMasterOnly,
@@ -499,7 +491,12 @@ enum Edxltoken
 	EdxltokenRelDistrOpclasses,
 	EdxltokenRelDistrOpclass,
 
-	EdxltokenRelForeignServer,
+	EdxltokenRelExternalPartitions,
+	EdxltokenRelExternalPartition,
+
+	EdxltokenExtRelRejLimit,
+	EdxltokenExtRelRejLimitInRows,
+	EdxltokenExtRelFmtErrRel,
 
 	EdxltokenMetadataColumns,
 	EdxltokenMetadataColumn,
@@ -513,9 +510,9 @@ enum Edxltoken
 	EdxltokenIndexIncludedCols,
 	EdxltokenIndexClustered,
 	EdxltokenIndexPartial,
+	EdxltokenIndexPhysicalType,
 	EdxltokenIndexType,
 	EdxltokenIndexTypeBtree,
-	EdxltokenIndexTypeHash,
 	EdxltokenIndexTypeBitmap,
 	EdxltokenIndexTypeGist,
 	EdxltokenIndexTypeGin,
@@ -541,6 +538,7 @@ enum Edxltoken
 	EdxltokenCheckConstraints,
 	EdxltokenCheckConstraint,
 	EdxltokenPartConstraint,
+	EdxltokenPartConstraintExprAbsent,
 	EdxltokenDefaultPartition,
 	EdxltokenPartConstraintUnbounded,
 
@@ -555,7 +553,6 @@ enum Edxltoken
 	EdxltokenMDTypeByValue,
 	EdxltokenMDTypeDistrOpfamily,
 	EdxltokenMDTypeLegacyDistrOpfamily,
-	EdxltokenMDTypePartOpfamily,
 	EdxltokenMDTypeEqOp,
 	EdxltokenMDTypeNEqOp,
 	EdxltokenMDTypeLTOp,
@@ -598,12 +595,27 @@ enum Edxltoken
 	EdxltokenReturnsNullOnNullInput,
 	EdxltokenIsNDVPreserving,
 
+	EdxltokenTriggers,
+	EdxltokenTrigger,
+
+	EdxltokenGPDBTrigger,
+	EdxltokenGPDBTriggerRow,
+	EdxltokenGPDBTriggerBefore,
+	EdxltokenGPDBTriggerInsert,
+	EdxltokenGPDBTriggerDelete,
+	EdxltokenGPDBTriggerUpdate,
+	EdxltokenGPDBTriggerEnabled,
+
 	EdxltokenGPDBFunc,
 	EdxltokenGPDBFuncStability,
 	EdxltokenGPDBFuncStable,
 	EdxltokenGPDBFuncImmutable,
 	EdxltokenGPDBFuncVolatile,
-
+	EdxltokenGPDBFuncDataAccess,
+	EdxltokenGPDBFuncNoSQL,
+	EdxltokenGPDBFuncContainsSQL,
+	EdxltokenGPDBFuncReadsSQLData,
+	EdxltokenGPDBFuncModifiesSQLData,
 	EdxltokenGPDBFuncResultTypeId,
 	EdxltokenGPDBFuncReturnsSet,
 	EdxltokenGPDBFuncStrict,
@@ -615,7 +627,6 @@ enum Edxltoken
 	EdxltokenGPDBCastSrcType,
 	EdxltokenGPDBCastDestType,
 	EdxltokenGPDBCastFuncId,
-	EdxltokenGPDBCastSrcElemType,
 	EdxltokenGPDBCastCoercePathType,
 	EdxltokenGPDBArrayCoerceCast,
 
@@ -623,7 +634,6 @@ enum Edxltoken
 
 	EdxltokenGPDBAgg,
 	EdxltokenGPDBIsAggOrdered,
-	EdxltokenGPDBIsAggRepSafe,
 	EdxltokenGPDBAggResultTypeId,
 	EdxltokenGPDBAggIntermediateResultTypeId,
 	EdxltokenGPDBAggSplittable,
@@ -636,7 +646,7 @@ enum Edxltoken
 	EdxltokenQueryOutput,
 	EdxltokenLogical,
 	EdxltokenLogicalGet,
-	EdxltokenLogicalForeignGet,
+	EdxltokenLogicalExternalGet,
 	EdxltokenLogicalProject,
 	EdxltokenLogicalSelect,
 	EdxltokenLogicalJoin,
@@ -664,6 +674,7 @@ enum Edxltoken
 	EdxltokenDirectDispatchIsRaw,
 	EdxltokenDirectDispatchKeyValue,
 	EdxltokenPhysicalSplit,
+	EdxltokenPhysicalRowTrigger,
 	EdxltokenPhysicalAssert,
 
 	EdxltokenErrorCode,
@@ -732,10 +743,6 @@ enum Edxltoken
 	EdxltokenCtasOptionType,
 	EdxltokenVarTypeModList,
 
-	EdxltokenIndexTypeBrin,
-
-	EdxltokenForeignServerOid,
-
 	EdxltokenSentinel
 };
 
@@ -760,11 +767,13 @@ private:
 	// element for mapping Edxltoken to CWStringConst
 	struct SStrMapElem
 	{
-		Edxltoken m_edxlt{EdxltokenSentinel};
-		CWStringConst *m_pstr{nullptr};
+		Edxltoken m_edxlt;
+		CWStringConst *m_pstr;
 
 		// ctor
-		SStrMapElem() = default;
+		SStrMapElem() : m_edxlt(EdxltokenSentinel), m_pstr(NULL)
+		{
+		}
 
 		// ctor
 		SStrMapElem(Edxltoken edxlt, CWStringConst *str)
@@ -784,18 +793,20 @@ private:
 	// element for mapping Edxltoken to XML string
 	struct SXMLStrMapElem
 	{
-		Edxltoken m_edxlt{EdxltokenSentinel};
-		XMLCh *m_xmlsz{nullptr};
+		Edxltoken m_edxlt;
+		XMLCh *m_xmlsz;
 
 		// ctor
-		SXMLStrMapElem() = default;
+		SXMLStrMapElem() : m_edxlt(EdxltokenSentinel), m_xmlsz(NULL)
+		{
+		}
 
 		// ctor
 		SXMLStrMapElem(Edxltoken edxlt, XMLCh *xml_val)
 			: m_edxlt(edxlt), m_xmlsz(xml_val)
 		{
 			GPOS_ASSERT(edxlt < EdxltokenSentinel);
-			GPOS_ASSERT(nullptr != xml_val);
+			GPOS_ASSERT(NULL != xml_val);
 		}
 
 		//dtor

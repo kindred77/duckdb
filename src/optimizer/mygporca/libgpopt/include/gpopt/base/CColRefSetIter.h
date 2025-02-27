@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2009 Cloudberry, Inc.
+//	Copyright (C) 2009 Greenplum, Inc.
 //
 //	@filename:
 //		CColRefSetIter.h
@@ -47,7 +47,9 @@ public:
 	explicit CColRefSetIter(const CColRefSet &bs);
 
 	// dtor
-	~CColRefSetIter() = default;
+	~CColRefSetIter()
+	{
+	}
 
 	// current colref
 	CColRef *Pcr() const;

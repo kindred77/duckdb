@@ -42,19 +42,22 @@ private:
 	void SerializeHeader(COstream &oos);
 
 	// serialize footer
-	static void SerializeFooter(COstream &oos);
+	void SerializeFooter(COstream &oos);
+
+	// private copy ctor
+	CSerializableMDAccessor(const CSerializableMDAccessor &);
 
 public:
-	CSerializableMDAccessor(const CSerializableMDAccessor &) = delete;
-
 	// ctor
 	explicit CSerializableMDAccessor(CMDAccessor *md_accessor);
 
 	// dtor
-	~CSerializableMDAccessor() override = default;
+	virtual ~CSerializableMDAccessor()
+	{
+	}
 
 	// serialize object to passed stream
-	void Serialize(COstream &oos) override;
+	virtual void Serialize(COstream &oos);
 
 };	// class CSerializableMDAccessor
 }  // namespace gpopt

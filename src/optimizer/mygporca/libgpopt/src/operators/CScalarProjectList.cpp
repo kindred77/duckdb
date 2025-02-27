@@ -19,7 +19,6 @@
 #include "gpopt/operators/CExpressionHandle.h"
 #include "gpopt/operators/CScalarWindowFunc.h"
 #include "gpopt/xforms/CXformUtils.h"
-#include "naucrates/md/CMDTypeInt4GPDB.h"
 
 
 using namespace gpopt;
@@ -84,7 +83,7 @@ CScalarProjectList::UlDistinctAggs(CExpressionHandle &exprhdl)
 	// exact are subqueries. This is better than just returning 0 for project lists with subqueries.
 	CExpression *pexprPrjList = exprhdl.PexprScalarRep();
 
-	GPOS_ASSERT(nullptr != pexprPrjList);
+	GPOS_ASSERT(NULL != pexprPrjList);
 	GPOS_ASSERT(COperator::EopScalarProjectList ==
 				pexprPrjList->Pop()->Eopid());
 
@@ -127,7 +126,7 @@ CScalarProjectList::UlOrderedAggs(CExpressionHandle &exprhdl)
 	// exact are subqueries. This is better than just returning 0 for project lists with subqueries.
 	CExpression *pexprPrjList = exprhdl.PexprScalarRep();
 
-	GPOS_ASSERT(nullptr != pexprPrjList);
+	GPOS_ASSERT(NULL != pexprPrjList);
 	GPOS_ASSERT(COperator::EopScalarProjectList ==
 				pexprPrjList->Pop()->Eopid());
 
@@ -178,7 +177,7 @@ CScalarProjectList::FHasMultipleDistinctAggs(CExpressionHandle &exprhdl)
 	}
 
 	CAutoMemoryPool amp;
-	ExprToExprArrayMap *phmexprdrgpexpr = nullptr;
+	ExprToExprArrayMap *phmexprdrgpexpr = NULL;
 	ULONG ulDifferentDQAs = 0;
 	CXformUtils::MapPrjElemsWithDistinctAggs(
 		amp.Pmp(), pexprPrjList, &phmexprdrgpexpr, &ulDifferentDQAs);
@@ -205,7 +204,7 @@ CScalarProjectList::FHasScalarFunc(CExpressionHandle &exprhdl)
 	// exact are subqueries. This is better than just returning 0 for project lists with subqueries.
 	CExpression *pexprPrjList = exprhdl.PexprScalarRep();
 
-	GPOS_ASSERT(nullptr != pexprPrjList);
+	GPOS_ASSERT(NULL != pexprPrjList);
 	GPOS_ASSERT(COperator::EopScalarProjectList ==
 				pexprPrjList->Pop()->Eopid());
 
@@ -225,47 +224,5 @@ CScalarProjectList::FHasScalarFunc(CExpressionHandle &exprhdl)
 	return false;
 }
 
-
-//---------------------------------------------------------------------------
-//	@function:
-//		CScalarProjectList::FContainsOnlyReplicationSafeAggFuncs
-//
-//	@doc:
-//		Check if given project list contains only replication safe agg funcs,
-//      which allows it to be executed safely on replicated slices.
-//
-//---------------------------------------------------------------------------
-BOOL
-CScalarProjectList::FContainsOnlyReplicationSafeAggFuncs(
-	CExpressionHandle &exprhdl)
-{
-	// We make do with an inexact representative expression returned by exprhdl.PexprScalarRep(),
-	// knowing that at this time, aggregate functions are accurately contained in it. What's not
-	// exact are subqueries. This is better than just returning 0 for project lists with subqueries.
-	CExpression *pexprPrjList = exprhdl.PexprScalarRep();
-
-	GPOS_ASSERT(nullptr != pexprPrjList);
-	GPOS_ASSERT(COperator::EopScalarProjectList ==
-				pexprPrjList->Pop()->Eopid());
-
-	const ULONG arity = pexprPrjList->Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
-	{
-		CExpression *pexprPrjEl = (*pexprPrjList)[ul];
-		CExpression *pexprAggFunc = (*pexprPrjEl)[0];
-		if (EopScalarAggFunc != pexprAggFunc->Pop()->Eopid())
-		{
-			continue;
-		}
-		CScalarAggFunc *popScAggFunc =
-			CScalarAggFunc::PopConvert(pexprAggFunc->Pop());
-		if (!popScAggFunc->FRepSafe())
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
 
 // EOF

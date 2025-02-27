@@ -66,11 +66,12 @@ private:
 	struct SBucket
 	{
 	private:
-	public:
-		SBucket(const SBucket &) = delete;
+		// no copy ctor
+		SBucket(const SBucket &);
 
+	public:
 		// ctor
-		SBucket() = default;
+		SBucket(){};
 
 		// hash chain
 		CList<T> m_chain;
@@ -85,13 +86,13 @@ private:
 	SBucket *m_buckets;
 
 	// number of ht buckets
-	ULONG m_nbuckets{0};
+	ULONG m_nbuckets;
 
 	// number of ht entries
-	ULONG_PTR m_size{0};
+	ULONG_PTR m_size;
 
 	// offset of key
-	ULONG m_key_offset{gpos::ulong_max};
+	ULONG m_key_offset;
 
 	// invalid key - needed for iteration
 	const K *m_invalid_key;
@@ -141,20 +142,22 @@ private:
 
 public:
 	// type definition of function used to cleanup element
-	using DestroyEntryFuncPtr = void (*)(T *);
+	typedef void (*DestroyEntryFuncPtr)(T *);
 
 	// ctor
-	CSyncHashtable()
-		: m_buckets(nullptr),
-
-		  m_invalid_key(nullptr)
+	CSyncHashtable<T, K>()
+		: m_buckets(NULL),
+		  m_nbuckets(0),
+		  m_size(0),
+		  m_key_offset(gpos::ulong_max),
+		  m_invalid_key(NULL)
 	{
 	}
 
 	// dtor
 	// deallocates hashtable internals, does not destroy
 	// client objects
-	~CSyncHashtable()
+	~CSyncHashtable<T, K>()
 	{
 		Cleanup();
 	}
@@ -165,11 +168,11 @@ public:
 		 const K *invalid_key, ULONG (*func_hash)(const K &),
 		 BOOL (*func_equal)(const K &, const K &))
 	{
-		GPOS_ASSERT(nullptr == m_buckets);
+		GPOS_ASSERT(NULL == m_buckets);
 		GPOS_ASSERT(0 == m_nbuckets);
-		GPOS_ASSERT(nullptr != invalid_key);
-		GPOS_ASSERT(nullptr != func_hash);
-		GPOS_ASSERT(nullptr != func_equal);
+		GPOS_ASSERT(NULL != invalid_key);
+		GPOS_ASSERT(NULL != func_hash);
+		GPOS_ASSERT(NULL != func_equal);
 
 		m_nbuckets = size;
 		m_key_offset = key_offset;
@@ -203,7 +206,7 @@ public:
 	Cleanup()
 	{
 		GPOS_DELETE_ARRAY(m_buckets);
-		m_buckets = nullptr;
+		m_buckets = NULL;
 
 		m_nbuckets = 0;
 	}
@@ -215,22 +218,22 @@ public:
 		// need to suspend cancellation while cleaning up
 		CAutoSuspendAbort asa;
 
-		T *value = nullptr;
+		T *value = NULL;
 		CSyncHashtableIter<T, K> it(*this);
 
 		// since removing an entry will automatically advance iter's
 		// position, we need to make sure that advance iter is called
 		// only when we do not have an entry to delete
-		while (nullptr != value || it.Advance())
+		while (NULL != value || it.Advance())
 		{
-			if (nullptr != value)
+			if (NULL != value)
 			{
 				pfunc_destroy(value);
 			}
 
 			{
 				CSyncHashtableAccessByIter<T, K> acc(it);
-				if (nullptr != (value = acc.Value()))
+				if (NULL != (value = acc.Value()))
 				{
 					acc.Remove(value);
 				}

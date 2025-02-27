@@ -35,13 +35,13 @@ class CDrvdPropPlan;
 class CCostContext;
 
 // array of cost contexts
-using CCostContextArray = CDynamicPtrArray<CCostContext, CleanupRelease>;
+typedef CDynamicPtrArray<CCostContext, CleanupRelease> CCostContextArray;
 
 // cost context pointer definition
-using COSTCTXT_PTR = CCostContext *;
+typedef CCostContext *COSTCTXT_PTR;
 
 // cost context pointer definition
-using CONST_COSTCTXT_PTR = const CCostContext *;
+typedef const CCostContext *CONST_COSTCTXT_PTR;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -111,9 +111,10 @@ private:
 										  CONST_COSTCTXT_PTR *ppccPrefered,
 										  BOOL *pfTiesResolved);
 
-public:
-	CCostContext(const CCostContext &) = delete;
+	// private copy ctor
+	CCostContext(const CCostContext &);
 
+public:
 	// main optimization context
 	COptimizationContext *m_poc;
 
@@ -125,7 +126,7 @@ public:
 				 CGroupExpression *pgexpr);
 
 	// dtor
-	~CCostContext() override;
+	virtual ~CCostContext();
 
 	// main optimization context accessor
 	COptimizationContext *
@@ -236,8 +237,8 @@ public:
 	void
 	SetChildContexts(COptimizationContextArray *pdrgpoc)
 	{
-		GPOS_ASSERT(nullptr == m_pdrgpoc);
-		GPOS_ASSERT(nullptr != pdrgpoc);
+		GPOS_ASSERT(NULL == m_pdrgpoc);
+		GPOS_ASSERT(NULL != pdrgpoc);
 
 		m_pdrgpoc = pdrgpoc;
 	}
@@ -256,25 +257,19 @@ public:
 	BOOL FBetterThan(const CCostContext *pcc) const;
 
 	// is this cost context of a two stage scalar DQA created by CXformSplitDQA
-	static BOOL IsTwoStageScalarDQACostCtxt(const CCostContext *pcc);
+	BOOL IsTwoStageScalarDQACostCtxt(const CCostContext *pcc) const;
 
 	// is this cost context of a three stage scalar DQA created by CXformSplitDQA
-	static BOOL IsThreeStageScalarDQACostCtxt(const CCostContext *pcc);
-
-	// is this cost context of a multistage agg
-	static BOOL IsMultiStageAggCostCtxt(const CCostContext *pcc);
-
-	// is this cost context of a single stage agg
-	static BOOL IsSingleStageAggCostCtxt(const CCostContext *pcc);
+	BOOL IsThreeStageScalarDQACostCtxt(const CCostContext *pcc) const;
 
 	// equality function
 	static BOOL
 	Equals(const CCostContext &ccLeft, const CCostContext &ccRight)
 	{
 		// check if we are comparing against invalid context
-		if (nullptr == ccLeft.Poc() || nullptr == ccRight.Poc())
+		if (NULL == ccLeft.Poc() || NULL == ccRight.Poc())
 		{
-			return nullptr == ccLeft.Poc() && nullptr == ccRight.Poc();
+			return NULL == ccLeft.Poc() && NULL == ccRight.Poc();
 		}
 
 		return ccLeft.UlOptReq() == ccRight.UlOptReq() &&
@@ -304,7 +299,7 @@ public:
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CCostContext
 

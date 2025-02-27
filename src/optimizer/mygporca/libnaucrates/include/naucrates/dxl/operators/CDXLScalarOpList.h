@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarOpList.h
@@ -35,6 +35,7 @@ public:
 	enum EdxlOpListType
 	{
 		EdxloplistEqFilterList,
+		EdxloplistEqFilterElemList,
 		EdxloplistFilterList,
 		EdxloplistGeneral,
 		EdxloplistSentinel
@@ -44,27 +45,28 @@ private:
 	// operator list type
 	EdxlOpListType m_dxl_op_list_type;
 
-public:
-	CDXLScalarOpList(const CDXLScalarOpList &) = delete;
+	// private copy ctor
+	CDXLScalarOpList(const CDXLScalarOpList &);
 
+public:
 	// ctor
 	CDXLScalarOpList(CMemoryPool *mp,
 					 EdxlOpListType dxl_op_list_type = EdxloplistGeneral);
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return false;
 	}
@@ -72,15 +74,15 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *dxlnode,
+							 BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarOpList *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarOpList == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarOpList *>(dxl_op);

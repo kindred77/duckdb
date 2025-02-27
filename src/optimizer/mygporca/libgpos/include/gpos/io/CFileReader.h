@@ -32,19 +32,20 @@ class CFileReader : public CFileDescriptor
 {
 private:
 	// file size
-	ULLONG m_file_size{0};
+	ULLONG m_file_size;
 
 	// read size
-	ULLONG m_file_read_size{0};
+	ULLONG m_file_read_size;
+
+	// no copy ctor
+	CFileReader(const CFileReader &);
 
 public:
-	CFileReader(const CFileReader &) = delete;
-
 	// ctor
 	CFileReader();
 
 	// dtor
-	~CFileReader() override;
+	virtual ~CFileReader();
 
 	// get file size
 	ULLONG FileSize() const;

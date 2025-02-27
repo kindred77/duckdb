@@ -38,7 +38,7 @@ using namespace gpopt;
 CJobQueue::EJobQueueResult
 CJobQueue::EjqrAdd(CJob *pj)
 {
-	GPOS_ASSERT(nullptr != pj);
+	GPOS_ASSERT(NULL != pj);
 
 	EJobQueueResult ejer = EjqrCompleted;
 
@@ -63,7 +63,7 @@ CJobQueue::EjqrAdd(CJob *pj)
 				// first caller becomes the owner
 				if (fOwner)
 				{
-					GPOS_ASSERT(nullptr == m_pj);
+					GPOS_ASSERT(NULL == m_pj);
 
 					m_pj = pj;
 					ejer = EjqrMain;
@@ -129,7 +129,7 @@ CJobQueue::OsPrintQueuedJobs(IOstream &os)
 	os << "Job queue: " << std::endl;
 
 	CJob *pj = m_listjQueued.First();
-	while (nullptr != pj)
+	while (NULL != pj)
 	{
 		pj->OsPrint(os);
 		pj = m_listjQueued.Next(pj);

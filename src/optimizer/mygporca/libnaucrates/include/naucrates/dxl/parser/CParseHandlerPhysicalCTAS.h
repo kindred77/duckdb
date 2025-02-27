@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates
+//	Copyright (C) 2014 Pivotal Inc
 //
 //	@filename:
 //		CParseHandlerPhysicalCTAS.h
@@ -53,11 +53,17 @@ private:
 	// is this a temporary table
 	BOOL m_is_temp_table;
 
+	// does table have oids
+	BOOL m_has_oids;
+
 	// distribution policy
 	IMDRelation::Ereldistrpolicy m_rel_distr_policy;
 
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
+
+	// private copy ctor
+	CParseHandlerPhysicalCTAS(const CParseHandlerPhysicalCTAS &);
 
 	// process the start of an element
 	void StartElement(
@@ -65,18 +71,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerPhysicalCTAS(const CParseHandlerPhysicalCTAS &) = delete;
-
 	// ctor
 	CParseHandlerPhysicalCTAS(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,

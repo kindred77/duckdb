@@ -16,7 +16,7 @@
 namespace gpos
 {
 // wide char ostream
-using WOSTREAM = std::basic_ostream<WCHAR, std::char_traits<WCHAR>>;
+typedef std::basic_ostream<WCHAR, std::char_traits<WCHAR> > WOSTREAM;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -31,9 +31,9 @@ class IOstream
 {
 protected:
 	// ctor
-	IOstream() = default;
-
-	BOOL m_fullPrecision{false};
+	IOstream()
+	{
+	}
 
 public:
 	enum EStreamManipulator
@@ -44,7 +44,9 @@ public:
 	};
 
 	// virtual dtor
-	virtual ~IOstream() = default;
+	virtual ~IOstream()
+	{
+	}
 
 	// operator interface
 	virtual IOstream &operator<<(const CHAR *) = 0;
@@ -61,12 +63,6 @@ public:
 
 	// needs to be implemented by subclass
 	virtual IOstream &operator<<(const WCHAR *) = 0;
-
-	void
-	SetFullPrecision(BOOL fullPrecision)
-	{
-		m_fullPrecision = fullPrecision;
-	}
 };
 
 }  // namespace gpos

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Inc.
 //
 //	@filename:
 //		CScalarArrayCoerceExpr.h
@@ -38,27 +38,40 @@ using namespace gpos;
 class CScalarArrayCoerceExpr : public CScalarCoerceBase
 {
 private:
-public:
-	CScalarArrayCoerceExpr(const CScalarArrayCoerceExpr &) = delete;
+	// catalog MDId of the element function
+	IMDId *m_pmdidElementFunc;
 
+	// conversion semantics flag to pass to func
+	BOOL m_is_explicit;
+
+	// private copy ctor
+	CScalarArrayCoerceExpr(const CScalarArrayCoerceExpr &);
+
+public:
 	// ctor
-	CScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *result_type_mdid,
-						   INT type_modifier, ECoercionForm dxl_coerce_format,
+	CScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *element_func,
+						   IMDId *result_type_mdid, INT type_modifier,
+						   BOOL is_explicit, ECoercionForm dxl_coerce_format,
 						   INT location);
 
 	// dtor
-	~CScalarArrayCoerceExpr() override = default;
+	virtual ~CScalarArrayCoerceExpr();
 
-	EOperatorId Eopid() const override;
+	// return metadata id of element coerce function
+	IMDId *PmdidElementFunc() const;
+
+	BOOL IsExplicit() const;
+
+	virtual EOperatorId Eopid() const;
 
 	// return a string for operator name
-	const CHAR *SzId() const override;
+	virtual const CHAR *SzId() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	virtual BOOL FInputOrderSensitive() const;
 
 	// conversion function
 	static CScalarArrayCoerceExpr *PopConvert(COperator *pop);

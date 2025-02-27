@@ -90,7 +90,7 @@ CMessage::FormatMessage(CWStringStatic *str, ULONG major, ULONG minor, ...)
 
 	// during bootstrap there's no context object otherwise, record
 	// all details in the context object
-	if (nullptr != ITask::Self())
+	if (NULL != ITask::Self())
 	{
 		VA_LIST valist;
 		VA_START(valist, minor);
@@ -194,6 +194,15 @@ CMessage::GetMessage(ULONG index)
 			GPOS_WSZ_WSZLEN(
 				"I/O operation failed; use error code to identify the error type")),
 
+		CMessage(
+			CException(CException::ExmaSystem, CException::ExmiNetError),
+			CException::ExsevError,
+			GPOS_WSZ_WSZLEN(
+				"Error during networking operation, error code: %d"),
+			1,	// # params
+			GPOS_WSZ_WSZLEN(
+				"Networking operation failed; use error code to identify the error type")),
+
 		CMessage(CException(CException::ExmaSystem, CException::ExmiOverflow),
 				 CException::ExsevError, GPOS_WSZ_WSZLEN("Arithmetic Overflow"),
 				 0,	 // # params
@@ -206,6 +215,15 @@ CMessage::GetMessage(ULONG index)
 			1,	// # params
 			GPOS_WSZ_WSZLEN(
 				"Delete operation failed; use error code to identify the error type")),
+
+		CMessage(
+			CException(CException::ExmaSystem,
+					   CException::ExmiUnexpectedOOMDuringFaultSimulation),
+			CException::ExsevError,
+			GPOS_WSZ_WSZLEN("Unexpected out of memory during fault simulation"),
+			0,	// # params
+			GPOS_WSZ_WSZLEN(
+				"Unexpected out of memory during fault simulation")),
 
 		CMessage(
 			CException(CException::ExmaSystem, CException::ExmiDummyWarning),

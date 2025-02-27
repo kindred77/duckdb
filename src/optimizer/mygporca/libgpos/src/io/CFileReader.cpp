@@ -26,7 +26,8 @@ using namespace gpos;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CFileReader::CFileReader() : CFileDescriptor()
+CFileReader::CFileReader()
+	: CFileDescriptor(), m_file_size(0), m_file_read_size(0)
 {
 }
 
@@ -39,7 +40,9 @@ CFileReader::CFileReader() : CFileDescriptor()
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CFileReader::~CFileReader() = default;
+CFileReader::~CFileReader()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -53,7 +56,7 @@ CFileReader::~CFileReader() = default;
 void
 CFileReader::Open(const CHAR *file_path, const ULONG permission_bits)
 {
-	GPOS_ASSERT(nullptr != file_path);
+	GPOS_ASSERT(NULL != file_path);
 
 	OpenFile(file_path, O_RDONLY, permission_bits);
 
@@ -92,17 +95,18 @@ CFileReader::ReadBytesToBuffer(BYTE *read_buffer,
 	GPOS_ASSERT(CFileDescriptor::IsFileOpen() &&
 				"Attempt to read from invalid file descriptor");
 	GPOS_ASSERT(0 < file_read_size);
-	GPOS_ASSERT(nullptr != read_buffer);
+	GPOS_ASSERT(NULL != read_buffer);
 
 	ULONG_PTR bytes_to_read = file_read_size;
 
 	while (0 < bytes_to_read)
 	{
-		INT_PTR current_byte;
+		INT_PTR current_byte = -1;
 
-		// read from file
-		current_byte =
-			ioutils::Read(GetFileDescriptor(), read_buffer, bytes_to_read);
+		// read from file and check to simulate I/O error
+		GPOS_CHECK_SIM_IO_ERR(
+			&current_byte,
+			ioutils::Read(GetFileDescriptor(), read_buffer, bytes_to_read));
 
 		// reach the end of file
 		if (0 == current_byte)

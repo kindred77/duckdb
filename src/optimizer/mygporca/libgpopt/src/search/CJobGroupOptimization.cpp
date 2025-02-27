@@ -111,7 +111,9 @@ const WCHAR rgwszEvents[CJobGroupOptimization::eevSentinel]
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobGroupOptimization::CJobGroupOptimization() = default;
+CJobGroupOptimization::CJobGroupOptimization()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -122,7 +124,9 @@ CJobGroupOptimization::CJobGroupOptimization() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CJobGroupOptimization::~CJobGroupOptimization() = default;
+CJobGroupOptimization::~CJobGroupOptimization()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -141,7 +145,7 @@ CJobGroupOptimization::Init(
 						// NULL if this is the Root group
 	COptimizationContext *poc)
 {
-	GPOS_ASSERT(nullptr != poc);
+	GPOS_ASSERT(NULL != poc);
 	GPOS_ASSERT(pgroup == poc->Pgroup());
 
 	CJobGroup::Init(pgroup);
@@ -190,7 +194,7 @@ CJobGroupOptimization::FScheduleGroupExpressions(CSchedulerContext *psc)
 
 	// iterate on expressions and schedule them as needed
 	CGroupExpression *pgexpr = PgexprFirstUnsched();
-	while (nullptr != pgexpr)
+	while (NULL != pgexpr)
 	{
 		// we consider only group expressions matching current optimization level,
 		// other group expressions will be optimized when damping current
@@ -314,7 +318,7 @@ CJobGroupOptimization::EevtCompleteOptimization(CSchedulerContext *,  // psc
 	if (EolSentinel != pjgo->EolCurrent())
 	{
 		// we need to optimize group expressions matching current level
-		pjgo->m_pgexprLastScheduled = nullptr;
+		pjgo->m_pgexprLastScheduled = NULL;
 
 		return eevOptimizing;
 	}

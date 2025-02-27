@@ -75,7 +75,7 @@ public:
 		SEdge(CMemoryPool *mp, CExpression *pexpr, ULONG loj_num);
 
 		// dtor
-		~SEdge() override;
+		~SEdge();
 
 		// print routine
 		IOstream &OsPrint(IOstream &os) const;
@@ -165,11 +165,11 @@ public:
 				   EPosition position = EpSentinel);
 
 		// dtor
-		~SComponent() override;
+		~SComponent();
 
 		// get parent loj id
 		INT
-		ParentLojId() const
+		ParentLojId()
 		{
 			return m_parent_loj_id;
 		}
@@ -177,7 +177,7 @@ public:
 		// what is or must be the position of this component with
 		// respect to parent LOJ
 		EPosition
-		Position() const
+		Position()
 		{
 			return m_position;
 		}
@@ -223,9 +223,10 @@ protected:
 					  EPosition position, INT comp_num);
 
 private:
-public:
-	CJoinOrder(const CJoinOrder &) = delete;
+	// private copy ctor
+	CJoinOrder(const CJoinOrder &);
 
+public:
 	// ctor used in MinCard, Greedy and DP xforms
 	CJoinOrder(CMemoryPool *mp, CExpressionArray *pdrgpexprComponents,
 			   CExpressionArray *pdrgpexprConjuncts,
@@ -240,13 +241,13 @@ public:
 	virtual ~CJoinOrder();
 
 	// print function
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// is this a valid join combination
-	static BOOL IsValidJoinCombination(SComponent *comp1, SComponent *comp2);
+	BOOL IsValidJoinCombination(SComponent *comp1, SComponent *comp2) const;
 
 	// are these childs of the same LOJ
-	static BOOL IsChildOfSameLOJ(SComponent *comp1, SComponent *comp2);
+	BOOL IsChildOfSameLOJ(SComponent *comp1, SComponent *comp2) const;
 
 	virtual CXform::EXformId
 	EOriginXForm() const

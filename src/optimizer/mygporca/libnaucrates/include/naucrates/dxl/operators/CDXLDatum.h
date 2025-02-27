@@ -37,6 +37,9 @@ class CXMLSerializer;
 class CDXLDatum : public CRefCount
 {
 private:
+	// private copy ctor
+	CDXLDatum(const CDXLDatum &);
+
 protected:
 	// memory pool
 	CMemoryPool *m_mp;
@@ -53,8 +56,6 @@ protected:
 	const ULONG m_length;
 
 public:
-	CDXLDatum(const CDXLDatum &) = delete;
-
 	// datum types
 	enum EdxldatumType
 	{
@@ -73,7 +74,7 @@ public:
 			  BOOL is_null, ULONG length);
 
 	// dtor
-	~CDXLDatum() override
+	virtual ~CDXLDatum()
 	{
 		m_mdid_type->Release();
 	}
@@ -105,10 +106,10 @@ public:
 };
 
 // array of datums
-using CDXLDatumArray = CDynamicPtrArray<CDXLDatum, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLDatum, CleanupRelease> CDXLDatumArray;
 
 // dynamic array of datum arrays -- array owns elements
-using CDXLDatum2dArray = CDynamicPtrArray<CDXLDatumArray, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLDatumArray, CleanupRelease> CDXLDatum2dArray;
 }  // namespace gpdxl
 
 #endif	// !GPDXL_CDXLDatum_H

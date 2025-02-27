@@ -22,10 +22,10 @@ using namespace gpmd;
 CScalarIsDistinctFrom *
 CScalarIsDistinctFrom::PopConvert(COperator *pop)
 {
-	GPOS_ASSERT(nullptr != pop);
+	GPOS_ASSERT(NULL != pop);
 	GPOS_ASSERT(EopScalarIsDistinctFrom == pop->Eopid());
 
-	return dynamic_cast<CScalarIsDistinctFrom *>(pop);
+	return reinterpret_cast<CScalarIsDistinctFrom *>(pop);
 }
 
 // perform boolean expression evaluation
@@ -66,17 +66,17 @@ CScalarIsDistinctFrom::Matches(COperator *pop) const
 }
 
 // get commuted scalar IDF operator
-CScalarCmp *
-CScalarIsDistinctFrom::PopCommutedOp(CMemoryPool *mp)
+CScalarIsDistinctFrom *
+CScalarIsDistinctFrom::PopCommutedOp(CMemoryPool *mp, COperator *pop)
 {
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
-	IMDId *mdid = PmdidCommuteOp(md_accessor, this);
-	if (nullptr != mdid && mdid->IsValid())
+	IMDId *mdid = PmdidCommuteOp(md_accessor, pop);
+	if (NULL != mdid && mdid->IsValid())
 	{
 		return GPOS_NEW(mp)
 			CScalarIsDistinctFrom(mp, mdid, Pstr(mp, md_accessor, mdid));
 	}
-	return nullptr;
+	return NULL;
 }
 
 // EOF

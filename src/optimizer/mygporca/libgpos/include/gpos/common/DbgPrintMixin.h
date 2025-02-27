@@ -77,7 +77,9 @@ struct DbgPrintMixin
 #if defined(GPOS_DEBUG)
 #define FORCE_GENERATE_DBGSTR(Type) template struct ::gpos::DbgPrintMixin<Type>
 #else
-#define FORCE_GENERATE_DBGSTR(Type) static_assert(true, "")
+#define FORCE_GENERATE_DBGSTR(Type) \
+	template <bool>                 \
+	struct StaticAssert
 #endif
 
 

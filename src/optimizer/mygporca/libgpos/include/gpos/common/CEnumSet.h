@@ -29,23 +29,26 @@ template <class T, ULONG sentinel_index>
 class CEnumSet : public CBitSet
 {
 private:
-public:
-	CEnumSet(const CEnumSet &) = delete;
+	// hidden copy ctor
+	CEnumSet<T, sentinel_index>(const CEnumSet<T, sentinel_index> &);
 
+public:
 	// ctor
-	explicit CEnumSet(CMemoryPool *mp)
+	explicit CEnumSet<T, sentinel_index>(CMemoryPool *mp)
 		: CBitSet(mp, sentinel_index)
 	{
 	}
 
-	explicit CEnumSet(
-		CMemoryPool *mp, const CEnumSet &enum_set)
+	explicit CEnumSet<T, sentinel_index>(
+		CMemoryPool *mp, const CEnumSet<T, sentinel_index> &enum_set)
 		: CBitSet(mp, enum_set)
 	{
 	}
 
 	// dtor
-	~CEnumSet() override = default;
+	virtual ~CEnumSet<T, sentinel_index>()
+	{
+	}
 
 	// determine if bit is set
 	BOOL

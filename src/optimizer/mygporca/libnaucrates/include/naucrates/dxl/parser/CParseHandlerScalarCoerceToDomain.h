@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerScalarCoerceToDomain.h
@@ -36,31 +36,32 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarCoerceToDomain : public CParseHandlerScalarOp
 {
 private:
+	// private copy ctor
+	CParseHandlerScalarCoerceToDomain(
+		const CParseHandlerScalarCoerceToDomain &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarCoerceToDomain(
-		const CParseHandlerScalarCoerceToDomain &) = delete;
-
 	// ctor/dtor
 	CParseHandlerScalarCoerceToDomain(CMemoryPool *mp,
 									  CParseHandlerManager *parse_handler_mgr,
 									  CParseHandlerBase *parse_handler_root);
 
-	~CParseHandlerScalarCoerceToDomain() override = default;
+	virtual ~CParseHandlerScalarCoerceToDomain(){};
 };
 
 }  // namespace gpdxl

@@ -26,7 +26,7 @@ enum Edxlascalarggref
 	EdxlscalaraggrefIndexArgs = 0,
 	EdxlscalaraggrefIndexDirectArgs,
 	EdxlscalaraggrefIndexAggOrder,
-	EdxlscalaraggrefIndexAggDistinct,
+	EdxlscalaraggrefIndexAggDistinct
 };
 
 enum EdxlAggrefStage
@@ -72,24 +72,26 @@ private:
 	// Denotes the MPP Stage
 	EdxlAggrefStage m_agg_stage;
 
-	EdxlAggrefKind m_aggkind;
+	EdxlAggrefKind m_agg_kind;
 
-	ULongPtrArray *m_argtypes;
+	// MDId of corresponding gp_agg for supported ordered aggs (optional)
+	IMDId *m_gp_agg_mdid;
+
+	// private copy ctor
+	CDXLScalarAggref(const CDXLScalarAggref &);
 
 public:
-	CDXLScalarAggref(const CDXLScalarAggref &) = delete;
-
 	// ctor/dtor
 	CDXLScalarAggref(CMemoryPool *mp, IMDId *agg_mdid, IMDId *resolved_rettype,
 					 BOOL is_distinct, EdxlAggrefStage agg_stage,
-					 EdxlAggrefKind aggkind, ULongPtrArray *argtypes);
+					 EdxlAggrefKind aggkind, IMDId *gp_agg_mdid = NULL);
 
-	~CDXLScalarAggref() override;
+	virtual ~CDXLScalarAggref();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	IMDId *GetDXLAggFuncMDid() const;
 
@@ -106,18 +108,18 @@ public:
 	EdxlAggrefKind
 	GetAggKind() const
 	{
-		return m_aggkind;
+		return m_agg_kind;
 	}
 
-	ULongPtrArray *
-	GetArgTypes() const
+	IMDId *
+	GetGpAggMDid() const
 	{
-		return m_argtypes;
+		return m_gp_agg_mdid;
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	void SerializeValuesListChildToDXL(CXMLSerializer *xml_serializer,
 									   const CDXLNode *dxlnode, ULONG index,
@@ -127,20 +129,19 @@ public:
 	static CDXLScalarAggref *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarAggref == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarAggref *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

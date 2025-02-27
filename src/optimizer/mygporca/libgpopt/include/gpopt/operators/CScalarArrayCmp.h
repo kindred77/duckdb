@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 #include "naucrates/md/IMDId.h"
 #include "naucrates/md/IMDType.h"
@@ -55,18 +56,19 @@ private:
 	// does operator return NULL on NULL input?
 	BOOL m_returns_null_on_null_input;
 
+	// private copy ctor
+	CScalarArrayCmp(const CScalarArrayCmp &);
+
 	// names of array compare types
 	static const CHAR m_rgszCmpType[EarrcmpSentinel][10];
 
 public:
-	CScalarArrayCmp(const CScalarArrayCmp &) = delete;
-
 	// ctor
 	CScalarArrayCmp(CMemoryPool *mp, IMDId *mdid_op,
 					const CWStringConst *pstrOp, EArrCmpType earrcmpt);
 
 	// dtor
-	~CScalarArrayCmp() override
+	virtual ~CScalarArrayCmp()
 	{
 		m_mdid_op->Release();
 		GPOS_DELETE(m_pscOp);
@@ -74,8 +76,8 @@ public:
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarArrayCmp;
 	}
@@ -88,32 +90,32 @@ public:
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarArrayCmp";
 	}
 
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -122,10 +124,10 @@ public:
 	static CScalarArrayCmp *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarArrayCmp == pop->Eopid());
 
-		return dynamic_cast<CScalarArrayCmp *>(pop);
+		return reinterpret_cast<CScalarArrayCmp *>(pop);
 	}
 
 	// name of the comparison operator
@@ -135,13 +137,13 @@ public:
 	IMDId *MdIdOp() const;
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// expand array comparison expression into a conjunctive/disjunctive expression
 	static CExpression *PexprExpand(CMemoryPool *mp,

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2014 VMware, Inc. or its affiliates.
+//	Copyright 2014 Pivotal Inc.
 //
 //	@filename:
 //		CStatsPredUtils.h

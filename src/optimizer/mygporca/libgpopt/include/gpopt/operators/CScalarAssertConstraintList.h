@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarAssertConstraintList.h
@@ -28,6 +28,7 @@
 
 #include "gpos/base.h"
 
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 #include "naucrates/md/IMDId.h"
 
@@ -47,54 +48,55 @@ using namespace gpmd;
 class CScalarAssertConstraintList : public CScalar
 {
 private:
-public:
-	CScalarAssertConstraintList(const CScalarAssertConstraintList &) = delete;
+	// private copy ctor
+	CScalarAssertConstraintList(const CScalarAssertConstraintList &);
 
+public:
 	// ctor
 	CScalarAssertConstraintList(CMemoryPool *mp);
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarAssertConstraintList;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarAssertConstraintList";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// type of expression's result
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// conversion function
 	static CScalarAssertConstraintList *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarAssertConstraintList == pop->Eopid());
 
 		return dynamic_cast<CScalarAssertConstraintList *>(pop);

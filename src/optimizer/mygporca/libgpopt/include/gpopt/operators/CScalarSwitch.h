@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -49,62 +50,63 @@ private:
 	// is operator return type BOOL?
 	BOOL m_fBoolReturnType;
 
-public:
-	CScalarSwitch(const CScalarSwitch &) = delete;
+	// private copy ctor
+	CScalarSwitch(const CScalarSwitch &);
 
+public:
 	// ctor
 	CScalarSwitch(CMemoryPool *mp, IMDId *mdid_type);
 
 	// dtor
-	~CScalarSwitch() override;
+	virtual ~CScalarSwitch();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSwitch;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSwitch";
 	}
 
 	// the type of the scalar expression
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		return m_mdid_type;
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult
-	Eber(ULongPtrArray *pdrgpulChildren) const override
+	virtual EBoolEvalResult
+	Eber(ULongPtrArray *pdrgpulChildren) const
 	{
 		return EberNullOnAllNullChildren(pdrgpulChildren);
 	}
@@ -113,7 +115,7 @@ public:
 	static CScalarSwitch *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSwitch == pop->Eopid());
 
 		return dynamic_cast<CScalarSwitch *>(pop);

@@ -56,18 +56,19 @@ private:
 
 	void SerializeNestLoopParamsToDXL(CXMLSerializer *pxmlser) const;
 
-public:
-	CDXLPhysicalNLJoin(const CDXLPhysicalNLJoin &) = delete;
+	// private copy ctor
+	CDXLPhysicalNLJoin(const CDXLPhysicalNLJoin &);
 
+public:
 	// ctor/dtor
 	CDXLPhysicalNLJoin(CMemoryPool *mp, EdxlJoinType join_type,
 					   BOOL is_index_nlj, BOOL nest_params_exists);
 
-	~CDXLPhysicalNLJoin() override;
+	~CDXLPhysicalNLJoin();
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// is operator an index nested loops?
 	BOOL
@@ -80,8 +81,8 @@ public:
 	BOOL NestParamsExists() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	void SetNestLoopParamsColRefs(CDXLColRefArray *nest_params_col_refs);
 
@@ -91,7 +92,7 @@ public:
 	static CDXLPhysicalNLJoin *
 	PdxlConvert(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalNLJoin == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalNLJoin *>(dxl_op);
@@ -100,7 +101,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

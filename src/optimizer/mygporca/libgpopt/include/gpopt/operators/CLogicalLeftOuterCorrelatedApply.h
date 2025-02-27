@@ -30,12 +30,12 @@ namespace gpopt
 class CLogicalLeftOuterCorrelatedApply : public CLogicalLeftOuterApply
 {
 private:
-	BOOL m_allow_predicate_pushdown{true};
+	// private copy ctor
+	CLogicalLeftOuterCorrelatedApply(const CLogicalLeftOuterCorrelatedApply &);
+
+	BOOL m_allow_predicate_pushdown;
 
 public:
-	CLogicalLeftOuterCorrelatedApply(const CLogicalLeftOuterCorrelatedApply &) =
-		delete;
-
 	// ctor
 	CLogicalLeftOuterCorrelatedApply(CMemoryPool *mp,
 									 CColRefArray *pdrgpcrInner,
@@ -45,36 +45,37 @@ public:
 	explicit CLogicalLeftOuterCorrelatedApply(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalLeftOuterCorrelatedApply() override = default;
+	virtual ~CLogicalLeftOuterCorrelatedApply()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftOuterCorrelatedApply;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftOuterCorrelatedApply";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// applicable transformations
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// return true if operator is a correlated apply
-	BOOL
-	FCorrelated() const override
+	virtual BOOL
+	FCorrelated() const
 	{
 		return true;
 	}
@@ -89,7 +90,7 @@ public:
 	static CLogicalLeftOuterCorrelatedApply *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftOuterCorrelatedApply == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftOuterCorrelatedApply *>(pop);

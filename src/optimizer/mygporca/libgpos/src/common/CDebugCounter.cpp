@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------
  *	Greenplum Database
- *	Copyright (c) 2019 VMware, Inc. or its affiliates.
+ *	Copyright (c) 2019 Pivotal Software, Inc.
  *
  *	@filename:
  *		CDebugCounter.cpp

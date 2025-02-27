@@ -20,6 +20,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalarFunc.h"
 #include "naucrates/md/IMDId.h"
 
@@ -65,9 +66,10 @@ private:
 	// aggregate window function, e.g. count(*) over()
 	BOOL m_fAgg;
 
-public:
-	CScalarWindowFunc(const CScalarWindowFunc &) = delete;
+	// private copy ctor
+	CScalarWindowFunc(const CScalarWindowFunc &);
 
+public:
 	// ctor
 	CScalarWindowFunc(CMemoryPool *mp, IMDId *mdid_func,
 					  IMDId *mdid_return_type, const CWStringConst *pstrFunc,
@@ -75,18 +77,20 @@ public:
 					  BOOL is_simple_agg);
 
 	// dtor
-	~CScalarWindowFunc() override = default;
+	virtual ~CScalarWindowFunc()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarWindowFunc;
 	}
 
 	// return a string for window function
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarWindowFunc";
 	}
@@ -98,19 +102,19 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// conversion function
 	static CScalarWindowFunc *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarWindowFunc == pop->Eopid());
 
-		return dynamic_cast<CScalarWindowFunc *>(pop);
+		return reinterpret_cast<CScalarWindowFunc *>(pop);
 	}
 
 	// does window function definition include Distinct?
@@ -140,7 +144,7 @@ public:
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 
 };	// class CScalarWindowFunc

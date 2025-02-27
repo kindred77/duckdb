@@ -55,7 +55,6 @@ class CDrvdPropScalar : public CDrvdProp
 		EdptFHasMultipleDistinctAggs,
 		EdptFHasScalarArrayCmp,
 		EdptFHasScalarFuncProject,
-		EdptFContainsOnlyReplicationSafeAggFuncs,
 		EdptSentinel
 	};
 
@@ -100,8 +99,8 @@ private:
 	// does expression contain ScalarArrayCmp generated for "scalar op ANY/ALL (array)" construct
 	BOOL m_fHasScalarArrayCmp;
 
-	// does expression contain only replication safe agg funcs
-	BOOL m_fContainsOnlyReplicationSafeAggFuncs;
+	// private copy ctor
+	CDrvdPropScalar(const CDrvdPropScalar &);
 
 	// Have all the properties been derived?
 	//
@@ -137,39 +136,35 @@ protected:
 
 	BOOL DeriveHasMultipleDistinctAggs(CExpressionHandle &);
 
-	BOOL DeriveContainsOnlyReplicationSafeAggFuncs(CExpressionHandle &);
-
 	BOOL DeriveHasScalarArrayCmp(CExpressionHandle &);
 	ULONG DeriveTotalOrderedAggs(CExpressionHandle &);
 
 public:
-	CDrvdPropScalar(const CDrvdPropScalar &) = delete;
-
 	// ctor
 	CDrvdPropScalar(CMemoryPool *mp);
 
 	// dtor
-	~CDrvdPropScalar() override;
+	virtual ~CDrvdPropScalar();
 
 	// type of properties
-	EPropType
-	Ept() override
+	virtual EPropType
+	Ept()
 	{
 		return EptScalar;
 	}
 
-	BOOL
-	IsComplete() const override
+	virtual BOOL
+	IsComplete() const
 	{
 		return m_is_complete;
 	}
 
 	// derivation function
 	void Derive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				CDrvdPropCtxt *pdpctxt) override;
+				CDrvdPropCtxt *pdpctxt);
 
 	// check for satisfying required plan properties
-	BOOL FSatisfies(const CReqdPropPlan *prpp) const override;
+	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// defined columns
 	CColRefSet *GetDefinedColumns() const;
@@ -202,13 +197,11 @@ public:
 
 	BOOL HasScalarArrayCmp() const;
 
-	BOOL ContainsOnlyReplicationSafeAggFuncs() const;
-
 	// short hand for conversion
 	static CDrvdPropScalar *GetDrvdScalarProps(CDrvdProp *pdp);
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CDrvdPropScalar
 

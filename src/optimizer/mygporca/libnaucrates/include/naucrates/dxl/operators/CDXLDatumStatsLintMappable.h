@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal Inc.
 //
 //	@filename:
 //		CDXLDatumStatsLintMappable.h
@@ -44,23 +44,24 @@ private:
 	// for statistics computation, map to LINT
 	LINT m_val;
 
-public:
-	CDXLDatumStatsLintMappable(const CDXLDatumStatsLintMappable &) = delete;
+	// private copy ctor
+	CDXLDatumStatsLintMappable(const CDXLDatumStatsLintMappable &);
 
+public:
 	// ctor
 	CDXLDatumStatsLintMappable(CMemoryPool *mp, IMDId *mdid_type,
 							   INT type_modifier, BOOL is_null,
 							   BYTE *byte_array, ULONG length, LINT value);
 
 	// dtor
-	~CDXLDatumStatsLintMappable() override = default;
+	virtual ~CDXLDatumStatsLintMappable(){};
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumStatsLintMappable;
 	}
@@ -69,7 +70,7 @@ public:
 	static CDXLDatumStatsLintMappable *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::EdxldatumStatsLintMappable ==
 					dxl_datum->GetDatumType());
 
@@ -79,15 +80,15 @@ public:
 	// statistics related APIs
 
 	// can datum be mapped to LINT
-	BOOL
-	IsDatumMappableToLINT() const override
+	virtual BOOL
+	IsDatumMappableToLINT() const
 	{
 		return true;
 	}
 
 	// return the LINT mapping needed for statistics computation
-	LINT
-	GetLINTMapping() const override
+	virtual LINT
+	GetLINTMapping() const
 	{
 		return m_val;
 	}

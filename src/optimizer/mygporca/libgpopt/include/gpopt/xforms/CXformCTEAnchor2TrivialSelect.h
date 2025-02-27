@@ -30,36 +30,38 @@ using namespace gpos;
 class CXformCTEAnchor2TrivialSelect : public CXformExploration
 {
 private:
-public:
-	CXformCTEAnchor2TrivialSelect(const CXformCTEAnchor2TrivialSelect &) =
-		delete;
+	// private copy ctor
+	CXformCTEAnchor2TrivialSelect(const CXformCTEAnchor2TrivialSelect &);
 
+public:
 	// ctor
 	explicit CXformCTEAnchor2TrivialSelect(CMemoryPool *mp);
 
 	// dtor
-	~CXformCTEAnchor2TrivialSelect() override = default;
+	virtual ~CXformCTEAnchor2TrivialSelect()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfCTEAnchor2TrivialSelect;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformCTEAnchor2TrivialSelect";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformCTEAnchor2TrivialSelect
 }  // namespace gpopt

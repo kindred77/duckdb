@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformImplementSplit : public CXformImplementation
 {
 private:
-public:
-	CXformImplementSplit(const CXformImplementSplit &) = delete;
+	// private copy ctor
+	CXformImplementSplit(const CXformImplementSplit &);
 
+public:
 	// ctor
 	explicit CXformImplementSplit(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementSplit() override = default;
+	virtual ~CXformImplementSplit()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementSplit;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementSplit";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformImplementSplit
 }  // namespace gpopt

@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 #include "naucrates/md/IMDId.h"
 
@@ -56,68 +57,61 @@ protected:
 	// is operator return type BOOL?
 	BOOL m_fBoolReturnType;
 
-	// how to display function expr
-	INT m_func_format;
-
-	//  It is true if in the function, variadic arguments have been
-	//	combined into an array last argument
-	BOOL m_funcvariadic;
-
 private:
-public:
-	CScalarFunc(const CScalarFunc &) = delete;
+	// private copy ctor
+	CScalarFunc(const CScalarFunc &);
 
+
+public:
 	explicit CScalarFunc(CMemoryPool *mp);
 
 	// ctor
 	CScalarFunc(CMemoryPool *mp, IMDId *mdid_func, IMDId *mdid_return_type,
-				INT return_type_modifier, const CWStringConst *pstrFunc, 
-				INT func_format, BOOL funcvariadic);
+				INT return_type_modifier, const CWStringConst *pstrFunc);
 
 	// dtor
-	~CScalarFunc() override;
+	virtual ~CScalarFunc();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarFunc;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarFunc";
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// derive function properties
-	CFunctionProp *
-	DeriveFunctionProperties(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CFunctionProp *
+	DeriveFunctionProperties(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PfpDeriveFromChildren(mp, exprhdl, m_efs,
 									 false /*fHasVolatileFunctionScan*/,
@@ -125,16 +119,16 @@ public:
 	}
 
 	// derive non-scalar function existence
-	BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl) override;
+	virtual BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl);
 
 	// conversion function
 	static CScalarFunc *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarFunc == pop->Eopid());
 
-		return dynamic_cast<CScalarFunc *>(pop);
+		return reinterpret_cast<CScalarFunc *>(pop);
 	}
 
 
@@ -144,25 +138,21 @@ public:
 	// func id
 	IMDId *FuncMdId() const;
 
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// function stability
 	IMDFunction::EFuncStbl EfsGetFunctionStability() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
-	// how to display function expr
-	INT FuncFormat() const;
 
-	// Is variadic flag set
-	BOOL IsFuncVariadic() const;
 };	// class CScalarFunc
 
 }  // namespace gpopt

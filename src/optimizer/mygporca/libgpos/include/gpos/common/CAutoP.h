@@ -38,15 +38,16 @@ protected:
 	// actual element to point to
 	T *m_object;
 
-public:
-	CAutoP(const CAutoP &) = delete;
+	// hidden copy ctor
+	CAutoP<T>(const CAutoP &);
 
+public:
 	// ctor
-	explicit CAutoP() : m_object(nullptr)
+	explicit CAutoP<T>() : m_object(NULL)
 	{
 	}
 
-	explicit CAutoP(T *object) : m_object(object)
+	explicit CAutoP<T>(T *object) : m_object(object)
 	{
 	}
 
@@ -65,7 +66,7 @@ public:
 	T &
 	operator*()
 	{
-		GPOS_ASSERT(nullptr != m_object);
+		GPOS_ASSERT(NULL != m_object);
 		return *m_object;
 	}
 
@@ -88,7 +89,7 @@ public:
 	Reset()
 	{
 		T *object = m_object;
-		m_object = nullptr;
+		m_object = NULL;
 		return object;
 	}
 

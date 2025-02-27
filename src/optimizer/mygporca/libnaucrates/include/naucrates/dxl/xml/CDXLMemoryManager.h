@@ -40,9 +40,10 @@ private:
 	// memory pool
 	CMemoryPool *m_mp;
 
-public:
-	CDXLMemoryManager(const CDXLMemoryManager &) = delete;
+	// private copy ctor
+	CDXLMemoryManager(const CDXLMemoryManager &);
 
+public:
 	// ctor
 	CDXLMemoryManager(CMemoryPool *mp);
 
@@ -50,10 +51,10 @@ public:
 
 	// allocates memory
 	void *allocate(XMLSize_t  // size
-				   ) override;
+	);
 
 	// deallocates memory
-	void deallocate(void *pv) override;
+	void deallocate(void *pv);
 
 	// accessor to the underlying memory pool
 	CMemoryPool *
@@ -65,7 +66,7 @@ public:
 	// returns the memory manager responsible for memory allocation
 	// during exceptions
 	MemoryManager *
-	getExceptionMemoryManager() override
+	getExceptionMemoryManager()
 	{
 		return (MemoryManager *) this;
 	}

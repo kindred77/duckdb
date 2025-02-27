@@ -36,40 +36,42 @@ using namespace gpos;
 class CXformDifferenceAll2LeftAntiSemiJoin : public CXformExploration
 {
 private:
-public:
+	// private copy ctor
 	CXformDifferenceAll2LeftAntiSemiJoin(
-		const CXformDifferenceAll2LeftAntiSemiJoin &) = delete;
+		const CXformDifferenceAll2LeftAntiSemiJoin &);
 
+public:
 	// ctor
 	explicit CXformDifferenceAll2LeftAntiSemiJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformDifferenceAll2LeftAntiSemiJoin() override = default;
+	virtual ~CXformDifferenceAll2LeftAntiSemiJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfDifferenceAll2LeftAntiSemiJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformDifferenceAll2LeftAntiSemiJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformDifferenceAll2LeftAntiSemiJoin
 

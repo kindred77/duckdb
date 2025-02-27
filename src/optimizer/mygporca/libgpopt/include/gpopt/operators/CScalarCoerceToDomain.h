@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CScalarCoerceToDomain.h
@@ -40,47 +40,50 @@ private:
 	// does operator return NULL on NULL input?
 	BOOL m_returns_null_on_null_input;
 
-public:
-	CScalarCoerceToDomain(const CScalarCoerceToDomain &) = delete;
+	// private copy ctor
+	CScalarCoerceToDomain(const CScalarCoerceToDomain &);
 
+public:
 	// ctor
 	CScalarCoerceToDomain(CMemoryPool *mp, IMDId *mdid_type, INT type_modifier,
 						  ECoercionForm dxl_coerce_format, INT location);
 
 	// dtor
-	~CScalarCoerceToDomain() override = default;
+	virtual ~CScalarCoerceToDomain()
+	{
+	}
 
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarCoerceToDomain;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarCoerceToDomain";
 	}
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// conversion function
 	static CScalarCoerceToDomain *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarCoerceToDomain == pop->Eopid());
 
 		return dynamic_cast<CScalarCoerceToDomain *>(pop);

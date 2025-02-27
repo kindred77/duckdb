@@ -12,10 +12,8 @@
 
 #include "naucrates/dxl/operators/CDXLPhysicalDynamicTableScan.h"
 
-#include "naucrates/dxl/CDXLUtils.h"
 #include "naucrates/dxl/operators/CDXLNode.h"
 #include "naucrates/dxl/xml/CXMLSerializer.h"
-#include "naucrates/md/IMDCacheObject.h"
 
 using namespace gpos;
 using namespace gpdxl;
@@ -30,15 +28,14 @@ using namespace gpdxl;
 //
 //---------------------------------------------------------------------------
 CDXLPhysicalDynamicTableScan::CDXLPhysicalDynamicTableScan(
-	CMemoryPool *mp, CDXLTableDescr *table_descr, IMdIdArray *part_mdids,
-	ULongPtrArray *selector_ids)
+	CMemoryPool *mp, CDXLTableDescr *table_descr, ULONG part_idx_id,
+	ULONG part_idx_id_printable)
 	: CDXLPhysical(mp),
 	  m_dxl_table_descr(table_descr),
-	  m_part_mdids(part_mdids),
-	  m_selector_ids(selector_ids)
-
+	  m_part_index_id(part_idx_id),
+	  m_part_index_id_printable(part_idx_id_printable)
 {
-	GPOS_ASSERT(nullptr != table_descr);
+	GPOS_ASSERT(NULL != table_descr);
 }
 
 
@@ -53,8 +50,6 @@ CDXLPhysicalDynamicTableScan::CDXLPhysicalDynamicTableScan(
 CDXLPhysicalDynamicTableScan::~CDXLPhysicalDynamicTableScan()
 {
 	m_dxl_table_descr->Release();
-	m_part_mdids->Release();
-	CRefCount::SafeRelease(m_selector_ids);
 }
 
 //---------------------------------------------------------------------------
@@ -100,10 +95,32 @@ CDXLPhysicalDynamicTableScan::GetDXLTableDescr() const
 	return m_dxl_table_descr;
 }
 
-IMdIdArray *
-CDXLPhysicalDynamicTableScan::GetParts() const
+//---------------------------------------------------------------------------
+//	@function:
+//		CDXLPhysicalDynamicTableScan::GetPartIndexId
+//
+//	@doc:
+//		Id of partition index
+//
+//---------------------------------------------------------------------------
+ULONG
+CDXLPhysicalDynamicTableScan::GetPartIndexId() const
 {
-	return m_part_mdids;
+	return m_part_index_id;
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CDXLPhysicalDynamicTableScan::GetPartIndexIdPrintable
+//
+//	@doc:
+//		Printable partition index id
+//
+//---------------------------------------------------------------------------
+ULONG
+CDXLPhysicalDynamicTableScan::GetPartIndexIdPrintable() const
+{
+	return m_part_index_id_printable;
 }
 
 //---------------------------------------------------------------------------
@@ -122,18 +139,16 @@ CDXLPhysicalDynamicTableScan::SerializeToDXL(CXMLSerializer *xml_serializer,
 
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix), element_name);
-	CWStringDynamic *serialized_selector_ids =
-		CDXLUtils::Serialize(m_mp, m_selector_ids);
 	xml_serializer->AddAttribute(
-		CDXLTokens::GetDXLTokenStr(EdxltokenSelectorIds),
-		serialized_selector_ids);
-	GPOS_DELETE(serialized_selector_ids);
+		CDXLTokens::GetDXLTokenStr(EdxltokenPartIndexId), m_part_index_id);
+	if (m_part_index_id_printable != m_part_index_id)
+	{
+		xml_serializer->AddAttribute(
+			CDXLTokens::GetDXLTokenStr(EdxltokenPartIndexIdPrintable),
+			m_part_index_id_printable);
+	}
 	node->SerializePropertiesToDXL(xml_serializer);
 	node->SerializeChildrenToDXL(xml_serializer);
-	IMDCacheObject::SerializeMDIdList(
-		xml_serializer, m_part_mdids,
-		CDXLTokens::GetDXLTokenStr(EdxltokenPartitions),
-		CDXLTokens::GetDXLTokenStr(EdxltokenPartition));
 	m_dxl_table_descr->SerializeToDXL(xml_serializer);
 	xml_serializer->CloseElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix), element_name);
@@ -156,8 +171,8 @@ CDXLPhysicalDynamicTableScan::AssertValid(const CDXLNode *node,
 	GPOS_ASSERT(2 == node->Arity());
 
 	// assert validity of table descriptor
-	GPOS_ASSERT(nullptr != m_dxl_table_descr);
-	GPOS_ASSERT(nullptr != m_dxl_table_descr->MdName());
+	GPOS_ASSERT(NULL != m_dxl_table_descr);
+	GPOS_ASSERT(NULL != m_dxl_table_descr->MdName());
 	GPOS_ASSERT(m_dxl_table_descr->MdName()->GetMDName()->IsValid());
 }
 #endif	// GPOS_DEBUG

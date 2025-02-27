@@ -41,25 +41,29 @@ public:
 	static CDXLMinidump *PdxlmdLoad(CMemoryPool *mp, const CHAR *file_name);
 
 	// generate a minidump file name in the provided buffer
-	static void GenerateMinidumpFileName(
-		CHAR *buf, ULONG length, ULONG ulSessionId, ULONG ulCmdId,
-		const CHAR *szMinidumpFileName = nullptr);
+	static void GenerateMinidumpFileName(CHAR *buf, ULONG length,
+										 ULONG ulSessionId, ULONG ulCmdId,
+										 const CHAR *szMinidumpFileName = NULL);
 
 	// finalize minidump and dump to a file
 	static void Finalize(CMiniDumperDXL *pmdp, BOOL fSerializeErrCtx);
 
 	// load and execute the minidump in the specified file
-	static CDXLNode *PdxlnExecuteMinidump(
-		CMemoryPool *mp, const CHAR *file_name, ULONG ulSegments,
-		ULONG ulSessionId, ULONG ulCmdId, COptimizerConfig *optimizer_config,
-		IConstExprEvaluator *pceeval = nullptr);
+	static CDXLNode *PdxlnExecuteMinidump(CMemoryPool *mp,
+										  const CHAR *file_name,
+										  ULONG ulSegments, ULONG ulSessionId,
+										  ULONG ulCmdId,
+										  COptimizerConfig *optimizer_config,
+										  IConstExprEvaluator *pceeval = NULL);
 
 	// execute the given minidump
-	static CDXLNode *PdxlnExecuteMinidump(
-		CMemoryPool *mp, CDXLMinidump *pdxlmdp, const CHAR *file_name,
-		ULONG ulSegments, ULONG ulSessionId, ULONG ulCmdId,
-		COptimizerConfig *optimizer_config,
-		IConstExprEvaluator *pceeval = nullptr);
+	static CDXLNode *PdxlnExecuteMinidump(CMemoryPool *mp,
+										  CDXLMinidump *pdxlmdp,
+										  const CHAR *file_name,
+										  ULONG ulSegments, ULONG ulSessionId,
+										  ULONG ulCmdId,
+										  COptimizerConfig *optimizer_config,
+										  IConstExprEvaluator *pceeval = NULL);
 
 	// execute the given minidump using the given MD accessor
 	static CDXLNode *PdxlnExecuteMinidump(

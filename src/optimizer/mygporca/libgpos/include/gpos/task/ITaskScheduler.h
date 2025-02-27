@@ -31,14 +31,19 @@ class CTaskId;
 class ITaskScheduler
 {
 private:
-public:
-	ITaskScheduler(const ITaskScheduler &) = delete;
+	// private copy ctor
+	ITaskScheduler(const ITaskScheduler &);
 
+public:
 	// dummy ctor
-	ITaskScheduler() = default;
+	ITaskScheduler()
+	{
+	}
 
 	// dummy dtor
-	virtual ~ITaskScheduler() = default;
+	virtual ~ITaskScheduler()
+	{
+	}
 
 	// add task to waiting queue
 	virtual void Enqueue(CTask *) = 0;

@@ -125,7 +125,7 @@ public:
 								BOOL origin_nl_join = false);
 
 	// dtor
-	~CRewindabilitySpec() override;
+	virtual ~CRewindabilitySpec();
 
 	// check if rewindability specs match
 	BOOL Matches(const CRewindabilitySpec *prs) const;
@@ -134,30 +134,31 @@ public:
 	BOOL FSatisfies(const CRewindabilitySpec *prs) const;
 
 	// append enforcers to dynamic array for the given plan properties
-	void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdPropPlan *prpp, CExpressionArray *pdrgpexpr,
-						 CExpression *pexpr) override;
+	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CReqdPropPlan *prpp,
+								 CExpressionArray *pdrgpexpr,
+								 CExpression *pexpr);
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// extract columns used by the rewindability spec
-	CColRefSet *
-	PcrsUsed(CMemoryPool *mp) const override
+	virtual CColRefSet *
+	PcrsUsed(CMemoryPool *mp) const
 	{
 		// return an empty set
 		return GPOS_NEW(mp) CColRefSet(mp);
 	}
 
 	// property type
-	EPropSpecType
-	Epst() const override
+	virtual EPropSpecType
+	Epst() const
 	{
 		return EpstRewindability;
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	ERewindabilityType
 	Ert() const

@@ -31,9 +31,10 @@ class CDistributionSpec;
 class CPhysicalHashAgg : public CPhysicalAgg
 {
 private:
-public:
-	CPhysicalHashAgg(const CPhysicalHashAgg &) = delete;
+	// private copy ctor
+	CPhysicalHashAgg(const CPhysicalHashAgg &);
 
+public:
 	// ctor
 	CPhysicalHashAgg(CMemoryPool *mp, CColRefArray *colref_array,
 					 CColRefArray *pdrgpcrMinimal,
@@ -49,19 +50,19 @@ public:
 	);
 
 	// dtor
-	~CPhysicalHashAgg() override;
+	virtual ~CPhysicalHashAgg();
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalHashAgg;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalHashAgg";
 	}
@@ -71,26 +72,26 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required sort columns of the n-th child
-	COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							COrderSpec *posRequired, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt,
-							ULONG ulOptReq) const override;
+	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+									COrderSpec *posRequired, ULONG child_index,
+									CDrvdPropArray *pdrgpdpCtxt,
+									ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *PosDerive(CMemoryPool *mp,
-						  CExpressionHandle &exprhdl) const override;
+	virtual COrderSpec *PosDerive(CMemoryPool *mp,
+								  CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -100,11 +101,11 @@ public:
 	static CPhysicalHashAgg *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalHashAgg == pop->Eopid() ||
 					EopPhysicalHashAggDeduplicate == pop->Eopid());
 
-		return dynamic_cast<CPhysicalHashAgg *>(pop);
+		return reinterpret_cast<CPhysicalHashAgg *>(pop);
 	}
 
 };	// class CPhysicalHashAgg

@@ -87,9 +87,9 @@ CXformSubqJoin2Apply::CollectSubqueries(
 )
 {
 	GPOS_CHECK_STACK_SIZE;
-	GPOS_ASSERT(nullptr != pexpr);
-	GPOS_ASSERT(nullptr != pdrgpcrs);
-	GPOS_ASSERT(nullptr != pdrgpdrgpexprSubqs);
+	GPOS_ASSERT(NULL != pexpr);
+	GPOS_ASSERT(NULL != pdrgpcrs);
+	GPOS_ASSERT(NULL != pdrgpdrgpexprSubqs);
 
 	COperator *pop = pexpr->Pop();
 	if (CUtils::FSubquery(pop))
@@ -148,11 +148,11 @@ CXformSubqJoin2Apply::PexprReplaceSubqueries(CMemoryPool *mp,
 											 ExprToColRefMap *phmexprcr)
 {
 	GPOS_CHECK_STACK_SIZE;
-	GPOS_ASSERT(nullptr != pexprScalar);
-	GPOS_ASSERT(nullptr != phmexprcr);
+	GPOS_ASSERT(NULL != pexprScalar);
+	GPOS_ASSERT(NULL != phmexprcr);
 
 	CColRef *colref = phmexprcr->Find(pexprScalar);
-	if (nullptr != colref)
+	if (NULL != colref)
 	{
 		// look-up succeeded on root operator, we return here
 		return CUtils::PexprScalarIdent(mp, colref);
@@ -187,7 +187,7 @@ CExpression *
 CXformSubqJoin2Apply::PexprSubqueryPushDown(CMemoryPool *mp, CExpression *pexpr,
 											BOOL fEnforceCorrelatedApply)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(COperator::EopLogicalSelect == pexpr->Pop()->Eopid());
 
 	CExpression *pexprJoin = (*pexpr)[0];
@@ -203,9 +203,9 @@ CXformSubqJoin2Apply::PexprSubqueryPushDown(CMemoryPool *mp, CExpression *pexpr,
 	for (ULONG ul = 0; ul < arity - 1; ul++)
 	{
 		CExpression *pexprChild = (*pexprJoin)[ul];
-		CColRefSet *pcrsOutput = nullptr;
+		CColRefSet *pcrsOutput = NULL;
 
-		if ((nullptr == naryLOJOp || naryLOJOp->IsInnerJoinChild(ul)))
+		if ((NULL == naryLOJOp || naryLOJOp->IsInnerJoinChild(ul)))
 		{
 			// inner join child
 			pcrsOutput = pexprChild->DeriveOutputColumns();
@@ -264,7 +264,7 @@ CXformSubqJoin2Apply::PexprSubqueryPushDown(CMemoryPool *mp, CExpression *pexpr,
 			// unnest subqueries in newly created child
 			CExpression *pexprUnnested =
 				PexprSubqueryUnnest(mp, pexprNewChild, fEnforceCorrelatedApply);
-			if (nullptr != pexprUnnested)
+			if (NULL != pexprUnnested)
 			{
 				pexprNewChild->Release();
 				pexprNewChild = pexprUnnested;
@@ -312,7 +312,7 @@ CXformSubqJoin2Apply::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 								CExpression *pexpr,
 								BOOL fEnforceCorrelatedApply) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -320,7 +320,7 @@ CXformSubqJoin2Apply::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	CExpression *pexprSelect =
 		CXformUtils::PexprSeparateSubqueryPreds(mp, pexpr);
 
-	if (nullptr == pexprSelect)
+	if (NULL == pexprSelect)
 	{
 		// separating predicates failed, probably because the subquery was in the LOJ parts
 		return;
@@ -347,7 +347,7 @@ CXformSubqJoin2Apply::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 
 	pexprSelect->Release();
 
-	CExpression *pexprResult = nullptr;
+	CExpression *pexprResult = NULL;
 	BOOL fHasSubquery = (*pexprSubqsPushedDown)[1]->DeriveHasSubquery();
 	if (fHasSubquery)
 	{
@@ -361,7 +361,7 @@ CXformSubqJoin2Apply::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 		pexprResult = pexprSubqsPushedDown;
 	}
 
-	if (nullptr == pexprResult)
+	if (NULL == pexprResult)
 	{
 		// unnesting failed, return here
 		return;

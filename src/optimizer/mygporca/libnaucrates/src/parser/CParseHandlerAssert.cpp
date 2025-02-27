@@ -67,8 +67,7 @@ CParseHandlerAssert::StartElement(const XMLCh *const,  // element_uri,
 	CHAR *error_code = CDXLOperatorFactory::ExtractConvertAttrValueToSz(
 		m_parse_handler_mgr->GetDXLMemoryManager(), attrs, EdxltokenErrorCode,
 		EdxltokenPhysicalAssert);
-	if (nullptr == error_code ||
-		GPOS_SQLSTATE_LENGTH != clib::Strlen(error_code))
+	if (NULL == error_code || GPOS_SQLSTATE_LENGTH != clib::Strlen(error_code))
 	{
 		GPOS_RAISE(
 			gpdxl::ExmaDXL, gpdxl::ExmiDXLInvalidAttributeValue,

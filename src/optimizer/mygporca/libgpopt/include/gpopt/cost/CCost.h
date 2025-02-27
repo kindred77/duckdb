@@ -20,7 +20,7 @@ namespace gpopt
 using namespace gpos;
 
 class CCost;
-using CCostArray = CDynamicPtrArray<CCost, CleanupDelete>;
+typedef CDynamicPtrArray<CCost, CleanupDelete> CCostArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -86,7 +86,9 @@ public:
 	}
 
 	// d'tor
-	virtual ~CCost() = default;
+	virtual ~CCost()
+	{
+	}
 
 };	// class CCost
 

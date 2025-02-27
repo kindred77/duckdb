@@ -29,20 +29,21 @@ template <class T>
 class CAutoRef : public CAutoP<T>
 {
 private:
+	// hidden copy ctor
+	CAutoRef<T>(const CAutoRef &);
+
 public:
-	CAutoRef(const CAutoRef &) = delete;
-
 	// ctor
-	explicit CAutoRef() : CAutoP<T>()
+	explicit CAutoRef<T>() : CAutoP<T>()
 	{
 	}
 
 	// ctor
-	explicit CAutoRef(T *object) : CAutoP<T>(object)
+	explicit CAutoRef<T>(T *object) : CAutoP<T>(object)
 	{
 	}
 
-	~CAutoRef() override;
+	virtual ~CAutoRef();
 
 	// simple assignment
 	CAutoRef<T> const &
@@ -65,13 +66,13 @@ public:
 template <class T>
 CAutoRef<T>::~CAutoRef()
 {
-	if (nullptr != CAutoP<T>::m_object)
+	if (NULL != CAutoP<T>::m_object)
 	{
 		reinterpret_cast<CRefCount *>(CAutoP<T>::m_object)->Release();
 	}
 
 	// null out pointer before ~CAutoP() gets called
-	CAutoP<T>::m_object = nullptr;
+	CAutoP<T>::m_object = NULL;
 }
 }  // namespace gpos
 

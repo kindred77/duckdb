@@ -38,20 +38,21 @@ private:
 	// message priotity
 	ULONG m_message_priority;
 
+	// no copy ctor
+	CLoggerSyslog(const CLoggerSyslog &);
+
 	// write string to syslog
-	void Write(const WCHAR *log_entry, ULONG severity) override;
+	void Write(const WCHAR *log_entry, ULONG severity);
 
 	static CLoggerSyslog m_alert_logger;
 
 public:
-	CLoggerSyslog(const CLoggerSyslog &) = delete;
-
 	// ctor
 	CLoggerSyslog(const CHAR *proc_name, ULONG init_mask,
 				  ULONG message_priority);
 
 	// dtor
-	~CLoggerSyslog() override;
+	virtual ~CLoggerSyslog();
 
 	// write alert message to syslog - use ASCII characters only
 	static void Alert(const WCHAR *msg);

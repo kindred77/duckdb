@@ -33,7 +33,7 @@ CParseHandlerScalarComp::CParseHandlerScalarComp(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerScalarOp(mp, parse_handler_mgr, parse_handler_root),
-	  m_dxl_op(nullptr)
+	  m_dxl_op(NULL)
 {
 }
 
@@ -45,7 +45,9 @@ CParseHandlerScalarComp::CParseHandlerScalarComp(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CParseHandlerScalarComp::~CParseHandlerScalarComp() = default;
+CParseHandlerScalarComp::~CParseHandlerScalarComp()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

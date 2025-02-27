@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations.h
@@ -33,10 +33,11 @@ class CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations
 	: public CXformLeftSemiApply2LeftSemiJoinNoCorrelations
 {
 private:
-public:
+	// private copy ctor
 	CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations(
-		const CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations &) = delete;
+		const CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations &);
 
+public:
 	// ctor
 	explicit CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations(CMemoryPool *mp)
 		: CXformLeftSemiApply2LeftSemiJoinNoCorrelations(
@@ -53,17 +54,19 @@ public:
 	}
 
 	// dtor
-	~CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations() override = default;
+	virtual ~CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftSemiApplyIn2LeftSemiJoinNoCorrelations;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftSemiApplyIn2LeftSemiJoinNoCorrelations";
 	}

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarCoerceBase.cpp
@@ -44,7 +44,7 @@ CDXLScalarCoerceBase::CDXLScalarCoerceBase(CMemoryPool *mp, IMDId *mdid_type,
 	  m_dxl_coerce_format(dxl_coerce_format),
 	  m_location(location)
 {
-	GPOS_ASSERT(nullptr != mdid_type);
+	GPOS_ASSERT(NULL != mdid_type);
 	GPOS_ASSERT(mdid_type->IsValid());
 }
 

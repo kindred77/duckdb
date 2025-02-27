@@ -115,8 +115,12 @@ public:
 		ExmiOutOfStack,
 		ExmiAbortTimeout,
 		ExmiIOError,
+		ExmiNetError,
 		ExmiOverflow,
 		ExmiInvalidDeletion,
+
+		// unexpected OOM during fault simulation
+		ExmiUnexpectedOOMDuringFaultSimulation,
 
 		// sql exceptions
 		ExmiSQLDefault,
@@ -163,6 +167,9 @@ private:
 	// line in file
 	ULONG m_line;
 
+	// severity level mapped to GPDB log severity level
+	ULONG m_severity_level;
+
 	// sql state error codes
 	static const ErrCodeElem m_errcode[ExmiSQLTest - ExmiSQLDefault + 1];
 
@@ -178,10 +185,13 @@ public:
 	enum ExSeverity
 	{
 		ExsevInvalid = 0,
+		ExsevPanic,
+		ExsevFatal,
 		ExsevError,
 		ExsevWarning,
 		ExsevNotice,
 		ExsevTrace,
+		ExsevDebug1,
 
 		ExsevSentinel
 	};
@@ -192,6 +202,8 @@ public:
 	// ctor
 	CException(ULONG major, ULONG minor);
 	CException(ULONG major, ULONG minor, const CHAR *filename, ULONG line);
+	CException(ULONG major, ULONG minor, const CHAR *filename, ULONG line,
+			   ULONG severity_level);
 
 	// accessors
 	ULONG
@@ -216,6 +228,12 @@ public:
 	Line() const
 	{
 		return m_line;
+	}
+
+	ULONG
+	SeverityLevel() const
+	{
+		return m_severity_level;
 	}
 
 	const CHAR *
@@ -256,6 +274,11 @@ public:
 	// wrapper around throw
 	static void Raise(const CHAR *filename, ULONG line, ULONG major,
 					  ULONG minor, ...) __attribute__((__noreturn__));
+
+	// wrapper around throw with severity level
+	// static void Raise(const CHAR *filename, ULONG line, ULONG major,
+	// 				  ULONG minor, ULONG severity_level, ...)
+	// 	__attribute__((__noreturn__));
 
 	// rethrow wrapper
 	static void Reraise(CException exc, BOOL propagate = false)

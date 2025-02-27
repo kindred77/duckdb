@@ -28,32 +28,40 @@ namespace gpopt
 class CPhysicalLeftAntiSemiNLJoin : public CPhysicalNLJoin
 {
 private:
-public:
-	CPhysicalLeftAntiSemiNLJoin(const CPhysicalLeftAntiSemiNLJoin &) = delete;
+	// private copy ctor
+	CPhysicalLeftAntiSemiNLJoin(const CPhysicalLeftAntiSemiNLJoin &);
 
+public:
 	// ctor
 	explicit CPhysicalLeftAntiSemiNLJoin(CMemoryPool *mp);
 
 	// dtor
-	~CPhysicalLeftAntiSemiNLJoin() override;
+	virtual ~CPhysicalLeftAntiSemiNLJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftAntiSemiNLJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftAntiSemiNLJoin";
 	}
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
+
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *PppsRequired(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	// conversion function
 	static CPhysicalLeftAntiSemiNLJoin *

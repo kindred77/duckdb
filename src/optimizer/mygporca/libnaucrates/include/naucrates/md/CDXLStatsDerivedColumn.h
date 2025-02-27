@@ -56,16 +56,17 @@ private:
 
 	CDXLBucketArray *m_dxl_stats_bucket_array;
 
-public:
-	CDXLStatsDerivedColumn(const CDXLStatsDerivedColumn &) = delete;
+	// private copy ctor
+	CDXLStatsDerivedColumn(const CDXLStatsDerivedColumn &);
 
+public:
 	// ctor
 	CDXLStatsDerivedColumn(ULONG colid, CDouble width, CDouble null_freq,
 						   CDouble distinct_remaining, CDouble freq_remaining,
 						   CDXLBucketArray *dxl_stats_bucket_array);
 
 	// dtor
-	~CDXLStatsDerivedColumn() override;
+	virtual ~CDXLStatsDerivedColumn();
 
 	// column identifier
 	ULONG
@@ -114,8 +115,8 @@ public:
 };
 
 // array of dxl buckets
-using CDXLStatsDerivedColumnArray =
-	CDynamicPtrArray<CDXLStatsDerivedColumn, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLStatsDerivedColumn, CleanupRelease>
+	CDXLStatsDerivedColumnArray;
 }  // namespace gpmd
 
 #endif	// !GPMD_CDXLStatsDerivedColumn_H

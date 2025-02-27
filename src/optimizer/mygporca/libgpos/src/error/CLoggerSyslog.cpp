@@ -26,7 +26,7 @@
 using namespace gpos;
 
 // initialization of static members
-CLoggerSyslog CLoggerSyslog::m_alert_logger(nullptr /*szName*/,
+CLoggerSyslog CLoggerSyslog::m_alert_logger(NULL /*szName*/,
 											LOG_PERROR | LOG_CONS, LOG_ALERT);
 
 
@@ -55,7 +55,9 @@ CLoggerSyslog::CLoggerSyslog(const CHAR *proc_name, ULONG init_mask,
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLoggerSyslog::~CLoggerSyslog() = default;
+CLoggerSyslog::~CLoggerSyslog()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

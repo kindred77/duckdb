@@ -146,6 +146,9 @@ enum EOptTraceFlag
 	EopttraceApplyLeftOuter2InnerUnionAllLeftAntiSemiJoinDisregardingStats =
 		103017,
 
+	// Disable sort below Insert for Parquet tables
+	EopttraceDisableSortForDMLOnParquet = 103018,
+
 	// Do not keep an order-by, even if it is right under a DML operator
 	EopttraceRemoveOrderBelowDML = 103019,
 
@@ -210,22 +213,17 @@ enum EOptTraceFlag
 	// Use legacy (cdbhash) opfamilies for compatibility
 	EopttraceUseLegacyOpfamilies = 103039,
 
-	// Enable NL Left Join plan alternatives where inner child is redistributed if possible
-	EopttraceEnableRedistributeNLLOJInnerChild = 103040,
+	// Enable handling external partitioned tables
+	EopttraceEnableExternalPartitionedTables = 103040,
 
-	EopttraceForceComprehensiveJoinImplementation = 103041,
+	// enable NL Left Join plan alternatives where inner child is redistributed if possible
+	EopttraceEnableRedistributeNLLOJInnerChild = 103041,
 
-	// Enable use the distribution key in DQA
-	EopttraceEnableUseDistributionInDQA = 103042,
+	// Explore a nested loop join even if a hash join is possible
+	EopttraceForceComprehensiveJoinImplementation = 103042,
 
-	// Discard HashJoin with RedistributeMotion nodes
-	EopttraceDiscardRedistributeHashJoin = 103044,
-
-	// disable hash join alternatives
-	EopttraceDisableInnerHashJoin = 103045,
-
-	// enable nested loop join alternatives
-	EopttraceDisableInnerNLJ = 103046,
+	// Ordered Agg
+	EopttraceEnableOrderedAgg = 103043,
 
 	///////////////////////////////////////////////////////
 	///////////////////// statistics flags ////////////////

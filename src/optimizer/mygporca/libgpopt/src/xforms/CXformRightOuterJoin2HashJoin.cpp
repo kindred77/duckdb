@@ -74,14 +74,14 @@ CXformRightOuterJoin2HashJoin::Transform(CXformContext *pxfctxt,
 										 CXformResult *pxfres,
 										 CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
 	const IStatistics *outerStats = (*pexpr)[0]->Pstats();
 	const IStatistics *innerStats = (*pexpr)[1]->Pstats();
 
-	if (nullptr == outerStats || nullptr == innerStats)
+	if (NULL == outerStats || NULL == innerStats)
 	{
 		return;
 	}

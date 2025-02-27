@@ -56,9 +56,10 @@ private:
 	// number of consumers in case the materialize is a spooling operator
 	ULONG m_num_consumer_slices;
 
-public:
-	CDXLPhysicalMaterialize(CDXLPhysicalMaterialize &) = delete;
+	// private copy ctor
+	CDXLPhysicalMaterialize(CDXLPhysicalMaterialize &);
 
+public:
 	// ctor/dtor
 	CDXLPhysicalMaterialize(CMemoryPool *mp, BOOL is_eager);
 
@@ -67,8 +68,8 @@ public:
 							ULONG num_consumer_slices);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 	ULONG GetSpoolingOpId() const;
 	INT GetExecutorSlice() const;
 	ULONG GetNumConsumerSlices() const;
@@ -80,14 +81,14 @@ public:
 	BOOL IsEager() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLPhysicalMaterialize *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalMaterialize == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalMaterialize *>(dxl_op);
@@ -96,7 +97,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

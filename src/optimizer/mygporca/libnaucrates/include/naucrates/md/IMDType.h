@@ -84,18 +84,16 @@ public:
 	};
 
 	// object type
-	Emdtype
-	MDType() const override
+	virtual Emdtype
+	MDType() const
 	{
 		return EmdtType;
 	}
 
 	virtual IMDId *GetDistrOpfamilyMdid() const = 0;
 
-	virtual IMDId *GetPartOpfamilyMdid() const = 0;
-
 	// md id of cache object
-	IMDId *MDId() const override = 0;
+	virtual IMDId *MDId() const = 0;
 
 	// id of specified specified comparison operator type
 	virtual IMDId *GetMdidForCmpType(ECmpType cmp_type) const = 0;

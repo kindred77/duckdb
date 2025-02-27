@@ -38,10 +38,10 @@ public:
 	CSerializableStackTrace();
 
 	// dtor
-	~CSerializableStackTrace() override;
+	virtual ~CSerializableStackTrace();
 
 	// serialize object to passed stream
-	void Serialize(COstream &oos) override;
+	virtual void Serialize(COstream &oos);
 
 };	// class CSerializableStackTrace
 }  // namespace gpopt

@@ -34,36 +34,39 @@ using namespace gpos;
 class CXformInlineCTEConsumerUnderSelect : public CXformExploration
 {
 private:
-public:
+	// private copy ctor
 	CXformInlineCTEConsumerUnderSelect(
-		const CXformInlineCTEConsumerUnderSelect &) = delete;
+		const CXformInlineCTEConsumerUnderSelect &);
 
+public:
 	// ctor
 	explicit CXformInlineCTEConsumerUnderSelect(CMemoryPool *mp);
 
 	// dtor
-	~CXformInlineCTEConsumerUnderSelect() override = default;
+	virtual ~CXformInlineCTEConsumerUnderSelect()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfInlineCTEConsumerUnderSelect;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformInlineCTEConsumerUnderSelect";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformInlineCTEConsumerUnderSelect
 }  // namespace gpopt

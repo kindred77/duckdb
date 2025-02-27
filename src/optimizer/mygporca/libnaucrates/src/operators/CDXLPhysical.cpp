@@ -36,7 +36,9 @@ CDXLPhysical::CDXLPhysical(CMemoryPool *mp) : CDXLOperator(mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CDXLPhysical::~CDXLPhysical() = default;
+CDXLPhysical::~CDXLPhysical()
+{
+}
 
 //---------------------------------------------------------------------------
 //      @function:
@@ -65,7 +67,7 @@ CDXLPhysical::GetDXLOperatorType() const
 void
 CDXLPhysical::AssertValid(const CDXLNode *node, BOOL validate_children) const
 {
-	GPOS_ASSERT(nullptr != node);
+	GPOS_ASSERT(NULL != node);
 
 	GPOS_ASSERT(2 <= node->Arity());
 

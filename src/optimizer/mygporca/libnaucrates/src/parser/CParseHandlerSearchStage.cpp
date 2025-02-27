@@ -34,7 +34,7 @@ CParseHandlerSearchStage::CParseHandlerSearchStage(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
-	  m_xforms(nullptr),
+	  m_xforms(NULL),
 	  m_cost_threshold(GPOPT_INVALID_COST)
 {
 }
@@ -73,7 +73,7 @@ CParseHandlerSearchStage::StartElement(const XMLCh *const element_uri,
 								 element_local_name))
 	{
 		// start search stage section in the DXL document
-		GPOS_ASSERT(nullptr == m_xforms);
+		GPOS_ASSERT(NULL == m_xforms);
 
 		m_xforms = GPOS_NEW(m_mp) CXformSet(m_mp);
 
@@ -95,7 +95,7 @@ CParseHandlerSearchStage::StartElement(const XMLCh *const element_uri,
 			 XMLString::compareString(CDXLTokens::XmlstrToken(EdxltokenXform),
 									  element_local_name))
 	{
-		GPOS_ASSERT(nullptr != m_xforms);
+		GPOS_ASSERT(NULL != m_xforms);
 
 		// start new xform
 		CParseHandlerBase *xform_set_parse_handler =
@@ -150,7 +150,9 @@ CParseHandlerSearchStage::EndElement(const XMLCh *const,  // element_uri,
 	{
 		CParseHandlerXform *xform_set_parse_handler =
 			dynamic_cast<CParseHandlerXform *>((*this)[idx]);
-		BOOL fSet GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+		BOOL fSet =
+#endif	// GPOS_DEBUG
 			m_xforms->ExchangeSet(xform_set_parse_handler->GetXform()->Exfid());
 		GPOS_ASSERT(!fSet);
 	}

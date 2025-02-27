@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CPhysicalBitmapTableScan.h
@@ -42,34 +42,37 @@ private:
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
 	ULONG m_ulOriginOpId;
 
-public:
-	CPhysicalBitmapTableScan(const CPhysicalBitmapTableScan &) = delete;
+	// disable copy ctor
+	CPhysicalBitmapTableScan(const CPhysicalBitmapTableScan &);
 
+public:
 	// ctor
 	CPhysicalBitmapTableScan(CMemoryPool *mp, CTableDescriptor *ptabdesc,
 							 ULONG ulOriginOpId, const CName *pnameTableAlias,
 							 CColRefArray *pdrgpcrOutput);
 
 	// dtor
-	~CPhysicalBitmapTableScan() override = default;
+	virtual ~CPhysicalBitmapTableScan()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalBitmapTableScan;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalBitmapTableScan";
 	}
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
@@ -82,33 +85,43 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
+
+	// derive partition index map
+	virtual CPartIndexMap *
+	PpimDerive(CMemoryPool *mp,
+			   CExpressionHandle &,	 // exprhdl
+			   CDrvdPropCtxt *		 //pdpctxt
+	) const
+	{
+		return GPOS_NEW(mp) CPartIndexMap(mp);
+	}
 
 	// statistics derivation during costing
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *,		   // mp
 				 CExpressionHandle &,  // exprhdl
 				 CReqdPropPlan *,	   // prpplan
 				 IStatisticsArray *	   //stats_ctxt
-	) const override
+	) const
 	{
 		GPOS_ASSERT(
 			!"stats derivation during costing for bitmap table scan is invalid");
 
-		return nullptr;
+		return NULL;
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// conversion function
 	static CPhysicalBitmapTableScan *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalBitmapTableScan == pop->Eopid());
 
 		return dynamic_cast<CPhysicalBitmapTableScan *>(pop);

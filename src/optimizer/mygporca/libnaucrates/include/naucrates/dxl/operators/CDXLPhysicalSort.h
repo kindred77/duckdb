@@ -43,30 +43,31 @@ enum Edxlsort
 class CDXLPhysicalSort : public CDXLPhysical
 {
 private:
+	// private copy ctor
+	CDXLPhysicalSort(const CDXLPhysicalSort &);
+
 	// whether sort discards duplicates
 	BOOL m_discard_duplicates;
 
 
 public:
-	CDXLPhysicalSort(const CDXLPhysicalSort &) = delete;
-
 	// ctor/dtor
 	CDXLPhysicalSort(CMemoryPool *mp, BOOL discard_duplicates);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 	BOOL FDiscardDuplicates() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalSort *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalSort == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalSort *>(dxl_op);
@@ -75,7 +76,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

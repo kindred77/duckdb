@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+//	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
 //	@filename:
 //		_api.cpp
@@ -15,6 +15,7 @@
 #include "gpos/common/CAutoP.h"
 #include "gpos/common/CDebugCounter.h"
 #include "gpos/common/CMainArgs.h"
+#include "gpos/error/CFSimulator.h"
 #include "gpos/error/CLoggerStream.h"
 #include "gpos/error/CMessageRepository.h"
 #include "gpos/io/COstreamString.h"
@@ -25,13 +26,13 @@
 #include "gpos/task/CWorkerPoolManager.h"
 
 #include "gpopt/exception.h"
-//#include "naucrates/exception.h"
+#include "naucrates/exception.h"
 
 using namespace gpos;
 
 
 // refer gpopt/exception.cpp for explanation of errors
-const gpos::ULONG expected_opt_fallback[] = {
+const ULONG expected_opt_fallback[] = {
 	gpopt::
 		ExmiInvalidPlanAlternative,	 // chosen plan id is outside range of possible plans
 	gpopt::ExmiUnsupportedOp,				 // unsupported operator
@@ -48,45 +49,45 @@ const gpos::ULONG expected_opt_fallback[] = {
 
 // array of DXL minor exception types that trigger expected fallback to the planner
 // refer naucrates/exception.cpp for explanation of errors
-// const gpos::ULONG expected_dxl_fallback[] = {
-// 	gpdxl::ExmiMDObjUnsupported,  // unsupported metadata object
-// 	gpdxl::
-// 		ExmiQuery2DXLUnsupportedFeature,  // unsupported feature during algebrization
-// 	gpdxl::
-// 		ExmiPlStmt2DXLConversion,  // unsupported feature during plan freezing
-// 	gpdxl::
-// 		ExmiDXL2PlStmtConversion,  // unsupported feature during planned statement translation
-// 	gpdxl::ExmiDXL2ExprAttributeNotFound,
-// 	gpdxl::ExmiOptimizerError,
-// 	gpdxl::ExmiDXLMissingAttribute,
-// 	gpdxl::ExmiDXLUnrecognizedOperator,
-// 	gpdxl::ExmiDXLUnrecognizedCompOperator,
-// 	gpdxl::ExmiDXLIncorrectNumberOfChildren,
-// 	gpdxl::ExmiQuery2DXLMissingValue,
-// 	gpdxl::ExmiQuery2DXLDuplicateRTE,
-// 	gpdxl::ExmiMDCacheEntryNotFound,
-// 	gpdxl::ExmiQuery2DXLError,
-// 	gpdxl::ExmiInvalidComparisonTypeCode};
+const ULONG expected_dxl_fallback[] = {
+	gpdxl::ExmiMDObjUnsupported,  // unsupported metadata object
+	gpdxl::
+		ExmiQuery2DXLUnsupportedFeature,  // unsupported feature during algebrization
+	gpdxl::
+		ExmiPlStmt2DXLConversion,  // unsupported feature during plan freezing
+	gpdxl::
+		ExmiDXL2PlStmtConversion,  // unsupported feature during planned statement translation
+	gpdxl::ExmiDXL2ExprAttributeNotFound,
+	gpdxl::ExmiOptimizerError,
+	gpdxl::ExmiDXLMissingAttribute,
+	gpdxl::ExmiDXLUnrecognizedOperator,
+	gpdxl::ExmiDXLUnrecognizedCompOperator,
+	gpdxl::ExmiDXLIncorrectNumberOfChildren,
+	gpdxl::ExmiQuery2DXLMissingValue,
+	gpdxl::ExmiQuery2DXLDuplicateRTE,
+	gpdxl::ExmiMDCacheEntryNotFound,
+	gpdxl::ExmiQuery2DXLError,
+	gpdxl::ExmiInvalidComparisonTypeCode};
 
 // array of DXL minor exception types that error out and NOT fallback to the planner
-// const gpos::ULONG expected_dxl_errors[] = {
-// 	gpdxl::ExmiDXL2PlStmtForeignScanError,	// foreign table error
-// 	gpdxl::ExmiQuery2DXLNotNullViolation,	// not null violation
-// };
+const ULONG expected_dxl_errors[] = {
+	gpdxl::ExmiDXL2PlStmtExternalScanError,	 // external table error
+	gpdxl::ExmiQuery2DXLNotNullViolation,	 // not null violation
+};
 
-// gpos::BOOL
-// ShouldErrorOut(gpos::CException &exc)
-// {
-// 	return gpdxl::ExmaDXL == exc.Major() &&
-// 		   FoundException(exc, expected_dxl_errors,
-// 						  GPOS_ARRAY_SIZE(expected_dxl_errors));
-// }
+BOOL
+ShouldErrorOut(gpos::CException &exc)
+{
+	return gpdxl::ExmaDXL == exc.Major() &&
+		   FoundException(exc, expected_dxl_errors,
+						  GPOS_ARRAY_SIZE(expected_dxl_errors));
+}
 
 gpos::BOOL
 FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
 			   gpos::ULONG size)
 {
-	GPOS_ASSERT(nullptr != exceptions);
+	GPOS_ASSERT(NULL != exceptions);
 
 	gpos::ULONG minor = exc.Minor();
 	gpos::BOOL found = false;
@@ -98,23 +99,23 @@ FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
 	return found;
 }
 
-// gpos::BOOL
-// IsLoggableFailure(gpos::CException &exc)
-// {
-// 	gpos::ULONG major = exc.Major();
+gpos::BOOL
+IsLoggableFailure(gpos::CException &exc)
+{
+	gpos::ULONG major = exc.Major();
 
-// 	gpos::BOOL is_opt_failure_expected =
-// 		gpopt::ExmaGPOPT == major &&
-// 		FoundException(exc, expected_opt_fallback,
-// 					   GPOS_ARRAY_SIZE(expected_opt_fallback));
+	gpos::BOOL is_opt_failure_expected =
+		gpopt::ExmaGPOPT == major &&
+		FoundException(exc, expected_opt_fallback,
+					   GPOS_ARRAY_SIZE(expected_opt_fallback));
 
-// 	gpos::BOOL is_dxl_failure_expected =
-// 		(gpdxl::ExmaDXL == major || gpdxl::ExmaMD == major) &&
-// 		FoundException(exc, expected_dxl_fallback,
-// 					   GPOS_ARRAY_SIZE(expected_dxl_fallback));
+	gpos::BOOL is_dxl_failure_expected =
+		(gpdxl::ExmaDXL == major || gpdxl::ExmaMD == major) &&
+		FoundException(exc, expected_dxl_fallback,
+					   GPOS_ARRAY_SIZE(expected_dxl_fallback));
 
-// 	return (!is_opt_failure_expected && !is_dxl_failure_expected);
-// }
+	return (!is_opt_failure_expected && !is_dxl_failure_expected);
+}
 
 
 //---------------------------------------------------------------------------
@@ -143,7 +144,7 @@ gpos_init(struct gpos_init_params *params)
 
 	if (GPOS_OK != gpos::CMessageRepository::Init())
 	{
-		CWorkerPoolManager::Shutdown();
+		CWorkerPoolManager::WorkerPoolManager()->Shutdown();
 		CMemoryPoolManager::GetMemoryPoolMgr()->Shutdown();
 		return;
 	}
@@ -152,6 +153,15 @@ gpos_init(struct gpos_init_params *params)
 	{
 		return;
 	}
+
+#ifdef GPOS_FPSIMULATOR
+	if (GPOS_OK != gpos::CFSimulator::Init())
+	{
+		CMessageRepository::GetMessageRepository()->Shutdown();
+		CWorkerPoolManager::WorkerPoolManager()->Shutdown();
+		CMemoryPoolManager::GetMemoryPoolMgr()->Shutdown();
+	}
+#endif	// GPOS_FPSIMULATOR
 
 #ifdef GPOS_DEBUG_COUNTERS
 	CDebugCounter::Init();
@@ -171,7 +181,7 @@ int
 gpos_exec(gpos_exec_params *params)
 {
 	// check if passed parameters are valid
-	if (nullptr == params || nullptr == params->func)
+	if (NULL == params || NULL == params->func)
 	{
 		return 1;
 	}
@@ -181,14 +191,14 @@ gpos_exec(gpos_exec_params *params)
 		CWorkerPoolManager *pwpm = CWorkerPoolManager::WorkerPoolManager();
 
 		// check if worker pool is initialized
-		if (nullptr == pwpm)
+		if (NULL == pwpm)
 		{
 			return 1;
 		}
 
 		// if no stack start address is passed, use address in current stack frame
 		void *pvStackStart = params->stack_start;
-		if (nullptr == pvStackStart)
+		if (NULL == pvStackStart)
 		{
 			pvStackStart = &pwpm;
 		}
@@ -218,7 +228,7 @@ gpos_exec(gpos_exec_params *params)
 				CAutoP<CLoggerStream> aplogger;
 
 				// use passed buffer for logging
-				if (nullptr != params->error_buffer)
+				if (NULL != params->error_buffer)
 				{
 					GPOS_ASSERT(0 < params->error_buffer_size);
 
@@ -276,9 +286,12 @@ gpos_terminate()
 	CDebugCounter::Shutdown();
 #endif
 #ifdef GPOS_DEBUG
+#ifdef GPOS_FPSIMULATOR
+	CFSimulator::FSim()->Shutdown();
+#endif	// GPOS_FPSIMULATOR
 	CMessageRepository::GetMessageRepository()->Shutdown();
-	CWorkerPoolManager::Shutdown();
-	CCacheFactory::Shutdown();
+	CWorkerPoolManager::WorkerPoolManager()->Shutdown();
+	CCacheFactory::GetFactory()->Shutdown();
 	CMemoryPoolManager::GetMemoryPoolMgr()->Shutdown();
 #endif	// GPOS_DEBUG
 }

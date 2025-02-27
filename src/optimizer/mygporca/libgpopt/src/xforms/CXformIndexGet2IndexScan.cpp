@@ -48,11 +48,9 @@ CXformIndexGet2IndexScan::Exfp(CExpressionHandle &exprhdl) const
 
 	CTableDescriptor *ptabdesc = popGet->Ptabdesc();
 	CIndexDescriptor *pindexdesc = popGet->Pindexdesc();
-	BOOL possible_ao_table = ptabdesc->IsAORowOrColTable() ||
-							 ptabdesc->RetrieveRelStorageType() ==
-								 IMDRelation::ErelstorageMixedPartitioned;
 
-	if (pindexdesc->IndexType() == IMDIndex::EmdindBtree && possible_ao_table)
+	if (pindexdesc->IndexType() == IMDIndex::EmdindBtree &&
+		ptabdesc->IsAORowOrColTable())
 	{
 		// we don't support btree index scans on AO tables
 		return CXform::ExfpNone;
@@ -79,7 +77,7 @@ CXformIndexGet2IndexScan::Transform(CXformContext *pxfctxt,
 									CXformResult *pxfres,
 									CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -99,11 +97,11 @@ CXformIndexGet2IndexScan::Transform(CXformContext *pxfctxt,
 	ptabdesc->AddRef();
 
 	CColRefArray *pdrgpcrOutput = pop->PdrgpcrOutput();
-	GPOS_ASSERT(nullptr != pdrgpcrOutput);
+	GPOS_ASSERT(NULL != pdrgpcrOutput);
 	pdrgpcrOutput->AddRef();
 
 	COrderSpec *pos = pop->Pos();
-	GPOS_ASSERT(nullptr != pos);
+	GPOS_ASSERT(NULL != pos);
 	pos->AddRef();
 
 	// addref all children

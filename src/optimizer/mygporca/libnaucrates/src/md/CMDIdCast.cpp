@@ -123,7 +123,7 @@ CMDIdCast::MdidDest() const
 BOOL
 CMDIdCast::Equals(const IMDId *mdid) const
 {
-	if (nullptr == mdid || EmdidCastFunc != mdid->MdidType())
+	if (NULL == mdid || EmdidCastFunc != mdid->MdidType())
 	{
 		return false;
 	}

@@ -47,16 +47,19 @@ class CList
 
 private:
 	// offest of link element
-	ULONG m_offset{gpos::ulong_max};
+	ULONG m_offset;
 
 	// size
-	ULONG m_size{0};
+	ULONG m_size;
 
 	// head element
 	T *m_head;
 
 	// tail element
 	T *m_tail;
+
+	// no copy ctor
+	CList(const CList &);
 
 	// extract link from element
 	SLink &
@@ -72,10 +75,8 @@ private:
 	}
 
 public:
-	CList(const CList &) = delete;
-
 	// ctor
-	CList() : m_head(nullptr), m_tail(nullptr)
+	CList() : m_offset(gpos::ulong_max), m_size(0), m_head(NULL), m_tail(NULL)
 	{
 	}
 
@@ -91,17 +92,17 @@ public:
 	void
 	Prepend(T *elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 
 		// inserting first element?
-		if (nullptr == m_head)
+		if (NULL == m_head)
 		{
-			GPOS_ASSERT(nullptr == m_tail);
+			GPOS_ASSERT(NULL == m_tail);
 			GPOS_ASSERT(0 == m_size);
 			SLink &link = Link(elem);
 
-			link.m_next = nullptr;
-			link.m_prev = nullptr;
+			link.m_next = NULL;
+			link.m_prev = NULL;
 
 			m_head = elem;
 			m_tail = elem;
@@ -119,9 +120,9 @@ public:
 	void
 	Append(T *elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 
-		if (nullptr == m_tail)
+		if (NULL == m_tail)
 		{
 			Prepend(elem);
 		}
@@ -137,8 +138,8 @@ public:
 	void
 	Prepend(T *elem, T *next_elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
-		GPOS_ASSERT(nullptr != next_elem);
+		GPOS_ASSERT(NULL != elem);
+		GPOS_ASSERT(NULL != next_elem);
 		T *prev = static_cast<T *>(Link(next_elem).m_prev);
 
 		SLink &link = Link(elem);
@@ -146,7 +147,7 @@ public:
 		link.m_prev = prev;
 
 		Link(next_elem).m_prev = elem;
-		if (nullptr != prev)
+		if (NULL != prev)
 		{
 			// inserted not at head, ie valid prev element
 			Link(prev).m_next = elem;
@@ -163,8 +164,8 @@ public:
 	void
 	Append(T *elem, T *prev_elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
-		GPOS_ASSERT(nullptr != prev_elem);
+		GPOS_ASSERT(NULL != elem);
+		GPOS_ASSERT(NULL != prev_elem);
 		T *next = static_cast<T *>(Link(prev_elem).m_next);
 
 		SLink &sl = Link(elem);
@@ -172,7 +173,7 @@ public:
 		sl.m_next = next;
 
 		Link(prev_elem).m_next = elem;
-		if (nullptr != next)
+		if (NULL != next)
 		{
 			// inserted not at tail, ie valid next element
 			Link(next).m_prev = elem;
@@ -190,9 +191,9 @@ public:
 	void
 	Remove(T *elem)
 	{
-		GPOS_ASSERT(nullptr != elem);
-		GPOS_ASSERT(nullptr != m_head);
-		GPOS_ASSERT(nullptr != m_tail);
+		GPOS_ASSERT(NULL != elem);
+		GPOS_ASSERT(NULL != m_head);
+		GPOS_ASSERT(NULL != m_tail);
 		GPOS_ASSERT(0 != m_size);
 
 		SLink &link = Link(elem);
@@ -220,8 +221,8 @@ public:
 		}
 
 		// unlink element
-		link.m_prev = nullptr;
-		link.m_next = nullptr;
+		link.m_prev = NULL;
+		link.m_next = NULL;
 
 		m_size--;
 	}
@@ -263,9 +264,9 @@ public:
 	T *
 	Next(const T *pt) const
 	{
-		GPOS_ASSERT(nullptr != pt);
-		GPOS_ASSERT(nullptr != m_head);
-		GPOS_ASSERT(nullptr != m_tail);
+		GPOS_ASSERT(NULL != pt);
+		GPOS_ASSERT(NULL != m_head);
+		GPOS_ASSERT(NULL != m_tail);
 
 		SLink &sl = Link(pt);
 		return static_cast<T *>(sl.m_next);
@@ -275,9 +276,9 @@ public:
 	T *
 	Prev(const T *pt) const
 	{
-		GPOS_ASSERT(nullptr != pt);
-		GPOS_ASSERT(nullptr != m_head);
-		GPOS_ASSERT(nullptr != m_tail);
+		GPOS_ASSERT(NULL != pt);
+		GPOS_ASSERT(NULL != m_head);
+		GPOS_ASSERT(NULL != m_tail);
 
 		SLink &sl = Link(pt);
 		return static_cast<T *>(sl.m_prev);
@@ -294,7 +295,7 @@ public:
 	BOOL
 	IsEmpty() const
 	{
-		return nullptr == First();
+		return NULL == First();
 	}
 
 #ifdef GPOS_DEBUG
@@ -302,7 +303,7 @@ public:
 	GPOS_RESULT
 	Find(T *elem) const
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 
 		// iterate until found
 		T *t = First();
@@ -327,8 +328,7 @@ public:
 
 		do
 		{
-			os << "[" << c++ << "]" << (void *) t
-			   << (nullptr == t ? "" : " -> ");
+			os << "[" << c++ << "]" << (void *) t << (NULL == t ? "" : " -> ");
 		} while (t && (t = Next(t)));
 		os << std::endl;
 

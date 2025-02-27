@@ -32,7 +32,7 @@ template <class K, class T, ULONG (*HashFn)(const K *),
 class CHashMapIter : public CStackObject
 {
 	// short hand for hashmap type
-	using TMap = CHashMap<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn>;
+	typedef CHashMap<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn> TMap;
 
 private:
 	// map to iterate
@@ -47,11 +47,15 @@ private:
 	// is initialized?
 	BOOL m_is_initialized;
 
+	// private copy ctor
+	CHashMapIter(
+		const CHashMapIter<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn> &);
+
 	// method to return the current element
 	const typename TMap::CHashMapElem *
 	Get() const
 	{
-		typename TMap::CHashMapElem *elem = nullptr;
+		typename TMap::CHashMapElem *elem = NULL;
 		K *k = (*(m_map->m_keys))[m_key_idx - 1];
 		elem = m_map->Lookup(k);
 
@@ -59,17 +63,17 @@ private:
 	}
 
 public:
-	CHashMapIter(const CHashMapIter &) = delete;
-
 	// ctor
-	CHashMapIter(TMap *ptm)
+	CHashMapIter<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn>(TMap *ptm)
 		: m_map(ptm), m_chain_idx(0), m_key_idx(0)
 	{
-		GPOS_ASSERT(nullptr != ptm);
+		GPOS_ASSERT(NULL != ptm);
 	}
 
 	// dtor
-	virtual ~CHashMapIter() = default;
+	virtual ~CHashMapIter<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn>()
+	{
+	}
 
 	// advance iterator to next element
 	BOOL
@@ -89,11 +93,11 @@ public:
 	Key() const
 	{
 		const typename TMap::CHashMapElem *elem = Get();
-		if (nullptr != elem)
+		if (NULL != elem)
 		{
 			return elem->Key();
 		}
-		return nullptr;
+		return NULL;
 	}
 
 	// current value
@@ -101,11 +105,11 @@ public:
 	Value() const
 	{
 		const typename TMap::CHashMapElem *elem = Get();
-		if (nullptr != elem)
+		if (NULL != elem)
 		{
 			return elem->Value();
 		}
-		return nullptr;
+		return NULL;
 	}
 
 };	// class CHashMapIter

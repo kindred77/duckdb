@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
-//	Portions Copyright (c) 2023, HashData Technology Limited.
 //
 //	@filename:
 //		CDXLScalarFuncExpr.h
@@ -45,29 +44,23 @@ private:
 	// does the func return a set
 	BOOL m_returns_set;
 
-	// how to display function expr
-	const INT m_func_format;
-
-	//  true if in the function, variadic arguments have been
-	//  combined into an array last argument
-	BOOL m_funcvariadic;
+	// private copy ctor
+	CDXLScalarFuncExpr(const CDXLScalarFuncExpr &);
 
 public:
-	CDXLScalarFuncExpr(const CDXLScalarFuncExpr &) = delete;
-
 	// ctor
 	CDXLScalarFuncExpr(CMemoryPool *mp, IMDId *mdid_func,
 					   IMDId *mdid_return_type, INT return_type_modifier,
-					   BOOL returns_set, INT func_format, BOOL funcvariadic);
+					   BOOL returns_set);
 
 	//dtor
-	~CDXLScalarFuncExpr() override;
+	virtual ~CDXLScalarFuncExpr();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// function id
 	IMDId *FuncMdId() const;
@@ -80,34 +73,27 @@ public:
 	// does function return a set
 	BOOL ReturnsSet() const;
 
-	// how to display function expr
-	INT FuncFormat() const;
-
-	// Is the variadic flag set
-	BOOL IsFuncVariadic() const;
-
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarFuncExpr *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarFuncExpr == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarFuncExpr *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

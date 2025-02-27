@@ -37,10 +37,10 @@ public:
 	}
 
 	// retrieve elapsed wall-clock time in micro-seconds
-	ULONG ElapsedUS() const override;
+	virtual ULONG ElapsedUS() const;
 
 	// restart timer
-	void Restart() override;
+	virtual void Restart();
 };
 
 }  // namespace gpos

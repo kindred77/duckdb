@@ -30,36 +30,39 @@ using namespace gpos;
 class CXformDynamicIndexGet2DynamicIndexScan : public CXformImplementation
 {
 private:
-public:
+	// private copy ctor
 	CXformDynamicIndexGet2DynamicIndexScan(
-		const CXformDynamicIndexGet2DynamicIndexScan &) = delete;
+		const CXformDynamicIndexGet2DynamicIndexScan &);
 
+public:
 	// ctor
 	explicit CXformDynamicIndexGet2DynamicIndexScan(CMemoryPool *mp);
 
 	// dtor
-	~CXformDynamicIndexGet2DynamicIndexScan() override = default;
+	virtual ~CXformDynamicIndexGet2DynamicIndexScan()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfDynamicIndexGet2DynamicIndexScan;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformDynamicIndexGet2DynamicIndexScan";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformDynamicIndexGet2DynamicIndexScan
 

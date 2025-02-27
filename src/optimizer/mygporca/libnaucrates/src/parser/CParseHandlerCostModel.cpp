@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerCostModel.cpp
@@ -23,7 +23,7 @@
 #include "naucrates/traceflags/traceflags.h"
 
 using namespace gpdxl;
-//using namespace gpdbcost;
+using namespace gpdbcost;
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -40,8 +40,8 @@ CParseHandlerCostModel::CParseHandlerCostModel(
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
 	  m_num_of_segments(0),
-	  m_cost_model(nullptr),
-	  m_parse_handler_cost_params(nullptr)
+	  m_cost_model(NULL),
+	  m_parse_handler_cost_params(NULL)
 {
 }
 
@@ -143,15 +143,15 @@ CParseHandlerCostModel::EndElement(const XMLCh *const,	// element_uri,
 		case ICostModel::EcmtGPDBCalibrated:
 			CCostModelParamsGPDB *pcp;
 
-			if (nullptr == m_parse_handler_cost_params)
+			if (NULL == m_parse_handler_cost_params)
 			{
-				pcp = nullptr;
+				pcp = NULL;
 			}
 			else
 			{
 				pcp = dynamic_cast<CCostModelParamsGPDB *>(
 					m_parse_handler_cost_params->GetCostModelParams());
-				GPOS_ASSERT(nullptr != pcp);
+				GPOS_ASSERT(NULL != pcp);
 				pcp->AddRef();
 			}
 			m_cost_model =

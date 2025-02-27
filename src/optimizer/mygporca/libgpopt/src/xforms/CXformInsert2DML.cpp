@@ -65,7 +65,7 @@ void
 CXformInsert2DML::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 							CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -87,8 +87,8 @@ CXformInsert2DML::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	// create logical DML
 	CExpression *pexprAlt = CXformUtils::PexprLogicalDMLOverProject(
 		mp, pexprChild, CLogicalDML::EdmlInsert, ptabdesc, pdrgpcrSource,
-		nullptr,  //pcrCtid
-		nullptr	  //pcrSegmentId
+		NULL,  //pcrCtid
+		NULL   //pcrSegmentId
 	);
 
 	// add alternative to transformation result

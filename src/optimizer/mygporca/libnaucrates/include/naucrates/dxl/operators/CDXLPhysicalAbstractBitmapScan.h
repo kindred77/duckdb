@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CDXLPhysicalAbstractBitmapScan.h
@@ -46,23 +46,23 @@ class CXMLSerializer;
 class CDXLPhysicalAbstractBitmapScan : public CDXLPhysical
 {
 private:
+	// private copy ctor
+	CDXLPhysicalAbstractBitmapScan(const CDXLPhysicalAbstractBitmapScan &);
+
 protected:
 	// table descriptor for the scanned table
 	CDXLTableDescr *m_dxl_table_descr;
 
 public:
-	CDXLPhysicalAbstractBitmapScan(const CDXLPhysicalAbstractBitmapScan &) =
-		delete;
-
 	// ctor
 	CDXLPhysicalAbstractBitmapScan(CMemoryPool *mp, CDXLTableDescr *table_descr)
 		: CDXLPhysical(mp), m_dxl_table_descr(table_descr)
 	{
-		GPOS_ASSERT(nullptr != table_descr);
+		GPOS_ASSERT(NULL != table_descr);
 	}
 
 	// dtor
-	~CDXLPhysicalAbstractBitmapScan() override;
+	virtual ~CDXLPhysicalAbstractBitmapScan();
 
 	// table descriptor
 	const CDXLTableDescr *
@@ -74,8 +74,8 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *node,
+							 BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };		// class CDXLPhysicalAbstractBitmapScan
 }  // namespace gpdxl

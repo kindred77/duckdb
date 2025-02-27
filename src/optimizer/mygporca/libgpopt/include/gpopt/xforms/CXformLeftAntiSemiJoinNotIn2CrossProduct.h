@@ -34,10 +34,11 @@ class CXformLeftAntiSemiJoinNotIn2CrossProduct
 	: public CXformLeftAntiSemiJoin2CrossProduct
 {
 private:
-public:
+	// private copy ctor
 	CXformLeftAntiSemiJoinNotIn2CrossProduct(
-		const CXformLeftAntiSemiJoinNotIn2CrossProduct &) = delete;
+		const CXformLeftAntiSemiJoinNotIn2CrossProduct &);
 
+public:
 	// ctor
 	explicit CXformLeftAntiSemiJoinNotIn2CrossProduct(CMemoryPool *mp)
 		:  // pattern
@@ -58,15 +59,15 @@ public:
 	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftAntiSemiJoinNotIn2CrossProduct;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftAntiSemiJoinNotIn2CrossProduct";
 	}

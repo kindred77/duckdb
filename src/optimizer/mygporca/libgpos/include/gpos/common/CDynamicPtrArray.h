@@ -22,7 +22,7 @@ template <class T, void (*CleanupFn)(T *)>
 class CDynamicPtrArray;
 
 // comparison function signature
-using CompareFn = INT (*)(const void *, const void *);
+typedef INT (*CompareFn)(const void *, const void *);
 
 // frequently used destroy functions
 
@@ -60,18 +60,18 @@ CleanupRelease(T *elem)
 // commonly used array types
 
 // arrays of unsigned integers
-using ULongPtrArray = CDynamicPtrArray<ULONG, CleanupDelete>;
+typedef CDynamicPtrArray<ULONG, CleanupDelete> ULongPtrArray;
 // array of unsigned integer arrays
-using ULongPtr2dArray = CDynamicPtrArray<ULongPtrArray, CleanupRelease>;
+typedef CDynamicPtrArray<ULongPtrArray, CleanupRelease> ULongPtr2dArray;
 
 // arrays of integers
-using IntPtrArray = CDynamicPtrArray<INT, CleanupDelete>;
+typedef CDynamicPtrArray<INT, CleanupDelete> IntPtrArray;
 
 // array of strings
-using StringPtrArray = CDynamicPtrArray<CWStringBase, CleanupDelete>;
+typedef CDynamicPtrArray<CWStringBase, CleanupDelete> StringPtrArray;
 
 // arrays of chars
-using CharPtrArray = CDynamicPtrArray<CHAR, CleanupDelete>;
+typedef CDynamicPtrArray<CHAR, CleanupDelete> CharPtrArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -123,6 +123,9 @@ private:
 		return 0;
 	}
 
+	// private copy ctor
+	CDynamicPtrArray<T, CleanupFn>(const CDynamicPtrArray<T, CleanupFn> &);
+
 	// resize function
 	void
 	Resize(ULONG new_size)
@@ -135,7 +138,7 @@ private:
 
 		if (m_size > 0)
 		{
-			GPOS_ASSERT(nullptr != m_elems);
+			GPOS_ASSERT(NULL != m_elems);
 			clib::Memcpy(new_elems, m_elems, sizeof(T *) * m_size);
 			GPOS_DELETE_ARRAY(m_elems);
 		}
@@ -145,25 +148,23 @@ private:
 	}
 
 public:
-	CDynamicPtrArray(const CDynamicPtrArray &) = delete;
-
 	// ctor
-	explicit CDynamicPtrArray(CMemoryPool *mp, ULONG min_size = 4,
+	explicit CDynamicPtrArray<T, CleanupFn>(CMemoryPool *mp, ULONG min_size = 4,
 											ULONG expansion_factor = 10)
 		: m_mp(mp),
 		  m_capacity(0),
 		  m_min_size(std::max((ULONG) 4, min_size)),
 		  m_size(0),
 		  m_expansion_factor(std::max((ULONG) 2, expansion_factor)),
-		  m_elems(nullptr)
+		  m_elems(NULL)
 	{
+		GPOS_ASSERT(NULL != CleanupFn && "No valid destroy function specified");
+
 		// do not allocate in constructor; defer allocation to first insertion
-		static_assert(nullptr != CleanupFn,
-					  "No valid destroy function specified");
 	}
 
 	// dtor
-	~CDynamicPtrArray() override
+	~CDynamicPtrArray<T, CleanupFn>()
 	{
 		Clear();
 
@@ -205,7 +206,7 @@ public:
 	void
 	AppendArray(const CDynamicPtrArray<T, CleanupFn> *arr)
 	{
-		GPOS_ASSERT(nullptr != arr);
+		GPOS_ASSERT(NULL != arr);
 		GPOS_ASSERT(this != arr && "Cannot append array to itself");
 
 		ULONG total_size = m_size + arr->m_size;
@@ -222,7 +223,7 @@ public:
 		// at this point old memory is no longer accessible, hence, no self-copy
 		if (arr->m_size > 0)
 		{
-			GPOS_ASSERT(nullptr != arr->m_elems);
+			GPOS_ASSERT(NULL != arr->m_elems);
 			clib::Memcpy(m_elems + m_size, arr->m_elems,
 						 arr->m_size * sizeof(T *));
 		}
@@ -263,7 +264,7 @@ public:
 	T *
 	Find(const T *elem) const
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 
 		for (ULONG i = 0; i < m_size; i++)
 		{
@@ -273,14 +274,14 @@ public:
 			}
 		}
 
-		return nullptr;
+		return NULL;
 	}
 
 	// lookup object position
 	ULONG
 	IndexOf(const T *elem) const
 	{
-		GPOS_ASSERT(nullptr != elem);
+		GPOS_ASSERT(NULL != elem);
 
 		for (ULONG ul = 0; ul < m_size; ul++)
 		{
@@ -296,11 +297,11 @@ public:
 #ifdef GPOS_DEBUG
 	// check if array is sorted
 	BOOL
-	IsSorted(CompareFn compare_func = PtrCmp) const
+	IsSorted() const
 	{
 		for (ULONG i = 1; i < m_size; i++)
 		{
-			if (compare_func(&m_elems[i - 1], &m_elems[i]) > 0)
+			if ((ULONG_PTR)(m_elems[i - 1]) > (ULONG_PTR)(m_elems[i]))
 			{
 				return false;
 			}
@@ -345,7 +346,7 @@ public:
 	{
 		if (0 == m_size)
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		return m_elems[--m_size];
@@ -358,7 +359,7 @@ public:
 	ULongPtrArray *
 	IndexesOfSubsequence(CDynamicPtrArray<T, CleanupFn> *subsequence)
 	{
-		GPOS_ASSERT(nullptr != subsequence);
+		GPOS_ASSERT(NULL != subsequence);
 
 		ULONG subsequence_length = subsequence->Size();
 		ULongPtrArray *indexes = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
@@ -371,7 +372,7 @@ public:
 			{
 				// not found
 				indexes->Release();
-				return nullptr;
+				return NULL;
 			}
 
 			indexes->Append(GPOS_NEW(m_mp) ULONG(index));

@@ -37,29 +37,32 @@ using namespace gpopt;
 CPhysicalDML::CPhysicalDML(CMemoryPool *mp, CLogicalDML::EDMLOperator edmlop,
 						   CTableDescriptor *ptabdesc,
 						   CColRefArray *pdrgpcrSource, CBitSet *pbsModified,
-						   CColRef *pcrAction, CColRef *pcrCtid,
-						   CColRef *pcrSegmentId, BOOL fSplit)
+						   CColRef *pcrAction, CColRef *pcrTableOid,
+						   CColRef *pcrCtid, CColRef *pcrSegmentId,
+						   CColRef *pcrTupleOid)
 	: CPhysical(mp),
 	  m_edmlop(edmlop),
 	  m_ptabdesc(ptabdesc),
 	  m_pdrgpcrSource(pdrgpcrSource),
 	  m_pbsModified(pbsModified),
 	  m_pcrAction(pcrAction),
+	  m_pcrTableOid(pcrTableOid),
 	  m_pcrCtid(pcrCtid),
 	  m_pcrSegmentId(pcrSegmentId),
-	  m_pds(nullptr),
-	  m_pos(nullptr),
-	  m_pcrsRequiredLocal(nullptr),
-	  m_fSplit(fSplit)
+	  m_pcrTupleOid(pcrTupleOid),
+	  m_pds(NULL),
+	  m_pos(NULL),
+	  m_pcrsRequiredLocal(NULL),
+	  m_input_sort_req(false)
 {
 	GPOS_ASSERT(CLogicalDML::EdmlSentinel != edmlop);
-	GPOS_ASSERT(nullptr != ptabdesc);
-	GPOS_ASSERT(nullptr != pdrgpcrSource);
-	GPOS_ASSERT(nullptr != pbsModified);
-	GPOS_ASSERT(nullptr != pcrAction);
+	GPOS_ASSERT(NULL != ptabdesc);
+	GPOS_ASSERT(NULL != pdrgpcrSource);
+	GPOS_ASSERT(NULL != pbsModified);
+	GPOS_ASSERT(NULL != pcrAction);
 	GPOS_ASSERT_IMP(
 		CLogicalDML::EdmlDelete == edmlop || CLogicalDML::EdmlUpdate == edmlop,
-		nullptr != pcrCtid && nullptr != pcrSegmentId);
+		NULL != pcrCtid && NULL != pcrSegmentId);
 
 	m_pds =
 		CPhysical::PdsCompute(m_mp, m_ptabdesc, pdrgpcrSource, pcrSegmentId);
@@ -80,8 +83,33 @@ CPhysicalDML::CPhysicalDML(CMemoryPool *mp, CLogicalDML::EDMLOperator edmlop,
 		// Update of the distribution key: This will be handled with a Split node below the DML node,
 		//         with the split deleting the existing rows and this DML node inserting the new rows,
 		//         so this is handled here like an insert, using hash distribution for all partitions.
+		BOOL is_update_without_changing_distribution_key = false;
 
-		if (CLogicalDML::EdmlDelete == edmlop || !fSplit)
+		if (CLogicalDML::EdmlUpdate == edmlop)
+		{
+			CDistributionSpecHashed *hashDistSpec =
+				CDistributionSpecHashed::PdsConvert(m_pds);
+			CColRefSet *updatedCols = GPOS_NEW(mp) CColRefSet(mp);
+			CColRefSet *distributionCols = hashDistSpec->PcrsUsed(mp);
+
+			// compute a ColRefSet of the updated columns
+			for (ULONG c = 0; c < pdrgpcrSource->Size(); c++)
+			{
+				if (pbsModified->Get(c))
+				{
+					updatedCols->Include((*pdrgpcrSource)[c]);
+				}
+			}
+
+			is_update_without_changing_distribution_key =
+				!updatedCols->FIntersects(distributionCols);
+
+			updatedCols->Release();
+			distributionCols->Release();
+		}
+
+		if (CLogicalDML::EdmlDelete == edmlop ||
+			is_update_without_changing_distribution_key)
 		{
 			m_pds->Release();
 			m_pds = GPOS_NEW(mp) CDistributionSpecRandom();
@@ -163,7 +191,7 @@ CPhysicalDML::PosDerive(CMemoryPool *mp,
 CEnfdProp::EPropEnforcingType
 CPhysicalDML::EpetOrder(CExpressionHandle &exprhdl, const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	// get the order delivered by the DML node
@@ -272,6 +300,29 @@ CPhysicalDML::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPhysicalDML::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalDML::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+						   CPartitionPropagationSpec *pppsRequired,
+						   ULONG child_index,
+						   CDrvdPropArray *,  //pdrgpdpCtxt,
+						   ULONG			  //ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	return CPhysical::PppsRequiredPushThru(mp, exprhdl, pppsRequired,
+										   child_index);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPhysicalDML::PcteRequired
 //
 //	@doc:
@@ -355,6 +406,7 @@ CPhysicalDML::HashValue() const
 	ULONG ulHash = gpos::CombineHashes(COperator::HashValue(),
 									   m_ptabdesc->MDId()->HashValue());
 	ulHash = gpos::CombineHashes(ulHash, gpos::HashPtr<CColRef>(m_pcrAction));
+	ulHash = gpos::CombineHashes(ulHash, gpos::HashPtr<CColRef>(m_pcrTableOid));
 	ulHash =
 		gpos::CombineHashes(ulHash, CUtils::UlHashColArray(m_pdrgpcrSource));
 
@@ -385,11 +437,12 @@ CPhysicalDML::Matches(COperator *pop) const
 		CPhysicalDML *popDML = CPhysicalDML::PopConvert(pop);
 
 		return m_pcrAction == popDML->PcrAction() &&
+			   m_pcrTableOid == popDML->PcrTableOid() &&
 			   m_pcrCtid == popDML->PcrCtid() &&
 			   m_pcrSegmentId == popDML->PcrSegmentId() &&
+			   m_pcrTupleOid == popDML->PcrTupleOid() &&
 			   m_ptabdesc->MDId()->Equals(popDML->Ptabdesc()->MDId()) &&
-			   m_pdrgpcrSource->Equals(popDML->PdrgpcrSource()) &&
-			   m_fSplit == popDML->FSplit();
+			   m_pdrgpcrSource->Equals(popDML->PdrgpcrSource());
 	}
 
 	return false;
@@ -451,7 +504,7 @@ CPhysicalDML::PosComputeRequired(CMemoryPool *mp, CTableDescriptor *ptabdesc)
 		// the action column, see explanation in function's comment
 		const ULONG ulKeySets = pdrgpbsKeys->Size();
 		BOOL fNeedsSort = false;
-		for (ULONG ul = 0; ul < ulKeySets; ul++)
+		for (ULONG ul = 0; ul < ulKeySets && !fNeedsSort; ul++)
 		{
 			CBitSet *pbs = (*pdrgpbsKeys)[ul];
 			if (!pbs->IsDisjoint(m_pbsModified))
@@ -469,8 +522,64 @@ CPhysicalDML::PosComputeRequired(CMemoryPool *mp, CTableDescriptor *ptabdesc)
 			pos->Append(mdid, m_pcrAction, COrderSpec::EntAuto);
 		}
 	}
+	else if (m_ptabdesc->IsPartitioned())
+	{
+		COptimizerConfig *optimizer_config =
+			COptCtxt::PoctxtFromTLS()->GetOptimizerConfig();
+
+		BOOL fInsertSortOnParquet = FInsertSortOnParquet();
+		BOOL fInsertSortOnRows = FInsertSortOnRows(optimizer_config);
+
+		if (fInsertSortOnParquet || fInsertSortOnRows)
+		{
+			GPOS_ASSERT(CLogicalDML::EdmlInsert == m_edmlop);
+			m_input_sort_req = true;
+			// if this is an INSERT over a partitioned Parquet or Row-oriented table,
+			// sort tuples by their table oid
+			IMDId *mdid = m_pcrTableOid->RetrieveType()->GetMdidForCmpType(
+				IMDType::EcmptL);
+			mdid->AddRef();
+			pos->Append(mdid, m_pcrTableOid, COrderSpec::EntAuto);
+		}
+	}
 
 	return pos;
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalDML::FInsertSortOnParquet
+//
+//	@doc:
+//		Do we need to sort on parquet table
+//
+//---------------------------------------------------------------------------
+BOOL
+CPhysicalDML::FInsertSortOnParquet()
+{
+	return !GPOS_FTRACE(EopttraceDisableSortForDMLOnParquet) &&
+		   (IMDRelation::ErelstorageAppendOnlyParquet ==
+			m_ptabdesc->RetrieveRelStorageType());
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalDML::FInsertSortOnRows
+//
+//	@doc:
+//		Do we need to sort on insert
+//
+//---------------------------------------------------------------------------
+BOOL
+CPhysicalDML::FInsertSortOnRows(COptimizerConfig *optimizer_config)
+{
+	GPOS_ASSERT(NULL != optimizer_config);
+
+	return (IMDRelation::ErelstorageAppendOnlyRows ==
+			m_ptabdesc->RetrieveRelStorageType()) &&
+		   (optimizer_config->GetHint()
+				->UlMinNumOfPartsToRequireSortOnInsert() <=
+			m_ptabdesc->PartitionCount());
 }
 
 //---------------------------------------------------------------------------
@@ -484,16 +593,17 @@ CPhysicalDML::PosComputeRequired(CMemoryPool *mp, CTableDescriptor *ptabdesc)
 void
 CPhysicalDML::ComputeRequiredLocalColumns(CMemoryPool *mp)
 {
-	GPOS_ASSERT(nullptr == m_pcrsRequiredLocal);
+	GPOS_ASSERT(NULL == m_pcrsRequiredLocal);
 
 	m_pcrsRequiredLocal = GPOS_NEW(mp) CColRefSet(mp);
 
 	// include source columns
 	m_pcrsRequiredLocal->Include(m_pdrgpcrSource);
-	// Action column is not required for InPlaceUpdate operator.
-	if (m_fSplit)
+	m_pcrsRequiredLocal->Include(m_pcrAction);
+
+	if (m_pcrTableOid != NULL)
 	{
-		m_pcrsRequiredLocal->Include(m_pcrAction);
+		m_pcrsRequiredLocal->Include(m_pcrTableOid);
 	}
 
 	if (CLogicalDML::EdmlDelete == m_edmlop ||
@@ -501,6 +611,11 @@ CPhysicalDML::ComputeRequiredLocalColumns(CMemoryPool *mp)
 	{
 		m_pcrsRequiredLocal->Include(m_pcrCtid);
 		m_pcrsRequiredLocal->Include(m_pcrSegmentId);
+	}
+
+	if (NULL != m_pcrTupleOid)
+	{
+		m_pcrsRequiredLocal->Include(m_pcrTupleOid);
 	}
 }
 
@@ -521,13 +636,20 @@ CPhysicalDML::OsPrint(IOstream &os) const
 	}
 
 	os << SzId() << " (";
+	os << CLogicalDML::m_rgwszDml[m_edmlop] << ", ";
 	m_ptabdesc->Name().OsPrint(os);
-	CLogicalDML::PrintOperatorType(os, m_edmlop, m_fSplit);
-	os << "Source Columns: [";
+	os << "), Source Columns: [";
 	CUtils::OsPrintDrgPcr(os, m_pdrgpcrSource);
 	os << "], Action: (";
 	m_pcrAction->OsPrint(os);
 	os << ")";
+
+	if (m_pcrTableOid != NULL)
+	{
+		os << ", Oid: (";
+		m_pcrTableOid->OsPrint(os);
+		os << ")";
+	}
 
 	if (CLogicalDML::EdmlDelete == m_edmlop ||
 		CLogicalDML::EdmlUpdate == m_edmlop)

@@ -58,7 +58,10 @@ private:
 	BOOL m_empty;
 
 	// DXL string for object
-	CWStringDynamic *m_dxl_str = nullptr;
+	CWStringDynamic *m_dxl_str;
+
+	// private copy ctor
+	CDXLRelStats(const CDXLRelStats &);
 
 	// number of blocks (not always up to-to-date)
 	ULONG m_relpages;
@@ -67,53 +70,51 @@ private:
 	ULONG m_relallvisible;
 
 public:
-	CDXLRelStats(const CDXLRelStats &) = delete;
-
 	CDXLRelStats(CMemoryPool *mp, CMDIdRelStats *rel_stats_mdid,
 				 CMDName *mdname, CDouble rows, BOOL is_empty, ULONG relpages,
 				 ULONG relallvisible);
 
-	~CDXLRelStats() override;
+	virtual ~CDXLRelStats();
 
 	// the metadata id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// relation name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// DXL string representation of cache object
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *GetStrRepr() const;
 
 	// number of rows
-	CDouble Rows() const override;
+	virtual CDouble Rows() const;
 
 	// number of blocks (not always up to-to-date)
-	ULONG
-	RelPages() const override
+	virtual ULONG
+	RelPages() const
 	{
 		return m_relpages;
 	}
 
 	// number of all-visible blocks (not always up-to-date)
-	ULONG
-	RelAllVisible() const override
+	virtual ULONG
+	RelAllVisible() const
 	{
 		return m_relallvisible;
 	}
 
 	// is statistics on an empty input
-	BOOL
-	IsEmpty() const override
+	virtual BOOL
+	IsEmpty() const
 	{
 		return m_empty;
 	}
 
 	// serialize relation stats in DXL format given a serializer object
-	void Serialize(gpdxl::CXMLSerializer *) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the metadata relation
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 
 	// dummy relstats

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CCastUtils.cpp
@@ -13,7 +13,6 @@
 
 #include "gpos/memory/CAutoMemoryPool.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/base/CUtils.h"
 #include "gpopt/mdcache/CMDAccessorUtils.h"
 #include "gpopt/operators/CPredicateUtils.h"
@@ -22,7 +21,6 @@
 #include "gpopt/operators/CScalarIdent.h"
 #include "naucrates/md/CMDArrayCoerceCastGPDB.h"
 #include "naucrates/md/IMDCast.h"
-#include "naucrates/md/IMDIndex.h"
 
 using namespace gpopt;
 using namespace gpmd;
@@ -31,7 +29,7 @@ using namespace gpmd;
 BOOL
 CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr, CColRef *colref)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (!FBinaryCoercibleCast(pexpr))
 	{
@@ -49,7 +47,7 @@ CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr, CColRef *colref)
 BOOL
 CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (!FBinaryCoercibleCast(pexpr))
 	{
@@ -66,7 +64,7 @@ CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr)
 BOOL
 CCastUtils::FBinaryCoercibleCastedConst(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	if (!FBinaryCoercibleCast(pexpr))
 	{
@@ -85,7 +83,7 @@ CCastUtils::FBinaryCoercibleCastedConst(CExpression *pexpr)
 const CColRef *
 CCastUtils::PcrExtractFromScIdOrCastScId(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 
 	BOOL fScIdent = COperator::EopScalarIdent == pexpr->Pop()->Eopid();
 	BOOL fCastedScIdent = CScalarIdent::FCastedScId(pexpr);
@@ -93,10 +91,10 @@ CCastUtils::PcrExtractFromScIdOrCastScId(CExpression *pexpr)
 	// col or cast(col)
 	if (!fScIdent && !fCastedScIdent)
 	{
-		return nullptr;
+		return NULL;
 	}
 
-	CScalarIdent *popScIdent = nullptr;
+	CScalarIdent *popScIdent = NULL;
 	if (fScIdent)
 	{
 		popScIdent = CScalarIdent::PopConvert(pexpr->Pop());
@@ -115,7 +113,7 @@ CExpression *
 CCastUtils::PexprCast(CMemoryPool *mp, CMDAccessor *md_accessor,
 					  const CColRef *colref, IMDId *mdid_dest)
 {
-	GPOS_ASSERT(nullptr != mdid_dest);
+	GPOS_ASSERT(NULL != mdid_dest);
 
 	IMDId *mdid_src = colref->RetrieveType()->MDId();
 	GPOS_ASSERT(
@@ -131,18 +129,15 @@ CCastUtils::PexprCast(CMemoryPool *mp, CMDAccessor *md_accessor,
 	{
 		CMDArrayCoerceCastGPDB *parrayCoerceCast =
 			(CMDArrayCoerceCastGPDB *) pmdcast;
-		IMDId *mdid_func = pmdcast->GetCastFuncMdId();
-
 		pexpr = GPOS_NEW(mp) CExpression(
 			mp,
 			GPOS_NEW(mp) CScalarArrayCoerceExpr(
-				mp, mdid_dest, parrayCoerceCast->TypeModifier(),
+				mp, parrayCoerceCast->GetCastFuncMdId(), mdid_dest,
+				parrayCoerceCast->TypeModifier(),
+				parrayCoerceCast->IsExplicit(),
 				(COperator::ECoercionForm) parrayCoerceCast->GetCoercionForm(),
 				parrayCoerceCast->Location()),
-			CUtils::PexprScalarIdent(mp, colref),
-			CUtils::PexprFuncElemExpr(mp, md_accessor, mdid_func,
-									  parrayCoerceCast->GetSrcElemTypeMdId(),
-									  parrayCoerceCast->TypeModifier()));
+			CUtils::PexprScalarIdent(mp, colref));
 	}
 	else
 	{
@@ -159,7 +154,7 @@ CCastUtils::PexprCast(CMemoryPool *mp, CMDAccessor *md_accessor,
 BOOL
 CCastUtils::FBinaryCoercibleCast(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	COperator *pop = pexpr->Pop();
 
 	return FScalarCast(pexpr) &&
@@ -169,7 +164,7 @@ CCastUtils::FBinaryCoercibleCast(CExpression *pexpr)
 BOOL
 CCastUtils::FScalarCast(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	COperator *pop = pexpr->Pop();
 
 	return COperator::EopScalarCast == pop->Eopid();
@@ -180,7 +175,7 @@ CCastUtils::FScalarCast(CExpression *pexpr)
 CExpression *
 CCastUtils::PexprWithoutBinaryCoercibleCasts(CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(pexpr->Pop()->FScalar());
 
 	CExpression *pexprOutput = pexpr;
@@ -214,7 +209,7 @@ CCastUtils::PdrgpexprCastEquality(CMemoryPool *mp, CExpression *pexpr)
 			CPredicateUtils::FINDF(pexprPred))
 		{
 			CExpression *pexprCasted = PexprAddCast(mp, pexprPred);
-			if (nullptr != pexprCasted)
+			if (NULL != pexprCasted)
 			{
 				// release predicate since we will construct a new one
 				pexprNewPred->Release();
@@ -235,7 +230,7 @@ CCastUtils::PdrgpexprCastEquality(CMemoryPool *mp, CExpression *pexpr)
 CExpression *
 CCastUtils::PexprAddCast(CMemoryPool *mp, CExpression *pexprPred)
 {
-	GPOS_ASSERT(nullptr != pexprPred);
+	GPOS_ASSERT(NULL != pexprPred);
 	GPOS_ASSERT(CUtils::FScalarCmp(pexprPred) ||
 				CPredicateUtils::FINDF(pexprPred));
 
@@ -254,7 +249,7 @@ CCastUtils::PexprAddCast(CMemoryPool *mp, CExpression *pexprPred)
 
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 
-	CExpression *pexprNewPred = nullptr;
+	CExpression *pexprNewPred = NULL;
 
 	BOOL fTypesEqual = mdid_type_left->Equals(mdid_type_right);
 	BOOL fCastLtoR = CMDAccessorUtils::FCastExists(md_accessor, mdid_type_left,
@@ -265,23 +260,6 @@ CCastUtils::PexprAddCast(CMemoryPool *mp, CExpression *pexprPred)
 	if (fTypesEqual || !(fCastLtoR || fCastRtoL))
 	{
 		return pexprNewPred;
-	}
-
-	// To perform explicit cast on the hash join condition,
-	// operator has to belong to the left column's hash (distribution)
-	// opfamily, and the right column's hash (distribution) opfamily.
-	if (CUtils::FScalarIdent(pexprLeft) && CUtils::FScalarIdent(pexprRight))
-	{
-		if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution))
-		{
-			if (!CPredicateUtils::FOpInOpfamily(pexprLeft, pexprChild,
-												IMDIndex::EmdindHash) ||
-				!CPredicateUtils::FOpInOpfamily(pexprRight, pexprChild,
-												IMDIndex::EmdindHash))
-			{
-				return pexprNewPred;
-			}
-		}
 	}
 
 	pexprLeft->AddRef();
@@ -298,9 +276,10 @@ CCastUtils::PexprAddCast(CMemoryPool *mp, CExpression *pexprPred)
 	{
 		GPOS_ASSERT(fCastRtoL);
 		pexprNewRight = PexprCast(mp, md_accessor, pexprRight, mdid_type_left);
+		;
 	}
 
-	GPOS_ASSERT(nullptr != pexprNewLeft && nullptr != pexprNewRight);
+	GPOS_ASSERT(NULL != pexprNewLeft && NULL != pexprNewRight);
 
 	if (CUtils::FScalarCmp(pexprPred))
 	{
@@ -334,7 +313,9 @@ CCastUtils::PexprCast(CMemoryPool *mp, CMDAccessor *md_accessor,
 		pexprCast = GPOS_NEW(mp) CExpression(
 			mp,
 			GPOS_NEW(mp) CScalarArrayCoerceExpr(
-				mp, mdid_dest, parrayCoerceCast->TypeModifier(),
+				mp, parrayCoerceCast->GetCastFuncMdId(), mdid_dest,
+				parrayCoerceCast->TypeModifier(),
+				parrayCoerceCast->IsExplicit(),
 				(COperator::ECoercionForm) parrayCoerceCast->GetCoercionForm(),
 				parrayCoerceCast->Location()),
 			pexpr);

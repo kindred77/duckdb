@@ -31,35 +31,38 @@ using namespace gpos;
 class CXformPushDownLeftOuterJoin : public CXformExploration
 {
 private:
-public:
-	CXformPushDownLeftOuterJoin(const CXformPushDownLeftOuterJoin &) = delete;
+	// private copy ctor
+	CXformPushDownLeftOuterJoin(const CXformPushDownLeftOuterJoin &);
 
+public:
 	// ctor
 	explicit CXformPushDownLeftOuterJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformPushDownLeftOuterJoin() override = default;
+	virtual ~CXformPushDownLeftOuterJoin()
+	{
+	}
 
 	// xform promise
-	CXform::EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual CXform::EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfPushDownLeftOuterJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformPushDownLeftOuterJoin";
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformPushDownLeftOuterJoin
 

@@ -40,7 +40,7 @@ class CMDAggregateGPDB : public IMDAggregate
 	CMemoryPool *m_mp;
 
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// aggregate id
 	IMDId *m_mdid;
@@ -63,71 +63,65 @@ class CMDAggregateGPDB : public IMDAggregate
 	// is aggregate hash capable
 	BOOL m_hash_agg_capable;
 
-	// is aggregate replication slice safe for execution
-	BOOL m_is_repsafe;
+	// private copy ctor
+	CMDAggregateGPDB(const CMDAggregateGPDB &);
 
 public:
-	CMDAggregateGPDB(const CMDAggregateGPDB &) = delete;
-
 	// ctor
 	CMDAggregateGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 					 IMDId *result_type_mdid,
 					 IMDId *intermediate_result_type_mdid, BOOL is_ordered_agg,
-					 BOOL is_splittable, BOOL is_hash_agg_capable,
-					 bool is_repsafe);
+					 BOOL is_splittable, BOOL is_hash_agg_capable);
 
 	//dtor
-	~CMDAggregateGPDB() override;
+	~CMDAggregateGPDB();
 
 	// string representation of object
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *
+	GetStrRepr() const
+	{
+		return m_dxl_str;
+	}
 
 	// aggregate id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// aggregate name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// result id
-	IMDId *GetResultTypeMdid() const override;
+	virtual IMDId *GetResultTypeMdid() const;
 
 	// intermediate result id
-	IMDId *GetIntermediateResultTypeMdid() const override;
+	virtual IMDId *GetIntermediateResultTypeMdid() const;
 
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 	// is an ordered aggregate
-	BOOL
-	IsOrdered() const override
+	virtual BOOL
+	IsOrdered() const
 	{
 		return m_is_ordered;
 	}
 
 	// is aggregate splittable
-	BOOL
-	IsSplittable() const override
+	virtual BOOL
+	IsSplittable() const
 	{
 		return m_is_splittable;
 	}
 
 	// is aggregate hash capable
-	BOOL
-	IsHashAggCapable() const override
+	virtual BOOL
+	IsHashAggCapable() const
 	{
 		return m_hash_agg_capable;
 	}
 
-	// is aggregate replicate slice execution safe
-	BOOL
-	IsAggRepSafe() const override
-	{
-		return m_is_repsafe;
-	}
-
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

@@ -41,10 +41,10 @@ CIndexDescriptor::CIndexDescriptor(
 	  m_clustered(is_clustered),
 	  m_index_type(index_type)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 	GPOS_ASSERT(pmdidIndex->IsValid());
-	GPOS_ASSERT(nullptr != pdrgcoldescKeyCols);
-	GPOS_ASSERT(nullptr != pdrgcoldescIncludedCols);
+	GPOS_ASSERT(NULL != pdrgcoldescKeyCols);
+	GPOS_ASSERT(NULL != pdrgcoldescIncludedCols);
 }
 
 //---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ ULONG
 CIndexDescriptor::UlIncludedColumns() const
 {
 	// array allocated in ctor
-	GPOS_ASSERT(nullptr != m_pdrgpcoldescIncludedCols);
+	GPOS_ASSERT(NULL != m_pdrgpcoldescIncludedCols);
 
 	return m_pdrgpcoldescIncludedCols->Size();
 }

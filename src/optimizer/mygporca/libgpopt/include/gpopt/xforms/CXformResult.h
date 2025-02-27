@@ -36,14 +36,15 @@ private:
 	// cursor for retrieval
 	ULONG m_ulExpr;
 
-public:
-	CXformResult(const CXformResult &) = delete;
+	// private copy ctor
+	CXformResult(const CXformResult &);
 
+public:
 	// ctor
 	explicit CXformResult(CMemoryPool *);
 
 	// dtor
-	~CXformResult() override;
+	~CXformResult();
 
 	// accessor
 	inline CExpressionArray *
@@ -59,7 +60,7 @@ public:
 	CExpression *PexprNext();
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	ULONG
 	Size() const

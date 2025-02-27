@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerMDArrayCoerceCast.cpp
@@ -101,15 +101,10 @@ CParseHandlerMDArrayCoerceCast::StartElement(
 		m_parse_handler_mgr->GetDXLMemoryManager(), attrs, EdxltokenLocation,
 		EdxltokenGPDBArrayCoerceCast);
 
-	IMDId *mdid_src_elemtype =
-		CDXLOperatorFactory::ExtractConvertAttrValueToMdId(
-			m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
-			EdxltokenGPDBCastSrcElemType, EdxltokenGPDBArrayCoerceCast);
-
 	m_imd_obj = GPOS_NEW(m_mp) CMDArrayCoerceCastGPDB(
 		m_mp, mdid, mdname, mdid_src, mdid_dest, is_binary_coercible,
 		mdid_cast_func, coerce_path_type, type_modifier, is_explicit,
-		dxl_coercion_form, location, mdid_src_elemtype);
+		dxl_coercion_form, location);
 }
 
 // invoked by Xerces to process a closing tag

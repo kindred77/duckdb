@@ -14,7 +14,6 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDistributionSpecAny.h"
-#include "gpopt/base/CDistributionSpecNonSingleton.h"
 #include "gpopt/base/CDistributionSpecReplicated.h"
 #include "gpopt/base/CPartInfo.h"
 #include "gpopt/operators/CExpressionHandle.h"
@@ -51,7 +50,9 @@ CPhysicalFilter::CPhysicalFilter(CMemoryPool *mp) : CPhysical(mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalFilter::~CPhysicalFilter() = default;
+CPhysicalFilter::~CPhysicalFilter()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -125,16 +126,6 @@ CPhysicalFilter::PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 		return pdsRequired;
 	}
 
-	if (CDistributionSpec::EdtNonSingleton == pdsRequired->Edt() &&
-		!CDistributionSpecNonSingleton::PdsConvert(pdsRequired)
-			 ->FAllowReplicated())
-	{
-		// this situation arises when we have Filter instead inlined CTE,
-		// in this case, we need to push down non-singleton with not allowed replicated through Filter
-		pdsRequired->AddRef();
-		return pdsRequired;
-	}
-
 	return CPhysical::PdsUnary(mp, exprhdl, pdsRequired, child_index, ulOptReq);
 }
 
@@ -155,15 +146,111 @@ CPhysicalFilter::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 ) const
 {
 	GPOS_ASSERT(0 == child_index);
-	if (prsRequired->IsOriginNLJoin())
-	{
-		CRewindabilitySpec *prs = GPOS_NEW(mp) CRewindabilitySpec(
-			CRewindabilitySpec::ErtNone, prsRequired->Emht());
-		return prs;
-	}
+
 	return PrsPassThru(mp, exprhdl, prsRequired, child_index);
 }
 
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalFilter::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalFilter::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							  CPartitionPropagationSpec *pppsRequired,
+							  ULONG
+#ifdef GPOS_DEBUG
+								  child_index
+#endif
+							  ,
+							  CDrvdPropArray *,	 //pdrgpdpCtxt,
+							  ULONG				 // ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	CPartIndexMap *ppimReqd = pppsRequired->Ppim();
+	CPartFilterMap *ppfmReqd = pppsRequired->Ppfm();
+
+	ULongPtrArray *pdrgpul = ppimReqd->PdrgpulScanIds(mp);
+
+	CPartIndexMap *ppimResult = GPOS_NEW(mp) CPartIndexMap(mp);
+	CPartFilterMap *ppfmResult = GPOS_NEW(mp) CPartFilterMap(mp);
+
+	/// get derived part consumers
+	CPartInfo *ppartinfo = exprhdl.DerivePartitionInfo(0);
+
+	const ULONG ulPartIndexIds = pdrgpul->Size();
+	BOOL fUseConstraints = (1 == exprhdl.DeriveJoinDepth());
+
+	for (ULONG ul = 0; ul < ulPartIndexIds; ul++)
+	{
+		ULONG part_idx_id = *((*pdrgpul)[ul]);
+
+		if (!ppartinfo->FContainsScanId(part_idx_id))
+		{
+			// part index id does not exist in child nodes: no need to push through
+			// the request
+			continue;
+		}
+
+		ppimResult->AddRequiredPartPropagation(
+			ppimReqd, part_idx_id, CPartIndexMap::EppraPreservePropagators);
+
+		// look for a filter on the part key
+		CExpression *pexprScalar =
+			exprhdl.PexprScalarExactChild(1 /*child_index*/);
+
+		CExpression *pexprCmp = NULL;
+		CPartKeysArray *pdrgppartkeys = ppimReqd->Pdrgppartkeys(part_idx_id);
+		const ULONG ulKeysets = pdrgppartkeys->Size();
+		CMDAccessor *mda = COptCtxt::PoctxtFromTLS()->Pmda();
+		;
+		const IMDRelation *pmdrel =
+			(IMDRelation *) mda->RetrieveRel(ppimReqd->GetRelMdId(part_idx_id));
+		for (ULONG ulKey = 0; NULL == pexprCmp && ulKey < ulKeysets; ulKey++)
+		{
+			// get partition key
+			CColRef2dArray *pdrgpdrgpcrPartKeys =
+				(*pdrgppartkeys)[ulKey]->Pdrgpdrgpcr();
+
+			// try to generate a request with dynamic partition selection
+			pexprCmp = CPredicateUtils::PexprExtractPredicatesOnPartKeys(
+				mp, pexprScalar, pdrgpdrgpcrPartKeys, NULL, /*pcrsAllowedRefs*/
+				fUseConstraints, pmdrel);
+		}
+
+		if (NULL == pexprCmp)
+		{
+			// no comparison found in filter: check if a comparison was already
+			// specified in the required partition propagation
+			if (ppfmReqd->FContainsScanId(part_idx_id))
+			{
+				pexprCmp = ppfmReqd->Pexpr(part_idx_id);
+				pexprCmp->AddRef();
+			}
+
+			// TODO:  - May 31, 2012; collect multiple comparisons on the
+			// partition keys
+		}
+
+		if (NULL != pexprCmp)
+		{
+			// interesting filter found
+			ppfmResult->AddPartFilter(mp, part_idx_id, pexprCmp,
+									  NULL /*stats */);
+		}
+	}
+
+	pdrgpul->Release();
+
+	return GPOS_NEW(mp) CPartitionPropagationSpec(ppimResult, ppfmResult);
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -246,13 +333,13 @@ CPhysicalFilter::PdsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 		// Also, if there is no equivalent spec, try to find a predicate on the
 		// filter op itself, that can be used to create a complete equivalent spec
 		// here.
-		if (nullptr == pdshashedEquiv ||
+		if (NULL == pdshashedEquiv ||
 			!pdshashedOriginal->HasCompleteEquivSpec(mp))
 		{
 			CDistributionSpecHashed *pdshashed;
 
 			// use the original preds if no equivalent spec exists
-			if (nullptr == pdshashedEquiv)
+			if (NULL == pdshashedEquiv)
 			{
 				pdshashed = pdshashedOriginal;
 			}
@@ -272,13 +359,13 @@ CPhysicalFilter::PdsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 				pdshashedOriginal->Pdrgpexpr();
 			pdrgpexprOriginal->AddRef();
 			IMdIdArray *opfamiliesOriginal = pdshashedOriginal->Opfamilies();
-			if (nullptr != opfamiliesOriginal)
+			if (NULL != opfamiliesOriginal)
 			{
 				opfamiliesOriginal->AddRef();
 			}
 
 			CDistributionSpecHashed *pdsResult;
-			if (nullptr == pdshashedComplete)
+			if (NULL == pdshashedComplete)
 			{
 				// could not complete the spec, return the original without any equiv spec
 				pdsResult = GPOS_NEW(mp) CDistributionSpecHashed(
@@ -369,7 +456,7 @@ CPhysicalFilter::EpetOrder(CExpressionHandle &,	 // exprhdl
 #endif	// GPOS_DEBUG
 ) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	// always force sort to be on top of filter
@@ -389,11 +476,6 @@ CEnfdProp::EPropEnforcingType
 CPhysicalFilter::EpetRewindability(CExpressionHandle &exprhdl,
 								   const CEnfdRewindability *per) const
 {
-	if (per->PrsRequired()->IsOriginNLJoin())
-	{
-		return CEnfdProp::EpetRequired;
-	}
-
 	// get rewindability delivered by the Filter node
 	CRewindabilitySpec *prs = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Prs();
 	if (per->FCompatible(prs))

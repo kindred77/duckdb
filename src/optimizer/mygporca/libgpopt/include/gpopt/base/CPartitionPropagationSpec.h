@@ -12,9 +12,11 @@
 #define GPOPT_CPartitionPropagationSpec_H
 
 #include "gpos/base.h"
+#include "gpos/common/CHashMap.h"
 #include "gpos/common/CRefCount.h"
 
-#include "gpopt/base/COptCtxt.h"
+#include "gpopt/base/CPartFilterMap.h"
+#include "gpopt/base/CPartIndexMap.h"
 #include "gpopt/base/CPropSpec.h"
 
 
@@ -32,190 +34,108 @@ using namespace gpos;
 //---------------------------------------------------------------------------
 class CPartitionPropagationSpec : public CPropSpec
 {
-public:
-	enum EPartPropSpecInfoType
-	{
-		EpptPropagator,
-		EpptConsumer,
-		EpptSentinel
-	};
-
 private:
-	struct SPartPropSpecInfo : public CRefCount
-	{
-		// scan id of the DynamicScan
-		ULONG m_scan_id;
+	// unresolved partitions map
+	CPartIndexMap *m_ppim;
 
-		// info type: consumer or propagator
-		EPartPropSpecInfoType m_type;
+	// filter expressions indexed by the part index id
+	CPartFilterMap *m_ppfm;
 
-		// relation id of the DynamicScan
-		IMDId *m_root_rel_mdid;
+	// check if given part index id needs to be enforced on top of the given expression
+	BOOL FRequiresPartitionPropagation(CMemoryPool *mp, CExpression *pexpr,
+									   CExpressionHandle &exprhdl,
+									   ULONG part_idx_id) const;
 
-		//  partition selector ids to use (reqd only)
-		CBitSet *m_selector_ids = nullptr;
+	// private copy ctor
+	CPartitionPropagationSpec(const CPartitionPropagationSpec &);
 
-		// filter expressions to generate partition pruning data in the translator (reqd only)
-		CExpression *m_filter_expr = nullptr;
+	// split the partition elimination predicates over the various levels
+	// as well as the residual predicate
+	void SplitPartPredicates(CMemoryPool *mp, CExpression *pexprScalar,
+							 CColRef2dArray *pdrgpdrgpcrKeys,
+							 UlongToExprMap *phmulexprEqFilter,
+							 UlongToExprMap *phmulexprFilter,
+							 CExpression **ppexprResidual);
 
-		SPartPropSpecInfo(ULONG scan_id, EPartPropSpecInfoType type,
-						  IMDId *rool_rel_mdid)
-			: m_scan_id(scan_id), m_type(type), m_root_rel_mdid(rool_rel_mdid)
-		{
-			GPOS_ASSERT(m_root_rel_mdid != nullptr);
+	// return a residual filter given an array of predicates and a bitset
+	// indicating which predicates have already been used
+	CExpression *PexprResidualFilter(CMemoryPool *mp,
+									 CExpressionArray *pdrgpexpr,
+									 CBitSet *pbsUsed);
 
-			CMemoryPool *mp = COptCtxt::PoctxtFromTLS()->Pmp();
-			m_selector_ids = GPOS_NEW(mp) CBitSet(mp);
-		}
+	// return an array of predicates on the given partitioning key given
+	// an array of predicates on all keys
+	CExpressionArray *PdrgpexprPredicatesOnKey(CMemoryPool *mp,
+											   CExpressionArray *pdrgpexpr,
+											   CColRef *colref,
+											   CColRefSet *pcrsKeys,
+											   CBitSet **ppbs);
 
-		~SPartPropSpecInfo() override
-		{
-			m_root_rel_mdid->Release();
-			CRefCount::SafeRelease(m_selector_ids);
-			CRefCount::SafeRelease(m_filter_expr);
-		}
+	// return a colrefset containing all the part keys
+	CColRefSet *PcrsKeys(CMemoryPool *mp, CColRef2dArray *pdrgpdrgpcrKeys);
 
-		// hash function
-		ULONG
-		HashValue() const
-		{
-			ULONG ulHash = m_root_rel_mdid->HashValue();
-
-			ulHash =
-				gpos::CombineHashes(ulHash, gpos::HashValue<ULONG>(&m_scan_id));
-			if (m_selector_ids)
-			{
-				ulHash = gpos::CombineHashes(
-					ulHash, gpos::HashPtr<CBitSet>(m_selector_ids));
-			}
-			if (m_filter_expr)
-			{
-				ulHash = gpos::CombineHashes(
-					ulHash, CExpression::HashValue(m_filter_expr));
-			}
-
-			return ulHash;
-		}
-
-		IOstream &OsPrint(IOstream &os) const;
-
-		// used for determining equality in memo (e.g in optimization contexts)
-		BOOL Equals(const SPartPropSpecInfo *) const;
-
-		BOOL FSatisfies(const SPartPropSpecInfo *) const;
-
-		// used for sorting SPartPropSpecInfo in an array
-		static INT CmpFunc(const void *val1, const void *val2);
-	};
-
-	// partition required/derived info, sorted by scanid
-	using UlongToSPartPropSpecInfoMap =
-		CHashMap<ULONG, SPartPropSpecInfo, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<SPartPropSpecInfo>>;
-
-	using UlongToSPartPropSpecInfoMapIter =
-		CHashMapIter<ULONG, SPartPropSpecInfo, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupRelease<SPartPropSpecInfo>>;
-
-	UlongToSPartPropSpecInfoMap *m_part_prop_spec_infos = nullptr;
-
-	// Present scanids (for easy lookup)
-	CBitSet *m_scan_ids = nullptr;
+	// return the filter expression for the given Scan Id
+	CExpression *PexprFilter(CMemoryPool *mp, ULONG scan_id);
 
 public:
-	CPartitionPropagationSpec(const CPartitionPropagationSpec &) = delete;
-
 	// ctor
-	CPartitionPropagationSpec(CMemoryPool *mp);
+	CPartitionPropagationSpec(CPartIndexMap *ppim, CPartFilterMap *ppfm);
 
 	// dtor
-	~CPartitionPropagationSpec() override;
+	virtual ~CPartitionPropagationSpec();
 
-	// append enforcers to dynamic array for the given plan properties
-	void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdPropPlan *prpp, CExpressionArray *pdrgpexpr,
-						 CExpression *pexpr) override;
-
-	// hash function
-	ULONG
-	HashValue() const override
+	// accessor of part index map
+	CPartIndexMap *
+	Ppim() const
 	{
-		ULONG ulHash = 0;
-
-		UlongToSPartPropSpecInfoMapIter hmulpi(m_part_prop_spec_infos);
-		while (hmulpi.Advance())
-		{
-			const SPartPropSpecInfo *info = hmulpi.Value();
-			ulHash = gpos::CombineHashes(ulHash, info->HashValue());
-		}
-
-		return ulHash;
+		return m_ppim;
 	}
 
-	// extract columns used by the partition propagation spec
-	CColRefSet *
-	PcrsUsed(CMemoryPool *mp) const override
+	// accessor of part filter map
+	CPartFilterMap *
+	Ppfm() const
+	{
+		return m_ppfm;
+	}
+
+	// append enforcers to dynamic array for the given plan properties
+	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CReqdPropPlan *prpp,
+								 CExpressionArray *pdrgpexpr,
+								 CExpression *pexpr);
+
+	// hash function
+	virtual ULONG HashValue() const;
+
+	// extract columns used by the rewindability spec
+	virtual CColRefSet *
+	PcrsUsed(CMemoryPool *mp) const
 	{
 		// return an empty set
 		return GPOS_NEW(mp) CColRefSet(mp);
 	}
 
 	// property type
-	EPropSpecType
-	Epst() const override
+	virtual EPropSpecType
+	Epst() const
 	{
 		return EpstPartPropagation;
 	}
 
-	BOOL
-	Contains(ULONG scan_id) const
-	{
-		return m_scan_ids->Get(scan_id);
-	}
-
-	BOOL ContainsAnyConsumers() const;
-
-	// equality check to determine compatibility of derived & required properties
-	BOOL Equals(const CPartitionPropagationSpec *ppps) const;
-
-	// satisfies function
-	BOOL FSatisfies(const CPartitionPropagationSpec *pps_reqd) const;
-
-	// Check if there is an unsupported part prop spec between two properties
-	BOOL IsUnsupportedPartSelector(
-		const CPartitionPropagationSpec *pps_reqd) const;
-
-
-
-	SPartPropSpecInfo *FindPartPropSpecInfo(ULONG scan_id) const;
-
-	void Insert(ULONG scan_id, EPartPropSpecInfoType type, IMDId *rool_rel_mdid,
-				CBitSet *selector_ids, CExpression *expr);
-
-	void Insert(SPartPropSpecInfo *other);
-
-	void InsertAll(CPartitionPropagationSpec *pps);
-
-	void InsertAllowedConsumers(CPartitionPropagationSpec *pps,
-								CBitSet *allowed_scan_ids);
-
-	void InsertAllExcept(CPartitionPropagationSpec *pps, ULONG scan_id);
-
-	const CBitSet *SelectorIds(ULONG scan_id) const;
+	// equality function
+	BOOL Matches(const CPartitionPropagationSpec *ppps) const;
 
 	// is partition propagation required
 	BOOL
 	FPartPropagationReqd() const
 	{
-		return true;
+		return m_ppim->FContainsUnresolvedZeroPropagators();
 	}
 
-	// print
-	IOstream &OsPrint(IOstream &os) const override;
 
-	void InsertAllResolve(CPartitionPropagationSpec *pSpec);
+	// print
+	IOstream &OsPrint(IOstream &os) const;
+
 };	// class CPartitionPropagationSpec
 
 }  // namespace gpopt

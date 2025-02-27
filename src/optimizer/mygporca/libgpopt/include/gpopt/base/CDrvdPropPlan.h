@@ -16,6 +16,7 @@
 
 #include "gpopt/base/CColRef.h"
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/CPartFilterMap.h"
 
 namespace gpopt
 {
@@ -26,8 +27,8 @@ class CDistributionSpec;
 class CExpressionHandle;
 class COrderSpec;
 class CRewindabilitySpec;
-class CPartitionPropagationSpec;
 class CReqdPropPlan;
+class CPartIndexMap;
 class CCTEMap;
 
 //---------------------------------------------------------------------------
@@ -46,43 +47,47 @@ class CDrvdPropPlan : public CDrvdProp
 {
 private:
 	// derived sort order
-	COrderSpec *m_pos{nullptr};
+	COrderSpec *m_pos;
 
 	// derived distribution
-	CDistributionSpec *m_pds{nullptr};
+	CDistributionSpec *m_pds;
 
 	// derived rewindability
-	CRewindabilitySpec *m_prs{nullptr};
+	CRewindabilitySpec *m_prs;
 
-	// derived partition propagation spec
-	CPartitionPropagationSpec *m_ppps{nullptr};
+	// derived partition index map
+	CPartIndexMap *m_ppim;
+
+	// derived filter expressions indexed by the part index id
+	CPartFilterMap *m_ppfm;
 
 	// derived cte map
-	CCTEMap *m_pcm{nullptr};
+	CCTEMap *m_pcm;
 
 	// copy CTE producer plan properties from given context to current object
 	void CopyCTEProducerPlanProps(CMemoryPool *mp, CDrvdPropCtxt *pdpctxt,
 								  COperator *pop);
 
-public:
-	CDrvdPropPlan(const CDrvdPropPlan &) = delete;
+	// private copy ctor
+	CDrvdPropPlan(const CDrvdPropPlan &);
 
+public:
 	// ctor
 	CDrvdPropPlan();
 
 	// dtor
-	~CDrvdPropPlan() override;
+	virtual ~CDrvdPropPlan();
 
 	// type of properties
-	EPropType
-	Ept() override
+	virtual EPropType
+	Ept()
 	{
 		return EptPlan;
 	}
 
 	// derivation function
 	void Derive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				CDrvdPropCtxt *pdpctxt) override;
+				CDrvdPropCtxt *pdpctxt);
 
 	// short hand for conversion
 	static CDrvdPropPlan *Pdpplan(CDrvdProp *pdp);
@@ -108,10 +113,18 @@ public:
 		return m_prs;
 	}
 
-	CPartitionPropagationSpec *
-	Ppps() const
+	// partition index map
+	CPartIndexMap *
+	Ppim() const
 	{
-		return m_ppps;
+		return m_ppim;
+	}
+
+	// partition filter map
+	CPartFilterMap *
+	Ppfm() const
+	{
+		return m_ppfm;
 	}
 
 	// cte map
@@ -128,10 +141,10 @@ public:
 	virtual ULONG Equals(const CDrvdPropPlan *pdpplan) const;
 
 	// check for satisfying required plan properties
-	BOOL FSatisfies(const CReqdPropPlan *prpp) const override;
+	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CDrvdPropPlan
 

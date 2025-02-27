@@ -42,32 +42,32 @@ private:
 	// statistics of the physical plan
 	CDXLStatsDerivedRelation *m_dxl_stats_derived_relation;
 
+	// private ctor
+	CParseHandlerProperties(const CParseHandlerProperties &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	// private ctor
-	CParseHandlerProperties(const CParseHandlerProperties &) = delete;
-
 	// ctor
 	CParseHandlerProperties(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,
 							CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerProperties() override;
+	virtual ~CParseHandlerProperties();
 
 	// returns the constructed properties container
 	CDXLPhysicalProperties *GetProperties() const;

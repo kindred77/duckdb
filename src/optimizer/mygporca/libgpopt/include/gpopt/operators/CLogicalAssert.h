@@ -33,30 +33,31 @@ private:
 	// exception
 	CException *m_pexc;
 
-public:
-	CLogicalAssert(const CLogicalAssert &) = delete;
+	// private copy ctor
+	CLogicalAssert(const CLogicalAssert &);
 
+public:
 	// ctors
 	explicit CLogicalAssert(CMemoryPool *mp);
 
 	CLogicalAssert(CMemoryPool *mp, CException *pexc);
 
 	// dtor
-	~CLogicalAssert() override
+	virtual ~CLogicalAssert()
 	{
 		GPOS_DELETE(m_pexc);
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalAssert;
 	}
 
 	// name of operator
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalAssert";
 	}
@@ -69,28 +70,26 @@ public:
 	}
 
 	// match function;
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *,
-									CExpressionHandle &) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *, CExpressionHandle &);
 
 	// dervive keys
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
-	DerivePropertyConstraint(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CPropConstraint *
+	DerivePropertyConstraint(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintFromPredicates(mp, exprhdl);
 	}
@@ -100,7 +99,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -110,18 +109,19 @@ public:
 	static CLogicalAssert *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalAssert == pop->Eopid());
 
-		return dynamic_cast<CLogicalAssert *>(pop);
+		return reinterpret_cast<CLogicalAssert *>(pop);
 	}
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const override;
+	IOstream &OsPrint(IOstream &os) const;
 
 };	// class CLogicalAssert
 

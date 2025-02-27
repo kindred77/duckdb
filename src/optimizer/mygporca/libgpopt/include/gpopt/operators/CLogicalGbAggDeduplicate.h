@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CLogicalGbAggDeduplicate.h
@@ -41,39 +41,40 @@ namespace gpopt
 class CLogicalGbAggDeduplicate : public CLogicalGbAgg
 {
 private:
+	// private copy ctor
+	CLogicalGbAggDeduplicate(const CLogicalGbAggDeduplicate &);
+
 	// array of keys from the join's child
 	CColRefArray *m_pdrgpcrKeys;
 
 public:
-	CLogicalGbAggDeduplicate(const CLogicalGbAggDeduplicate &) = delete;
-
 	// ctor
 	explicit CLogicalGbAggDeduplicate(CMemoryPool *mp);
 
 	// ctor
 	CLogicalGbAggDeduplicate(CMemoryPool *mp, CColRefArray *colref_array,
 							 COperator::EGbAggType egbaggtype,
-							 CColRefArray *pdrgpcrKeys = nullptr);
+							 CColRefArray *pdrgpcrKeys = NULL);
 
 	// ctor
 	CLogicalGbAggDeduplicate(CMemoryPool *mp, CColRefArray *colref_array,
 							 CColRefArray *pdrgpcrMinimal,
 							 COperator::EGbAggType egbaggtype,
-							 CColRefArray *pdrgpcrKeys = nullptr);
+							 CColRefArray *pdrgpcrKeys = NULL);
 
 	// dtor
-	~CLogicalGbAggDeduplicate() override;
+	virtual ~CLogicalGbAggDeduplicate();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalGbAggDeduplicate;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalGbAggDeduplicate";
 	}
@@ -86,23 +87,22 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive key collections
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// compute required stats columns of the n-th child
 	//-------------------------------------------------------------------------------------
@@ -110,20 +110,21 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CColRefSet *pcrsInput,
-						 ULONG child_index) const override;
+	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CColRefSet *pcrsInput,
+								 ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -133,7 +134,7 @@ public:
 	static CLogicalGbAggDeduplicate *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalGbAggDeduplicate == pop->Eopid());
 
 		return dynamic_cast<CLogicalGbAggDeduplicate *>(pop);
@@ -141,7 +142,7 @@ public:
 
 
 	// debug print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CLogicalGbAggDeduplicate
 

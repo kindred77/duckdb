@@ -36,7 +36,7 @@ class CSyncHashtableAccessorBase : public CStackObject
 {
 private:
 	// shorthand for buckets
-	using SBucket = typename gpos::CSyncHashtable<T, K>::SBucket;
+	typedef struct CSyncHashtable<T, K>::SBucket SBucket;
 
 	// target hashtable
 	CSyncHashtable<T, K> &m_ht;
@@ -44,15 +44,20 @@ private:
 	// bucket to operate on
 	SBucket &m_bucket;
 
+	// no copy ctor
+	CSyncHashtableAccessorBase<T, K>(const CSyncHashtableAccessorBase<T, K> &);
+
 protected:
 	// ctor - protected to restrict instantiation to children
-	CSyncHashtableAccessorBase(CSyncHashtable<T, K> &ht, ULONG bucket_idx)
+	CSyncHashtableAccessorBase<T, K>(CSyncHashtable<T, K> &ht, ULONG bucket_idx)
 		: m_ht(ht), m_bucket(m_ht.GetBucket(bucket_idx))
 	{
 	}
 
 	// dtor
-	virtual ~CSyncHashtableAccessorBase() = default;
+	virtual ~CSyncHashtableAccessorBase<T, K>()
+	{
+	}
 
 	// accessor to hashtable
 	CSyncHashtable<T, K> &
@@ -79,7 +84,7 @@ protected:
 	T *
 	Next(T *value) const
 	{
-		GPOS_ASSERT(nullptr != value);
+		GPOS_ASSERT(NULL != value);
 
 		// make sure element is in this hash chain
 		GPOS_ASSERT(GPOS_OK == m_bucket.m_chain.Find(value));
@@ -91,7 +96,7 @@ protected:
 	void
 	Prepend(T *value)
 	{
-		GPOS_ASSERT(nullptr != value);
+		GPOS_ASSERT(NULL != value);
 
 		m_bucket.m_chain.Prepend(value);
 
@@ -103,7 +108,7 @@ protected:
 	void
 	Prepend(T *value, T *ptNext)
 	{
-		GPOS_ASSERT(nullptr != value);
+		GPOS_ASSERT(NULL != value);
 
 		// make sure element is in this hash chain
 		GPOS_ASSERT(GPOS_OK == m_bucket.m_chain.Find(ptNext));
@@ -118,7 +123,7 @@ protected:
 	void
 	Append(T *value, T *ptPrev)
 	{
-		GPOS_ASSERT(nullptr != value);
+		GPOS_ASSERT(NULL != value);
 
 		// make sure element is in this hash chain
 		GPOS_ASSERT(GPOS_OK == m_bucket.m_chain.Find(ptPrev));
@@ -130,8 +135,6 @@ protected:
 	}
 
 public:
-	CSyncHashtableAccessorBase(const CSyncHashtableAccessorBase &) = delete;
-
 	// unlinks element
 	void
 	Remove(T *value)

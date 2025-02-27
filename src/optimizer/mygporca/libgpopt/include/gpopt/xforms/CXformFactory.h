@@ -31,9 +31,9 @@ class CXformFactory
 {
 private:
 	// definition of hash map to maintain mappings
-	using XformNameToXformMap =
-		CHashMap<CHAR, CXform, gpos::HashValue<CHAR>, CXform::FEqualIds,
-				 CleanupDeleteArray<CHAR>, CleanupNULL<CXform>>;
+	typedef CHashMap<CHAR, CXform, gpos::HashValue<CHAR>, CXform::FEqualIds,
+					 CleanupDeleteArray<CHAR>, CleanupNULL<CXform> >
+		XformNameToXformMap;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -59,6 +59,9 @@ private:
 	// private ctor
 	explicit CXformFactory(CMemoryPool *mp);
 
+	// private copy ctor
+	CXformFactory(const CXformFactory &);
+
 	// actual adding of xform
 	void Add(CXform *pxform);
 
@@ -71,8 +74,6 @@ private:
 	}
 
 public:
-	CXformFactory(const CXformFactory &) = delete;
-
 	// dtor
 	~CXformFactory();
 
@@ -113,7 +114,7 @@ public:
 	static GPOS_RESULT Init();
 
 	// destroy global factory instance
-	static void Shutdown();
+	void Shutdown();
 
 };	// class CXformFactory
 

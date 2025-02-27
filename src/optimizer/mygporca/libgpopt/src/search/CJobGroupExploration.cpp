@@ -86,7 +86,9 @@ const WCHAR
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobGroupExploration::CJobGroupExploration() = default;
+CJobGroupExploration::CJobGroupExploration()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -97,7 +99,9 @@ CJobGroupExploration::CJobGroupExploration() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CJobGroupExploration::~CJobGroupExploration() = default;
+CJobGroupExploration::~CJobGroupExploration()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -147,7 +151,7 @@ CJobGroupExploration::FScheduleGroupExpressions(CSchedulerContext *psc)
 
 	// iterate on expressions and schedule them as needed
 	CGroupExpression *pgexpr = PgexprFirstUnsched();
-	while (nullptr != pgexpr)
+	while (NULL != pgexpr)
 	{
 		if (!pgexpr->FTransitioned(CGroupExpression::estExplored))
 		{

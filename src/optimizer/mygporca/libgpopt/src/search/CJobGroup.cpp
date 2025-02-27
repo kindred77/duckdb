@@ -31,10 +31,10 @@ void
 CJobGroup::Init(CGroup *pgroup)
 {
 	GPOS_ASSERT(!FInit());
-	GPOS_ASSERT(nullptr != pgroup);
+	GPOS_ASSERT(NULL != pgroup);
 
 	m_pgroup = pgroup;
-	m_pgexprLastScheduled = nullptr;
+	m_pgexprLastScheduled = NULL;
 }
 
 
@@ -49,13 +49,13 @@ CJobGroup::Init(CGroup *pgroup)
 CGroupExpression *
 CJobGroup::PgexprFirstUnschedNonLogical()
 {
-	CGroupExpression *pgexpr = nullptr;
+	CGroupExpression *pgexpr = NULL;
 	{
 		CGroupProxy gp(m_pgroup);
-		if (nullptr == m_pgexprLastScheduled)
+		if (NULL == m_pgexprLastScheduled)
 		{
 			// get first group expression
-			pgexpr = gp.PgexprSkipLogical(nullptr /*pgexpr*/);
+			pgexpr = gp.PgexprSkipLogical(NULL /*pgexpr*/);
 		}
 		else
 		{
@@ -79,10 +79,10 @@ CJobGroup::PgexprFirstUnschedNonLogical()
 CGroupExpression *
 CJobGroup::PgexprFirstUnschedLogical()
 {
-	CGroupExpression *pgexpr = nullptr;
+	CGroupExpression *pgexpr = NULL;
 	{
 		CGroupProxy gp(m_pgroup);
-		if (nullptr == m_pgexprLastScheduled)
+		if (NULL == m_pgexprLastScheduled)
 		{
 			// get first group expression
 			pgexpr = gp.PgexprFirst();

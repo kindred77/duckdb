@@ -30,9 +30,10 @@ using namespace gpos;
 class CXformPushGbBelowJoin : public CXformExploration
 {
 private:
-public:
-	CXformPushGbBelowJoin(const CXformPushGbBelowJoin &) = delete;
+	// private copy ctor
+	CXformPushGbBelowJoin(const CXformPushGbBelowJoin &);
 
+public:
 	// ctor
 	explicit CXformPushGbBelowJoin(CMemoryPool *mp);
 
@@ -40,27 +41,29 @@ public:
 	explicit CXformPushGbBelowJoin(CExpression *pexprPattern);
 
 	// dtor
-	~CXformPushGbBelowJoin() override = default;
+	virtual ~CXformPushGbBelowJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfPushGbBelowJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformPushGbBelowJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformPushGbBelowJoin
 

@@ -25,11 +25,11 @@
 using namespace gpos;
 using namespace gpdxl;
 
-static CDXLMemoryManager *dxl_memory_manager = nullptr;
+static CDXLMemoryManager *dxl_memory_manager = NULL;
 
-static CMemoryPool *pmpXerces = nullptr;
+static CMemoryPool *pmpXerces = NULL;
 
-static CMemoryPool *pmpDXL = nullptr;
+static CMemoryPool *pmpDXL = NULL;
 
 // safe-guard to prevent initializing DXL support more than once
 static ULONG_PTR m_ulpInitDXL = 0;
@@ -57,18 +57,17 @@ InitDXL()
 		return;
 	}
 
-	GPOS_ASSERT(nullptr != pmpXerces);
-	GPOS_ASSERT(nullptr != pmpDXL);
+	GPOS_ASSERT(NULL != pmpXerces);
+	GPOS_ASSERT(NULL != pmpDXL);
 
 	// setup own memory manager
 	dxl_memory_manager = GPOS_NEW(pmpXerces) CDXLMemoryManager(pmpXerces);
 
 	// initialize Xerces, if this fails library initialization should crash here
-	XMLPlatformUtils::Initialize(
-		XMLUni::fgXercescDefaultLocale,	 // locale
-		nullptr,						 // nlsHome: location for message files
-		nullptr,						 // panicHandler
-		dxl_memory_manager				 // memoryManager
+	XMLPlatformUtils::Initialize(XMLUni::fgXercescDefaultLocale,  // locale
+								 NULL,	// nlsHome: location for message files
+								 NULL,	// panicHandler
+								 dxl_memory_manager	 // memoryManager
 	);
 
 	// initialize DXL tokens
@@ -98,7 +97,7 @@ ShutdownDXL()
 		return;
 	}
 
-	GPOS_ASSERT(nullptr != pmpXerces);
+	GPOS_ASSERT(NULL != pmpXerces);
 
 	m_ulpShutdownDXL++;
 
@@ -107,7 +106,7 @@ ShutdownDXL()
 	CDXLTokens::Terminate();
 
 	GPOS_DELETE(dxl_memory_manager);
-	dxl_memory_manager = nullptr;
+	dxl_memory_manager = NULL;
 }
 
 
@@ -157,16 +156,16 @@ gpdxl_terminate()
 #ifdef GPOS_DEBUG
 	ShutdownDXL();
 
-	if (nullptr != pmpDXL)
+	if (NULL != pmpDXL)
 	{
 		(CMemoryPoolManager::GetMemoryPoolMgr())->Destroy(pmpDXL);
-		pmpDXL = nullptr;
+		pmpDXL = NULL;
 	}
 
-	if (nullptr != pmpXerces)
+	if (NULL != pmpXerces)
 	{
 		(CMemoryPoolManager::GetMemoryPoolMgr())->Destroy(pmpXerces);
-		pmpXerces = nullptr;
+		pmpXerces = NULL;
 	}
 #endif	// GPOS_DEBUG
 }

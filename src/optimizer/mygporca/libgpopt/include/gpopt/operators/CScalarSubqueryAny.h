@@ -31,44 +31,46 @@ using namespace gpos;
 class CScalarSubqueryAny : public CScalarSubqueryQuantified
 {
 private:
-public:
-	CScalarSubqueryAny(const CScalarSubqueryAny &) = delete;
+	// private copy ctor
+	CScalarSubqueryAny(const CScalarSubqueryAny &);
 
+public:
 	// ctor
 	CScalarSubqueryAny(CMemoryPool *mp, IMDId *scalar_op_mdid,
 					   const CWStringConst *pstrScalarOp,
 					   const CColRef *colref);
 
 	// dtor
-	~CScalarSubqueryAny() override = default;
+	virtual ~CScalarSubqueryAny()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSubqueryAny;
 	}
 
 	// return a string for scalar subquery
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSubqueryAny";
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CScalarSubqueryAny *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSubqueryAny == pop->Eopid());
 
-		return dynamic_cast<CScalarSubqueryAny *>(pop);
+		return reinterpret_cast<CScalarSubqueryAny *>(pop);
 	}
 
 };	// class CScalarSubqueryAny

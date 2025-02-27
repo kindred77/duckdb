@@ -36,33 +36,33 @@ private:
 	// required columns in distribution spec
 	CColRefSet *m_pcrsRequiredLocal;
 
-public:
-	CPhysicalMotionHashDistribute(const CPhysicalMotionHashDistribute &) =
-		delete;
+	// private copy ctor
+	CPhysicalMotionHashDistribute(const CPhysicalMotionHashDistribute &);
 
+public:
 	// ctor
 	CPhysicalMotionHashDistribute(CMemoryPool *mp,
 								  CDistributionSpecHashed *pdsHashed);
 
 	// dtor
-	~CPhysicalMotionHashDistribute() override;
+	virtual ~CPhysicalMotionHashDistribute();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalMotionHashDistribute;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalMotionHashDistribute";
 	}
 
 	// output distribution accessor
-	CDistributionSpec *
-	Pds() const override
+	virtual CDistributionSpec *
+	Pds() const
 	{
 		return m_pdsHashed;
 	}
@@ -75,59 +75,62 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required output columns of the n-th child
-	CColRefSet *PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							 CColRefSet *pcrsInput, ULONG child_index,
-							 CDrvdPropArray *pdrgpdpCtxt,
-							 ULONG ulOptReq) override;
+	virtual CColRefSet *PcrsRequired(CMemoryPool *mp,
+									 CExpressionHandle &exprhdl,
+									 CColRefSet *pcrsInput, ULONG child_index,
+									 CDrvdPropArray *pdrgpdpCtxt,
+									 ULONG ulOptReq);
 
 	// compute required sort order of the n-th child
-	COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							COrderSpec *posInput, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt,
-							ULONG ulOptReq) const override;
+	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+									COrderSpec *posInput, ULONG child_index,
+									CDrvdPropArray *pdrgpdpCtxt,
+									ULONG ulOptReq) const;
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *PosDerive(CMemoryPool *mp,
-						  CExpressionHandle &exprhdl) const override;
+	virtual COrderSpec *PosDerive(CMemoryPool *mp,
+								  CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// conversion function
 	static CPhysicalMotionHashDistribute *PopConvert(COperator *pop);
 
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
 };	// class CPhysicalMotionHashDistribute
 

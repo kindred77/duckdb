@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal Inc.
 //
 //	@filename:
 //		CXformSplitDQA.h
@@ -33,9 +33,13 @@ class CXformSplitDQA : public CXformExploration
 {
 private:
 	// hash map between expression and a column reference
-	using ExprToColRefMap =
-		CHashMap<CExpression, CColRef, CExpression::HashValue, CUtils::Equals,
-				 CleanupRelease<CExpression>, CleanupNULL<CColRef>>;
+	typedef CHashMap<CExpression, CColRef, CExpression::HashValue,
+					 CUtils::Equals, CleanupRelease<CExpression>,
+					 CleanupNULL<CColRef> >
+		ExprToColRefMap;
+
+	// private copy ctor
+	CXformSplitDQA(const CXformSplitDQA &);
 
 	// generate an expression with multi-level aggregation
 	static CExpression *PexprMultiLevelAggregation(
@@ -90,42 +94,41 @@ private:
 									   CExpressionArray *pdrgpexprChildPrEl);
 
 public:
-	CXformSplitDQA(const CXformSplitDQA &) = delete;
-
 	// ctor
 	explicit CXformSplitDQA(CMemoryPool *mp);
 
 	// dtor
-	~CXformSplitDQA() override = default;
+	virtual ~CXformSplitDQA()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSplitDQA;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSplitDQA";
 	}
 
 	// Compatibility function for splitting aggregates
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSplitDQA != exfid) &&
 			   (CXform::ExfSplitGbAgg != exfid);
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformSplitDQA
 

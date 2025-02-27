@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 
 #include "gpopt/operators/CPhysicalUnionAllFactory.h"
@@ -37,13 +37,15 @@ CPhysicalUnionAllFactory::PopPhysicalUnionAll(CMemoryPool *mp, BOOL fParallel)
 
 	if (fParallel)
 	{
-		return GPOS_NEW(mp)
-			CPhysicalParallelUnionAll(mp, pdrgpcrOutput, pdrgpdrgpcrInput);
+		return GPOS_NEW(mp) CPhysicalParallelUnionAll(
+			mp, pdrgpcrOutput, pdrgpdrgpcrInput,
+			m_popLogicalUnionAll->UlScanIdPartialIndex());
 	}
 	else
 	{
-		return GPOS_NEW(mp)
-			CPhysicalSerialUnionAll(mp, pdrgpcrOutput, pdrgpdrgpcrInput);
+		return GPOS_NEW(mp) CPhysicalSerialUnionAll(
+			mp, pdrgpcrOutput, pdrgpdrgpcrInput,
+			m_popLogicalUnionAll->UlScanIdPartialIndex());
 	}
 }
 

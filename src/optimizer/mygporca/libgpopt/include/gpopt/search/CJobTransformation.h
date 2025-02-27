@@ -54,7 +54,7 @@ public:
 
 private:
 	// shorthand for job state machine
-	using JSM = CJobStateMachine<EState, estSentinel, EEvent, eevSentinel>;
+	typedef CJobStateMachine<EState, estSentinel, EEvent, eevSentinel> JSM;
 
 	// target group expression
 	CGroupExpression *m_pgexpr;
@@ -68,14 +68,15 @@ private:
 	// apply transformation action
 	static EEvent EevtTransform(CSchedulerContext *psc, CJob *pj);
 
-public:
-	CJobTransformation(const CJobTransformation &) = delete;
+	// private copy ctor
+	CJobTransformation(const CJobTransformation &);
 
+public:
 	// ctor
 	CJobTransformation();
 
 	// dtor
-	~CJobTransformation() override;
+	virtual ~CJobTransformation();
 
 	// initialize job
 	void Init(CGroupExpression *pgexpr, CXform *pxform);
@@ -85,12 +86,12 @@ public:
 							CXform *pxform, CJob *pjParent);
 
 	// job's main function
-	BOOL FExecute(CSchedulerContext *psc) override;
+	virtual BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// dump state machine diagram in graphviz format
 	virtual IOstream &
@@ -115,7 +116,7 @@ public:
 	static CJobTransformation *
 	PjConvert(CJob *pj)
 	{
-		GPOS_ASSERT(nullptr != pj);
+		GPOS_ASSERT(NULL != pj);
 		GPOS_ASSERT(EjtTransformation == pj->Ejt());
 
 		return dynamic_cast<CJobTransformation *>(pj);

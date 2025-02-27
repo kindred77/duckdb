@@ -34,16 +34,19 @@ private:
 	// Memory pool
 	CMemoryPool *m_mp;
 
-public:
-	CXformContext(const CXformContext &) = delete;
+	// private copy ctor
+	CXformContext(const CXformContext &);
 
+public:
 	// ctor
 	explicit CXformContext(CMemoryPool *mp) : m_mp(mp)
 	{
 	}
 
 	// dtor
-	~CXformContext() override = default;
+	~CXformContext()
+	{
+	}
 
 
 	// accessor

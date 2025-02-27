@@ -28,7 +28,7 @@ using namespace gpmd;
 class CXMLSerializer;
 class CDXLColDescr;
 
-using CDXLColDescrArray = CDynamicPtrArray<CDXLColDescr, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLColDescr, CleanupRelease> CDXLColDescrArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -41,6 +41,9 @@ using CDXLColDescrArray = CDynamicPtrArray<CDXLColDescr, CleanupRelease>;
 class CDXLColDescr : public CRefCount
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// name
 	CMDName *m_md_name;
 
@@ -61,16 +64,17 @@ private:
 	// width of the column, for instance  char(10) column has width 10
 	ULONG m_column_width;
 
-public:
-	CDXLColDescr(const CDXLColDescr &) = delete;
+	// private copy ctor
+	CDXLColDescr(const CDXLColDescr &);
 
+public:
 	// ctor
-	CDXLColDescr(CMDName *, ULONG column_id, INT attr_no,
+	CDXLColDescr(CMemoryPool *, CMDName *, ULONG column_id, INT attr_no,
 				 IMDId *column_mdid_type, INT type_modifier, BOOL is_dropped,
 				 ULONG width = gpos::ulong_max);
 
 	//dtor
-	~CDXLColDescr() override;
+	~CDXLColDescr();
 
 	// column name
 	const CMDName *MdName() const;

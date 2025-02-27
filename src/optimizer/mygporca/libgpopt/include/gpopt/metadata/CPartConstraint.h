@@ -27,16 +27,16 @@ class CColRef;
 class CPartConstraint;
 
 // hash maps of part constraints indexed by part index id
-using UlongToPartConstraintMap =
-	CHashMap<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
-			 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-			 CleanupRelease<CPartConstraint>>;
+typedef CHashMap<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
+				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+				 CleanupRelease<CPartConstraint> >
+	UlongToPartConstraintMap;
 
 // map iterator
-using UlongToPartConstraintMapIter =
-	CHashMapIter<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CPartConstraint>>;
+typedef CHashMapIter<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CPartConstraint> >
+	UlongToPartConstraintMapIter;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -70,9 +70,12 @@ private:
 	// combined constraint
 	CConstraint *m_pcnstrCombined;
 
+	// private copy ctor
+	CPartConstraint(const CPartConstraint &);
+
 #ifdef GPOS_DEBUG
 	// are all default partitions on all levels included
-	BOOL FAllDefaultPartsIncluded() const;
+	BOOL FAllDefaultPartsIncluded();
 #endif	//GPOS_DEBUG
 
 	// does the current constraint overlap with given one at the given level
@@ -89,8 +92,8 @@ private:
 
 	// return the remaining part of the first constraint that is not covered by
 	// the second constraint
-	static CConstraint *PcnstrRemaining(CMemoryPool *mp, CConstraint *pcnstrFst,
-										CConstraint *pcnstrSnd);
+	CConstraint *PcnstrRemaining(CMemoryPool *mp, CConstraint *pcnstrFst,
+								 CConstraint *pcnstrSnd);
 
 	// check if two constaint maps have the same constraints
 	static BOOL FEqualConstrMaps(UlongToConstraintMap *phmulcnstrFst,
@@ -104,8 +107,6 @@ private:
 									 CPartConstraint *ppartcnstrSnd);
 
 public:
-	CPartConstraint(const CPartConstraint &) = delete;
-
 	// ctors
 	CPartConstraint(CMemoryPool *mp, UlongToConstraintMap *phmulcnstr,
 					CBitSet *pbsDefaultParts, BOOL is_unbounded,
@@ -116,7 +117,7 @@ public:
 	CPartConstraint(BOOL fUninterpreted);
 
 	// dtor
-	~CPartConstraint() override;
+	virtual ~CPartConstraint();
 
 	// constraint at given level
 	CConstraint *Pcnstr(ULONG ulLevel) const;
@@ -172,7 +173,7 @@ public:
 		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// construct a disjunction of the two constraints
 	static CPartConstraint *PpartcnstrDisjunction(

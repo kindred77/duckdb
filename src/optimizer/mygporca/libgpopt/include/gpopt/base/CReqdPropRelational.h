@@ -37,23 +37,30 @@ class CReqdPropRelational : public CReqdProp
 {
 private:
 	// required stat columns
-	CColRefSet *m_pcrsStat{nullptr};
+	CColRefSet *m_pcrsStat;
+
+	// predicate on partition key
+	CExpression *m_pexprPartPred;
+
+	// private copy ctor
+	CReqdPropRelational(const CReqdPropRelational &);
 
 public:
-	CReqdPropRelational(const CReqdPropRelational &) = delete;
-
 	// default ctor
 	CReqdPropRelational();
 
 	// ctor
 	explicit CReqdPropRelational(CColRefSet *pcrs);
 
+	// ctor
+	CReqdPropRelational(CColRefSet *pcrs, CExpression *pexprPartPred);
+
 	// dtor
-	~CReqdPropRelational() override;
+	virtual ~CReqdPropRelational();
 
 	// type of properties
-	BOOL
-	FRelational() const override
+	virtual BOOL
+	FRelational() const
 	{
 		GPOS_ASSERT(!FPlan());
 		return true;
@@ -66,10 +73,17 @@ public:
 		return m_pcrsStat;
 	}
 
+	// partition predicate accessor
+	CExpression *
+	PexprPartPred() const
+	{
+		return m_pexprPartPred;
+	}
+
 	// required properties computation function
-	void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				 CReqdProp *prpInput, ULONG child_index,
-				 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) override;
+	virtual void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
+						 CReqdProp *prpInput, ULONG child_index,
+						 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	// return difference from given properties
 	CReqdPropRelational *PrprelDifference(CMemoryPool *mp,
@@ -82,7 +96,7 @@ public:
 	static CReqdPropRelational *GetReqdRelationalProps(CReqdProp *prp);
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CReqdPropRelational
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CScalarMinMax.h
@@ -53,32 +53,33 @@ private:
 	// is operator return type BOOL?
 	BOOL m_fBoolReturnType;
 
-public:
-	CScalarMinMax(const CScalarMinMax &) = delete;
+	// private copy ctor
+	CScalarMinMax(const CScalarMinMax &);
 
+public:
 	// ctor
 	CScalarMinMax(CMemoryPool *mp, IMDId *mdid_type, EScalarMinMaxType esmmt);
 
 	// dtor
-	~CScalarMinMax() override;
+	virtual ~CScalarMinMax();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarMinMax;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarMinMax";
 	}
 
 	// return type
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		return m_mdid_type;
 	}
@@ -91,44 +92,44 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult
-	Eber(ULongPtrArray *pdrgpulChildren) const override
+	virtual EBoolEvalResult
+	Eber(ULongPtrArray *pdrgpulChildren) const
 	{
 		// MinMax returns Null only if all children are Null
 		return EberNullOnAllNullChildren(pdrgpulChildren);
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// conversion function
 	static CScalarMinMax *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarMinMax == pop->Eopid());
 
 		return dynamic_cast<CScalarMinMax *>(pop);

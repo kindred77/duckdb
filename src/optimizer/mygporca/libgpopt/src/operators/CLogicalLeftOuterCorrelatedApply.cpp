@@ -25,7 +25,7 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CLogicalLeftOuterCorrelatedApply::CLogicalLeftOuterCorrelatedApply(
 	CMemoryPool *mp)
-	: CLogicalLeftOuterApply(mp)
+	: CLogicalLeftOuterApply(mp), m_allow_predicate_pushdown(true)
 {
 }
 

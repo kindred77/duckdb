@@ -161,7 +161,7 @@ CDXLLogicalTVF::SerializeToDXL(CXMLSerializer *xml_serializer,
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenColumns));
-	GPOS_ASSERT(nullptr != m_dxl_col_descr_array);
+	GPOS_ASSERT(NULL != m_dxl_col_descr_array);
 
 	for (ULONG ul = 0; ul < Arity(); ul++)
 	{
@@ -194,8 +194,8 @@ CDXLLogicalTVF::AssertValid(const CDXLNode *dxlnode,
 							BOOL validate_children) const
 {
 	// assert validity of function id and return type
-	GPOS_ASSERT(nullptr != m_func_mdid);
-	GPOS_ASSERT(nullptr != m_return_type_mdid);
+	GPOS_ASSERT(NULL != m_func_mdid);
+	GPOS_ASSERT(NULL != m_return_type_mdid);
 
 	const ULONG arity = dxlnode->Arity();
 	for (ULONG ul = 0; ul < arity; ++ul)

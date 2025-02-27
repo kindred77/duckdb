@@ -53,14 +53,15 @@ private:
 	// system id
 	CSystemId m_sysid;
 
-public:
-	CAutoMDAccessor(const CAutoMDAccessor &) = delete;
+	// private copy ctor
+	CAutoMDAccessor(const CAutoMDAccessor &);
 
+public:
 	// ctor
 	CAutoMDAccessor(CMemoryPool *mp, IMDProvider *pmdp, CSystemId sysid)
 		: m_pimdp(pmdp), m_fOwnCache(true), m_sysid(sysid)
 	{
-		GPOS_ASSERT(nullptr != pmdp);
+		GPOS_ASSERT(NULL != pmdp);
 
 		m_pcache =
 			CCacheFactory::CreateCache<gpmd::IMDCacheObject *, gpopt::CMDKey *>(
@@ -74,8 +75,8 @@ public:
 					CMDAccessor::MDCache *pcache)
 		: m_pimdp(pmdp), m_fOwnCache(false), m_pcache(pcache), m_sysid(sysid)
 	{
-		GPOS_ASSERT(nullptr != pmdp);
-		GPOS_ASSERT(nullptr != pcache);
+		GPOS_ASSERT(NULL != pmdp);
+		GPOS_ASSERT(NULL != pcache);
 
 		m_pmda = GPOS_NEW(mp) CMDAccessor(mp, m_pcache, sysid, pmdp);
 	}

@@ -40,20 +40,21 @@ private:
 	// list of source column ids
 	ULongPtrArray *m_src_colids_array;
 
-public:
-	CDXLLogicalInsert(const CDXLLogicalInsert &) = delete;
+	// private copy ctor
+	CDXLLogicalInsert(const CDXLLogicalInsert &);
 
+public:
 	// ctor/dtor
 	CDXLLogicalInsert(CMemoryPool *mp, CDXLTableDescr *table_descr,
 					  ULongPtrArray *src_colids_array);
 
-	~CDXLLogicalInsert() override;
+	virtual ~CDXLLogicalInsert();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// target table descriptor
 	CDXLTableDescr *
@@ -72,19 +73,18 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLLogicalInsert *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalInsert == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalInsert *>(dxl_op);

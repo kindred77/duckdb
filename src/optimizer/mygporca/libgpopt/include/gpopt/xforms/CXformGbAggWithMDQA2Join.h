@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CXformGbAggWithMDQA2Join.h
@@ -32,47 +32,48 @@ using namespace gpos;
 class CXformGbAggWithMDQA2Join : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformGbAggWithMDQA2Join(const CXformGbAggWithMDQA2Join &);
+
 	static CExpression *PexprMDQAs2Join(CMemoryPool *mp, CExpression *pexpr);
 
-	// expand GbAgg with multiple distinct aggregates into a join of single distinct
-	// aggregates
+	// expand GbAgg with multiple distinct aggregates into a join of single distinct aggregates
 	static CExpression *PexprExpandMDQAs(CMemoryPool *mp, CExpression *pexpr);
 
 	// main transformation function driver
 	static CExpression *PexprTransform(CMemoryPool *mp, CExpression *pexpr);
 
 public:
-	CXformGbAggWithMDQA2Join(const CXformGbAggWithMDQA2Join &) = delete;
-
 	// ctor
 	explicit CXformGbAggWithMDQA2Join(CMemoryPool *mp);
 
 	// dtor
-	~CXformGbAggWithMDQA2Join() override = default;
+	virtual ~CXformGbAggWithMDQA2Join()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAggWithMDQA2Join;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAggWithMDQA2Join";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 	// return true if xform should be applied only once
-	BOOL IsApplyOnce() override;
+	virtual BOOL IsApplyOnce();
 
 };	// class CXformGbAggWithMDQA2Join
 

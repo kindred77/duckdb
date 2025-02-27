@@ -39,16 +39,16 @@ private:
 	CException m_exception;
 
 	// exception severity
-	ULONG m_severity{CException::ExsevError};
+	ULONG m_severity;
 
 	// flag to indicate if handled yet
-	BOOL m_pending{false};
+	BOOL m_pending;
 
 	// flag to indicate if handled yet
-	BOOL m_rethrown{false};
+	BOOL m_rethrown;
 
 	// flag to indicate that we are currently serializing this.
-	BOOL m_serializing{false};
+	BOOL m_serializing;
 
 	// error message buffer
 	WCHAR m_error_msg[GPOS_ERROR_MESSAGE_BUFFER_SIZE];
@@ -68,30 +68,31 @@ private:
 	// minidump handler
 	CMiniDumper *m_mini_dumper_handle;
 
-public:
-	CErrorContext(const CErrorContext &) = delete;
+	// private copy ctor
+	CErrorContext(const CErrorContext &);
 
+public:
 	// ctor
-	explicit CErrorContext(CMiniDumper *mini_dumper_handle = nullptr);
+	explicit CErrorContext(CMiniDumper *mini_dumper_handle = NULL);
 
 	// dtor
-	~CErrorContext() override;
+	virtual ~CErrorContext();
 
 	// reset context, clear out handled error
-	void Reset() override;
+	virtual void Reset();
 
 	// record error context
-	void Record(CException &exc, VA_LIST) override;
+	virtual void Record(CException &exc, VA_LIST);
 
 	// accessors
-	CException
-	GetException() const override
+	virtual CException
+	GetException() const
 	{
 		return m_exception;
 	}
 
-	const WCHAR *
-	GetErrorMsg() const override
+	virtual const WCHAR *
+	GetErrorMsg() const
 	{
 		return m_error_msg;
 	}
@@ -112,7 +113,7 @@ public:
 	void
 	Register(CMiniDumper *mini_dumper_handle)
 	{
-		GPOS_ASSERT(nullptr == m_mini_dumper_handle);
+		GPOS_ASSERT(NULL == m_mini_dumper_handle);
 
 		m_mini_dumper_handle = mini_dumper_handle;
 	}
@@ -126,7 +127,7 @@ public:
 	)
 	{
 		GPOS_ASSERT(mini_dumper_handle == m_mini_dumper_handle);
-		m_mini_dumper_handle = nullptr;
+		m_mini_dumper_handle = NULL;
 	}
 
 	// register object to serialize
@@ -147,47 +148,47 @@ public:
 	void Serialize();
 
 	// copy necessary info for error propagation
-	void CopyPropErrCtxt(const IErrorContext *perrctxt) override;
+	virtual void CopyPropErrCtxt(const IErrorContext *perrctxt);
 
 	// severity accessor
-	ULONG
-	GetSeverity() const override
+	virtual ULONG
+	GetSeverity() const
 	{
 		return m_severity;
 	}
 
 	// set severity
-	void
-	SetSev(ULONG severity) override
+	virtual void
+	SetSev(ULONG severity)
 	{
 		m_severity = severity;
 	}
 
 	// print error stack trace
-	void
-	AppendStackTrace() override
+	virtual void
+	AppendStackTrace()
 	{
 		m_static_buffer.AppendFormat(GPOS_WSZ_LIT("\nStack trace:\n"));
 		m_stack_descriptor.AppendTrace(&m_static_buffer);
 	}
 
 	// print errno message
-	void AppendErrnoMsg() override;
+	virtual void AppendErrnoMsg();
 
-	BOOL
-	IsPending() const override
+	virtual BOOL
+	IsPending() const
 	{
 		return m_pending;
 	}
 
-	BOOL
-	IsRethrown() const override
+	virtual BOOL
+	IsRethrown() const
 	{
 		return m_rethrown;
 	}
 
-	void
-	SetRethrow() override
+	virtual void
+	SetRethrow()
 	{
 		m_rethrown = true;
 	}

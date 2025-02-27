@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		IComparator.h
@@ -41,7 +41,9 @@ using gpnaucrates::IDatum;
 class IComparator
 {
 public:
-	virtual ~IComparator() = default;
+	virtual ~IComparator()
+	{
+	}
 
 	// tests if the two arguments are equal
 	virtual gpos::BOOL Equals(const IDatum *datum1,

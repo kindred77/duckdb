@@ -29,26 +29,27 @@ namespace gpopt
 class CMiniDumperDXL : public CMiniDumper
 {
 private:
-public:
-	CMiniDumperDXL(const CMiniDumperDXL &) = delete;
+	// private copy ctor
+	CMiniDumperDXL(const CMiniDumperDXL &);
 
+public:
 	// ctor
-	CMiniDumperDXL();
+	explicit CMiniDumperDXL(CMemoryPool *mp);
 
 	// dtor
-	~CMiniDumperDXL() override;
+	virtual ~CMiniDumperDXL();
 
 	// serialize minidump header
-	void SerializeHeader() override;
+	virtual void SerializeHeader();
 
 	// serialize minidump footer
-	void SerializeFooter() override;
+	virtual void SerializeFooter();
 
 	// serialize entry header
-	void SerializeEntryHeader() override;
+	virtual void SerializeEntryHeader();
 
 	// serialize entry footer
-	void SerializeEntryFooter() override;
+	virtual void SerializeEntryFooter();
 
 };	// class CMiniDumperDXL
 }  // namespace gpopt

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	Base Index Apply operator for Inner and Outer Join;
 //	a variant of inner/outer apply that captures the need to implement a
@@ -20,6 +20,9 @@ namespace gpopt
 class CLogicalIndexApply : public CLogicalApply
 {
 private:
+	// private copy ctor
+	CLogicalIndexApply(const CLogicalIndexApply &);
+
 protected:
 	// columns used from Apply's outer child used by index in Apply's inner child
 	CColRefArray *m_pdrgpcrOuterRefs;
@@ -31,8 +34,6 @@ protected:
 	CExpression *m_origJoinPred;
 
 public:
-	CLogicalIndexApply(const CLogicalIndexApply &) = delete;
-
 	// ctor
 	CLogicalIndexApply(CMemoryPool *mp, CColRefArray *pdrgpcrOuterRefs,
 					   BOOL fOuterJoin, CExpression *origJoinPred);
@@ -41,18 +42,18 @@ public:
 	explicit CLogicalIndexApply(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalIndexApply() override;
+	virtual ~CLogicalIndexApply();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalIndexApply;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalIndexApply";
 	}
@@ -82,8 +83,8 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *
-	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl) override
+	virtual CColRefSet *
+	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl)
 	{
 		GPOS_ASSERT(3 == exprhdl.Arity());
 
@@ -91,57 +92,55 @@ public:
 	}
 
 	// derive not nullable columns
-	CColRefSet *
-	DeriveNotNullColumns(CMemoryPool *mp,
-						 CExpressionHandle &exprhdl) const override
+	virtual CColRefSet *
+	DeriveNotNullColumns(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PcrsDeriveNotNullCombineLogical(mp, exprhdl);
 	}
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
-	DerivePropertyConstraint(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CPropConstraint *
+	DerivePropertyConstraint(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintFromPredicates(mp, exprhdl);
 	}
 
 	// applicable transformations
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Stats
 	//-------------------------------------------------------------------------------------
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
+	virtual EStatPromise
 	Esp(CExpressionHandle &	 // exprhdl
-	) const override
+	) const
 	{
 		return CLogical::EspMedium;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CLogicalIndexApply *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalIndexApply == pop->Eopid());
 
 		return dynamic_cast<CLogicalIndexApply *>(pop);

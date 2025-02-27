@@ -36,22 +36,22 @@ class CSchedulerContext
 {
 private:
 	// memory pool used by all workers
-	CMemoryPool *m_pmpGlobal{nullptr};
+	CMemoryPool *m_pmpGlobal;
 
 	// memory pool used by only by current worker (scratch space)
-	CMemoryPool *m_pmpLocal{nullptr};
+	CMemoryPool *m_pmpLocal;
 
 	// job factory
 	CJobFactory *m_pjf;
 
 	// scheduler
-	CScheduler *m_psched{nullptr};
+	CScheduler *m_psched;
 
 	// optimization engine
 	CEngine *m_peng;
 
 	// flag indicating if context has been initialized
-	BOOL m_fInit{false};
+	BOOL m_fInit;
 
 	BOOL
 	FInit() const
@@ -59,9 +59,10 @@ private:
 		return m_fInit;
 	}
 
-public:
-	CSchedulerContext(const CSchedulerContext &) = delete;
+	// no copy ctor
+	CSchedulerContext(const CSchedulerContext &);
 
+public:
 	// ctor
 	CSchedulerContext();
 

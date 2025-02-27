@@ -147,8 +147,7 @@ private:
 								  CGroupExpression *pgexprOrigin);
 
 	// create and schedule the main optimization job
-	void ScheduleMainJob(CSchedulerContext *psc,
-						 COptimizationContext *poc) const;
+	void ScheduleMainJob(CSchedulerContext *psc, COptimizationContext *poc);
 
 	// print activated xform
 	void PrintActivatedXforms(IOstream &os) const;
@@ -161,7 +160,7 @@ private:
 	FSearchTerminated() const
 	{
 		// at least one stage has completed and achieved required cost
-		return (nullptr != PssPrevious() && PssPrevious()->FAchievedReqdCost());
+		return (NULL != PssPrevious() && PssPrevious()->FAchievedReqdCost());
 	}
 
 	// generate random plan id
@@ -175,7 +174,7 @@ private:
 	void SamplePlans();
 
 	// check if all children were successfully optimized
-	static BOOL FChildrenOptimized(COptimizationContextArray *pdrgpoc);
+	BOOL FChildrenOptimized(COptimizationContextArray *pdrgpoc);
 
 	// check if ayn of the given property enforcing types prohibits enforcement
 	static BOOL FProhibited(CEnfdProp::EPropEnforcingType epetOrder,
@@ -193,6 +192,11 @@ private:
 						  CEnfdProp::EPropEnforcingType epetRewindability,
 						  CEnfdProp::EPropEnforcingType epetPropagation);
 
+	// check if partition propagation resolver is passed an empty part
+	// propagation spec
+	static BOOL FCheckReqdPartPropagation(CPhysical *pop,
+										  CEnfdPartitionPropagation *pepp);
+
 	// unrank the plan with the given 'plan_id' from the memo
 	CExpression *PexprUnrank(ULLONG plan_id);
 
@@ -205,9 +209,10 @@ private:
 	IOstream &OsPrintMemoryConsumption(IOstream &os,
 									   const CHAR *szHeader) const;
 
-public:
-	CEngine(const CEngine &) = delete;
+	// inaccessible copy ctor
+	CEngine(const CEngine &);
 
+public:
 	// ctor
 	explicit CEngine(CMemoryPool *mp);
 
@@ -221,7 +226,7 @@ public:
 	CGroup *
 	PgroupRoot() const
 	{
-		GPOS_ASSERT(nullptr != m_pmemo);
+		GPOS_ASSERT(NULL != m_pmemo);
 
 		return m_pmemo->PgroupRoot();
 	}
@@ -261,6 +266,12 @@ public:
 	BOOL FCheckEnfdProps(CMemoryPool *mp, CGroupExpression *pgexpr,
 						 COptimizationContext *poc, ULONG ulOptReq,
 						 COptimizationContextArray *pdrgpoc);
+
+	// check if the given expression has valid cte and partition properties
+	// with respect to the given requirements
+	BOOL FValidCTEAndPartitionProperties(CMemoryPool *mp,
+										 CExpressionHandle &exprhdl,
+										 CReqdPropPlan *prpp);
 
 #ifdef GPOS_DEBUG
 	// apply all exploration xforms
@@ -329,7 +340,7 @@ public:
 	{
 		if (0 == m_ulCurrSearchStage)
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		return (*m_search_stage_array)[m_ulCurrSearchStage - 1];

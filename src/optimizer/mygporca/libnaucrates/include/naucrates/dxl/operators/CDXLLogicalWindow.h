@@ -42,11 +42,11 @@ public:
 	CDXLLogicalWindow(CMemoryPool *mp, CDXLWindowSpecArray *pdrgpdxlwinspec);
 
 	//dtor
-	~CDXLLogicalWindow() override;
+	virtual ~CDXLLogicalWindow();
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// number of window specs
 	ULONG NumOfWindowSpecs() const;
@@ -55,14 +55,14 @@ public:
 	CDXLWindowSpec *GetWindowKeyAt(ULONG idx) const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLLogicalWindow *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalWindow == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalWindow *>(dxl_op);
@@ -71,7 +71,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

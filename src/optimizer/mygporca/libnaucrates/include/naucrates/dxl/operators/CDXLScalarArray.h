@@ -41,21 +41,22 @@ private:
 	// is it a multidimensional array
 	BOOL m_multi_dimensional_array;
 
-public:
-	CDXLScalarArray(const CDXLScalarArray &) = delete;
+	// private copy ctor
+	CDXLScalarArray(const CDXLScalarArray &);
 
+public:
 	// ctor
 	CDXLScalarArray(CMemoryPool *mp, IMDId *elem_type_mdid,
 					IMDId *array_type_mdid, BOOL multi_dimensional_array);
 
 	// dtor
-	~CDXLScalarArray() override;
+	virtual ~CDXLScalarArray();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// element type id
 	IMDId *ElementTypeMDid() const;
@@ -67,23 +68,23 @@ public:
 	BOOL IsMultiDimensional() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarArray *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarArray == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarArray *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return false;
 	}
@@ -91,8 +92,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

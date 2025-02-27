@@ -74,13 +74,13 @@ CXformImplementInnerJoin::Transform(CXformContext *pxfctxt,
 									CXformResult *pxfres,
 									CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
 	GPOS_ASSERT(pxfres->Size() == 0);
 
-	if (!GPOS_FTRACE(EopttraceDisableInnerHashJoin))
+	if (GPOPT_FENABLED_XFORM(ExfInnerJoin2HashJoin))
 	{
 		CXformUtils::ImplementHashJoin<CPhysicalInnerHashJoin>(pxfctxt, pxfres,
 															   pexpr);
@@ -88,7 +88,7 @@ CXformImplementInnerJoin::Transform(CXformContext *pxfctxt,
 
 	if ((GPOS_FTRACE(EopttraceForceComprehensiveJoinImplementation) ||
 		 pxfres->Size() == 0) &&
-		!GPOS_FTRACE(EopttraceDisableInnerNLJ))
+		GPOPT_FENABLED_XFORM(ExfInnerJoin2NLJoin))
 	{
 		CXformUtils::ImplementNLJoin<CPhysicalInnerNLJoin>(pxfctxt, pxfres,
 														   pexpr);

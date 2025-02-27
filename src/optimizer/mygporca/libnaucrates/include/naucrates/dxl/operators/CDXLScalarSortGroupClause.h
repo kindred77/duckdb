@@ -30,8 +30,8 @@ class CXMLSerializer;
 class CDXLScalarSortGroupClause;
 
 // arrays of column references
-using CDXLScalarSortGroupClauseArray =
-	CDynamicPtrArray<CDXLScalarSortGroupClause, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLScalarSortGroupClause, CleanupRelease>
+	CDXLScalarSortGroupClauseArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -50,9 +50,9 @@ private:
 	BOOL m_nulls_first;
 	BOOL m_hashable;
 
-public:
-	CDXLScalarSortGroupClause(const CDXLScalarSortGroupClause &) = delete;
+	CDXLScalarSortGroupClause(const CDXLScalarSortGroupClause &);
 
+public:
 	// ctor/dtor
 	CDXLScalarSortGroupClause(CMemoryPool *mp, INT tle_sort_group_ref, INT eqop,
 							  INT sortop, BOOL nulls_first, BOOL hashable)
@@ -99,7 +99,7 @@ public:
 	static CDXLScalarSortGroupClause *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSortGroupClause == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarSortGroupClause *>(dxl_op);
@@ -107,33 +107,32 @@ public:
 
 	// does the operator return a boolean result
 	BOOL
-	HasBoolResult(CMDAccessor *) const override
+	HasBoolResult(CMDAccessor *) const
 	{
 		return false;
 	}
 
 #ifdef GPOS_DEBUG
 	void
-	AssertValid(const CDXLNode *, BOOL) const override
+	AssertValid(const CDXLNode *, BOOL) const
 	{
 	}
 #endif	// GPOS_DEBUG
 
 	Edxlopid
-	GetDXLOperator() const override
+	GetDXLOperator() const
 	{
 		return EdxlopScalarSortGroupClause;
 	}
 
 	const CWStringConst *
-	GetOpNameStr() const override
+	GetOpNameStr() const
 	{
 		return CDXLTokens::GetDXLTokenStr(EdxltokenScalarSortGroupClause);
 	}
 
 	void
-	SerializeToDXL(CXMLSerializer *xml_serializer,
-				   const CDXLNode *) const override
+	SerializeToDXL(CXMLSerializer *xml_serializer, const CDXLNode *) const
 	{
 		const CWStringConst *element_name = GetOpNameStr();
 

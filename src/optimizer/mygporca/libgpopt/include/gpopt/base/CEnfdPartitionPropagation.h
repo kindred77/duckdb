@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CEnfdProp.h"
+#include "gpopt/base/CPartIndexMap.h"
 #include "gpopt/base/CPartitionPropagationSpec.h"
 
 
@@ -33,7 +34,7 @@ using namespace gpos;
 class CEnfdPartitionPropagation : public CEnfdProp
 {
 public:
-	// type of partition matching function(s)
+	// type of distribution matching function
 	enum EPartitionPropagationMatching
 	{
 		EppmSatisfy = 0,
@@ -44,29 +45,33 @@ private:
 	// partition propagation spec
 	CPartitionPropagationSpec *m_ppps;
 
-	// partition propagation matching type
+	// distribution matching type
 	EPartitionPropagationMatching m_eppm;
 
+	// derived part filter
+	CPartFilterMap *m_ppfmDerived;
+
+	// private copy ctor
+	CEnfdPartitionPropagation(const CEnfdPartitionPropagation &);
 
 public:
-	CEnfdPartitionPropagation(const CEnfdPartitionPropagation &) = delete;
-
 	// ctor
 	CEnfdPartitionPropagation(CPartitionPropagationSpec *ppps,
-							  EPartitionPropagationMatching eppm);
+							  EPartitionPropagationMatching eppm,
+							  CPartFilterMap *ppfm);
 
 	// dtor
-	~CEnfdPartitionPropagation() override;
+	virtual ~CEnfdPartitionPropagation();
 
 	// partition spec accessor
-	CPropSpec *
-	Pps() const override
+	virtual CPropSpec *
+	Pps() const
 	{
 		return m_ppps;
 	}
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// required propagation accessor
 	CPartitionPropagationSpec *
@@ -74,6 +79,19 @@ public:
 	{
 		return m_ppps;
 	}
+
+	// derived part filter
+	CPartFilterMap *
+	PpfmDerived() const
+	{
+		return m_ppfmDerived;
+	}
+
+	// is required partition propagation resolved by the given part index map
+	BOOL FResolved(CMemoryPool *mp, CPartIndexMap *ppim) const;
+
+	// are the dynamic scans required by the partition propagation in the scope defined by the given part index map
+	BOOL FInScope(CMemoryPool *mp, CPartIndexMap *ppim) const;
 
 	// get distribution enforcing type for the given operator
 	EPropEnforcingType Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
@@ -87,12 +105,18 @@ public:
 	}
 
 	// matching function
-	BOOL Matches(CEnfdPartitionPropagation *pepp);
+	BOOL
+	Matches(CEnfdPartitionPropagation *pepp)
+	{
+		GPOS_ASSERT(NULL != pepp);
 
-	BOOL FCompatible(CPartitionPropagationSpec *pps_drvd) const;
+		return m_eppm == pepp->Eppm() &&
+			   m_ppps->Matches(pepp->PppsRequired()) &&
+			   PpfmDerived()->Equals(pepp->PpfmDerived());
+	}
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// name of propagation matching type
 	static const CHAR *SzPropagationMatching(

@@ -41,29 +41,30 @@ class CXMLSerializer;
 class CDXLDatumGeneric : public CDXLDatum
 {
 private:
+	// private copy ctor
+	CDXLDatumGeneric(const CDXLDatumGeneric &);
+
 protected:
 	// datum byte array
 	BYTE *m_byte_array;
 
 public:
-	CDXLDatumGeneric(const CDXLDatumGeneric &) = delete;
-
 	// ctor
 	CDXLDatumGeneric(CMemoryPool *mp, IMDId *mdid_type, INT type_modifier,
 					 BOOL is_null, BYTE *data, ULONG length);
 
 	// dtor
-	~CDXLDatumGeneric() override;
+	virtual ~CDXLDatumGeneric();
 
 	// byte array
 	const BYTE *GetByteArray() const;
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumGeneric;
 	}
@@ -72,7 +73,7 @@ public:
 	static CDXLDatumGeneric *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::EdxldatumGeneric == dxl_datum->GetDatumType() ||
 					CDXLDatum::EdxldatumStatsDoubleMappable ==
 						dxl_datum->GetDatumType() ||

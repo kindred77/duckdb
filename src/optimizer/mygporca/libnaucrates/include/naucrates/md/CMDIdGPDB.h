@@ -66,24 +66,24 @@ protected:
 public:
 	// ctors
 	CMDIdGPDB(CSystemId sysid, OID oid);
-	CMDIdGPDB(EMDIdType mdIdType, OID oid, ULONG version_major = 1,
-			  ULONG version_minor = 0);
+	explicit CMDIdGPDB(OID oid);
+	CMDIdGPDB(OID oid, ULONG version_major, ULONG version_minor);
 
 	// copy ctor
 	explicit CMDIdGPDB(const CMDIdGPDB &mdidSource);
 
-	EMDIdType
-	MdidType() const override
+	virtual EMDIdType
+	MdidType() const
 	{
-		return m_sysid.MdidType();
+		return EmdidGPDB;
 	}
 
 	// string representation of mdid
-	const WCHAR *GetBuffer() const override;
+	virtual const WCHAR *GetBuffer() const;
 
 	// source system id
-	CSystemId
-	Sysid() const override
+	virtual CSystemId
+	Sysid() const
 	{
 		return m_sysid;
 	}
@@ -98,11 +98,11 @@ public:
 	virtual ULONG VersionMinor() const;
 
 	// equality check
-	BOOL Equals(const IMDId *mdid) const override;
+	virtual BOOL Equals(const IMDId *mdid) const;
 
 	// computes the hash value for the metadata id
-	ULONG
-	HashValue() const override
+	virtual ULONG
+	HashValue() const
 	{
 		return gpos::CombineHashes(
 			MdidType(),
@@ -113,20 +113,20 @@ public:
 	}
 
 	// is the mdid valid
-	BOOL IsValid() const override;
+	virtual BOOL IsValid() const;
 
 	// serialize mdid in DXL as the value of the specified attribute
-	void Serialize(CXMLSerializer *xml_serializer,
-				   const CWStringConst *pstrAttribute) const override;
+	virtual void Serialize(CXMLSerializer *xml_serializer,
+						   const CWStringConst *pstrAttribute) const;
 
 	// debug print of the metadata id
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// const converter
 	static const CMDIdGPDB *
 	CastMdid(const IMDId *mdid)
 	{
-		GPOS_ASSERT(nullptr != mdid);
+		GPOS_ASSERT(NULL != mdid && EmdidGPDB == mdid->MdidType());
 
 		return dynamic_cast<const CMDIdGPDB *>(mdid);
 	}
@@ -135,15 +135,10 @@ public:
 	static CMDIdGPDB *
 	CastMdid(IMDId *mdid)
 	{
-		GPOS_ASSERT(nullptr != mdid);
+		GPOS_ASSERT(NULL != mdid && (EmdidGPDB == mdid->MdidType() ||
+									 EmdidGPDBCtas == mdid->MdidType()));
 
 		return dynamic_cast<CMDIdGPDB *>(mdid);
-	}
-
-	IMDId *
-	Copy(CMemoryPool *mp) const override
-	{
-		return GPOS_NEW(mp) CMDIdGPDB(*this);
 	}
 
 	// invalid mdid

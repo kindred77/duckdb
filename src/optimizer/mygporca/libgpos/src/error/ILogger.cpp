@@ -29,7 +29,9 @@ using namespace gpos;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-ILogger::ILogger() = default;
+ILogger::ILogger()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -40,7 +42,9 @@ ILogger::ILogger() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-ILogger::~ILogger() = default;
+ILogger::~ILogger()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -63,7 +67,7 @@ ILogger::Warning(const CHAR *filename, ULONG line, ULONG major, ULONG minor...)
 
 	// get current task's locale
 	ELocale locale = ElocEnUS_Utf8;
-	if (nullptr != task)
+	if (NULL != task)
 	{
 		locale = task->Locale();
 	}
@@ -154,7 +158,7 @@ void
 ILogger::LogTask(const WCHAR *msg, ULONG severity, BOOL is_err,
 				 const CHAR *filename, ULONG line)
 {
-	CLogger *log = nullptr;
+	CLogger *log = NULL;
 
 	if (is_err)
 	{
@@ -166,7 +170,7 @@ ILogger::LogTask(const WCHAR *msg, ULONG severity, BOOL is_err,
 	}
 
 	ITask *task = ITask::Self();
-	if (nullptr != task)
+	if (NULL != task)
 	{
 		if (is_err)
 		{
@@ -178,7 +182,7 @@ ILogger::LogTask(const WCHAR *msg, ULONG severity, BOOL is_err,
 		}
 	}
 
-	GPOS_ASSERT(nullptr != log);
+	GPOS_ASSERT(NULL != log);
 
 	log->Log(msg, severity, filename, line);
 }

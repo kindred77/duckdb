@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformGbAggDedup2StreamAggDedup.h
@@ -30,33 +30,35 @@ using namespace gpos;
 class CXformGbAggDedup2StreamAggDedup : public CXformGbAgg2StreamAgg
 {
 private:
-public:
-	CXformGbAggDedup2StreamAggDedup(const CXformGbAggDedup2StreamAggDedup &) =
-		delete;
+	// private copy ctor
+	CXformGbAggDedup2StreamAggDedup(const CXformGbAggDedup2StreamAggDedup &);
 
+public:
 	// ctor
 	CXformGbAggDedup2StreamAggDedup(CMemoryPool *mp);
 
 	// dtor
-	~CXformGbAggDedup2StreamAggDedup() override = default;
+	virtual ~CXformGbAggDedup2StreamAggDedup()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAggDedup2StreamAggDedup;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAggDedup2StreamAggDedup";
 	}
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformGbAggDedup2StreamAggDedup
 

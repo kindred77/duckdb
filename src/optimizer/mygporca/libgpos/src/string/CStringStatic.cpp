@@ -31,7 +31,7 @@ using namespace gpos;
 CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity)
 	: m_buffer(buffer), m_length(0), m_capacity(capacity)
 {
-	GPOS_ASSERT(nullptr != buffer);
+	GPOS_ASSERT(NULL != buffer);
 	GPOS_ASSERT(0 < m_capacity);
 
 	m_buffer[0] = CHAR_EOS;
@@ -50,7 +50,7 @@ CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity,
 							 const CHAR init_str[])
 	: m_buffer(buffer), m_length(0), m_capacity(capacity)
 {
-	GPOS_ASSERT(nullptr != buffer);
+	GPOS_ASSERT(NULL != buffer);
 	GPOS_ASSERT(0 < m_capacity);
 
 	AppendBuffer(init_str);
@@ -65,10 +65,10 @@ CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity,
 //		Checks whether the string is byte-wise equal to a given string literal
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CStringStatic::Equals(const CHAR *buf) const
 {
-	GPOS_ASSERT(nullptr != buf);
+	GPOS_ASSERT(NULL != buf);
 
 	ULONG length = clib::Strlen(buf);
 	return (m_length == length && 0 == clib::Strncmp(m_buffer, buf, length));
@@ -101,7 +101,7 @@ CStringStatic::Append(const CStringStatic *str)
 void
 CStringStatic::AppendBuffer(const CHAR *buf)
 {
-	GPOS_ASSERT(nullptr != buf);
+	GPOS_ASSERT(NULL != buf);
 	ULONG length = clib::Strlen(buf);
 	if (0 == length || m_capacity == m_length)
 	{
@@ -161,7 +161,7 @@ CStringStatic::AppendFormat(const CHAR *format, ...)
 void
 CStringStatic::AppendFormatVA(const CHAR *format, VA_LIST va_args)
 {
-	GPOS_ASSERT(nullptr != format);
+	GPOS_ASSERT(NULL != format);
 
 	// available space in buffer
 	ULONG ulAvailable = m_capacity - m_length;

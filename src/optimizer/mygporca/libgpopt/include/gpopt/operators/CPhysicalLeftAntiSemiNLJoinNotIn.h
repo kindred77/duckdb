@@ -28,10 +28,10 @@ namespace gpopt
 class CPhysicalLeftAntiSemiNLJoinNotIn : public CPhysicalLeftAntiSemiNLJoin
 {
 private:
-public:
-	CPhysicalLeftAntiSemiNLJoinNotIn(const CPhysicalLeftAntiSemiNLJoinNotIn &) =
-		delete;
+	// private copy ctor
+	CPhysicalLeftAntiSemiNLJoinNotIn(const CPhysicalLeftAntiSemiNLJoinNotIn &);
 
+public:
 	// ctor
 	explicit CPhysicalLeftAntiSemiNLJoinNotIn(CMemoryPool *mp)
 		: CPhysicalLeftAntiSemiNLJoin(mp)
@@ -39,15 +39,15 @@ public:
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftAntiSemiNLJoinNotIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftAntiSemiNLJoinNotIn";
 	}

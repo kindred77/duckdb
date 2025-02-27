@@ -35,6 +35,9 @@ using namespace gpos;
 class CColRefTable : public CColRef
 {
 private:
+	// private copy ctor
+	CColRefTable(const CColRefTable &);
+
 	// attno from catalog
 	INT m_iAttno;
 
@@ -52,8 +55,6 @@ private:
 	ULONG m_width;
 
 public:
-	CColRefTable(const CColRefTable &) = delete;
-
 	// ctors
 	CColRefTable(const CColumnDescriptor *pcd, ULONG id, const CName *pname,
 				 ULONG ulOpSource);
@@ -64,11 +65,11 @@ public:
 				 ULONG ulWidth = gpos::ulong_max);
 
 	// dtor
-	~CColRefTable() override;
+	virtual ~CColRefTable();
 
 	// accessor of column reference type
-	CColRef::Ecolreftype
-	Ecrt() const override
+	virtual CColRef::Ecolreftype
+	Ecrt() const
 	{
 		return CColRef::EcrtTable;
 	}
@@ -89,7 +90,7 @@ public:
 
 	// is column a system column?
 	BOOL
-	IsSystemCol() const override
+	IsSystemCol() const
 	{
 		// TODO-  04/13/2012, make this check system independent
 		// using MDAccessor
@@ -98,7 +99,7 @@ public:
 
 	// is column a distribution column?
 	BOOL
-	IsDistCol() const override
+	IsDistCol() const
 	{
 		return m_is_dist_col;
 	}

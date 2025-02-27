@@ -32,7 +32,7 @@ CStatsPredPoint::CStatsPredPoint(ULONG colid,
 								 CPoint *point)
 	: CStatsPred(colid), m_stats_cmp_type(stats_cmp_type), m_pred_point(point)
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 }
 
 //---------------------------------------------------------------------------
@@ -48,10 +48,10 @@ CStatsPredPoint::CStatsPredPoint(CMemoryPool *mp, const CColRef *colref,
 								 IDatum *datum)
 	: CStatsPred(gpos::ulong_max),
 	  m_stats_cmp_type(stats_cmp_type),
-	  m_pred_point(nullptr)
+	  m_pred_point(NULL)
 {
-	GPOS_ASSERT(nullptr != colref);
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != colref);
+	GPOS_ASSERT(NULL != datum);
 
 	m_colid = colref->Id();
 	IDatum *padded_datum = PreprocessDatum(mp, colref, datum);
@@ -69,8 +69,8 @@ IDatum *
 CStatsPredPoint::PreprocessDatum(CMemoryPool *mp, const CColRef *colref,
 								 IDatum *datum)
 {
-	GPOS_ASSERT(nullptr != colref);
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != colref);
+	GPOS_ASSERT(NULL != datum);
 
 	if (!datum->NeedsPadding() || CColRef::EcrtTable != colref->Ecrt() ||
 		datum->IsNull())

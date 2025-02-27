@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CParseHandlerScalarCoerceViaIO.h
@@ -42,31 +42,31 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarCoerceViaIO : public CParseHandlerScalarOp
 {
 private:
+	// private copy ctor
+	CParseHandlerScalarCoerceViaIO(const CParseHandlerScalarCoerceViaIO &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarCoerceViaIO(const CParseHandlerScalarCoerceViaIO &) =
-		delete;
-
 	// ctor/dtor
 	CParseHandlerScalarCoerceViaIO(CMemoryPool *mp,
 								   CParseHandlerManager *parse_handler_mgr,
 								   CParseHandlerBase *parse_handler_root);
 
-	~CParseHandlerScalarCoerceViaIO() override = default;
+	virtual ~CParseHandlerScalarCoerceViaIO(){};
 };
 
 }  // namespace gpdxl

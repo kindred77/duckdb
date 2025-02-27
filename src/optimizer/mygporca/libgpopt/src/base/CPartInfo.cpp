@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CPartInfo.cpp
@@ -31,12 +31,17 @@ FORCE_GENERATE_DBGSTR(CPartInfo::CPartInfoEntry);
 //
 //---------------------------------------------------------------------------
 CPartInfo::CPartInfoEntry::CPartInfoEntry(ULONG scan_id, IMDId *mdid,
-										  CPartKeysArray *pdrgppartkeys)
-	: m_scan_id(scan_id), m_mdid(mdid), m_pdrgppartkeys(pdrgppartkeys)
+										  CPartKeysArray *pdrgppartkeys,
+										  CPartConstraint *ppartcnstrRel)
+	: m_scan_id(scan_id),
+	  m_mdid(mdid),
+	  m_pdrgppartkeys(pdrgppartkeys),
+	  m_ppartcnstrRel(ppartcnstrRel)
 {
 	GPOS_ASSERT(mdid->IsValid());
-	GPOS_ASSERT(pdrgppartkeys != nullptr);
+	GPOS_ASSERT(pdrgppartkeys != NULL);
 	GPOS_ASSERT(0 < pdrgppartkeys->Size());
+	GPOS_ASSERT(NULL != ppartcnstrRel);
 }
 
 //---------------------------------------------------------------------------
@@ -51,6 +56,7 @@ CPartInfo::CPartInfoEntry::~CPartInfoEntry()
 {
 	m_mdid->Release();
 	m_pdrgppartkeys->Release();
+	m_ppartcnstrRel->Release();
 }
 
 //---------------------------------------------------------------------------
@@ -66,8 +72,8 @@ CPartInfo::CPartInfoEntry *
 CPartInfo::CPartInfoEntry::PpartinfoentryAddRemappedKeys(
 	CMemoryPool *mp, CColRefSet *pcrs, UlongToColRefMap *colref_mapping)
 {
-	GPOS_ASSERT(nullptr != pcrs);
-	GPOS_ASSERT(nullptr != colref_mapping);
+	GPOS_ASSERT(NULL != pcrs);
+	GPOS_ASSERT(NULL != colref_mapping);
 
 	CPartKeysArray *pdrgppartkeys =
 		CPartKeys::PdrgppartkeysCopy(mp, m_pdrgppartkeys);
@@ -86,8 +92,12 @@ CPartInfo::CPartInfoEntry::PpartinfoentryAddRemappedKeys(
 	}
 
 	m_mdid->AddRef();
+	CPartConstraint *ppartcnstrRel =
+		m_ppartcnstrRel->PpartcnstrCopyWithRemappedColumns(
+			mp, colref_mapping, false /*must_exist*/);
 
-	return GPOS_NEW(mp) CPartInfoEntry(m_scan_id, m_mdid, pdrgppartkeys);
+	return GPOS_NEW(mp)
+		CPartInfoEntry(m_scan_id, m_mdid, pdrgppartkeys, ppartcnstrRel);
 }
 
 //---------------------------------------------------------------------------
@@ -116,7 +126,7 @@ CPartInfo::CPartInfoEntry::OsPrint(IOstream &os) const
 //
 //---------------------------------------------------------------------------
 CPartInfo::CPartInfoEntry *
-CPartInfo::CPartInfoEntry::PpartinfoentryCopy(CMemoryPool *mp) const
+CPartInfo::CPartInfoEntry::PpartinfoentryCopy(CMemoryPool *mp)
 {
 	IMDId *mdid = MDId();
 	mdid->AddRef();
@@ -127,9 +137,13 @@ CPartInfo::CPartInfoEntry::PpartinfoentryCopy(CMemoryPool *mp) const
 
 	// copy part constraint using empty remapping to get exact copy
 	UlongToColRefMap *colref_mapping = GPOS_NEW(mp) UlongToColRefMap(mp);
+	CPartConstraint *ppartcnstrRel =
+		PpartcnstrRel()->PpartcnstrCopyWithRemappedColumns(
+			mp, colref_mapping, false /*must_exist*/);
 	colref_mapping->Release();
 
-	return GPOS_NEW(mp) CPartInfoEntry(ScanId(), mdid, pdrgppartkeysCopy);
+	return GPOS_NEW(mp)
+		CPartInfoEntry(ScanId(), mdid, pdrgppartkeysCopy, ppartcnstrRel);
 }
 
 
@@ -144,7 +158,7 @@ CPartInfo::CPartInfoEntry::PpartinfoentryCopy(CMemoryPool *mp) const
 CPartInfo::CPartInfo(CPartInfoEntryArray *pdrgppartentries)
 	: m_pdrgppartentries(pdrgppartentries)
 {
-	GPOS_ASSERT(nullptr != pdrgppartentries);
+	GPOS_ASSERT(NULL != pdrgppartentries);
 }
 
 //---------------------------------------------------------------------------
@@ -183,13 +197,14 @@ CPartInfo::~CPartInfo()
 //---------------------------------------------------------------------------
 void
 CPartInfo::AddPartConsumer(CMemoryPool *mp, ULONG scan_id, IMDId *mdid,
-						   CColRef2dArray *pdrgpdrgpcrPart)
+						   CColRef2dArray *pdrgpdrgpcrPart,
+						   CPartConstraint *ppartcnstrRel)
 {
 	CPartKeysArray *pdrgppartkeys = GPOS_NEW(mp) CPartKeysArray(mp);
 	pdrgppartkeys->Append(GPOS_NEW(mp) CPartKeys(pdrgpdrgpcrPart));
 
-	m_pdrgppartentries->Append(
-		GPOS_NEW(mp) CPartInfoEntry(scan_id, mdid, pdrgppartkeys));
+	m_pdrgppartentries->Append(GPOS_NEW(mp) CPartInfoEntry(
+		scan_id, mdid, pdrgppartkeys, ppartcnstrRel));
 }
 
 //---------------------------------------------------------------------------
@@ -261,6 +276,20 @@ CPartInfo::Pdrgppartkeys(ULONG ulPos) const
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPartInfo::Ppartcnstr
+//
+//	@doc:
+//		Return part constraint of the entry at the given position
+//
+//---------------------------------------------------------------------------
+CPartConstraint *
+CPartInfo::Ppartcnstr(ULONG ulPos) const
+{
+	return (*m_pdrgppartentries)[ulPos]->PpartcnstrRel();
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPartInfo::PdrgppartkeysByScanId
 //
 //	@doc:
@@ -281,7 +310,7 @@ CPartInfo::PdrgppartkeysByScanId(ULONG scan_id) const
 		}
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -296,8 +325,8 @@ CPartInfo *
 CPartInfo::PpartinfoWithRemappedKeys(CMemoryPool *mp, CColRefArray *pdrgpcrSrc,
 									 CColRefArray *pdrgpcrDest) const
 {
-	GPOS_ASSERT(nullptr != pdrgpcrSrc);
-	GPOS_ASSERT(nullptr != pdrgpcrDest);
+	GPOS_ASSERT(NULL != pdrgpcrSrc);
+	GPOS_ASSERT(NULL != pdrgpcrDest);
 
 	CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp, pdrgpcrSrc);
 	UlongToColRefMap *colref_mapping =
@@ -337,8 +366,8 @@ CPartInfo *
 CPartInfo::PpartinfoCombine(CMemoryPool *mp, CPartInfo *ppartinfoFst,
 							CPartInfo *ppartinfoSnd)
 {
-	GPOS_ASSERT(nullptr != ppartinfoFst);
-	GPOS_ASSERT(nullptr != ppartinfoSnd);
+	GPOS_ASSERT(NULL != ppartinfoFst);
+	GPOS_ASSERT(NULL != ppartinfoSnd);
 
 	CPartInfoEntryArray *pdrgppartentries =
 		GPOS_NEW(mp) CPartInfoEntryArray(mp);
@@ -355,7 +384,7 @@ CPartInfo::PpartinfoCombine(CMemoryPool *mp, CPartInfo *ppartinfoFst,
 		CPartKeysArray *pdrgppartkeys =
 			ppartinfoFst->PdrgppartkeysByScanId(ppartinfoentry->ScanId());
 
-		if (nullptr != pdrgppartkeys)
+		if (NULL != pdrgppartkeys)
 		{
 			// there is already an entry with the same scan id; need to add to it
 			// the keys from the current entry

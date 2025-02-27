@@ -29,16 +29,19 @@ class CFileWriter : public CFileDescriptor
 {
 private:
 	// file size
-	ULLONG m_file_size{0};
+	ULLONG m_file_size;
+
+	// no copy ctor
+	CFileWriter(const CFileWriter &);
 
 public:
-	CFileWriter(const CFileWriter &) = delete;
-
 	// ctor
 	CFileWriter();
 
 	// dtor
-	~CFileWriter() override = default;
+	virtual ~CFileWriter()
+	{
+	}
 
 	ULLONG
 	FileSize() const

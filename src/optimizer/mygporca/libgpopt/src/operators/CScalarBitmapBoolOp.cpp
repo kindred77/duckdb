@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarBitmapBoolOp.cpp
@@ -46,9 +46,9 @@ CScalarBitmapBoolOp::CScalarBitmapBoolOp(CMemoryPool *mp,
 	  m_ebitmapboolop(ebitmapboolop),
 	  m_pmdidBitmapType(pmdidBitmapType)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 	GPOS_ASSERT(EbitmapboolSentinel > ebitmapboolop);
-	GPOS_ASSERT(nullptr != pmdidBitmapType);
+	GPOS_ASSERT(NULL != pmdidBitmapType);
 }
 
 //---------------------------------------------------------------------------

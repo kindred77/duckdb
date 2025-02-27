@@ -31,7 +31,7 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CPhysicalSequence::CPhysicalSequence(CMemoryPool *mp)
-	: CPhysical(mp), m_pcrsEmpty(nullptr)
+	: CPhysical(mp), m_pcrsEmpty(NULL)
 {
 	// Sequence generates two distribution requests for its children:
 	// (1) If incoming distribution from above is Singleton, pass it through
@@ -110,6 +110,28 @@ CPhysicalSequence::PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPhysicalSequence::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalSequence::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								CPartitionPropagationSpec *pppsRequired,
+								ULONG child_index,
+								CDrvdPropArray *,  //pdrgpdpCtxt,
+								ULONG			   //ulOptReq
+)
+{
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	return CPhysical::PppsRequiredPushThruNAry(mp, exprhdl, pppsRequired,
+											   child_index);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPhysicalSequence::PcteRequired
 //
 //	@doc:
@@ -123,7 +145,7 @@ CPhysicalSequence::PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								ULONG  //ulOptReq
 ) const
 {
-	GPOS_ASSERT(nullptr != pcter);
+	GPOS_ASSERT(NULL != pcter);
 	if (child_index < exprhdl.Arity() - 1)
 	{
 		return pcter->PcterAllOptional(mp);
@@ -154,7 +176,7 @@ CPhysicalSequence::FProvidesReqdCols(CExpressionHandle &exprhdl,
 									 ULONG	// ulOptReq
 ) const
 {
-	GPOS_ASSERT(nullptr != pcrsRequired);
+	GPOS_ASSERT(NULL != pcrsRequired);
 
 	// last child must provide required columns
 	ULONG arity = exprhdl.Arity();
@@ -232,7 +254,7 @@ CPhysicalSequence::PdsRequired(CMemoryPool *mp,
 	//	on all the children. But when the producer is replicated still we were requesting
 	//	non-singleton which will possibly generate a risky plan and could cause a possible
 	//	hang too.For example in the following plan the slice 1 and slice 2 are executed on
-	//	a single segment but the producer is skewed on all the segments. So in this case the
+	//	a single segment but the producer is executed on all the segments. So in this case the
 	//	producer on the other two segments undergoes starvation which causes the query to hang.
 	//
 	//	Gather Motion 3:1 (slice4; segments: 3)
@@ -257,23 +279,6 @@ CPhysicalSequence::PdsRequired(CMemoryPool *mp,
 	{
 		return GPOS_NEW(mp) CDistributionSpecNonSingleton(
 			true /* fAllowReplicated */, false /* fAllowEnforced */);
-	}
-
-	// If required distribution is singleton on master (sequence is top operation) or
-	// non-singleton with not allowed replicated (there is another top-sequence under this sequence)
-	// then we should not allow replicated distribution, to avoid potential hang issues,
-	// which may accured when ORCA is translating expression to DXL and sets
-	// one segment for input array if strict or tainted replicated distribution detected,
-	// and Redistribute from all segments to one segments appears.
-
-	if ((CDistributionSpec::EdtSingleton == pdsRequired->Edt() &&
-		 CDistributionSpecSingleton::PdssConvert(pdsRequired)->FOnMaster()) ||
-		(CDistributionSpec::EdtNonSingleton == pdsRequired->Edt() &&
-		 !CDistributionSpecNonSingleton::PdsConvert(pdsRequired)
-			  ->FAllowReplicated()))
-	{
-		return GPOS_NEW(mp) CDistributionSpecNonSingleton(
-			false /* fAllowReplicated */, true /* fAllowEnforced */);
 	}
 
 	// first child is non-singleton, request a non-singleton distribution on second child
@@ -421,7 +426,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalSequence::EpetOrder(CExpressionHandle &exprhdl,
 							 const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 
 	// get order delivered by the sequence node
 	COrderSpec *pos = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Pos();

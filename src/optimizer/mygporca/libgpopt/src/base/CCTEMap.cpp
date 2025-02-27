@@ -28,9 +28,9 @@ FORCE_GENERATE_DBGSTR(CCTEMap::CCTEMapEntry);
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CCTEMap::CCTEMap(CMemoryPool *mp) : m_mp(mp), m_phmcm(nullptr)
+CCTEMap::CCTEMap(CMemoryPool *mp) : m_mp(mp), m_phmcm(NULL)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 	m_phmcm = GPOS_NEW(m_mp) UlongToCTEMapEntryMap(m_mp);
 }
@@ -61,13 +61,15 @@ CCTEMap::Insert(ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan)
 {
 	GPOS_ASSERT(EctSentinel > ect);
 
-	if (nullptr != pdpplan)
+	if (NULL != pdpplan)
 	{
 		pdpplan->AddRef();
 	}
 
 	CCTEMapEntry *pcme = GPOS_NEW(m_mp) CCTEMapEntry(ulCteId, ect, pdpplan);
-	BOOL fSuccess GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+	BOOL fSuccess =
+#endif	// GPOS_DEBUG
 		m_phmcm->Insert(GPOS_NEW(m_mp) ULONG(ulCteId), pcme);
 	GPOS_ASSERT(fSuccess);
 }
@@ -92,19 +94,19 @@ CCTEMap::PdpplanProducer(
 		pulId  // output: CTE producer Id, set to gpos::ulong_max if no producer found
 ) const
 {
-	GPOS_ASSERT(nullptr != pulId);
+	GPOS_ASSERT(NULL != pulId);
 
-	CDrvdPropPlan *pdpplanProducer = nullptr;
+	CDrvdPropPlan *pdpplanProducer = NULL;
 	*pulId = gpos::ulong_max;
 	UlongToCTEMapEntryMapIter hmcmi(m_phmcm);
-	while (nullptr == pdpplanProducer && hmcmi.Advance())
+	while (NULL == pdpplanProducer && hmcmi.Advance())
 	{
 		const CCTEMapEntry *pcme = hmcmi.Value();
 		CCTEMap::ECteType ect = pcme->Ect();
 		CDrvdPropPlan *pdpplan = pcme->Pdpplan();
 		if (CCTEMap::EctProducer == ect)
 		{
-			GPOS_ASSERT(nullptr != pdpplan);
+			GPOS_ASSERT(NULL != pdpplan);
 			pdpplanProducer = pdpplan;
 			*pulId = pcme->Id();
 		}
@@ -137,7 +139,7 @@ void
 CCTEMap::AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
 					   CCTEMap *pcmResult)
 {
-	GPOS_ASSERT(nullptr != pcmResult);
+	GPOS_ASSERT(NULL != pcmResult);
 	// iterate on first map and lookup entries in second map
 	UlongToCTEMapEntryMapIter hmcmi(cmFirst.m_phmcm);
 	while (hmcmi.Advance())
@@ -147,7 +149,7 @@ CCTEMap::AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
 		ECteType ectFirst = pcme->Ect();
 		CDrvdPropPlan *pdpplanFirst = pcme->Pdpplan();
 
-		if (nullptr != pcmResult->PcmeLookup(id))
+		if (NULL != pcmResult->PcmeLookup(id))
 		{
 			// skip entries already in the result map
 			continue;
@@ -158,7 +160,7 @@ CCTEMap::AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
 
 		// if entry does not exist in second map, or exists with the same cte type
 		// then it should be in the result
-		if (nullptr == pcmeSecond || ectFirst == pcmeSecond->Ect())
+		if (NULL == pcmeSecond || ectFirst == pcmeSecond->Ect())
 		{
 			pcmResult->Insert(id, ectFirst, pdpplanFirst);
 		}
@@ -190,7 +192,7 @@ CCTEMap::PcmeLookup(ULONG ulCteId) const
 BOOL
 CCTEMap::FSubset(const CCTEMap *pcm) const
 {
-	GPOS_ASSERT(nullptr != pcm);
+	GPOS_ASSERT(NULL != pcm);
 
 	if (m_phmcm->Size() > pcm->m_phmcm->Size())
 	{
@@ -202,7 +204,7 @@ CCTEMap::FSubset(const CCTEMap *pcm) const
 	{
 		const CCTEMapEntry *pcme = hmcmi.Value();
 		CCTEMapEntry *pcmeOther = pcm->PcmeLookup(pcme->Id());
-		if (nullptr == pcmeOther || pcmeOther->Ect() != pcme->Ect())
+		if (NULL == pcmeOther || pcmeOther->Ect() != pcme->Ect())
 		{
 			return false;
 		}
@@ -251,7 +253,7 @@ CCTEMap::ECteType
 CCTEMap::Ect(const ULONG id) const
 {
 	CCTEMapEntry *pcme = PcmeLookup(id);
-	if (nullptr == pcme)
+	if (NULL == pcme)
 	{
 		return EctSentinel;
 	}
@@ -293,7 +295,7 @@ CCTEMap::PcmCombine(CMemoryPool *mp, const CCTEMap &cmFirst,
 BOOL
 CCTEMap::FSatisfies(const CCTEReq *pcter) const
 {
-	GPOS_ASSERT(nullptr != pcter);
+	GPOS_ASSERT(NULL != pcter);
 	// every CTE marked as "Required" must be in the current map
 	ULongPtrArray *pdrgpul = pcter->PdrgpulRequired();
 	const ULONG ulReqd = pdrgpul->Size();
@@ -303,7 +305,7 @@ CCTEMap::FSatisfies(const CCTEReq *pcter) const
 		ECteType ect = pcter->Ect(*pulId);
 
 		CCTEMapEntry *pcme = this->PcmeLookup(*pulId);
-		if (nullptr == pcme || pcme->Ect() != ect)
+		if (NULL == pcme || pcme->Ect() != ect)
 		{
 			return false;
 		}
@@ -337,7 +339,7 @@ CCTEMap::FSatisfies(const CCTEReq *pcter) const
 ULongPtrArray *
 CCTEMap::PdrgpulAdditionalProducers(CMemoryPool *mp, const CCTEReq *pcter) const
 {
-	GPOS_ASSERT(nullptr != pcter);
+	GPOS_ASSERT(NULL != pcter);
 	ULongPtrArray *pdrgpul = GPOS_NEW(mp) ULongPtrArray(mp);
 
 	UlongToCTEMapEntryMapIter hmcmi(m_phmcm);

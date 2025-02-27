@@ -34,7 +34,14 @@ ULONG_PTR CJobTest::m_ulpCnt;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobTest::CJobTest() = default;
+CJobTest::CJobTest()
+	: CJob(),
+	  m_ett(EttSpawn),
+	  m_ulRounds(gpos::ulong_max),
+	  m_ulFanout(gpos::ulong_max),
+	  m_ulIters(gpos::ulong_max)
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -45,7 +52,9 @@ CJobTest::CJobTest() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CJobTest::~CJobTest() = default;
+CJobTest::~CJobTest()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -235,7 +244,7 @@ CJobTest::FQueue(CSchedulerContext *psc)
 //
 //---------------------------------------------------------------------------
 void
-CJobTest::Loop() const
+CJobTest::Loop()
 {
 	ULONG ulOuter = 0;
 	while (ulOuter < m_ulIters)

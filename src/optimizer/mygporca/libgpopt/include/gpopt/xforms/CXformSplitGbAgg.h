@@ -30,6 +30,9 @@ using namespace gpos;
 class CXformSplitGbAgg : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformSplitGbAgg(const CXformSplitGbAgg &);
+
 protected:
 	// check if the transformation is applicable;
 	static BOOL FApplicable(CExpression *pexpr);
@@ -47,8 +50,6 @@ protected:
 	);
 
 public:
-	CXformSplitGbAgg(const CXformSplitGbAgg &) = delete;
-
 	// ctor
 	explicit CXformSplitGbAgg(CMemoryPool *mp);
 
@@ -56,25 +57,27 @@ public:
 	explicit CXformSplitGbAgg(CExpression *pexprPattern);
 
 	// dtor
-	~CXformSplitGbAgg() override = default;
+	virtual ~CXformSplitGbAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSplitGbAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSplitGbAgg";
 	}
 
 	// Compatibility function for splitting aggregates
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return ((CXform::ExfSplitDQA != exfid) &&
 				(CXform::ExfSplitGbAgg != exfid) &&
@@ -82,11 +85,11 @@ public:
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformSplitGbAgg
 

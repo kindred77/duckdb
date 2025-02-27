@@ -33,10 +33,10 @@ class CJobQueue
 {
 private:
 	// main job
-	CJob *m_pj{nullptr};
+	CJob *m_pj;
 
 	// flag indicating if main job has completed
-	BOOL m_fCompleted{false};
+	BOOL m_fCompleted;
 
 	// list of jobs waiting for main job to complete
 	CList<CJob> m_listjQueued;
@@ -51,7 +51,7 @@ public:
 	};
 
 	// ctor
-	CJobQueue()
+	CJobQueue() : m_pj(NULL), m_fCompleted(false)
 	{
 		m_listjQueued.Init(GPOS_OFFSET(CJob, m_linkQueue));
 	}
@@ -60,7 +60,7 @@ public:
 	~CJobQueue()
 	{
 		GPOS_ASSERT_IMP(
-			nullptr != ITask::Self() && !ITask::Self()->HasPendingExceptions(),
+			NULL != ITask::Self() && !ITask::Self()->HasPendingExceptions(),
 			m_listjQueued.IsEmpty());
 	}
 
@@ -70,7 +70,7 @@ public:
 	{
 		GPOS_ASSERT(m_listjQueued.IsEmpty());
 
-		m_pj = nullptr;
+		m_pj = NULL;
 		m_fCompleted = false;
 	}
 

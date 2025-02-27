@@ -31,32 +31,34 @@ using namespace gpos;
 class CXformImplementSequenceProject : public CXformImplementation
 {
 private:
-public:
-	CXformImplementSequenceProject(const CXformImplementSequenceProject &) =
-		delete;
+	// private copy ctor
+	CXformImplementSequenceProject(const CXformImplementSequenceProject &);
 
+public:
 	// ctor
 	explicit CXformImplementSequenceProject(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementSequenceProject() override = default;
+	virtual ~CXformImplementSequenceProject()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementSequenceProject;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementSequenceProject";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
-	Exfp(CExpressionHandle &exprhdl) const override
+	virtual EXformPromise
+	Exfp(CExpressionHandle &exprhdl) const
 	{
 		if (exprhdl.DeriveHasSubquery(1))
 		{
@@ -67,8 +69,8 @@ public:
 	}
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	virtual void Transform(CXformContext *, CXformResult *,
+						   CExpression *) const;
 
 };	// class CXformImplementSequenceProject
 

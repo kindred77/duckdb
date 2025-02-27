@@ -43,21 +43,24 @@ private:
 	// boolean value
 	BOOL m_value;
 
-public:
-	CDXLDatumBool(const CDXLDatumBool &) = delete;
+	// private copy ctor
+	CDXLDatumBool(const CDXLDatumBool &);
 
+public:
 	// ctor
 	CDXLDatumBool(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, BOOL value);
 
 	// dtor
-	~CDXLDatumBool() override = default;
+	virtual ~CDXLDatumBool()
+	{
+	}
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumBool;
 	}
@@ -73,7 +76,7 @@ public:
 	static CDXLDatumBool *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::CDXLDatum::EdxldatumBool ==
 					dxl_datum->GetDatumType());
 

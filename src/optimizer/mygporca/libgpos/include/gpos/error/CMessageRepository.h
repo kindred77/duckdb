@@ -33,10 +33,10 @@ private:
 	CMemoryPool *m_mp;
 
 	// short hand for Table of Message Tables (TMT)
-	using TMT = CSyncHashtable<CMessageTable, ELocale>;
+	typedef CSyncHashtable<CMessageTable, ELocale> TMT;
 
 	// short hand for TMT accessor
-	using TMTAccessor = CSyncHashtableAccessByKey<CMessageTable, ELocale>;
+	typedef CSyncHashtableAccessByKey<CMessageTable, ELocale> TMTAccessor;
 
 	// basic hash table
 	TMT m_hash_table;
@@ -55,7 +55,7 @@ public:
 	CMessageRepository(CMemoryPool *mp);
 
 	// dtor
-	~CMessageRepository() = default;
+	~CMessageRepository();
 
 	// lookup message by error/local
 	CMessage *LookupMessage(CException exc, ELocale locale);

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CCostModelGPDB.h
@@ -8,8 +8,8 @@
 //	@doc:
 //		GPDB cost model
 //---------------------------------------------------------------------------
-#ifndef GPOPT_CCostModelGPDB_H
-#define GPOPT_CCostModelGPDB_H
+#ifndef GPDBCOST_CCostModelGPDB_H
+#define GPDBCOST_CCostModelGPDB_H
 
 #include "gpos/base.h"
 #include "gpos/common/CDouble.h"
@@ -21,7 +21,7 @@
 #include "gpopt/operators/COperator.h"
 
 
-namespace gpopt
+namespace gpdbcost
 {
 using namespace gpos;
 using namespace gpopt;
@@ -39,6 +39,28 @@ using namespace gpmd;
 class CCostModelGPDB : public ICostModel
 {
 private:
+	// definition of operator processor
+	typedef CCost(FnCost)(CMemoryPool *, CExpressionHandle &,
+						  const CCostModelGPDB *, const SCostingInfo *);
+
+	//---------------------------------------------------------------------------
+	//	@struct:
+	//		SCostMapping
+	//
+	//	@doc:
+	//		Mapping of operator to a cost function
+	//
+	//---------------------------------------------------------------------------
+	struct SCostMapping
+	{
+		// physical operator id
+		COperator::EOperatorId m_eopid;
+
+		// pointer to cost function
+		FnCost *m_pfnc;
+
+	};	// struct SCostMapping
+
 	// memory pool
 	CMemoryPool *m_mp;
 
@@ -47,6 +69,9 @@ private:
 
 	// cost model parameters
 	CCostModelParamsGPDB *m_cost_model_params;
+
+	// array of mappings
+	static const SCostMapping m_rgcm[];
 
 	// return cost of processing the given number of rows
 	static CCost CostTupleProcessing(DOUBLE rows, DOUBLE width,
@@ -204,36 +229,36 @@ private:
 public:
 	// ctor
 	CCostModelGPDB(CMemoryPool *mp, ULONG ulSegments,
-				   CCostModelParamsGPDB *pcp = nullptr);
+				   CCostModelParamsGPDB *pcp = NULL);
 
 	// dtor
-	~CCostModelGPDB() override;
+	virtual ~CCostModelGPDB();
 
 	// number of segments
 	ULONG
-	UlHosts() const override
+	UlHosts() const
 	{
 		return m_num_of_segments;
 	}
 
 	// return number of rows per host
-	CDouble DRowsPerHost(CDouble dRowsTotal) const override;
+	virtual CDouble DRowsPerHost(CDouble dRowsTotal) const;
 
 	// return cost model parameters
-	ICostModelParams *
-	GetCostModelParams() const override
+	virtual ICostModelParams *
+	GetCostModelParams() const
 	{
 		return m_cost_model_params;
 	}
 
 
 	// main driver for cost computation
-	CCost Cost(CExpressionHandle &exprhdl,
-			   const SCostingInfo *pci) const override;
+	virtual CCost Cost(CExpressionHandle &exprhdl,
+					   const SCostingInfo *pci) const;
 
 	// cost model type
-	ECostModelType
-	Ecmt() const override
+	virtual ECostModelType
+	Ecmt() const
 	{
 		return ICostModel::EcmtGPDBCalibrated;
 	}

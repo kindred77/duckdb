@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarAssertConstraint.h
@@ -35,32 +35,33 @@ private:
 	// error message
 	CWStringBase *m_error_msg;
 
-public:
-	CDXLScalarAssertConstraint(const CDXLScalarAssertConstraint &) = delete;
+	// private copy ctor
+	CDXLScalarAssertConstraint(const CDXLScalarAssertConstraint &);
 
+public:
 	// ctor
 	CDXLScalarAssertConstraint(CMemoryPool *mp, CWStringBase *error_msg);
 
 	// dtor
-	~CDXLScalarAssertConstraint() override;
+	virtual ~CDXLScalarAssertConstraint();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// error message
 	CWStringBase *GetErrorMsgStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return false;
 	}
@@ -68,15 +69,15 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *dxlnode,
+							 BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarAssertConstraint *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarAssertConstraint == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarAssertConstraint *>(dxl_op);

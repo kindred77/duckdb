@@ -39,14 +39,19 @@ private:
 	// underlying list
 	CList<T> m_list;
 
-public:
-	CSyncList(const CSyncList &) = delete;
+	// no copy ctor
+	CSyncList(const CSyncList &);
 
+public:
 	// ctor
-	CSyncList() = default;
+	CSyncList()
+	{
+	}
 
 	// dtor
-	~CSyncList() = default;
+	~CSyncList()
+	{
+	}
 
 	// init function to facilitate arrays
 	void
@@ -67,10 +72,8 @@ public:
 	Pop()
 	{
 		if (!m_list.IsEmpty())
-		{
 			return m_list.RemoveHead();
-		}
-		return nullptr;
+		return NULL;
 	}
 
 	// get first element

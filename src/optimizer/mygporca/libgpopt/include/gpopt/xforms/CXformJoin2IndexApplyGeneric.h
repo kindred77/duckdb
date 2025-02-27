@@ -11,6 +11,7 @@
 
 #include "gpos/base.h"
 
+#include "gpopt/operators/CLogicalApply.h"
 #include "gpopt/operators/CLogicalJoin.h"
 #include "gpopt/operators/CPatternLeaf.h"
 #include "gpopt/operators/CPatternNode.h"
@@ -26,16 +27,16 @@ private:
 	// this decides which types of plans are produced, index gets or bitmap gets
 	BOOL m_generateBitmapPlans;
 
+	// no copy ctor
+	CXformJoin2IndexApplyGeneric(const CXformJoin2IndexApplyGeneric &);
+
 	// Can we transform left outer join to left outer index apply?
-	static BOOL FCanLeftOuterIndexApply(CMemoryPool *mp,
-										CExpression *pexprInner,
-										CExpression *pexprScalar,
-										CTableDescriptor *ptabDesc,
-										const CColRefSet *pcrsDist);
+	BOOL FCanLeftOuterIndexApply(CMemoryPool *mp, CExpression *pexprInner,
+								 CExpression *pexprScalar,
+								 CTableDescriptor *ptabDesc,
+								 const CColRefSet *pcrsDist) const;
 
 public:
-	CXformJoin2IndexApplyGeneric(const CXformJoin2IndexApplyGeneric &) = delete;
-
 	// ctor
 	explicit CXformJoin2IndexApplyGeneric(CMemoryPool *mp,
 										  BOOL generateBitmapPlans)
@@ -56,22 +57,36 @@ public:
 	}
 
 	// dtor
-	~CXformJoin2IndexApplyGeneric() override = default;
+	virtual ~CXformJoin2IndexApplyGeneric()
+	{
+	}
 
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 	// Return true if xform should be applied only once.
 	// For now return true. We may need to revisit this if we find that
 	// there are multiple bindings and we miss interesting bindings because
 	// we extract only one of them.
-	BOOL
-	IsApplyOnce() override
+	virtual BOOL
+	IsApplyOnce()
 	{
 		return true;
+	}
+
+	virtual CLogicalJoin *
+	PopLogicalJoin(CMemoryPool *) const
+	{
+		return NULL;
+	}
+
+	virtual CLogicalApply *
+	PopLogicalApply(CMemoryPool *, CColRefArray *, CExpression *) const
+	{
+		return NULL;
 	}
 
 };	// class CXformJoin2IndexApplyGeneric

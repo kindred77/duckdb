@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal Software, Inc.
 
 #ifndef GPDXL_CCostModelConfigSerializer_H
 #define GPDXL_CCostModelConfigSerializer_H

@@ -30,34 +30,36 @@ using namespace gpos;
 class CXformImplementLimit : public CXformImplementation
 {
 private:
-public:
-	CXformImplementLimit(const CXformImplementLimit &) = delete;
+	// private copy ctor
+	CXformImplementLimit(const CXformImplementLimit &);
 
+public:
 	// ctor
 	explicit CXformImplementLimit(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementLimit() override = default;
+	virtual ~CXformImplementLimit()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementLimit;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementLimit";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformImplementLimit
 

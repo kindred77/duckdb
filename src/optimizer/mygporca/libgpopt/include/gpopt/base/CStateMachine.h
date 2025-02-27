@@ -53,18 +53,18 @@ class CStateMachine
 private:
 #ifdef GPOS_DEBUG
 	// shorthand for sets and iterators
-	using EsetStates = CEnumSet<TEnumState, tenumstateSentinel>;
-	using EsetEvents = CEnumSet<TEnumEvent, tenumeventSentinel>;
+	typedef CEnumSet<TEnumState, tenumstateSentinel> EsetStates;
+	typedef CEnumSet<TEnumEvent, tenumeventSentinel> EsetEvents;
 
-	using EsetStatesIter = CEnumSetIter<TEnumState, tenumstateSentinel>;
-	using EsetEventsIter = CEnumSetIter<TEnumEvent, tenumeventSentinel>;
+	typedef CEnumSetIter<TEnumState, tenumstateSentinel> EsetStatesIter;
+	typedef CEnumSetIter<TEnumEvent, tenumeventSentinel> EsetEventsIter;
 #endif	// GPOS_DEBUG
 
 	// current state
 	TEnumState m_tenumstate;
 
 	// flag indicating if the state machine is initialized
-	BOOL m_fInit{false};
+	BOOL m_fInit;
 
 	// array of transitions
 	TEnumEvent m_rgrgtenumeventTransitions[tenumstateSentinel]
@@ -85,7 +85,7 @@ private:
 	const WCHAR *m_rgwszEvents[tenumeventSentinel];
 
 	// current index into history
-	ULONG m_ulHistory{0};
+	ULONG m_ulHistory;
 
 	// state history
 	TEnumState m_tenumstateHistory[GPOPT_FSM_HISTORY];
@@ -149,8 +149,9 @@ private:
 	}
 
 	// shorthand for walker function type
-	using PfWalker = void (*)(const CStateMachine *, TEnumState, TEnumState,
-							  TEnumEvent, void *);
+	typedef void (*PfWalker)(const CStateMachine *psm, TEnumState tenumstateOld,
+							 TEnumState tenumstateNew, TEnumEvent tenumevent,
+							 void *pvContext);
 
 	// generic walker function, called for every edge in the graph
 	void
@@ -253,12 +254,22 @@ private:
 		return false;
 	}
 
-public:
-	CStateMachine(const CStateMachine &) = delete;
+	// hidden copy ctor
+	CStateMachine<TEnumState, tenumstateSentinel, TEnumEvent,
+				  tenumeventSentinel>(
+		const CStateMachine<TEnumState, tenumstateSentinel, TEnumEvent,
+							tenumeventSentinel> &);
 
+public:
 	// ctor
-	CStateMachine()
-		: m_tenumstate(TesInitial())
+	CStateMachine<TEnumState, tenumstateSentinel, TEnumEvent,
+				  tenumeventSentinel>()
+		: m_tenumstate(TesInitial()),
+		  m_fInit(false)
+#ifdef GPOS_DEBUG
+		  ,
+		  m_ulHistory(0)
+#endif	// GPOS_DEBUG
 	{
 		GPOS_ASSERT(0 < tenumstateSentinel && 0 < tenumeventSentinel &&
 					(ULONG) tenumeventSentinel + 1 >=
@@ -304,7 +315,7 @@ public:
 	}
 
 	// dtor
-	~CStateMachine() = default;
+	~CStateMachine(){};
 
 	// attempt transition
 	BOOL
@@ -401,7 +412,7 @@ public:
 	BOOL
 	FReachable(CMemoryPool *mp) const
 	{
-		TEnumState *pestate = nullptr;
+		TEnumState *pestate = NULL;
 		ULONG size = 0;
 		Unreachable(mp, &pestate, &size);
 		GPOS_DELETE_ARRAY(pestate);
@@ -413,8 +424,8 @@ public:
 	void
 	Unreachable(CMemoryPool *mp, TEnumState **ppestate, ULONG *pulSize) const
 	{
-		GPOS_ASSERT(nullptr != ppestate);
-		GPOS_ASSERT(nullptr != pulSize);
+		GPOS_ASSERT(NULL != ppestate);
+		GPOS_ASSERT(NULL != pulSize);
 
 		// initialize output array
 		*ppestate = GPOS_NEW_ARRAY(mp, TEnumState, tenumstateSentinel);

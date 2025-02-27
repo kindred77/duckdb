@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2019 VMware, Inc. or its affiliates.
+//	Copyright (C) 2019 Pivotal Inc.
 //
 //	@filename:
 //		CScalarNAryJoinPredList.h
@@ -31,41 +31,44 @@ using namespace gpos;
 class CScalarNAryJoinPredList : public CScalar
 {
 private:
-public:
-	CScalarNAryJoinPredList(const CScalarNAryJoinPredList &) = delete;
+	// private copy ctor
+	CScalarNAryJoinPredList(const CScalarNAryJoinPredList &);
 
+public:
 	// ctor
 	explicit CScalarNAryJoinPredList(CMemoryPool *mp);
 
 	// dtor
-	~CScalarNAryJoinPredList() override = default;
+	virtual ~CScalarNAryJoinPredList()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarNAryJoinPredList;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarNAryJoinPredList";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -77,12 +80,12 @@ public:
 		return dynamic_cast<CScalarNAryJoinPredList *>(pop);
 	}
 
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		GPOS_ASSERT(
 			!"Invalid function call: CScalarNAryJoinPredList::MdidType()");
-		return nullptr;
+		return NULL;
 	}
 
 };	// class CScalarNAryJoinPredList

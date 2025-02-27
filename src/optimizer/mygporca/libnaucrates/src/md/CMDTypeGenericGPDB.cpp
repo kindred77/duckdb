@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
-//	Portions Copyright (c) 2023, HashData Technology Limited.
 //
 //	@filename:
 //		CMDTypeGenericGPDB.cpp
@@ -36,19 +35,6 @@ using namespace gpmd;
 
 #define GPDB_ANYENUM_OID OID(3500)	// oid of GPDB ANYENUM type
 
-#define GPDB_ANYRANGE_OID OID(3831)	// oid of GPDB ANYRANGE type
-
-#define GPDB_ANYCOMPATIBLE_OID OID(5077)	// oid of GPDB ANYCOMPATIBLE type
-
-#define GPDB_ANYCOMPATIBLEARRAY_OID OID(5078)	// oid of GPDB ANYCOMPATIBLEARRAY type
-
-#define GPDB_ANYCOMPATIBLENONARRAY_OID OID(5079)	// oid of GPDB ANYCOMPATIBLENONARRAY type
-
-#define GPDB_ANYCOMPATIBLERANGE_OID OID(5080)	// oid of GPDB ANYCOMPATIBLERANGE type
-
-#define GPDB_ANYMULTIRANGE_OID OID(4537)	// oid of GPDB ANYMULTIRANGE type
-
-#define GPDB_ANYCOMPATIBLEMULTIRANGE_OID OID(4538)	// oid of GPDB ANYCOMPATIBLEMULTIRANGE type
 //---------------------------------------------------------------------------
 //	@function:
 //		CMDTypeGenericGPDB::CMDTypeGenericGPDB
@@ -59,9 +45,8 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 CMDTypeGenericGPDB::CMDTypeGenericGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname, BOOL is_redistributable,
-	BOOL is_fixed_length, ULONG length GPOS_ASSERTS_ONLY,
-	BOOL is_passed_by_value, IMDId *mdid_distr_opfamily,
-	IMDId *mdid_legacy_distr_opfamily, IMDId *mdid_part_opfamily,
+	BOOL is_fixed_length, ULONG length, BOOL is_passed_by_value,
+	IMDId *mdid_distr_opfamily, IMDId *mdid_legacy_distr_opfamily,
 	IMDId *mdid_op_eq, IMDId *mdid_op_neq, IMDId *mdid_op_lt,
 	IMDId *mdid_op_leq, IMDId *mdid_op_gt, IMDId *mdid_op_geq,
 	IMDId *mdid_op_cmp, IMDId *mdid_op_min, IMDId *mdid_op_max,
@@ -74,13 +59,10 @@ CMDTypeGenericGPDB::CMDTypeGenericGPDB(
 	  m_mdname(mdname),
 	  m_is_redistributable(is_redistributable),
 	  m_is_fixed_length(is_fixed_length),
-#ifdef GPOS_DEBUG
 	  m_length(length),
-#endif
 	  m_is_passed_by_value(is_passed_by_value),
 	  m_distr_opfamily(mdid_distr_opfamily),
 	  m_legacy_distr_opfamily(mdid_legacy_distr_opfamily),
-	  m_part_opfamily(mdid_part_opfamily),
 	  m_mdid_op_eq(mdid_op_eq),
 	  m_mdid_op_neq(mdid_op_neq),
 	  m_mdid_op_lt(mdid_op_lt),
@@ -100,14 +82,16 @@ CMDTypeGenericGPDB::CMDTypeGenericGPDB(
 	  m_mdid_base_relation(mdid_base_relation),
 	  m_mdid_type_array(mdid_type_array),
 	  m_gpdb_length(gpdb_length),
-	  m_datum_null(nullptr)
+	  m_datum_null(NULL)
 {
 	GPOS_ASSERT_IMP(m_is_fixed_length, 0 < m_length);
 	GPOS_ASSERT_IMP(!m_is_fixed_length, 0 > m_gpdb_length);
+	m_dxl_str = CDXLUtils::SerializeMDObj(
+		m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
 
 	m_mdid->AddRef();
 	m_datum_null = GPOS_NEW(m_mp) CDatumGenericGPDB(
-		m_mp, m_mdid, default_type_modifier, nullptr /*pba*/, 0 /*length*/,
+		m_mp, m_mdid, default_type_modifier, NULL /*pba*/, 0 /*length*/,
 		true /*constNull*/, 0 /*lValue */, 0 /*dValue */);
 }
 
@@ -124,7 +108,6 @@ CMDTypeGenericGPDB::~CMDTypeGenericGPDB()
 	m_mdid->Release();
 	CRefCount::SafeRelease(m_distr_opfamily);
 	CRefCount::SafeRelease(m_legacy_distr_opfamily);
-	CRefCount::SafeRelease(m_part_opfamily);
 	m_mdid_op_eq->Release();
 	m_mdid_op_neq->Release();
 	m_mdid_op_lt->Release();
@@ -140,23 +123,10 @@ CMDTypeGenericGPDB::~CMDTypeGenericGPDB()
 	m_mdid_count->Release();
 	CRefCount::SafeRelease(m_mdid_base_relation);
 	GPOS_DELETE(m_mdname);
-	if (nullptr != m_dxl_str)
-	{
-		GPOS_DELETE(m_dxl_str);
-	}
+	GPOS_DELETE(m_dxl_str);
 	m_datum_null->Release();
 }
 
-const CWStringDynamic *
-CMDTypeGenericGPDB::GetStrRepr()
-{
-	if (nullptr == m_dxl_str)
-	{
-		m_dxl_str = CDXLUtils::SerializeMDObj(
-			m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
-	}
-	return m_dxl_str;
-}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -183,7 +153,7 @@ CMDTypeGenericGPDB::GetMdidForAggType(EAggType agg_type) const
 			return m_mdid_count;
 		default:
 			GPOS_ASSERT(!"Invalid aggregate type");
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -242,7 +212,7 @@ CMDTypeGenericGPDB::GetMdidForCmpType(ECmpType cmp_type) const
 			return m_mdid_op_geq;
 		default:
 			GPOS_ASSERT(!"Invalid operator type");
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -274,7 +244,7 @@ CMDTypeGenericGPDB::GetDatumForDXLConstVal(
 {
 	CDXLDatumGeneric *dxl_datum =
 		CDXLDatumGeneric::Cast(const_cast<CDXLDatum *>(dxl_op->GetDatumVal()));
-	GPOS_ASSERT(nullptr != dxl_op);
+	GPOS_ASSERT(NULL != dxl_op);
 
 	LINT lint_value = 0;
 	if (dxl_datum->IsDatumMappableToLINT())
@@ -342,7 +312,7 @@ CMDTypeGenericGPDB::GetDatumVal(CMemoryPool *mp, IDatum *datum) const
 	m_mdid->AddRef();
 	CDatumGenericGPDB *datum_generic = dynamic_cast<CDatumGenericGPDB *>(datum);
 	ULONG length = 0;
-	BYTE *pba = nullptr;
+	BYTE *pba = NULL;
 	if (!datum_generic->IsNull())
 	{
 		pba = datum_generic->MakeCopyOfValue(mp, &length);
@@ -381,11 +351,7 @@ CMDTypeGenericGPDB::IsAmbiguous() const
 	OID oid = CMDIdGPDB::CastMdid(m_mdid)->Oid();
 	// This should match the IsPolymorphicType() macro in GPDB's pg_type.h
 	return (GPDB_ANYELEMENT_OID == oid || GPDB_ANYARRAY_OID == oid ||
-			GPDB_ANYNONARRAY_OID == oid || GPDB_ANYENUM_OID == oid ||
-			GPDB_ANYRANGE_OID == oid || GPDB_ANYMULTIRANGE_OID == oid ||
-			GPDB_ANYCOMPATIBLE_OID == oid || GPDB_ANYCOMPATIBLEARRAY_OID == oid ||
-			GPDB_ANYCOMPATIBLERANGE_OID == oid || GPDB_ANYCOMPATIBLENONARRAY_OID == oid ||
-			GPDB_ANYCOMPATIBLEMULTIRANGE_OID == oid);
+			GPDB_ANYNONARRAY_OID == oid || GPDB_ANYENUM_OID == oid);
 }
 
 //---------------------------------------------------------------------------
@@ -402,7 +368,7 @@ CMDTypeGenericGPDB::CreateDXLDatumVal(CMemoryPool *mp, IMDId *mdid,
 									  BOOL is_null, BYTE *pba, ULONG length,
 									  LINT lValue, CDouble dValue)
 {
-	GPOS_ASSERT(IMDId::EmdidGeneral == mdid->MdidType());
+	GPOS_ASSERT(IMDId::EmdidGPDB == mdid->MdidType());
 
 	if (HasByte2DoubleMapping(mdid))
 	{
@@ -490,7 +456,7 @@ CMDTypeGenericGPDB::GetDXLDatumNull(CMemoryPool *mp) const
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 	const IMDType *md_type = md_accessor->RetrieveType(m_mdid);
 	return CreateDXLDatumVal(mp, m_mdid, md_type, default_type_modifier,
-							 true /*fConstNull*/, nullptr /*byte_array*/,
+							 true /*fConstNull*/, NULL /*byte_array*/,
 							 0 /*length*/, 0 /*lint_value */,
 							 0 /*double_value */);
 }
@@ -517,7 +483,7 @@ CMDTypeGenericGPDB::CreateGenericNullDatum(CMemoryPool *mp,
 										   INT type_modifier) const
 {
 	return GPOS_NEW(mp) CDatumGenericGPDB(mp, MDId(), type_modifier,
-										  nullptr,	// source value buffer
+										  NULL,	 // source value buffer
 										  0,	 // source value buffer length
 										  true,	 // is NULL
 										  0,	 // LINT mapping for stats
@@ -591,19 +557,13 @@ CMDTypeGenericGPDB::GetDistrOpfamilyMdid() const
 	}
 }
 
-IMDId *
-CMDTypeGenericGPDB::GetPartOpfamilyMdid() const
-{
-	return m_part_opfamily;
-}
-
 BOOL
 CMDTypeGenericGPDB::IsRedistributable() const
 {
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution) &&
 		GPOS_FTRACE(EopttraceUseLegacyOpfamilies))
 	{
-		return (nullptr != m_legacy_distr_opfamily);
+		return (NULL != m_legacy_distr_opfamily);
 	}
 	// If EopttraceConsiderOpfamiliesForDistribution is set, m_is_redistributable
 	// is redundant. It's still used here for MDP tests where the traceflag is

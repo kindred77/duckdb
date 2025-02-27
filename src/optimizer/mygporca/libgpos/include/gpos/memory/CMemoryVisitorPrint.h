@@ -36,20 +36,21 @@ private:
 	// stream used for writing debug information
 	IOstream &m_os;
 
-public:
-	CMemoryVisitorPrint(CMemoryVisitorPrint &) = delete;
+	// private copy ctor
+	CMemoryVisitorPrint(CMemoryVisitorPrint &);
 
+public:
 	// ctor
 	CMemoryVisitorPrint(IOstream &os);
 
 	// dtor
-	~CMemoryVisitorPrint() override;
+	virtual ~CMemoryVisitorPrint();
 
 	// output information about a memory allocation
-	void Visit(void *user_addr, SIZE_T user_size, void *total_addr,
-			   SIZE_T total_size, const CHAR *alloc_filename,
-			   const ULONG alloc_line, ULLONG alloc_seq_number,
-			   CStackDescriptor *stack_desc) override;
+	virtual void Visit(void *user_addr, SIZE_T user_size, void *total_addr,
+					   SIZE_T total_size, const CHAR *alloc_filename,
+					   const ULONG alloc_line, ULLONG alloc_seq_number,
+					   CStackDescriptor *stack_desc);
 
 	// visit counter accessor
 	ULLONG

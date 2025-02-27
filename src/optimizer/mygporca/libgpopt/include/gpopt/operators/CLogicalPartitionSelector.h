@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CLogicalPartitionSelector.h
@@ -14,7 +14,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/metadata/CPartConstraint.h"
 #include "gpopt/operators/CLogical.h"
 
 
@@ -37,28 +36,33 @@ private:
 	// filter expressions corresponding to various levels
 	CExpressionArray *m_pdrgpexprFilters;
 
-public:
-	CLogicalPartitionSelector(const CLogicalPartitionSelector &) = delete;
+	// oid column - holds the OIDs for leaf parts
+	CColRef *m_pcrOid;
 
+	// private copy ctor
+	CLogicalPartitionSelector(const CLogicalPartitionSelector &);
+
+public:
 	// ctors
 	explicit CLogicalPartitionSelector(CMemoryPool *mp);
 
 	CLogicalPartitionSelector(CMemoryPool *mp, IMDId *mdid,
-							  CExpressionArray *pdrgpexprFilters);
+							  CExpressionArray *pdrgpexprFilters,
+							  CColRef *pcrOid);
 
 	// dtor
-	~CLogicalPartitionSelector() override;
+	virtual ~CLogicalPartitionSelector();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalPartitionSelector;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalPartitionSelector";
 	}
@@ -68,6 +72,13 @@ public:
 	MDId() const
 	{
 		return m_mdid;
+	}
+
+	// oid column
+	CColRef *
+	PcrOid() const
+	{
+		return m_pcrOid;
 	}
 
 	// number of partitioning levels
@@ -85,59 +96,58 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		// operator has one child
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &exprhdl);
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive partition consumer info
-	CPartInfo *
+	virtual CPartInfo *
 	DerivePartitionInfo(CMemoryPool *,	// mp,
-						CExpressionHandle &exprhdl) const override
+						CExpressionHandle &exprhdl) const
 	{
 		return PpartinfoPassThruOuter(exprhdl);
 	}
 
 	// compute required stats columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *,		   // mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *pcrsInput,
 			 ULONG	// child_index
-	) const override
+	) const
 	{
 		return PcrsStatsPassThru(pcrsInput);
 	}
@@ -147,30 +157,30 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive key collections
-	CKeyCollection *
+	virtual CKeyCollection *
 	DeriveKeyCollection(CMemoryPool *,	// mp
-						CExpressionHandle &exprhdl) const override
+						CExpressionHandle &exprhdl) const
 	{
 		return PkcDeriveKeysPassThru(exprhdl, 0 /* ulChild */);
 	}
 
 
 	// derive statistics
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *,	 //mp,
 				 CExpressionHandle &exprhdl,
 				 IStatisticsArray *	 //stats_ctxt
-	) const override
+	) const
 	{
 		return PstatsPassThruOuter(exprhdl);
 	}
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -183,14 +193,14 @@ public:
 	static CLogicalPartitionSelector *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalPartitionSelector == pop->Eopid());
 
 		return dynamic_cast<CLogicalPartitionSelector *>(pop);
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CLogicalPartitionSelector
 

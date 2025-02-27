@@ -25,9 +25,6 @@
 #ifndef GPOS_CMemoryPool_H
 #define GPOS_CMemoryPool_H
 
-#include <limits>
-#include <random>
-
 #include "gpos/assert.h"
 #include "gpos/common/CLink.h"
 #include "gpos/common/CStackDescriptor.h"
@@ -78,11 +75,7 @@ class CMemoryPool
 	friend class CMemoryPoolManager;
 
 private:
-	// psudo random hash key generator
-	std::mt19937 m_generator;
-	std::uniform_int_distribution<ULONG> m_distribution;
-
-	// hash key for this memory pool
+	// hash key is only set by pool manager
 	ULONG_PTR m_hash_key;
 
 #ifdef GPOS_DEBUG
@@ -105,15 +98,10 @@ public:
 		EatArray = 0x7e
 	};
 
-	CMemoryPool()
-		// MAX LONG is invalid hash key, so skip that hash value.
-		: m_distribution(0, std::numeric_limits<ULONG>::max() - 1),
-		  m_hash_key(m_distribution(m_generator))
+	// dtor
+	virtual ~CMemoryPool()
 	{
 	}
-
-	// dtor
-	virtual ~CMemoryPool() = default;
 
 	// prepare the memory pool to be deleted
 	virtual void TearDown() = 0;
@@ -189,7 +177,7 @@ public:
 	}
 
 	// dump memory pool to given stream
-	IOstream &OsPrint(IOstream &os);
+	virtual IOstream &OsPrint(IOstream &os);
 
 	// check if a memory pool is empty
 	virtual void AssertEmpty(IOstream &os);
@@ -229,7 +217,7 @@ public:
 	static void
 	Delete(T *object)
 	{
-		if (nullptr == object)
+		if (NULL == object)
 		{
 			return;
 		}
@@ -242,7 +230,7 @@ public:
 	static void
 	DeleteArray(T *object_array)
 	{
-		if (nullptr == object_array)
+		if (NULL == object_array)
 		{
 			return;
 		}

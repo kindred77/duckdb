@@ -36,39 +36,41 @@ using namespace gpos;
 class CXformUnion2UnionAll : public CXformExploration
 {
 private:
-public:
-	CXformUnion2UnionAll(const CXformUnion2UnionAll &) = delete;
+	// private copy ctor
+	CXformUnion2UnionAll(const CXformUnion2UnionAll &);
 
+public:
 	// ctor
 	explicit CXformUnion2UnionAll(CMemoryPool *mp);
 
 	// dtor
-	~CXformUnion2UnionAll() override = default;
+	virtual ~CXformUnion2UnionAll()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfUnion2UnionAll;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformUnion2UnionAll";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformUnion2UnionAll
 

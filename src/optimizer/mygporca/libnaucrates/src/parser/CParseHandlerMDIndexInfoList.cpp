@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CParseHandlerMDIndexInfoList.cpp
@@ -27,7 +27,7 @@ CParseHandlerMDIndexInfoList::CParseHandlerMDIndexInfoList(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerBase(mp, parse_handler_mgr, parse_handler_root),
-	  m_mdindex_info_array(nullptr)
+	  m_mdindex_info_array(NULL)
 {
 }
 

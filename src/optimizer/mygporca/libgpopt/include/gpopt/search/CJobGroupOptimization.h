@@ -65,7 +65,7 @@ public:
 
 private:
 	// shorthand for job state machine
-	using JSM = CJobStateMachine<EState, estSentinel, EEvent, eevSentinel>;
+	typedef CJobStateMachine<EState, estSentinel, EEvent, eevSentinel> JSM;
 
 	// job state machine
 	JSM m_jsm;
@@ -88,14 +88,15 @@ private:
 	// complete optimization action
 	static EEvent EevtCompleteOptimization(CSchedulerContext *psc, CJob *pj);
 
-public:
-	CJobGroupOptimization(const CJobGroupOptimization &) = delete;
+	// private copy ctor
+	CJobGroupOptimization(const CJobGroupOptimization &);
 
+public:
 	// ctor
 	CJobGroupOptimization();
 
 	// dtor
-	~CJobGroupOptimization() override;
+	virtual ~CJobGroupOptimization();
 
 	// initialize job
 	void Init(CGroup *pgroup, CGroupExpression *pgexprOrigin,
@@ -116,14 +117,14 @@ public:
 	}
 
 	// get first unscheduled expression
-	CGroupExpression *
-	PgexprFirstUnsched() override
+	virtual CGroupExpression *
+	PgexprFirstUnsched()
 	{
 		return CJobGroup::PgexprFirstUnschedNonLogical();
 	}
 
 	// schedule optimization jobs for of all new group expressions
-	BOOL FScheduleGroupExpressions(CSchedulerContext *psc) override;
+	virtual BOOL FScheduleGroupExpressions(CSchedulerContext *psc);
 
 	// schedule a new group optimization job
 	static void ScheduleJob(CSchedulerContext *psc, CGroup *pgroup,
@@ -131,12 +132,12 @@ public:
 							COptimizationContext *poc, CJob *pjParent);
 
 	// job's function
-	BOOL FExecute(CSchedulerContext *psc) override;
+	virtual BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// dump state machine diagram in graphviz format
 	virtual IOstream &
@@ -161,7 +162,7 @@ public:
 	static CJobGroupOptimization *
 	PjConvert(CJob *pj)
 	{
-		GPOS_ASSERT(nullptr != pj);
+		GPOS_ASSERT(NULL != pj);
 		GPOS_ASSERT(EjtGroupOptimization == pj->Ejt());
 
 		return dynamic_cast<CJobGroupOptimization *>(pj);

@@ -43,30 +43,31 @@ private:
 	// is stats bound closed
 	BOOL m_is_stats_bound_closed;
 
+	// private copy ctor
+	CParseHandlerStatsBound(const CParseHandlerStatsBound &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerStatsBound(const CParseHandlerStatsBound &) = delete;
-
 	// ctor/dtor
 	CParseHandlerStatsBound(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,
 							CParseHandlerBase *parse_handler_root);
 
-	~CParseHandlerStatsBound() override;
+	virtual ~CParseHandlerStatsBound();
 
 	// return the dxl datum representing the bound point
 	CDXLDatum *

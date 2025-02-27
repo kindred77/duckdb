@@ -27,10 +27,11 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CConstraintNegation::CConstraintNegation(CMemoryPool *mp, CConstraint *pcnstr)
-	: CConstraint(mp, pcnstr->PcrsUsed()), m_pcnstr(pcnstr)
+	: CConstraint(mp), m_pcnstr(pcnstr)
 {
-	GPOS_ASSERT(nullptr != pcnstr);
+	GPOS_ASSERT(NULL != pcnstr);
 
+	m_pcrsUsed = pcnstr->PcrsUsed();
 	m_pcrsUsed->AddRef();
 }
 
@@ -45,6 +46,7 @@ CConstraintNegation::CConstraintNegation(CMemoryPool *mp, CConstraint *pcnstr)
 CConstraintNegation::~CConstraintNegation()
 {
 	m_pcnstr->Release();
+	m_pcrsUsed->Release();
 }
 
 //---------------------------------------------------------------------------
@@ -85,7 +87,7 @@ CConstraintNegation::Pcnstr(CMemoryPool *mp, const CColRef *colref)
 		// recursing down the constraint will give NOT ({"a" (0), ranges: (-inf, inf) })
 		// but that is equivalent to (NOT a) which is not the case.
 
-		return nullptr;
+		return NULL;
 	}
 
 	return GPOS_NEW(mp) CConstraintNegation(mp, m_pcnstr->Pcnstr(mp, colref));
@@ -104,7 +106,7 @@ CConstraintNegation::Pcnstr(CMemoryPool *mp, CColRefSet *pcrs)
 {
 	if (!m_pcrsUsed->Equals(pcrs))
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	return GPOS_NEW(mp) CConstraintNegation(mp, m_pcnstr->Pcnstr(mp, pcrs));
@@ -139,7 +141,7 @@ CConstraintNegation::PcnstrRemapForColumn(CMemoryPool *mp,
 CExpression *
 CConstraintNegation::PexprScalar(CMemoryPool *mp)
 {
-	if (nullptr == m_pexprScalar)
+	if (NULL == m_pexprScalar)
 	{
 		EConstraintType ect = m_pcnstr->Ect();
 		if (EctNegation == ect)

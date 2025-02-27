@@ -43,20 +43,21 @@ private:
 	// error code
 	CHAR m_sql_state[GPOS_SQLSTATE_LENGTH + 1];
 
-public:
-	CDXLPhysicalAssert(CDXLPhysicalAssert &) = delete;
+	// private copy ctor
+	CDXLPhysicalAssert(CDXLPhysicalAssert &);
 
+public:
 	// ctor
 	CDXLPhysicalAssert(CMemoryPool *mp, const CHAR *sql_state);
 
 	// dtor
-	~CDXLPhysicalAssert() override;
+	virtual ~CDXLPhysicalAssert();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// error code
 	const CHAR *
@@ -66,21 +67,20 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLPhysicalAssert *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalAssert == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalAssert *>(dxl_op);

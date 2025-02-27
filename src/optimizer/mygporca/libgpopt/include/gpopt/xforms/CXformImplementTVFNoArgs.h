@@ -30,25 +30,28 @@ using namespace gpos;
 class CXformImplementTVFNoArgs : public CXformImplementTVF
 {
 private:
-public:
-	CXformImplementTVFNoArgs(const CXformImplementTVFNoArgs &) = delete;
+	// private copy ctor
+	CXformImplementTVFNoArgs(const CXformImplementTVFNoArgs &);
 
+public:
 	// ctor
 	explicit CXformImplementTVFNoArgs(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementTVFNoArgs() override = default;
+	virtual ~CXformImplementTVFNoArgs()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementTVFNoArgs;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementTVFNoArgs";
 	}

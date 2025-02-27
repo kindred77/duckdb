@@ -18,6 +18,7 @@
 #include "gpopt/base/CDistributionSpecNonSingleton.h"
 #include "gpopt/base/CDistributionSpecSingleton.h"
 #include "gpopt/base/CDrvdPropPlan.h"
+#include "gpopt/base/CPartIndexMap.h"
 #include "gpopt/base/CReqdPropPlan.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "gpopt/operators/CPhysicalMotionBroadcast.h"
@@ -45,7 +46,7 @@ CEnfdDistribution::CEnfdDistribution(CDistributionSpec *pds,
 									 EDistributionMatching edm)
 	: m_pds(pds), m_edm(edm)
 {
-	GPOS_ASSERT(nullptr != pds);
+	GPOS_ASSERT(NULL != pds);
 	GPOS_ASSERT(EdmSentinel > edm);
 }
 
@@ -76,7 +77,7 @@ CEnfdDistribution::~CEnfdDistribution()
 BOOL
 CEnfdDistribution::FCompatible(CDistributionSpec *pds) const
 {
-	GPOS_ASSERT(nullptr != pds);
+	GPOS_ASSERT(NULL != pds);
 
 	switch (m_edm)
 	{
@@ -93,7 +94,6 @@ CEnfdDistribution::FCompatible(CDistributionSpec *pds) const
 				return CDistributionSpecHashed::PdsConvert(pds)->FMatchSubset(
 					CDistributionSpecHashed::PdsConvert(m_pds));
 			}
-			// fallthrough
 
 		case (EdmSentinel):
 			GPOS_ASSERT("invalid matching type");
@@ -127,6 +127,7 @@ CEnfdDistribution::HashValue() const
 //---------------------------------------------------------------------------
 CEnfdProp::EPropEnforcingType
 CEnfdDistribution::Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
+						CPartitionPropagationSpec *pppsReqd,
 						BOOL fDistribReqd) const
 {
 	if (fDistribReqd)
@@ -146,6 +147,18 @@ CEnfdDistribution::Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
 			!CDistributionSpecNonSingleton::PdsConvert(m_pds)->FAllowEnforced())
 		{
 			return EpetProhibited;
+		}
+
+		// if operator is a propagator/consumer of any partition index id, prohibit
+		// enforcing any distribution not compatible with what operator delivers
+		// if the derived partition consumers are a subset of the ones in the given
+		// required partition propagation spec, those will be enforced in the same group
+		CPartIndexMap *ppimDrvd = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Ppim();
+		GPOS_ASSERT(NULL != ppimDrvd);
+		if (ppimDrvd->FContainsUnresolved() && !this->FCompatible(pds) &&
+			!ppimDrvd->FSubset(pppsReqd->Ppim()))
+		{
+			return CEnfdProp::EpetProhibited;
 		}
 
 		// N.B.: subtlety ahead:

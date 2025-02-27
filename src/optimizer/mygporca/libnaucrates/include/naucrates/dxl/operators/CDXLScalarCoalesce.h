@@ -36,17 +36,18 @@ private:
 	// return type
 	IMDId *m_mdid_type;
 
-public:
-	CDXLScalarCoalesce(const CDXLScalarCoalesce &) = delete;
+	// private copy ctor
+	CDXLScalarCoalesce(const CDXLScalarCoalesce &);
 
+public:
 	// ctor
 	CDXLScalarCoalesce(CMemoryPool *mp, IMDId *mdid_type);
 
 	//dtor
-	~CDXLScalarCoalesce() override;
+	virtual ~CDXLScalarCoalesce();
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// return type
 	virtual IMDId *
@@ -56,27 +57,26 @@ public:
 	}
 
 	// DXL Operator ID
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarCoalesce *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarCoalesce == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarCoalesce *>(dxl_op);

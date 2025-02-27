@@ -62,7 +62,7 @@ CTaskSchedulerFifo::Cancel(CTask *task)
 {
 	// iterate until found
 	CTask *task_it = m_task_queue.First();
-	while (nullptr != task_it)
+	while (NULL != task_it)
 	{
 		if (task_it == task)
 		{

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CPartKeys.cpp
@@ -31,7 +31,7 @@ FORCE_GENERATE_DBGSTR(CPartKeys);
 //---------------------------------------------------------------------------
 CPartKeys::CPartKeys(CColRef2dArray *pdrgpdrgpcr) : m_pdrgpdrgpcr(pdrgpdrgpcr)
 {
-	GPOS_ASSERT(nullptr != pdrgpdrgpcr);
+	GPOS_ASSERT(NULL != pdrgpdrgpcr);
 	m_num_of_part_levels = pdrgpdrgpcr->Size();
 }
 
@@ -128,7 +128,7 @@ CPartKeysArray *
 CPartKeys::PdrgppartkeysCopy(CMemoryPool *mp,
 							 const CPartKeysArray *pdrgppartkeys)
 {
-	GPOS_ASSERT(nullptr != pdrgppartkeys);
+	GPOS_ASSERT(NULL != pdrgppartkeys);
 
 	CPartKeysArray *pdrgppartkeysCopy = GPOS_NEW(mp) CPartKeysArray(mp);
 	const ULONG length = pdrgppartkeys->Size();
@@ -153,7 +153,7 @@ CPartKeys *
 CPartKeys::PpartkeysRemap(CMemoryPool *mp,
 						  UlongToColRefMap *colref_mapping) const
 {
-	GPOS_ASSERT(nullptr != colref_mapping);
+	GPOS_ASSERT(NULL != colref_mapping);
 	CColRef2dArray *pdrgpdrgpcr = GPOS_NEW(mp) CColRef2dArray(mp);
 
 	for (ULONG ul = 0; ul < m_num_of_part_levels; ul++)

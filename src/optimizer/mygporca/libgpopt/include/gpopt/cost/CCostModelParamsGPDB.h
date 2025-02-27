@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CCostModelParamsGPDB.h
@@ -8,8 +8,8 @@
 //	@doc:
 //		Parameters in GPDB cost model
 //---------------------------------------------------------------------------
-#ifndef GPOPT_CCostModelParamsGPDB_H
-#define GPOPT_CCostModelParamsGPDB_H
+#ifndef GPDBCOST_CCostModelParamsGPDB_H
+#define GPDBCOST_CCostModelParamsGPDB_H
 
 #include "gpos/base.h"
 #include "gpos/common/CDouble.h"
@@ -279,35 +279,36 @@ private:
 	// default value of compute scalar func cost
 	static const CDouble DScalarFuncCost;
 
-public:
-	CCostModelParamsGPDB(CCostModelParamsGPDB &) = delete;
+	// private copy ctor
+	CCostModelParamsGPDB(CCostModelParamsGPDB &);
 
+public:
 	// ctor
 	explicit CCostModelParamsGPDB(CMemoryPool *mp);
 
 	// dtor
-	~CCostModelParamsGPDB() override;
+	virtual ~CCostModelParamsGPDB();
 
 	// lookup param by id
-	SCostParam *PcpLookup(ULONG id) const override;
+	virtual SCostParam *PcpLookup(ULONG id) const;
 
 	// lookup param by name
-	SCostParam *PcpLookup(const CHAR *szName) const override;
+	virtual SCostParam *PcpLookup(const CHAR *szName) const;
 
 	// set param by id
-	void SetParam(ULONG id, CDouble dVal, CDouble dLowerBound,
-				  CDouble dUpperBound) override;
+	virtual void SetParam(ULONG id, CDouble dVal, CDouble dLowerBound,
+						  CDouble dUpperBound);
 
 	// set param by name
-	void SetParam(const CHAR *szName, CDouble dVal, CDouble dLowerBound,
-				  CDouble dUpperBound) override;
+	virtual void SetParam(const CHAR *szName, CDouble dVal, CDouble dLowerBound,
+						  CDouble dUpperBound);
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
-	BOOL Equals(ICostModelParams *pcm) const override;
+	virtual BOOL Equals(ICostModelParams *pcm) const;
 
-	const CHAR *SzNameLookup(ULONG id) const override;
+	virtual const CHAR *SzNameLookup(ULONG id) const;
 
 };	// class CCostModelParamsGPDB
 

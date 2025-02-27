@@ -41,8 +41,8 @@ CScalarSubqueryQuantified::CScalarSubqueryQuantified(
 	  m_pcr(colref)
 {
 	GPOS_ASSERT(scalar_op_mdid->IsValid());
-	GPOS_ASSERT(nullptr != pstrScalarOp);
-	GPOS_ASSERT(nullptr != colref);
+	GPOS_ASSERT(NULL != pstrScalarOp);
+	GPOS_ASSERT(NULL != colref);
 }
 
 //---------------------------------------------------------------------------
@@ -188,7 +188,7 @@ CScalarSubqueryQuantified::PpartinfoDerive(CMemoryPool *,  // mp,
 										   CExpressionHandle &exprhdl) const
 {
 	CPartInfo *ppartinfoChild = exprhdl.DerivePartitionInfo(0);
-	GPOS_ASSERT(nullptr != ppartinfoChild);
+	GPOS_ASSERT(NULL != ppartinfoChild);
 	ppartinfoChild->AddRef();
 	return ppartinfoChild;
 }

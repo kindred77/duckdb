@@ -35,25 +35,25 @@ private:
 	// cost estimate
 	CDXLOperatorCost *m_operator_cost_dxl;
 
-public:
-	CDXLPhysicalProperties(const CDXLPhysicalProperties &) = delete;
+	// private copy ctor
+	CDXLPhysicalProperties(const CDXLPhysicalProperties &);
 
+public:
 	// ctor
 	explicit CDXLPhysicalProperties(CDXLOperatorCost *cost);
 
 	// dtor
-	~CDXLPhysicalProperties() override;
+	virtual ~CDXLPhysicalProperties();
 
 	// serialize properties in DXL format
-	void SerializePropertiesToDXL(
-		CXMLSerializer *xml_serializer) const override;
+	void SerializePropertiesToDXL(CXMLSerializer *xml_serializer) const;
 
 	// accessors
 	// the cost estimates for the operator node
 	CDXLOperatorCost *GetDXLOperatorCost() const;
 
-	Edxlproperty
-	GetDXLPropertyType() const override
+	virtual Edxlproperty
+	GetDXLPropertyType() const
 	{
 		return EdxlpropertyPhysical;
 	}
@@ -62,7 +62,7 @@ public:
 	static CDXLPhysicalProperties *
 	PdxlpropConvert(CDXLProperties *dxl_properties)
 	{
-		GPOS_ASSERT(nullptr != dxl_properties);
+		GPOS_ASSERT(NULL != dxl_properties);
 		GPOS_ASSERT(EdxlpropertyPhysical ==
 					dxl_properties->GetDXLPropertyType());
 		return dynamic_cast<CDXLPhysicalProperties *>(dxl_properties);

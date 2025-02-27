@@ -67,14 +67,14 @@ protected:
 	CColRefSet *m_pcrsLocalUsed;
 
 	// output column generation given a list of column descriptors
-	static CColRefArray *PdrgpcrCreateMapping(
+	CColRefArray *PdrgpcrCreateMapping(
 		CMemoryPool *mp, const CColumnDescriptorArray *pdrgpcoldesc,
-		ULONG ulOpSourceId, IMDId *mdid_table = nullptr);
+		ULONG ulOpSourceId, IMDId *mdid_table = NULL) const;
 
 	// initialize the array of partition columns
-	static CColRef2dArray *PdrgpdrgpcrCreatePartCols(
-		CMemoryPool *mp, CColRefArray *colref_array,
-		const ULongPtrArray *pdrgpulPart);
+	CColRef2dArray *PdrgpdrgpcrCreatePartCols(CMemoryPool *mp,
+											  CColRefArray *colref_array,
+											  const ULongPtrArray *pdrgpulPart);
 
 	// derive dummy statistics
 	IStatistics *PstatsDeriveDummy(CMemoryPool *mp, CExpressionHandle &exprhdl,
@@ -172,11 +172,11 @@ public:
 	explicit CLogical(CMemoryPool *mp);
 
 	// dtor
-	~CLogical() override;
+	virtual ~CLogical();
 
 	// type of operator
-	BOOL
-	FLogical() const override
+	virtual BOOL
+	FLogical() const
 	{
 		GPOS_ASSERT(!FPhysical() && !FScalar() && !FPattern());
 		return true;
@@ -194,7 +194,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// create derived properties container
-	CDrvdProp *PdpCreate(CMemoryPool *mp) const override;
+	virtual CDrvdProp *PdpCreate(CMemoryPool *mp) const;
 
 	// derive output columns
 	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
@@ -204,8 +204,7 @@ public:
 	virtual CColRefSet *
 	DeriveOuterReferences(CMemoryPool *mp, CExpressionHandle &exprhdl)
 	{
-		return DeriveOuterReferences(mp, exprhdl,
-									 nullptr /*pcrsUsedAdditional*/);
+		return DeriveOuterReferences(mp, exprhdl, NULL /*pcrsUsedAdditional*/);
 	}
 
 	// derive outer references for index get and dynamic index get operators
@@ -270,12 +269,18 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// create required properties container
-	CReqdProp *PrpCreate(CMemoryPool *mp) const override;
+	virtual CReqdProp *PrpCreate(CMemoryPool *mp) const;
 
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
 								 ULONG child_index) const = 0;
+
+	// compute partition predicate to pass down to n-th child
+	virtual CExpression *PexprPartPred(CMemoryPool *mp,
+									   CExpressionHandle &exprhdl,
+									   CExpression *pexprInput,
+									   ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
@@ -307,16 +312,16 @@ public:
 	static IStatistics *PstatsBaseTable(CMemoryPool *mp,
 										CExpressionHandle &exprhdl,
 										CTableDescriptor *ptabdesc,
-										CColRefSet *pcrsStatExtra = nullptr);
+										CColRefSet *pcrsStatExtra = NULL);
 
 	// conversion function
 	static CLogical *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(pop->FLogical());
 
-		return dynamic_cast<CLogical *>(pop);
+		return reinterpret_cast<CLogical *>(pop);
 	}
 
 	// returns the table descriptor for (Dynamic)(BitmapTable)Get operators
@@ -339,6 +344,7 @@ public:
 	// derive constraint property when expression has relational children and predicates
 	static CPropConstraint *PpcDeriveConstraintFromPredicates(
 		CMemoryPool *mp, CExpressionHandle &exprhdl);
+
 
 };	// class CLogical
 

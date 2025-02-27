@@ -33,7 +33,9 @@ FORCE_GENERATE_DBGSTR(CReqdProp);
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CReqdProp::CReqdProp() = default;
+CReqdProp::CReqdProp()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -44,7 +46,9 @@ CReqdProp::CReqdProp() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CReqdProp::~CReqdProp() = default;
+CReqdProp::~CReqdProp()
+{
+}
 
 
 // EOF

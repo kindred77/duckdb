@@ -46,26 +46,27 @@ private:
 	// true if outer relation has unique values for the merge key
 	BOOL m_is_unique_outer;
 
-public:
-	CDXLPhysicalMergeJoin(const CDXLPhysicalMergeJoin &) = delete;
+	// private copy ctor
+	CDXLPhysicalMergeJoin(const CDXLPhysicalMergeJoin &);
 
+public:
 	// ctor
 	CDXLPhysicalMergeJoin(CMemoryPool *mp, EdxlJoinType join_type,
 						  BOOL is_unique_outer);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalMergeJoin *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalMergeJoin == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalMergeJoin *>(dxl_op);
@@ -74,7 +75,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

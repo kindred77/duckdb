@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal Software, Inc.
 //
 //	Template Class for Inner / Left Outer Index Apply
 //---------------------------------------------------------------------------
@@ -23,9 +23,10 @@ using namespace gpos;
 class CXformImplementIndexApply : public CXformImplementation
 {
 private:
-public:
-	CXformImplementIndexApply(const CXformImplementIndexApply &) = delete;
+	// private copy ctor
+	CXformImplementIndexApply(const CXformImplementIndexApply &);
 
+public:
 	// ctor
 	explicit CXformImplementIndexApply(CMemoryPool *mp)
 		:  // pattern
@@ -42,23 +43,26 @@ public:
 	}
 
 	// dtor
-	~CXformImplementIndexApply() override = default;
+	virtual ~CXformImplementIndexApply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementIndexApply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementIndexApply";
 	}
 
-	EXformPromise
-	Exfp(CExpressionHandle &exprhdl) const override
+	// compute xform promise for a given expression handle
+	virtual EXformPromise
+	Exfp(CExpressionHandle &exprhdl) const
 	{
 		if (exprhdl.DeriveHasSubquery(2))
 		{
@@ -68,11 +72,11 @@ public:
 	}
 
 	// actual transform
-	void
+	virtual void
 	Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-			  CExpression *pexpr) const override
+			  CExpression *pexpr) const
 	{
-		GPOS_ASSERT(nullptr != pxfctxt);
+		GPOS_ASSERT(NULL != pxfctxt);
 		GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 		GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -93,18 +97,14 @@ public:
 		pexprScalar->AddRef();
 
 		// assemble physical operator
-		CPhysicalNLJoin *pop = nullptr;
+		CPhysicalNLJoin *pop = NULL;
 
 		if (CLogicalIndexApply::PopConvert(pexpr->Pop())->FouterJoin())
-		{
 			pop = GPOS_NEW(mp) CPhysicalLeftOuterIndexNLJoin(
 				mp, colref_array, indexApply->OrigJoinPred());
-		}
 		else
-		{
 			pop = GPOS_NEW(mp) CPhysicalInnerIndexNLJoin(
 				mp, colref_array, indexApply->OrigJoinPred());
-		}
 
 		CExpression *pexprResult = GPOS_NEW(mp)
 			CExpression(mp, pop, pexprOuter, pexprInner, pexprScalar);

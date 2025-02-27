@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDatumSortedSet.h"
 
@@ -35,12 +35,6 @@ CDatumSortedSet::CDatumSortedSet(CMemoryPool *mp, CExpression *pexprArray,
 			datum->AddRef();
 			aprngdatum->Append(datum);
 		}
-	}
-
-	// ALL NULLs, just return empty set
-	if (aprngdatum->Size() == 0)
-	{
-		return;
 	}
 	aprngdatum->Sort(&CUtils::IDatumCmp);
 

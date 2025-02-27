@@ -13,7 +13,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CLogicalCTEAnchor.h"
 #include "gpopt/operators/CLogicalCTEConsumer.h"
 #include "gpopt/operators/CLogicalFullOuterJoin.h"
@@ -90,7 +89,7 @@ CXformExpandFullOuterJoin::Transform(CXformContext *pxfctxt,
 									 CXformResult *pxfres,
 									 CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -183,9 +182,9 @@ CExpression *
 CXformExpandFullOuterJoin::PexprLogicalJoinOverCTEs(
 	CMemoryPool *mp, EdxlJoinType edxljointype, ULONG ulLeftCTEId,
 	CColRefArray *pdrgpcrLeft, ULONG ulRightCTEId, CColRefArray *pdrgpcrRight,
-	CExpression *pexprScalar)
+	CExpression *pexprScalar) const
 {
-	GPOS_ASSERT(nullptr != pexprScalar);
+	GPOS_ASSERT(NULL != pexprScalar);
 
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
 	CCTEInfo *pcteinfo = COptCtxt::PoctxtFromTLS()->Pcteinfo();

@@ -39,7 +39,7 @@ CMainArgs::CMainArgs(ULONG argc, const CHAR **argv, const CHAR *fmt)
 #endif	// GPOS_Darwin
 {
 	// initialize external opt params
-	optarg = nullptr;
+	optarg = NULL;
 	optind = 1;
 	optopt = 1;
 	opterr = 1;
@@ -77,10 +77,10 @@ CMainArgs::~CMainArgs()
 //		wraps getopt logic
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CMainArgs::Getopt(CHAR *pch)
 {
-	GPOS_ASSERT(nullptr != pch);
+	GPOS_ASSERT(NULL != pch);
 
 	INT res = clib::Getopt(m_argc, const_cast<CHAR **>(m_argv), m_fmt);
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CHistogram.cpp
@@ -17,7 +17,6 @@
 #include "gpos/string/CWStringDynamic.h"
 
 #include "gpopt/base/CColRef.h"
-#include "gpopt/base/COptCtxt.h"
 #include "naucrates/dxl/CDXLUtils.h"
 #include "naucrates/dxl/operators/CDXLScalarConstValue.h"
 #include "naucrates/statistics/CLeftAntiSemiJoinStatsProcessor.h"
@@ -64,13 +63,13 @@ CHistogram::CHistogram(CMemoryPool *mp, CBucketArray *histogram_buckets,
 	  m_NDVs_were_scaled(false),
 	  m_is_col_stats_missing(false)
 {
-	GPOS_ASSERT(nullptr != histogram_buckets);
+	GPOS_ASSERT(NULL != histogram_buckets);
 }
 
 // ctor
 CHistogram::CHistogram(CMemoryPool *mp, BOOL is_well_defined)
 	: m_mp(mp),
-	  m_histogram_buckets(nullptr),
+	  m_histogram_buckets(NULL),
 	  m_is_well_defined(is_well_defined),
 	  m_null_freq(CHistogram::DefaultNullFreq),
 	  m_distinct_remaining(DefaultNDVRemain),
@@ -193,7 +192,7 @@ CHistogram::MakeHistogramLessThanOrLessThanEqualFilter(
 			CBucket *last_bucket = bucket->MakeBucketScaleUpper(
 				m_mp, point,
 				CStatsPred::EstatscmptLEq == stats_cmp_type /*include_upper*/);
-			if (nullptr != last_bucket)
+			if (NULL != last_bucket)
 			{
 				new_buckets->Append(last_bucket);
 			}
@@ -219,7 +218,7 @@ CHistogram::MakeHistogramLessThanOrLessThanEqualFilter(
 CBucketArray *
 CHistogram::MakeBucketsWithInequalityFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 	CBucketArray *new_buckets = GPOS_NEW(m_mp) CBucketArray(m_mp);
 	const ULONG num_buckets = m_histogram_buckets->Size();
 	bool point_is_null = point->GetDatum()->IsNull();
@@ -232,13 +231,13 @@ CHistogram::MakeBucketsWithInequalityFilter(CPoint *point) const
 		{
 			CBucket *less_than_bucket = bucket->MakeBucketScaleUpper(
 				m_mp, point, false /*include_upper */);
-			if (nullptr != less_than_bucket)
+			if (NULL != less_than_bucket)
 			{
 				new_buckets->Append(less_than_bucket);
 			}
 			CBucket *greater_than_bucket =
 				bucket->MakeBucketGreaterThan(m_mp, point);
-			if (nullptr != greater_than_bucket)
+			if (NULL != greater_than_bucket)
 			{
 				new_buckets->Append(greater_than_bucket);
 			}
@@ -256,7 +255,7 @@ CHistogram::MakeBucketsWithInequalityFilter(CPoint *point) const
 CHistogram *
 CHistogram::MakeHistogramInequalityFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 
 	CBucketArray *histogram_buckets = MakeBucketsWithInequalityFilter(point);
 	CDouble null_freq(0.0);
@@ -270,7 +269,7 @@ CHistogram::MakeHistogramInequalityFilter(CPoint *point) const
 CHistogram *
 CHistogram::MakeHistogramIDFFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 
 	CBucketArray *histogram_buckets = MakeBucketsWithInequalityFilter(point);
 	CDouble null_freq(0.0);
@@ -289,7 +288,7 @@ CHistogram::MakeHistogramIDFFilter(CPoint *point) const
 CBucketArray *
 CHistogram::MakeBucketsWithEqualityFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 
 	CBucketArray *histogram_buckets = GPOS_NEW(m_mp) CBucketArray(m_mp);
 
@@ -329,7 +328,7 @@ CHistogram::MakeBucketsWithEqualityFilter(CPoint *point) const
 CHistogram *
 CHistogram::MakeHistogramEqualFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 
 	if (point->GetDatum()->IsNull())
 	{
@@ -360,7 +359,7 @@ CHistogram::MakeHistogramEqualFilter(CPoint *point) const
 CHistogram *
 CHistogram::MakeHistogramINDFFilter(CPoint *point) const
 {
-	GPOS_ASSERT(nullptr != point);
+	GPOS_ASSERT(NULL != point);
 
 	CBucketArray *histogram_buckets = MakeBucketsWithEqualityFilter(point);
 	const ULONG num_of_buckets = histogram_buckets->Size();
@@ -423,7 +422,7 @@ CHistogram::MakeHistogramGreaterThanOrGreaterThanEqualFilter(
 			{
 				CBucket *greater_than_bucket =
 					bucket->MakeBucketGreaterThan(m_mp, point);
-				if (nullptr != greater_than_bucket)
+				if (NULL != greater_than_bucket)
 				{
 					new_buckets->Append(greater_than_bucket);
 				}
@@ -629,7 +628,7 @@ CHistogram::MakeJoinHistogramNormalize(CStatsPred::EStatsCmpType stats_cmp_type,
 									   CDouble rows_other,
 									   CDouble *scale_factor) const
 {
-	GPOS_ASSERT(nullptr != other_histogram);
+	GPOS_ASSERT(NULL != other_histogram);
 
 	if (CStatisticsUtils::IsStatsCmpTypeNdvEq(stats_cmp_type))
 	{
@@ -722,7 +721,7 @@ CHistogram::GetInequalityJoinScaleFactor(CDouble rows,
 										 const CHistogram *other_histogram,
 										 CDouble rows_other) const
 {
-	GPOS_ASSERT(nullptr != other_histogram);
+	GPOS_ASSERT(NULL != other_histogram);
 
 	CDouble scale_factor(1.0);
 
@@ -801,7 +800,7 @@ CHistogram *
 CHistogram::MakeHistogramFilter(CStatsPred::EStatsCmpType stats_cmp_type,
 								CPoint *point) const
 {
-	CHistogram *result_histogram = nullptr;
+	CHistogram *result_histogram = NULL;
 	GPOS_ASSERT(IsOpSupportedForFilter(stats_cmp_type));
 
 	switch (stats_cmp_type)
@@ -875,7 +874,7 @@ CHistogram *
 CHistogram::MakeLASJHistogram(CStatsPred::EStatsCmpType stats_cmp_type,
 							  const CHistogram *histogram) const
 {
-	GPOS_ASSERT(nullptr != histogram);
+	GPOS_ASSERT(NULL != histogram);
 
 	if (CStatsPred::EstatscmptEq != stats_cmp_type &&
 		CStatsPred::EstatscmptINDF != stats_cmp_type)
@@ -887,13 +886,13 @@ CHistogram::MakeLASJHistogram(CStatsPred::EStatsCmpType stats_cmp_type,
 
 	CBucketArray *new_buckets = GPOS_NEW(m_mp) CBucketArray(m_mp);
 
-	CBucket *lower_split_bucket = nullptr;
-	CBucket *upper_split_bucket = nullptr;
+	CBucket *lower_split_bucket = NULL;
+	CBucket *upper_split_bucket = NULL;
 
 	ULONG idx1 = 0;	 // index into this histogram
 	ULONG idx2 = 0;	 // index into other histogram
 
-	CBucket *candidate_bucket = nullptr;
+	CBucket *candidate_bucket = NULL;
 
 	const ULONG buckets1 = GetNumBuckets();
 	const ULONG buckets2 = histogram->GetNumBuckets();
@@ -904,9 +903,9 @@ CHistogram::MakeLASJHistogram(CStatsPred::EStatsCmpType stats_cmp_type,
 		CBucket *bucket2 = (*histogram->m_histogram_buckets)[idx2];
 
 		// yet to choose a candidate
-		GPOS_ASSERT(nullptr == candidate_bucket);
+		GPOS_ASSERT(NULL == candidate_bucket);
 
-		if (nullptr != upper_split_bucket)
+		if (NULL != upper_split_bucket)
 		{
 			candidate_bucket = upper_split_bucket;
 		}
@@ -917,20 +916,20 @@ CHistogram::MakeLASJHistogram(CStatsPred::EStatsCmpType stats_cmp_type,
 			idx1++;
 		}
 
-		lower_split_bucket = nullptr;
-		upper_split_bucket = nullptr;
+		lower_split_bucket = NULL;
+		upper_split_bucket = NULL;
 
 		candidate_bucket->Difference(m_mp, bucket2, &lower_split_bucket,
 									 &upper_split_bucket);
 
-		if (nullptr != lower_split_bucket)
+		if (NULL != lower_split_bucket)
 		{
 			new_buckets->Append(lower_split_bucket);
 		}
 
 		// need to find a new candidate
 		GPOS_DELETE(candidate_bucket);
-		candidate_bucket = nullptr;
+		candidate_bucket = NULL;
 
 		idx2++;
 	}
@@ -942,7 +941,7 @@ CHistogram::MakeLASJHistogram(CStatsPred::EStatsCmpType stats_cmp_type,
 	if (idx2 == buckets2)
 	{
 		// candidate is part of the result
-		if (nullptr != candidate_bucket)
+		if (NULL != candidate_bucket)
 		{
 			new_buckets->Append(candidate_bucket);
 		}
@@ -1233,8 +1232,8 @@ BOOL
 CHistogram::CanComputeJoinNDVRemain(const CHistogram *histogram1,
 									const CHistogram *histogram2)
 {
-	GPOS_ASSERT(nullptr != histogram1);
-	GPOS_ASSERT(nullptr != histogram2);
+	GPOS_ASSERT(NULL != histogram1);
+	GPOS_ASSERT(NULL != histogram2);
 
 	BOOL has_buckets1 = (0 != histogram1->GetNumBuckets());
 	BOOL has_buckets2 = (0 != histogram2->GetNumBuckets());
@@ -1272,9 +1271,9 @@ CHistogram::ComputeJoinNDVRemainInfo(const CHistogram *histogram1,
 									 CDouble *result_distinct_remain,
 									 CDouble *result_freq_remain)
 {
-	GPOS_ASSERT(nullptr != histogram1);
-	GPOS_ASSERT(nullptr != histogram2);
-	GPOS_ASSERT(nullptr != join_buckets);
+	GPOS_ASSERT(NULL != histogram1);
+	GPOS_ASSERT(NULL != histogram2);
+	GPOS_ASSERT(NULL != join_buckets);
 
 	CDouble join_NDVs = CStatisticsUtils::GetNumDistinct(join_buckets);
 	CDouble join_freq = CStatisticsUtils::GetFrequency(join_buckets);
@@ -1427,7 +1426,7 @@ CHistogram::MakeUnionAllHistogramNormalize(CDouble rows,
 										   const CHistogram *histogram,
 										   CDouble rows_other) const
 {
-	GPOS_ASSERT(nullptr != histogram);
+	GPOS_ASSERT(NULL != histogram);
 	GPOS_ASSERT(this->IsValid());
 	GPOS_ASSERT(histogram->IsValid());
 
@@ -1442,7 +1441,7 @@ CHistogram::MakeUnionAllHistogramNormalize(CDouble rows,
 	BOOL bucket1_is_residual = false;
 	BOOL bucket2_is_residual = false;
 
-	while (nullptr != bucket1 && nullptr != bucket2)
+	while (NULL != bucket1 && NULL != bucket2)
 	{
 		if (bucket1->IsBefore(bucket2))
 		{
@@ -1465,8 +1464,8 @@ CHistogram::MakeUnionAllHistogramNormalize(CDouble rows,
 		else
 		{
 			GPOS_ASSERT(bucket1->Intersects(bucket2));
-			CBucket *bucket1_new = nullptr;
-			CBucket *bucket2_new = nullptr;
+			CBucket *bucket1_new = NULL;
+			CBucket *bucket2_new = NULL;
 			CDouble result_rows(0.0);
 			CBucket *merge_bucket = bucket1->SplitAndMergeBuckets(
 				m_mp, bucket2, rows, rows_other, &bucket1_new, &bucket2_new,
@@ -1486,8 +1485,8 @@ CHistogram::MakeUnionAllHistogramNormalize(CDouble rows,
 	const ULONG num_buckets1 = GetNumBuckets();
 	const ULONG num_buckets2 = histogram->GetNumBuckets();
 
-	GPOS_ASSERT_IFF(nullptr == bucket1, idx1 == num_buckets1);
-	GPOS_ASSERT_IFF(nullptr == bucket2, idx2 == num_buckets2);
+	GPOS_ASSERT_IFF(NULL == bucket1, idx1 == num_buckets1);
+	GPOS_ASSERT_IFF(NULL == bucket2, idx2 == num_buckets2);
 
 	idx1 = AddResidualUnionAllBucket(new_buckets, bucket1, rows, rows_new,
 									 bucket1_is_residual, idx1);
@@ -1539,7 +1538,7 @@ CHistogram::AddResidualUnionAllBucket(CBucketArray *histogram_buckets,
 									  CDouble rows_new, BOOL bucket_is_residual,
 									  ULONG index) const
 {
-	GPOS_ASSERT(nullptr != histogram_buckets);
+	GPOS_ASSERT(NULL != histogram_buckets);
 
 	if (bucket_is_residual)
 	{
@@ -1557,8 +1556,8 @@ CHistogram::AddBuckets(CMemoryPool *mp, const CBucketArray *src_buckets,
 					   CBucketArray *dest_buckets, CDouble rows_old,
 					   CDouble rows_new, ULONG begin, ULONG end)
 {
-	GPOS_ASSERT(nullptr != src_buckets);
-	GPOS_ASSERT(nullptr != dest_buckets);
+	GPOS_ASSERT(NULL != src_buckets);
+	GPOS_ASSERT(NULL != dest_buckets);
 	GPOS_ASSERT(begin <= end);
 	GPOS_ASSERT(end <= src_buckets->Size());
 
@@ -1693,7 +1692,7 @@ CHistogram::CombineBuckets(CMemoryPool *mp, CBucketArray *buckets,
 	// as we walk the bucket array sequentially.
 	CBitSet *indexes_to_merge = GPOS_NEW(mp) CBitSet(mp);
 	SAdjBucketBoundary *candidate_to_remove;
-	while (nullptr !=
+	while (NULL !=
 		   (candidate_to_remove = boundary_factors->RemoveBestElement()))
 	{
 		indexes_to_merge->ExchangeSet(candidate_to_remove->m_boundary_index);
@@ -1718,7 +1717,7 @@ CHistogram::CombineBuckets(CMemoryPool *mp, CBucketArray *buckets,
 		}
 		if (end_bucket_ix > ul)
 		{
-			CBucket *merged = nullptr;
+			CBucket *merged = NULL;
 			CBucket *bucket1 = (*buckets)[ul];
 			CBucket *bucket2 = (*buckets)[end_bucket_ix];
 
@@ -1750,12 +1749,7 @@ CHistogram::CombineBuckets(CMemoryPool *mp, CBucketArray *buckets,
 				CDouble(0.0) + CStatistics::Epsilon);
 #endif
 
-	// FIXME: the desired_num_buckets handling is broken for singleton buckets
-	// While it limits the number of buckets for non-singleton buckets, singleton buckets
-	// are not merged, and thus we can get cases where the number of result buckets is
-	// larger than the desired number of buckets
-	GPOS_ASSERT(result_buckets->Size() == desired_num_buckets ||
-				result_buckets->Size() == desired_num_buckets + 1);
+	GPOS_ASSERT(result_buckets->Size() == desired_num_buckets);
 	indexes_to_merge->Release();
 	boundary_factors->Release();
 	return result_buckets;
@@ -1763,12 +1757,13 @@ CHistogram::CombineBuckets(CMemoryPool *mp, CBucketArray *buckets,
 
 // cleanup residual buckets
 void
-CHistogram::CleanupResidualBucket(CBucket *bucket, BOOL bucket_is_residual)
+CHistogram::CleanupResidualBucket(CBucket *bucket,
+								  BOOL bucket_is_residual) const
 {
-	if (nullptr != bucket && bucket_is_residual)
+	if (NULL != bucket && bucket_is_residual)
 	{
 		GPOS_DELETE(bucket);
-		bucket = nullptr;
+		bucket = NULL;
 	}
 }
 
@@ -1776,10 +1771,10 @@ CHistogram::CleanupResidualBucket(CBucket *bucket, BOOL bucket_is_residual)
 CBucket *
 CHistogram::GetNextBucket(const CHistogram *histogram, CBucket *new_bucket,
 						  BOOL *result_bucket_is_residual,
-						  ULONG *current_bucket_index)
+						  ULONG *current_bucket_index) const
 {
-	GPOS_ASSERT(nullptr != histogram);
-	if (nullptr != new_bucket)
+	GPOS_ASSERT(NULL != histogram);
+	if (NULL != new_bucket)
 	{
 		*result_bucket_is_residual = true;
 		return new_bucket;
@@ -1798,7 +1793,7 @@ CHistogram::MakeUnionHistogramNormalize(CDouble rows,
 										CDouble rows_other,
 										CDouble *num_output_rows) const
 {
-	GPOS_ASSERT(nullptr != other_histogram);
+	GPOS_ASSERT(NULL != other_histogram);
 	GPOS_ASSERT(this->IsValid());
 	GPOS_ASSERT(other_histogram->IsValid());
 	if (!other_histogram->IsWellDefined() && !IsWellDefined())
@@ -1826,7 +1821,7 @@ CHistogram::MakeUnionHistogramNormalize(CDouble rows,
 	CDoubleArray *num_tuples_per_bucket = GPOS_NEW(m_mp) CDoubleArray(m_mp);
 
 	CDouble cumulative_num_rows(0.0);
-	while (nullptr != bucket1 && nullptr != bucket2)
+	while (NULL != bucket1 && NULL != bucket2)
 	{
 		if (bucket1->IsBefore(bucket2))
 		{
@@ -1851,9 +1846,9 @@ CHistogram::MakeUnionHistogramNormalize(CDouble rows,
 		else
 		{
 			GPOS_ASSERT(bucket1->Intersects(bucket2));
-			CBucket *bucket1_new = nullptr;
-			CBucket *bucket2_new = nullptr;
-			CBucket *merge_bucket = nullptr;
+			CBucket *bucket1_new = NULL;
+			CBucket *bucket2_new = NULL;
+			CBucket *merge_bucket = NULL;
 			CDouble result_rows(0.0);
 			merge_bucket = bucket1->SplitAndMergeBuckets(
 				m_mp, bucket2, rows, rows_other, &bucket1_new, &bucket2_new,
@@ -1878,8 +1873,8 @@ CHistogram::MakeUnionHistogramNormalize(CDouble rows,
 	const ULONG num_buckets1 = GetNumBuckets();
 	const ULONG num_buckets2 = other_histogram->GetNumBuckets();
 
-	GPOS_ASSERT_IFF(nullptr == bucket1, idx1 == num_buckets1);
-	GPOS_ASSERT_IFF(nullptr == bucket2, idx2 == num_buckets2);
+	GPOS_ASSERT_IFF(NULL == bucket1, idx1 == num_buckets1);
+	GPOS_ASSERT_IFF(NULL == bucket2, idx2 == num_buckets2);
 
 	idx1 = AddResidualUnionBucket(histogram_buckets, bucket1, rows,
 								  bucket1_is_residual, idx1,
@@ -1964,8 +1959,8 @@ CHistogram::AddResidualUnionBucket(CBucketArray *histogram_buckets,
 								   BOOL bucket_is_residual, ULONG index,
 								   CDoubleArray *dest_bucket_freqs) const
 {
-	GPOS_ASSERT(nullptr != histogram_buckets);
-	GPOS_ASSERT(nullptr != dest_bucket_freqs);
+	GPOS_ASSERT(NULL != histogram_buckets);
+	GPOS_ASSERT(NULL != dest_bucket_freqs);
 
 	if (!bucket_is_residual)
 	{
@@ -1986,8 +1981,8 @@ CHistogram::AddBuckets(CMemoryPool *mp, const CBucketArray *src_buckets,
 					   CBucketArray *dest_buckets, CDouble rows,
 					   CDoubleArray *dest_bucket_freqs, ULONG begin, ULONG end)
 {
-	GPOS_ASSERT(nullptr != src_buckets);
-	GPOS_ASSERT(nullptr != dest_buckets);
+	GPOS_ASSERT(NULL != src_buckets);
+	GPOS_ASSERT(NULL != dest_buckets);
 	GPOS_ASSERT(begin <= end);
 	GPOS_ASSERT(end <= src_buckets->Size());
 
@@ -2008,7 +2003,7 @@ CHistogram::operator[](ULONG pos) const
 	{
 		return (*m_histogram_buckets)[pos];
 	}
-	return nullptr;
+	return NULL;
 }
 
 // translate the histogram into a the dxl derived column statistics
@@ -2074,24 +2069,6 @@ CHistogram::GetRandomBucketIndex(ULONG *seed) const
 	return size - 1;
 }
 
-// Populate the sample ratio within bucket boundaries
-void
-CHistogram::GetSampleRate(DOUBLE left, DOUBLE right, DOUBLE *sample_rate,
-						  ULONG index)
-{
-	GPOS_CHECK_STACK_SIZE;
-
-	if (index >= GPOPT_SKEW_SAMPLE_SIZE)
-	{
-		return;
-	}
-
-	sample_rate[index] = (left + right) / 2;
-
-	GetSampleRate(left, (left + right) / 2, sample_rate, index * 2 - 1);
-	GetSampleRate((left + right) / 2, right, sample_rate, index * 2);
-}
-
 // estimate data skew by sampling histogram buckets,
 // the estimate value is >= 1.0, where 1.0 indicates no skew
 //
@@ -2107,50 +2084,26 @@ CHistogram::ComputeSkew()
 {
 	m_skew_was_measured = true;
 
-	if (0 == m_histogram_buckets->Size() ||
+	if (!IsNormalized() || 0 == m_histogram_buckets->Size() ||
 		!(*m_histogram_buckets)[0]->CanSample())
 	{
 		return;
 	}
 
-	if (!IsNormalized())
-	{
-		this->NormalizeHistogram();
-	}
+	// generate randomization seed from system time
+	TIMEVAL tv;
+	syslib::GetTimeOfDay(&tv, NULL /*timezone*/);
+	ULONG seed = CombineHashes((ULONG) tv.tv_sec, (ULONG) tv.tv_usec);
 
 	// generate a sample from histogram data, and compute sample mean
 	DOUBLE sample_mean = 0;
-	DOUBLE *samples = GPOS_NEW_ARRAY(m_mp, DOUBLE, GPOPT_SKEW_SAMPLE_SIZE);
-	DOUBLE *sample_rate = GPOS_NEW_ARRAY(m_mp, DOUBLE, GPOPT_SKEW_SAMPLE_SIZE);
-	sample_rate[0] = 0;
-	sample_rate[1] = 1;
-	// populate the sample rate array from the 3rd (index = 2) element onward
-	GetSampleRate(sample_rate[0], sample_rate[1], sample_rate, 2 /*index*/);
-
-	// start with the lowest frequency bucket
-	ULONG bucket_index = m_histogram_buckets->Size() - 1;
-	// start with bucket lower boundary
-	ULONG sample_index = 0;
-	CDouble accumulated_freq = 0;
+	DOUBLE samples[GPOPT_SKEW_SAMPLE_SIZE];
 	for (ULONG ul = 0; ul < GPOPT_SKEW_SAMPLE_SIZE; ul++)
 	{
+		ULONG bucket_index = GetRandomBucketIndex(&seed);
 		CBucket *bucket = (*m_histogram_buckets)[bucket_index];
-		samples[ul] = bucket->GetSample(sample_rate[sample_index]).Get();
+		samples[ul] = bucket->GetSample(&seed).Get();
 		sample_mean = sample_mean + samples[ul];
-		// iterate sample rate series
-		sample_index++;
-		DOUBLE filling_rate = (DOUBLE) ul / GPOPT_SKEW_SAMPLE_SIZE;
-
-		// compare the sample filling rate to the current bucket's frequency
-		// if enough samples are collected from this bucket
-		// reset the sample index to the lower boundary for the next bucket
-		if (filling_rate >= accumulated_freq + bucket->GetFrequency() &&
-			bucket_index > 0)
-		{
-			accumulated_freq = accumulated_freq + bucket->GetFrequency();
-			bucket_index--;
-			sample_index = 0;
-		}
 	}
 	sample_mean = (DOUBLE) sample_mean / GPOPT_SKEW_SAMPLE_SIZE;
 
@@ -2162,23 +2115,11 @@ CHistogram::ComputeSkew()
 		num2 = num2 + pow((samples[ul] - sample_mean), 2.0);
 		num3 = num3 + pow((samples[ul] - sample_mean), 3.0);
 	}
-
-	GPOS_DELETE_ARRAY(samples);
-	GPOS_DELETE_ARRAY(sample_rate);
-
-	// second moment: variance
 	DOUBLE moment2 = (DOUBLE)(num2 / GPOPT_SKEW_SAMPLE_SIZE);
-	// third moment: a/symmetry
 	DOUBLE moment3 = (DOUBLE)(num3 / GPOPT_SKEW_SAMPLE_SIZE);
 
-	if (moment2 == 0)
-	{
-		m_skew = pow(GPOPT_SKEW_SAMPLE_SIZE, 0.5);
-	}
-	else
-	{
-		m_skew = CDouble(1.0 + fabs(moment3 / pow(moment2, 1.5)));
-	}
+	// set skew measure
+	m_skew = CDouble(1.0 + fabs(moment3 / pow(moment2, 1.5)));
 }
 
 // create the default histogram for a given column reference
@@ -2186,7 +2127,7 @@ CHistogram *
 CHistogram::MakeDefaultHistogram(CMemoryPool *mp, CColRef *col_ref,
 								 BOOL is_empty)
 {
-	GPOS_ASSERT(nullptr != col_ref);
+	GPOS_ASSERT(NULL != col_ref);
 
 	if (IMDType::EtiBool == col_ref->RetrieveType()->GetDatumType() &&
 		!is_empty)
@@ -2219,7 +2160,7 @@ CHistogram::MakeDefaultBoolHistogram(CMemoryPool *mp)
 BOOL
 CHistogram::NeedsNDVBasedCardEstimationForEq(const CHistogram *histogram)
 {
-	GPOS_ASSERT(nullptr != histogram);
+	GPOS_ASSERT(NULL != histogram);
 
 	if (0 == histogram->GetNumBuckets())
 	{
@@ -2281,10 +2222,10 @@ CHistogram::AddDummyHistogramAndWidthInfo(
 	UlongToHistogramMap *output_histograms, UlongToDoubleMap *output_col_widths,
 	const ULongPtrArray *columns, BOOL is_empty)
 {
-	GPOS_ASSERT(nullptr != col_factory);
-	GPOS_ASSERT(nullptr != output_histograms);
-	GPOS_ASSERT(nullptr != output_col_widths);
-	GPOS_ASSERT(nullptr != columns);
+	GPOS_ASSERT(NULL != col_factory);
+	GPOS_ASSERT(NULL != output_histograms);
+	GPOS_ASSERT(NULL != output_col_widths);
+	GPOS_ASSERT(NULL != columns);
 
 	const ULONG count = columns->Size();
 	// for computed aggregates, we're not going to be very smart right now
@@ -2293,24 +2234,16 @@ CHistogram::AddDummyHistogramAndWidthInfo(
 		ULONG colid = *(*columns)[ul];
 
 		CColRef *col_ref = col_factory->LookupColRef(colid);
-		GPOS_ASSERT(nullptr != col_ref);
+		GPOS_ASSERT(NULL != col_ref);
 
-		if (nullptr == output_histograms->Find(&colid))
-		{
-			CHistogram *histogram =
-				CHistogram::MakeDefaultHistogram(mp, col_ref, is_empty);
-			output_histograms->Insert(GPOS_NEW(mp) ULONG(colid), histogram);
-		}
+		CHistogram *histogram =
+			CHistogram::MakeDefaultHistogram(mp, col_ref, is_empty);
+		output_histograms->Insert(GPOS_NEW(mp) ULONG(colid), histogram);
 
-
-
-		if (nullptr == output_col_widths->Find(&colid))
-		{
-			CDouble width =
-				CStatisticsUtils::DefaultColumnWidth(col_ref->RetrieveType());
-			output_col_widths->Insert(GPOS_NEW(mp) ULONG(colid),
-									  GPOS_NEW(mp) CDouble(width));
-		}
+		CDouble width =
+			CStatisticsUtils::DefaultColumnWidth(col_ref->RetrieveType());
+		output_col_widths->Insert(GPOS_NEW(mp) ULONG(colid),
+								  GPOS_NEW(mp) CDouble(width));
 	}
 }
 
@@ -2320,8 +2253,8 @@ CHistogram::AddEmptyHistogram(CMemoryPool *mp,
 							  UlongToHistogramMap *output_histograms,
 							  UlongToHistogramMap *input_histograms)
 {
-	GPOS_ASSERT(nullptr != output_histograms);
-	GPOS_ASSERT(nullptr != input_histograms);
+	GPOS_ASSERT(NULL != output_histograms);
+	GPOS_ASSERT(NULL != input_histograms);
 
 	UlongToHistogramMapIter col_hist_mapping(input_histograms);
 	while (col_hist_mapping.Advance())

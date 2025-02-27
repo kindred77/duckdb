@@ -22,13 +22,12 @@
 #include "gpopt/operators/CScalarArrayCmp.h"
 #include "gpopt/operators/CScalarConst.h"
 #include "naucrates/dxl/xml/dxltokens.h"
-#include "naucrates/md/IMDIndex.h"
 #include "naucrates/traceflags/traceflags.h"
 
 namespace gpopt
 {
 // range array
-using CRangeArray = CDynamicPtrArray<CRange, CleanupRelease>;
+typedef CDynamicPtrArray<CRange, CleanupRelease> CRangeArray;
 
 using namespace gpos;
 using namespace gpmd;
@@ -56,22 +55,23 @@ private:
 	// does the interval include the null value
 	BOOL m_fIncludesNull;
 
+	// hidden copy ctor
+	CConstraintInterval(const CConstraintInterval &);
+
 	// adds ranges from a source array to a destination array, starting
 	// at the range with the given index
-	static void AddRemainingRanges(CMemoryPool *mp, CRangeArray *pdrgprngSrc,
-								   ULONG ulStart, CRangeArray *pdrgprngDest);
+	void AddRemainingRanges(CMemoryPool *mp, CRangeArray *pdrgprngSrc,
+							ULONG ulStart, CRangeArray *pdrgprngDest);
 
 	// append the given range to the array or extend the last element
-	static void AppendOrExtend(CMemoryPool *mp, CRangeArray *pdrgprng,
-							   CRange *prange);
+	void AppendOrExtend(CMemoryPool *mp, CRangeArray *pdrgprng, CRange *prange);
 
 	// difference between two ranges on the left side only -
 	// any difference on the right side is reported as residual range
-	static CRange *PrangeDiffWithRightResidual(CMemoryPool *mp,
-											   CRange *prangeFirst,
-											   CRange *prangeSecond,
-											   CRange **pprangeResidual,
-											   CRangeArray *pdrgprngResidual);
+	CRange *PrangeDiffWithRightResidual(CMemoryPool *mp, CRange *prangeFirst,
+										CRange *prangeSecond,
+										CRange **pprangeResidual,
+										CRangeArray *pdrgprngResidual);
 
 	// type of this interval
 	IMDId *MdidType();
@@ -84,8 +84,7 @@ private:
 	// create interval from scalar comparison expression
 	static CConstraintInterval *PciIntervalFromScalarCmp(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+		BOOL infer_nulls_as = false);
 
 	static CConstraintInterval *PciIntervalFromScalarIDF(CMemoryPool *mp,
 														 CExpression *pexpr,
@@ -94,33 +93,21 @@ private:
 	// create interval from scalar bool operator
 	static CConstraintInterval *PciIntervalFromScalarBoolOp(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+		BOOL infer_nulls_as = false);
 
 	// create interval from scalar bool AND
 	static CConstraintInterval *PciIntervalFromScalarBoolAnd(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+		BOOL infer_nulls_as = false);
 
 	// create interval from scalar bool OR
 	static CConstraintInterval *PciIntervalFromScalarBoolOr(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+		BOOL infer_nulls_as = false);
 
 	// create interval from scalar null test
 	static CConstraintInterval *PciIntervalFromScalarNullTest(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref);
-
-	// create interval from scalar boolean test
-	static CConstraintInterval *PciIntervalFromScalarBooleanTest(
-		CMemoryPool *mp, CExpression *pexpr, CColRef *colref);
-
-	// create interval from bool scalar ident
-	static CConstraintInterval *PciIntervalFromScalarIdent(CMemoryPool *mp,
-														   CColRef *colref,
-														   BOOL infer_nulls_as);
 
 	// creates a range like [x,x] where x is a constant
 	static CRangeArray *PciRangeFromColConstCmp(CMemoryPool *mp,
@@ -131,18 +118,16 @@ private:
 	CExpression *PexprConstructArrayScalar(CMemoryPool *mp, bool isIn) const;
 
 public:
-	CConstraintInterval(const CConstraintInterval &) = delete;
-
 	// ctor
 	CConstraintInterval(CMemoryPool *mp, const CColRef *colref,
 						CRangeArray *pdrgprng, BOOL is_null);
 
 	// dtor
-	~CConstraintInterval() override;
+	virtual ~CConstraintInterval();
 
 	// constraint type accessor
-	EConstraintType
-	Ect() const override
+	virtual EConstraintType
+	Ect() const
 	{
 		return CConstraint::EctInterval;
 	}
@@ -169,33 +154,30 @@ public:
 	}
 
 	// is this constraint a contradiction
-	BOOL FContradiction() const override;
+	virtual BOOL FContradiction() const;
 
 	// is this interval unbounded
-	BOOL IsConstraintUnbounded() const override;
+	virtual BOOL IsConstraintUnbounded() const;
 
 	// check if there is a constraint on the given column
-	BOOL
-	FConstraint(const CColRef *colref) const override
+	virtual BOOL
+	FConstraint(const CColRef *colref) const
 	{
 		return m_pcr == colref;
 	}
 
 	// check if constraint is on the gp_segment_id column
-	BOOL
-	FConstraintOnSegmentId() const override
+	virtual BOOL
+	FConstraintOnSegmentId() const
 	{
 		return m_pcr->IsSystemCol() &&
 			   m_pcr->Name().Equals(
 				   CDXLTokens::GetDXLTokenStr(EdxltokenGpSegmentIdColName));
 	}
 
-	CConstraint *GetConstraintOnSegmentId() const override;
-
 	// return a copy of the constraint with remapped columns
-	CConstraint *PcnstrCopyWithRemappedColumns(CMemoryPool *mp,
-											   UlongToColRefMap *colref_mapping,
-											   BOOL must_exist) override;
+	virtual CConstraint *PcnstrCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// interval intersection
 	CConstraintInterval *PciIntersect(CMemoryPool *mp,
@@ -215,20 +197,20 @@ public:
 	BOOL FContainsInterval(CMemoryPool *mp, CConstraintInterval *pci);
 
 	// scalar expression
-	CExpression *PexprScalar(CMemoryPool *mp) override;
+	virtual CExpression *PexprScalar(CMemoryPool *mp);
 
 	// scalar expression  which will be a disjunction
 	CExpression *PexprConstructDisjunctionScalar(CMemoryPool *mp) const;
 
 	// return constraint on a given column
-	CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref);
 
 	// return constraint on a given column set
-	CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs) override;
+	virtual CConstraint *Pcnstr(CMemoryPool *mp, CColRefSet *pcrs);
 
 	// return a clone of the constraint for a different column
-	CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
-									  CColRef *colref) const override;
+	virtual CConstraint *PcnstrRemapForColumn(CMemoryPool *mp,
+											  CColRef *colref) const;
 
 	// converts to an array in expression
 	bool FConvertsToNotIn() const;
@@ -237,7 +219,7 @@ public:
 	bool FConvertsToIn() const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// create unbounded interval
 	static CConstraintInterval *PciUnbounded(CMemoryPool *mp,
@@ -257,13 +239,12 @@ public:
 	// create interval from scalar expression
 	static CConstraintInterval *PciIntervalFromScalarExpr(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+		BOOL infer_nulls_as = false);
 
 	// create interval from any general constraint that references
 	// only one column
 	static CConstraintInterval *PciIntervalFromConstraint(
-		CMemoryPool *mp, CConstraint *pcnstr, CColRef *colref = nullptr);
+		CMemoryPool *mp, CConstraint *pcnstr, CColRef *colref = NULL);
 
 	// generate a ConstraintInterval from the given expression
 	static CConstraintInterval *PcnstrIntervalFromScalarArrayCmp(
@@ -286,8 +267,8 @@ operator<<(IOstream &os, const CConstraintInterval *interval)
 	return interval->OsPrint(os);
 }
 
-using CConstraintIntervalArray =
-	CDynamicPtrArray<CConstraintInterval, CleanupRelease>;
+typedef CDynamicPtrArray<CConstraintInterval, CleanupRelease>
+	CConstraintIntervalArray;
 }  // namespace gpopt
 
 #endif	// !GPOPT_CConstraintInterval_H

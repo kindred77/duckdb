@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal, Inc.
 //
 //	Left outer index nested-loops join operator
 //---------------------------------------------------------------------------
@@ -22,37 +22,36 @@ private:
 	// a copy of the original join predicate that has been pushed down to the inner side
 	CExpression *m_origJoinPred;
 
-public:
-	CPhysicalLeftOuterIndexNLJoin(const CPhysicalLeftOuterIndexNLJoin &) =
-		delete;
+	// private copy ctor
+	CPhysicalLeftOuterIndexNLJoin(const CPhysicalLeftOuterIndexNLJoin &);
 
+public:
 	// ctor
 	CPhysicalLeftOuterIndexNLJoin(CMemoryPool *mp, CColRefArray *colref_array,
 								  CExpression *origJoinPred);
 
 	// dtor
-	~CPhysicalLeftOuterIndexNLJoin() override;
+	virtual ~CPhysicalLeftOuterIndexNLJoin();
 
 	CEnfdProp::EPropEnforcingType EpetDistribution(
-		CExpressionHandle &exprhdl,
-		const CEnfdDistribution *ped) const override;
+		CExpressionHandle &exprhdl, const CEnfdDistribution *ped) const;
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftOuterIndexNLJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftOuterIndexNLJoin";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// outer column references accessor
 	CColRefArray *
@@ -62,20 +61,21 @@ public:
 	}
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
-	CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						   CReqdPropPlan *prppInput, ULONG child_index,
-						   CDrvdPropArray *pdrgpdpCtxt,
-						   ULONG ulDistrReq) override;
+	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CDrvdPropArray *pdrgpdpCtxt,
+								   ULONG ulDistrReq);
 
 	// execution order of children
-	EChildExecOrder
-	Eceo() const override
+	virtual EChildExecOrder
+	Eceo() const
 	{
 		// we optimize inner (right) child first to be able to match child hashed distributions
 		return EceoRightToLeft;

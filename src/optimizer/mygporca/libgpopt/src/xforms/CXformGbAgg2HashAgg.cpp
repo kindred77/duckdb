@@ -13,7 +13,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CLogicalGbAgg.h"
 #include "gpopt/operators/CPatternLeaf.h"
 #include "gpopt/operators/CPhysicalHashAgg.h"
@@ -94,7 +93,7 @@ void
 CXformGbAgg2HashAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 							   CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -121,9 +120,9 @@ CXformGbAgg2HashAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	pexprScalar->AddRef();
 
 	CColRefArray *pdrgpcrArgDQA = popAgg->PdrgpcrArgDQA();
-	if (pdrgpcrArgDQA != nullptr && 0 != pdrgpcrArgDQA->Size())
+	if (pdrgpcrArgDQA != NULL && 0 != pdrgpcrArgDQA->Size())
 	{
-		GPOS_ASSERT(nullptr != pdrgpcrArgDQA);
+		GPOS_ASSERT(NULL != pdrgpcrArgDQA);
 		pdrgpcrArgDQA->AddRef();
 	}
 
@@ -151,7 +150,7 @@ CXformGbAgg2HashAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 //
 //---------------------------------------------------------------------------
 BOOL
-CXformGbAgg2HashAgg::FApplicable(CExpression *pexpr)
+CXformGbAgg2HashAgg::FApplicable(CExpression *pexpr) const
 {
 	CExpression *pexprPrjList = (*pexpr)[1];
 	ULONG arity = pexprPrjList->Arity();

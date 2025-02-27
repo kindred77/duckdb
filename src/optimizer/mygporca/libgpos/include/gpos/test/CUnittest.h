@@ -79,7 +79,7 @@ private:
 		CAutoConfig(void (*pfConfig)(), void (*pfCleanup)(), ULONG &ulNested)
 			: m_pfCleanup(pfCleanup), m_ulNested(ulNested)
 		{
-			if (nullptr != pfConfig && 0 == m_ulNested++)
+			if (NULL != pfConfig && 0 == m_ulNested++)
 			{
 				pfConfig();
 			}
@@ -88,7 +88,7 @@ private:
 		// dtor
 		~CAutoConfig()
 		{
-			if (nullptr != m_pfCleanup && 0 == --m_ulNested)
+			if (NULL != m_pfCleanup && 0 == --m_ulNested)
 			{
 				m_pfCleanup();
 			}
@@ -133,6 +133,14 @@ private:
 
 	// execution of individual UT
 	static GPOS_RESULT EresExecTest(const CUnittest &ut);
+
+	// check if exception was injected by simulation
+	static BOOL FSimulated(CException ex);
+
+	// top-level loop around execution of individual UT;
+	// used for exception simulation;
+	static GPOS_RESULT EresExecLoop(const CUnittest &ut);
+
 
 public:
 	// ctors

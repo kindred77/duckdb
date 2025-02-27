@@ -35,21 +35,22 @@ class CXMLSerializer;
 class CDXLPhysical : public CDXLOperator
 {
 private:
-public:
-	CDXLPhysical(const CDXLPhysical &) = delete;
+	// private copy ctor
+	CDXLPhysical(const CDXLPhysical &);
 
+public:
 	// ctor/dtor
 	explicit CDXLPhysical(CMemoryPool *mp);
 
-	~CDXLPhysical() override;
+	virtual ~CDXLPhysical();
 
 	// Get operator type
-	Edxloptype GetDXLOperatorType() const override;
+	Edxloptype GetDXLOperatorType() const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

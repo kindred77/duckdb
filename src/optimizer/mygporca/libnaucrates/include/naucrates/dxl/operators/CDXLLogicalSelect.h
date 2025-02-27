@@ -29,25 +29,26 @@ namespace gpdxl
 class CDXLLogicalSelect : public CDXLLogical
 {
 private:
-public:
-	CDXLLogicalSelect(CDXLLogicalSelect &) = delete;
+	// private copy ctor
+	CDXLLogicalSelect(CDXLLogicalSelect &);
 
+public:
 	// ctor/dtor
 	explicit CDXLLogicalSelect(CMemoryPool *);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLLogicalSelect *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalSelect == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalSelect *>(dxl_op);
@@ -56,7 +57,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

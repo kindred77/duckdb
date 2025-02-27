@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //      Greenplum Database
-//      Copyright (C) 2014 VMware, Inc. or its affiliates.
+//      Copyright (C) 2014 Pivotal Inc.
 //
 //      @filename:
 //              CUpperBoundNDVs.cpp
@@ -39,7 +39,7 @@ CUpperBoundNDVs::CopyUpperBoundNDVWithRemap(
 	{
 		ULONG colid = column_refset_iter.Pcr()->Id();
 		CColRef *column_ref = colid_to_colref_map->Find(&colid);
-		if (nullptr != column_ref)
+		if (NULL != column_ref)
 		{
 			column_refset_copy->Include(column_ref);
 		}
@@ -57,7 +57,7 @@ CUpperBoundNDVs::CopyUpperBoundNDVWithRemap(
 
 	column_refset_copy->Release();
 
-	return nullptr;
+	return NULL;
 }
 
 
@@ -108,7 +108,7 @@ CUpperBoundNDVs::OsPrint(IOstream &os) const
 {
 	os << "{" << std::endl;
 	m_column_refset->OsPrint(os);
-	os << " Upper Bound of NDVs " << UpperBoundNDVs() << std::endl;
+	os << " Upper Bound of NDVs" << UpperBoundNDVs() << std::endl;
 	os << "}" << std::endl;
 
 	return os;

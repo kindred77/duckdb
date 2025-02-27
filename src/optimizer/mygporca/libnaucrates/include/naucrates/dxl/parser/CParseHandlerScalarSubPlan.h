@@ -41,8 +41,11 @@ private:
 	// subplan type
 	EdxlSubPlanType m_dxl_subplan_type;
 
+	// private copy ctor
+	CParseHandlerScalarSubPlan(const CParseHandlerScalarSubPlan &);
+
 	// map character sequence to subplan type
-	static EdxlSubPlanType GetDXLSubplanType(const XMLCh *xml_subplan_type);
+	EdxlSubPlanType GetDXLSubplanType(const XMLCh *xml_subplan_type);
 
 	// process the start of an element
 	void StartElement(
@@ -50,18 +53,16 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerScalarSubPlan(const CParseHandlerScalarSubPlan &) = delete;
-
 	// ctor
 	CParseHandlerScalarSubPlan(CMemoryPool *mp,
 							   CParseHandlerManager *parse_handler_mgr,

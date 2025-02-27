@@ -41,26 +41,21 @@ public:
 	enum EmdindexType
 	{
 		EmdindBtree,   // btree
-		EmdindHash,	   // hash
 		EmdindBitmap,  // bitmap
 		EmdindGist,	   // gist using btree or bitmap
 		EmdindGin,	   // gin using btree or bitmap
-		EmdindBrin,	   // brin
 		EmdindSentinel
 	};
 
 	// object type
-	Emdtype
-	MDType() const override
+	virtual Emdtype
+	MDType() const
 	{
 		return EmdtInd;
 	}
 
 	// is the index clustered
 	virtual BOOL IsClustered() const = 0;
-
-	// is the index partitioned
-	virtual BOOL IsPartitioned() const = 0;
 
 	// index type
 	virtual EmdindexType IndexType() const = 0;
@@ -83,6 +78,9 @@ public:
 	// return the position of the included column
 	virtual ULONG GetIncludedColPos(ULONG column) const = 0;
 
+	// part constraint
+	virtual IMDPartConstraint *MDPartConstraint() const = 0;
+
 	// type id of items returned by the index
 	virtual IMDId *GetIndexRetItemTypeMdid() const = 0;
 
@@ -90,9 +88,6 @@ public:
 	// at the specified position
 	virtual BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
 							  ULONG key_pos) const = 0;
-
-	// child index oids
-	virtual IMdIdArray *ChildIndexMdids() const = 0;
 
 	// index type as a string value
 	static const CWStringConst *GetDXLStr(EmdindexType index_type);

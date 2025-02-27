@@ -47,21 +47,21 @@ template <class T, class R, class U, ULONG (*HashFn)(const T *),
 class CTreeMap
 {
 	// array of source pointers (sources owned by 3rd party)
-	using DrgPt = CDynamicPtrArray<T, CleanupNULL>;
+	typedef CDynamicPtrArray<T, CleanupNULL> DrgPt;
 
 	// array of result pointers (results owned by the tree we unrank)
-	using DrgPr = CDynamicPtrArray<R, CleanupRelease<R>>;
+	typedef CDynamicPtrArray<R, CleanupRelease<R> > DrgPr;
 
 	// generic rehydrate function
-	using PrFn = R *(*) (CMemoryPool *, T *, DrgPr *, U *);
+	typedef R *(*PrFn)(CMemoryPool *, T *, DrgPr *, U *);
 
 private:
 	// fwd declaration
 	class CTreeNode;
 
 	// arrays of internal nodes
-	using CTreeNodeArray = CDynamicPtrArray<CTreeNode, CleanupNULL>;
-	using CTreeNode2dArray = CDynamicPtrArray<CTreeNodeArray, CleanupRelease>;
+	typedef CDynamicPtrArray<CTreeNode, CleanupNULL> CTreeNodeArray;
+	typedef CDynamicPtrArray<CTreeNodeArray, CleanupRelease> CTreeNode2dArray;
 
 	//---------------------------------------------------------------------------
 	//	@class:
@@ -91,12 +91,14 @@ private:
 			  m_ulChildIndex(child_index),
 			  m_ptChild(ptChild)
 		{
-			GPOS_ASSERT(nullptr != ptParent);
-			GPOS_ASSERT(nullptr != ptChild);
+			GPOS_ASSERT(NULL != ptParent);
+			GPOS_ASSERT(NULL != ptChild);
 		}
 
 		// dtor
-		virtual ~STreeLink() = default;
+		virtual ~STreeLink()
+		{
+		}
 
 		// hash function
 		static ULONG
@@ -193,7 +195,7 @@ private:
 			CTreeNodeArray *pdrgptn = (*m_pdrgdrgptn)[ulChild];
 			ULONG ulCandidates = pdrgptn->Size();
 
-			CTreeNode *ptn = nullptr;
+			CTreeNode *ptn = NULL;
 
 			for (ULONG ul = 0; ul < ulCandidates; ul++)
 			{
@@ -209,7 +211,7 @@ private:
 				ullRank -= ullLocalCount;
 			}
 
-			GPOS_ASSERT(nullptr != ptn);
+			GPOS_ASSERT(NULL != ptn);
 			return ptn->PrUnrank(mp, prfn, pU, ullRank);
 		}
 
@@ -219,7 +221,7 @@ private:
 			: m_mp(mp),
 			  m_ul(ul),
 			  m_value(value),
-			  m_pdrgdrgptn(nullptr),
+			  m_pdrgdrgptn(NULL),
 			  m_ullCount(gpos::ullong_max),
 			  m_ulIncoming(0),
 			  m_ens(EnsUncounted)
@@ -254,7 +256,7 @@ private:
 
 			// insert to appropriate array
 			CTreeNodeArray *pdrg = (*m_pdrgdrgptn)[ulPos];
-			GPOS_ASSERT(nullptr != pdrg);
+			GPOS_ASSERT(NULL != pdrg);
 			pdrg->Append(ptn);
 		}
 
@@ -323,7 +325,7 @@ private:
 		{
 			GPOS_CHECK_STACK_SIZE;
 
-			R *pr = nullptr;
+			R *pr = NULL;
 
 			if (0 == this->m_ul)
 			{
@@ -402,15 +404,17 @@ private:
 	CTreeNode *m_ptnRoot;
 
 	// map of all nodes
-	using TMap = gpos::CHashMap<T, CTreeNode, HashFn, EqFn, CleanupNULL,
-								CleanupDelete<CTreeNode>>;
-	using TMapIter = gpos::CHashMapIter<T, CTreeNode, HashFn, EqFn, CleanupNULL,
-										CleanupDelete<CTreeNode>>;
+	typedef gpos::CHashMap<T, CTreeNode, HashFn, EqFn, CleanupNULL,
+						   CleanupDelete<CTreeNode> >
+		TMap;
+	typedef gpos::CHashMapIter<T, CTreeNode, HashFn, EqFn, CleanupNULL,
+							   CleanupDelete<CTreeNode> >
+		TMapIter;
 
 	// map of created links
-	using LinkMap =
-		CHashMap<STreeLink, BOOL, STreeLink::HashValue, STreeLink::Equals,
-				 CleanupDelete<STreeLink>, CleanupDelete<BOOL>>;
+	typedef CHashMap<STreeLink, BOOL, STreeLink::HashValue, STreeLink::Equals,
+					 CleanupDelete<STreeLink>, CleanupDelete<BOOL> >
+		LinkMap;
 
 	TMap *m_ptmap;
 
@@ -424,10 +428,10 @@ private:
 	CTreeNode *
 	Ptn(const T *value)
 	{
-		GPOS_ASSERT(nullptr != value);
-		CTreeNode *ptn = m_ptmap->Find(value);
+		GPOS_ASSERT(NULL != value);
+		CTreeNode *ptn = const_cast<CTreeNode *>(m_ptmap->Find(value));
 
-		if (nullptr == ptn)
+		if (NULL == ptn)
 		{
 			ptn = GPOS_NEW(m_mp) CTreeNode(m_mp, ++m_ulCountNodes, value);
 			(void) m_ptmap->Insert(const_cast<T *>(value), ptn);
@@ -446,19 +450,19 @@ public:
 		  m_ulCountNodes(0),
 		  m_ulCountLinks(0),
 		  m_prfn(prfn),
-		  m_ptnRoot(nullptr),
-		  m_ptmap(nullptr),
-		  m_plinkmap(nullptr)
+		  m_ptnRoot(NULL),
+		  m_ptmap(NULL),
+		  m_plinkmap(NULL)
 	{
-		GPOS_ASSERT(nullptr != mp);
-		GPOS_ASSERT(nullptr != prfn);
+		GPOS_ASSERT(NULL != mp);
+		GPOS_ASSERT(NULL != prfn);
 
 		m_ptmap = GPOS_NEW(mp) TMap(mp);
 		m_plinkmap = GPOS_NEW(mp) LinkMap(mp);
 
 		// insert dummy node as global root -- the only node with NULL payload
 		m_ptnRoot =
-			GPOS_NEW(mp) CTreeNode(mp, 0 /* ulCounter */, nullptr /* value */);
+			GPOS_NEW(mp) CTreeNode(mp, 0 /* ulCounter */, NULL /* value */);
 	}
 
 	// dtor
@@ -478,7 +482,7 @@ public:
 
 		// exit function if link already exists
 		STreeLink *ptlink = GPOS_NEW(m_mp) STreeLink(ptParent, ulPos, ptChild);
-		if (nullptr != m_plinkmap->Find(ptlink))
+		if (NULL != m_plinkmap->Find(ptlink))
 		{
 			GPOS_DELETE(ptlink);
 			return;
@@ -491,7 +495,9 @@ public:
 		++m_ulCountLinks;
 
 		// add created link to links map
-		BOOL fInserted GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+		BOOL fInserted =
+#endif	// GPOS_DEBUG
 			m_plinkmap->Insert(ptlink, GPOS_NEW(m_mp) BOOL(true));
 		GPOS_ASSERT(fInserted);
 	}
@@ -562,7 +568,7 @@ public:
 	UllCount(const T *value)
 	{
 		CTreeNode *ptn = m_ptmap->Find(value);
-		GPOS_ASSERT(nullptr != ptn);
+		GPOS_ASSERT(NULL != ptn);
 
 		return ptn->UllCount();
 	}

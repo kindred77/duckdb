@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		COptimizerConfig.cpp
@@ -40,12 +40,12 @@ COptimizerConfig::COptimizerConfig(CEnumeratorConfig *pec,
 	  m_hint(phint),
 	  m_window_oids(pwindowoids)
 {
-	GPOS_ASSERT(nullptr != pec);
-	GPOS_ASSERT(nullptr != stats_config);
-	GPOS_ASSERT(nullptr != pcteconf);
-	GPOS_ASSERT(nullptr != m_cost_model);
-	GPOS_ASSERT(nullptr != phint);
-	GPOS_ASSERT(nullptr != m_window_oids);
+	GPOS_ASSERT(NULL != pec);
+	GPOS_ASSERT(NULL != stats_config);
+	GPOS_ASSERT(NULL != pcteconf);
+	GPOS_ASSERT(NULL != m_cost_model);
+	GPOS_ASSERT(NULL != phint);
+	GPOS_ASSERT(NULL != m_window_oids);
 }
 
 //---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ COptimizerConfig::PoconfDefault(CMemoryPool *mp)
 COptimizerConfig *
 COptimizerConfig::PoconfDefault(CMemoryPool *mp, ICostModel *pcm)
 {
-	GPOS_ASSERT(nullptr != pcm);
+	GPOS_ASSERT(NULL != pcm);
 
 	return GPOS_NEW(mp) COptimizerConfig(
 		GPOS_NEW(mp) CEnumeratorConfig(mp, 0 /*plan_id*/, 0 /*ullSamples*/),
@@ -116,8 +116,8 @@ void
 COptimizerConfig::Serialize(CMemoryPool *mp, CXMLSerializer *xml_serializer,
 							CBitSet *pbsTrace) const
 {
-	GPOS_ASSERT(nullptr != xml_serializer);
-	GPOS_ASSERT(nullptr != pbsTrace);
+	GPOS_ASSERT(NULL != xml_serializer);
+	GPOS_ASSERT(NULL != pbsTrace);
 
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
@@ -186,6 +186,9 @@ COptimizerConfig::Serialize(CMemoryPool *mp, CXMLSerializer *xml_serializer,
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenHint));
 	xml_serializer->AddAttribute(
+		CDXLTokens::GetDXLTokenStr(EdxltokenMinNumOfPartsToRequireSortOnInsert),
+		m_hint->UlMinNumOfPartsToRequireSortOnInsert());
+	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(
 			EdxltokenJoinArityForAssociativityCommutativity),
 		m_hint->UlJoinArityForAssociativityCommutativity());
@@ -207,9 +210,6 @@ COptimizerConfig::Serialize(CMemoryPool *mp, CXMLSerializer *xml_serializer,
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenXformBindThreshold),
 		m_hint->UlXformBindThreshold());
-	xml_serializer->AddAttribute(
-		CDXLTokens::GetDXLTokenStr(gpdxl::EdxltokenSkewFactor),
-		m_hint->UlSkewFactor());
 	xml_serializer->CloseElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenHint));

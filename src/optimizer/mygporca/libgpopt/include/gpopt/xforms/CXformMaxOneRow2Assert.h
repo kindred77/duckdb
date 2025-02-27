@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CXformMaxOneRow2Assert.h
@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformMaxOneRow2Assert : public CXformExploration
 {
 private:
-public:
-	CXformMaxOneRow2Assert(const CXformMaxOneRow2Assert &) = delete;
+	// private copy ctor
+	CXformMaxOneRow2Assert(const CXformMaxOneRow2Assert &);
 
+public:
 	// ctor
 	explicit CXformMaxOneRow2Assert(CMemoryPool *mp);
 
 	// dtor
-	~CXformMaxOneRow2Assert() override = default;
+	virtual ~CXformMaxOneRow2Assert()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfMaxOneRow2Assert;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformMaxOneRow2Assert";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformMaxOneRow2Assert
 }  // namespace gpopt

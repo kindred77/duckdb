@@ -30,6 +30,9 @@ namespace gpopt
 class COrderedAggPreprocessor
 {
 private:
+	// private copy ctor
+	COrderedAggPreprocessor(const COrderedAggPreprocessor &);
+
 	// iterate over project elements and split elements between Ordered Aggs
 	// list, and Others list
 	static void SplitPrjList(CMemoryPool *mp, CExpression *pexprInputAggPrj,
@@ -54,16 +57,13 @@ private:
 	static CExpression *PexprFinalAgg(CMemoryPool *mp,
 									  CExpression *pexprAggFunc,
 									  CColRef *arg_col_ref,
-									  CColRef *total_count_colref,
-									  CColRef *peer_count_colref);
+									  CColRef *total_count_colref);
 
 	// transform sequence project expression into an inner join expression
 	static CExpression *PexprInputAggPrj2Join(CMemoryPool *mp,
 											  CExpression *pexprInputAggPrj);
 
 public:
-	COrderedAggPreprocessor(const COrderedAggPreprocessor &) = delete;
-
 	// main driver
 	static CExpression *PexprPreprocess(CMemoryPool *mp, CExpression *pexpr);
 

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CWindowPreprocessor.h
@@ -30,8 +30,10 @@ namespace gpopt
 class CWindowPreprocessor
 {
 private:
-	// iterate over project elements and split them elements between Distinct Aggs
-	// list, and Others list
+	// private copy ctor
+	CWindowPreprocessor(const CWindowPreprocessor &);
+
+	// iterate over project elements and split them elements between Distinct Aggs list, and Others list
 	static void SplitPrjList(CMemoryPool *mp, CExpression *pexprSeqPrj,
 							 CExpressionArray **ppdrgpexprDistinctAggsPrjElems,
 							 CExpressionArray **ppdrgpexprOtherPrjElems,
@@ -45,8 +47,7 @@ private:
 							CExpression **ppexprGbAgg,
 							CExpression **ppexprOutputSeqPrj);
 
-	// create a CTE with two consumers using the child expression of Sequence
-	// Project
+	// create a CTE with two consumers using the child expression of Sequence Project
 	static void CreateCTE(CMemoryPool *mp, CExpression *pexprSeqPrj,
 						  CExpression **ppexprFirstConsumer,
 						  CExpression **ppexprSecondConsumer);
@@ -59,8 +60,6 @@ private:
 										 CExpression *pexprSeqPrj);
 
 public:
-	CWindowPreprocessor(const CWindowPreprocessor &) = delete;
-
 	// main driver
 	static CExpression *PexprPreprocess(CMemoryPool *mp, CExpression *pexpr);
 

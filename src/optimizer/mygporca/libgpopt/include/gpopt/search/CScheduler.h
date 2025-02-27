@@ -86,7 +86,7 @@ private:
 		Init(CJob *pj)
 		{
 			m_pj = pj;
-			m_link.m_prev = m_link.m_next = nullptr;
+			m_link.m_prev = m_link.m_next = NULL;
 		}
 	};
 
@@ -137,7 +137,7 @@ private:
 	void PreExecute(CJob *pj);
 
 	// execute job
-	static BOOL FExecute(CJob *pj, CSchedulerContext *psc);
+	BOOL FExecute(CJob *pj, CSchedulerContext *psc);
 
 	// process job execution outcome
 	EJobResult EjrPostExecute(CJob *pj, BOOL fCompleted);

@@ -48,31 +48,32 @@ private:
 	// string representation of the mdid
 	CWStringStatic m_str;
 
+	// private copy ctor
+	CMDIdScCmp(const CMDIdScCmp &);
+
 	// serialize mdid
 	void Serialize();
 
 public:
-	CMDIdScCmp(const CMDIdScCmp &) = delete;
-
 	// ctor
 	CMDIdScCmp(CMDIdGPDB *left_mdid, CMDIdGPDB *right_mdid,
 			   IMDType::ECmpType cmp_type);
 
 	// dtor
-	~CMDIdScCmp() override;
+	virtual ~CMDIdScCmp();
 
-	EMDIdType
-	MdidType() const override
+	virtual EMDIdType
+	MdidType() const
 	{
 		return EmdidScCmp;
 	}
 
 	// string representation of mdid
-	const WCHAR *GetBuffer() const override;
+	virtual const WCHAR *GetBuffer() const;
 
 	// source system id
-	CSystemId
-	Sysid() const override
+	virtual CSystemId
+	Sysid() const
 	{
 		return m_mdid_left->Sysid();
 	}
@@ -90,31 +91,31 @@ public:
 	}
 
 	// equality check
-	BOOL Equals(const IMDId *mdid) const override;
+	virtual BOOL Equals(const IMDId *mdid) const;
 
 	// computes the hash value for the metadata id
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// is the mdid valid
-	BOOL
-	IsValid() const override
+	virtual BOOL
+	IsValid() const
 	{
 		return IMDId::IsValid(m_mdid_left) && IMDId::IsValid(m_mdid_right) &&
 			   IMDType::EcmptOther != m_comparision_type;
 	}
 
 	// serialize mdid in DXL as the value of the specified attribute
-	void Serialize(CXMLSerializer *xml_serializer,
-				   const CWStringConst *attribute_str) const override;
+	virtual void Serialize(CXMLSerializer *xml_serializer,
+						   const CWStringConst *attribute_str) const;
 
 	// debug print of the metadata id
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// const converter
 	static const CMDIdScCmp *
 	CastMdid(const IMDId *mdid)
 	{
-		GPOS_ASSERT(nullptr != mdid && EmdidScCmp == mdid->MdidType());
+		GPOS_ASSERT(NULL != mdid && EmdidScCmp == mdid->MdidType());
 
 		return dynamic_cast<const CMDIdScCmp *>(mdid);
 	}
@@ -123,20 +124,9 @@ public:
 	static CMDIdScCmp *
 	CastMdid(IMDId *mdid)
 	{
-		GPOS_ASSERT(nullptr != mdid && EmdidScCmp == mdid->MdidType());
+		GPOS_ASSERT(NULL != mdid && EmdidScCmp == mdid->MdidType());
 
 		return dynamic_cast<CMDIdScCmp *>(mdid);
-	}
-
-	// make a copy in the given memory pool
-	IMDId *
-	Copy(CMemoryPool *mp) const override
-	{
-		CMDIdGPDB *mdid_left = CMDIdGPDB::CastMdid(m_mdid_left->Copy(mp));
-		CMDIdGPDB *mdid_right = CMDIdGPDB::CastMdid(m_mdid_right->Copy(mp));
-
-		return GPOS_NEW(mp)
-			CMDIdScCmp(mdid_left, mdid_right, m_comparision_type);
 	}
 };
 }  // namespace gpmd

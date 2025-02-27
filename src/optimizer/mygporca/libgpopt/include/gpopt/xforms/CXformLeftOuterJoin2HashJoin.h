@@ -30,36 +30,40 @@ using namespace gpos;
 class CXformLeftOuterJoin2HashJoin : public CXformImplementation
 {
 private:
-public:
-	CXformLeftOuterJoin2HashJoin(const CXformLeftOuterJoin2HashJoin &) = delete;
+	// private copy ctor
+	CXformLeftOuterJoin2HashJoin(const CXformLeftOuterJoin2HashJoin &);
 
+
+public:
 	// ctor
 	explicit CXformLeftOuterJoin2HashJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftOuterJoin2HashJoin() override = default;
+	virtual ~CXformLeftOuterJoin2HashJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftOuterJoin2HashJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftOuterJoin2HashJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftOuterJoin2HashJoin
 

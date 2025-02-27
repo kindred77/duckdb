@@ -28,14 +28,14 @@ class CDXLOperator;
 class CXMLSerializer;
 class CDXLDirectDispatchInfo;
 
-using CDXLNodeArray = CDynamicPtrArray<CDXLNode, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLNode, CleanupRelease> CDXLNodeArray;
 
 // arrays of OID
-using OidArray = CDynamicPtrArray<OID, CleanupDelete>;
+typedef CDynamicPtrArray<OID, CleanupDelete> OidArray;
 
-using IdToCDXLNodeMap =
-	CHashMap<ULONG, CDXLNode, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupRelease<CDXLNode>>;
+typedef CHashMap<ULONG, CDXLNode, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupRelease<CDXLNode> >
+	IdToCDXLNodeMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -49,6 +49,9 @@ using IdToCDXLNodeMap =
 class CDXLNode : public CRefCount
 {
 private:
+	// memory pool
+	CMemoryPool *m_mp;
+
 	// dxl tree operator class
 	CDXLOperator *m_dxl_op;
 
@@ -61,9 +64,10 @@ private:
 	// direct dispatch spec
 	CDXLDirectDispatchInfo *m_direct_dispatch_info;
 
-public:
-	CDXLNode(const CDXLNode &) = delete;
+	// private copy ctor
+	CDXLNode(const CDXLNode &);
 
+public:
 	// ctors
 
 	explicit CDXLNode(CMemoryPool *mp);
@@ -74,18 +78,18 @@ public:
 	CDXLNode(CMemoryPool *mp, CDXLOperator *dxl_op,
 			 CDXLNode *first_child_dxlnode, CDXLNode *second_child_dxlnode,
 			 CDXLNode *third_child_dxlnode);
-	CDXLNode(CDXLOperator *dxl_op, CDXLNodeArray *dxl_array);
+	CDXLNode(CMemoryPool *mp, CDXLOperator *dxl_op, CDXLNodeArray *dxl_array);
 
 	// dtor
-	~CDXLNode() override;
+	virtual ~CDXLNode();
 
 	// shorthand to access children
 	inline CDXLNode *
 	operator[](ULONG idx) const
 	{
-		GPOS_ASSERT(nullptr != m_dxl_array);
+		GPOS_ASSERT(NULL != m_dxl_array);
 		CDXLNode *dxl_node = (*m_dxl_array)[idx];
-		GPOS_ASSERT(nullptr != dxl_node);
+		GPOS_ASSERT(NULL != dxl_node);
 		return dxl_node;
 	};
 
@@ -93,7 +97,7 @@ public:
 	inline ULONG
 	Arity() const
 	{
-		return (m_dxl_array == nullptr) ? 0 : m_dxl_array->Size();
+		return (m_dxl_array == NULL) ? 0 : m_dxl_array->Size();
 	}
 
 	// accessor for operator

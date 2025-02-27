@@ -45,20 +45,21 @@ private:
 	// list of column descriptors
 	CDXLColDescrArray *m_dxl_col_descr_array;
 
-public:
-	CDXLLogicalTVF(const CDXLLogicalTVF &) = delete;
+	// private copy ctor
+	CDXLLogicalTVF(const CDXLLogicalTVF &);
 
+public:
 	// ctor/dtor
 	CDXLLogicalTVF(CMemoryPool *mp, IMDId *mdid_func, IMDId *mdid_return_type,
 				   CMDName *mdname, CDXLColDescrArray *pdrgdxlcd);
 
-	~CDXLLogicalTVF() override;
+	virtual ~CDXLLogicalTVF();
 
 	// get operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// get operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// get function name
 	CMDName *
@@ -95,17 +96,17 @@ public:
 	const CDXLColDescr *GetColumnDescrAt(ULONG ul) const;
 
 	// check if given column is defined by operator
-	BOOL IsColDefined(ULONG colid) const override;
+	virtual BOOL IsColDefined(ULONG colid) const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLLogicalTVF *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalTVF == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalTVF *>(dxl_op);
@@ -114,7 +115,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

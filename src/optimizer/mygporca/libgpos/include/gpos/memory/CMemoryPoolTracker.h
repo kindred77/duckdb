@@ -67,10 +67,13 @@ private:
 	CMemoryPoolStatistics m_memory_pool_statistics;
 
 	// allocation sequence number
-	ULONG m_alloc_sequence{0};
+	ULONG m_alloc_sequence;
 
 	// list of allocated (live) objects
 	CList<SAllocHeader> m_allocations_list;
+
+	// private copy ctor
+	CMemoryPoolTracker(CMemoryPoolTracker &);
 
 	// record a successful allocation
 	void RecordAllocation(SAllocHeader *header);
@@ -80,20 +83,18 @@ private:
 
 protected:
 	// dtor
-	~CMemoryPoolTracker() override;
+	virtual ~CMemoryPoolTracker();
 
 public:
-	CMemoryPoolTracker(CMemoryPoolTracker &) = delete;
-
 	// ctor
 	CMemoryPoolTracker();
 
 	// prepare the memory pool to be deleted
-	void TearDown() override;
+	virtual void TearDown();
 
 	// allocate memory
 	void *NewImpl(const ULONG bytes, const CHAR *file, const ULONG line,
-				  CMemoryPool::EAllocationType eat) override;
+				  CMemoryPool::EAllocationType eat);
 
 	// free memory allocation
 	static void DeleteImpl(void *ptr, EAllocationType eat);
@@ -102,8 +103,8 @@ public:
 	static ULONG UserSizeOfAlloc(const void *ptr);
 
 	// return total allocated size
-	ULLONG
-	TotalAllocatedSize() const override
+	virtual ULLONG
+	TotalAllocatedSize() const
 	{
 		return m_memory_pool_statistics.TotalAllocatedSize();
 	}
@@ -111,14 +112,14 @@ public:
 #ifdef GPOS_DEBUG
 
 	// check if the memory pool keeps track of live objects
-	BOOL
-	SupportsLiveObjectWalk() const override
+	virtual BOOL
+	SupportsLiveObjectWalk() const
 	{
 		return true;
 	}
 
 	// walk the live objects
-	void WalkLiveObjects(gpos::IMemoryVisitor *visitor) override;
+	virtual void WalkLiveObjects(gpos::IMemoryVisitor *visitor);
 
 #endif	// GPOS_DEBUG
 };

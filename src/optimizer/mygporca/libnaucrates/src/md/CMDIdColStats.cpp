@@ -119,7 +119,7 @@ CMDIdColStats::Position() const
 BOOL
 CMDIdColStats::Equals(const IMDId *mdid) const
 {
-	if (nullptr == mdid || EmdidColStats != mdid->MdidType())
+	if (NULL == mdid || EmdidColStats != mdid->MdidType())
 	{
 		return false;
 	}

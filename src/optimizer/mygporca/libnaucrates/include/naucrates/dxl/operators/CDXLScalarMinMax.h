@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarMinMax.h
@@ -48,18 +48,19 @@ private:
 	// min/max type
 	EdxlMinMaxType m_min_max_type;
 
-public:
-	CDXLScalarMinMax(const CDXLScalarMinMax &) = delete;
+	// private copy ctor
+	CDXLScalarMinMax(const CDXLScalarMinMax &);
 
+public:
 	// ctor
 	CDXLScalarMinMax(CMemoryPool *mp, IMDId *mdid_type,
 					 EdxlMinMaxType min_max_type);
 
 	//dtor
-	~CDXLScalarMinMax() override;
+	virtual ~CDXLScalarMinMax();
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// return type
 	virtual IMDId *
@@ -69,7 +70,7 @@ public:
 	}
 
 	// DXL Operator ID
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// min/max type
 	EdxlMinMaxType
@@ -79,24 +80,23 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarMinMax *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarMinMax == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarMinMax *>(dxl_op);

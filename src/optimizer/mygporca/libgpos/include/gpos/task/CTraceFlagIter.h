@@ -29,16 +29,19 @@ namespace gpos
 class CTraceFlagIter : public CBitSetIter
 {
 private:
-public:
-	CTraceFlagIter(const CTraceFlagIter &) = delete;
+	// no copy ctor
+	CTraceFlagIter(const CTraceFlagIter &);
 
+public:
 	// ctor
 	CTraceFlagIter() : CBitSetIter(*CTask::Self()->GetTaskCtxt()->m_bitset)
 	{
 	}
 
 	// dtor
-	virtual ~CTraceFlagIter() = default;
+	virtual ~CTraceFlagIter()
+	{
+	}
 
 };	// class CTraceFlagIter
 

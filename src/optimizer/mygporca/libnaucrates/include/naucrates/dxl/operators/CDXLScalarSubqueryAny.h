@@ -34,33 +34,34 @@ using namespace gpmd;
 class CDXLScalarSubqueryAny : public CDXLScalarSubqueryQuantified
 {
 private:
-public:
-	CDXLScalarSubqueryAny(CDXLScalarSubqueryAny &) = delete;
+	// private copy ctor
+	CDXLScalarSubqueryAny(CDXLScalarSubqueryAny &);
 
+public:
 	// ctor
 	CDXLScalarSubqueryAny(CMemoryPool *mp, IMDId *scalar_op_mdid,
 						  CMDName *mdname, ULONG colid);
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// conversion function
 	static CDXLScalarSubqueryAny *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarSubqueryAny == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarSubqueryAny *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	virtual BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
-	) const override
+	) const
 	{
 		return true;
 	}

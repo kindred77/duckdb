@@ -17,7 +17,6 @@
 #include "gpopt/mdcache/CMDAccessor.h"
 #include "gpopt/metadata/CTableDescriptor.h"
 #include "gpopt/operators/CExpression.h"
-#include "gpopt/operators/CLogicalConstTableGet.h"
 #include "gpopt/translate/CTranslatorExprToDXL.h"
 #include "naucrates/dxl/operators/CDXLColDescr.h"
 #include "naucrates/dxl/operators/CDXLNode.h"
@@ -53,11 +52,98 @@ using namespace gpnaucrates;
 class CTranslatorExprToDXLUtils
 {
 private:
+	// construct a scalar comparison of the given type between the
+	// column with the given col id and the scalar expression
+	static CDXLNode *PdxlnCmp(CMemoryPool *mp, CMDAccessor *md_accessor,
+							  ULONG ulPartLevel, BOOL fLowerBound,
+							  CDXLNode *pdxlnScalar, IMDType::ECmpType cmp_type,
+							  IMDId *pmdidTypePartKey, IMDId *pmdidTypeExpr,
+							  IMDId *pmdidTypeCastExpr, IMDId *mdid_cast_func);
+
+
 	// create a column reference
 	static CColRef *PcrCreate(CMemoryPool *mp, CMDAccessor *md_accessor,
 							  CColumnFactory *col_factory, IMDId *mdid,
 							  INT type_modifier, const WCHAR *wszName);
 
+	// find the partitioning level of the given part key, given the whole
+	// array of part keys
+	static ULONG UlPartKeyLevel(const CColRef *colref,
+								CColRef2dArray *pdrgpdrgpcr);
+
+	// construct a test for a partial scan given a part constraint
+	static CDXLNode *PdxlnPartialScanTest(CMemoryPool *mp,
+										  CMDAccessor *md_accessor,
+										  CColumnFactory *col_factory,
+										  CConstraint *pcnstr,
+										  CColRef2dArray *pdrgpdrgpcrPartKeys,
+										  BOOL fRangePart);
+
+	// construct a test for a conjunction or disjunction-based part constraint
+	static CDXLNode *PdxlnPartialScanTestConjDisj(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		CConstraintArray *pdrgpcnstr, BOOL fConjunction,
+		CColRef2dArray *pdrgpdrgpcrPartKeys, BOOL fRangePart);
+
+	// construct a test for a conjunction-based part constraint
+	static CDXLNode *PdxlnPartialScanTestConjunction(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		CConstraint *pcnstr, CColRef2dArray *pdrgpdrgpcrPartKeys,
+		BOOL fRangePart);
+
+	// construct a test for a disjunction-based part constraint
+	static CDXLNode *PdxlnPartialScanTestDisjunction(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		CConstraint *pcnstr, CColRef2dArray *pdrgpdrgpcrPartKeys,
+		BOOL fRangePart);
+
+	// construct a test for a negation-based part constraint
+	static CDXLNode *PdxlnPartialScanTestNegation(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		CConstraint *pcnstr, CColRef2dArray *pdrgpdrgpcrPartKeys,
+		BOOL fRangePart);
+
+	// construct a test for an interval-based part constraint
+	static CDXLNode *PdxlnPartialScanTestInterval(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CConstraint *pcnstr,
+		CColRef2dArray *pdrgpdrgpcrPartKeys, BOOL fRangePart);
+
+	// construct a test for a range in a part constraint
+	static CDXLNode *PdxlnPartialScanTestRange(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CRange *prng,
+		IMDId *pmdidPartKeyType, ULONG ulPartLevel, BOOL fRangePart);
+
+	// construct a test for testing range containment with respect to the
+	// start of the range
+	static CDXLNode *PdxlnRangeStartPredicate(CMemoryPool *mp,
+											  CMDAccessor *md_accessor,
+											  IDatum *datum,
+											  CRange::ERangeInclusion eri,
+											  IMDId *pmdidPartKeyType,
+											  ULONG ulPartLevel);
+
+
+	// construct a test for testing range containment with respect to the
+	// end of the range
+	static CDXLNode *PdxlnRangeEndPredicate(CMemoryPool *mp,
+											CMDAccessor *md_accessor,
+											IDatum *datum,
+											CRange::ERangeInclusion eri,
+											IMDId *pmdidPartKeyType,
+											ULONG ulPartLevel);
+
+	// construct a test for testing range containment with respect to the
+	// given point in the range using the provided inclusion (<= or >=)
+	// and exclusion comparison operators (< or >)
+	static CDXLNode *PdxlnRangePointPredicate(
+		CMemoryPool *mp, CMDAccessor *md_accessor, IDatum *datum,
+		CRange::ERangeInclusion eri, IMDId *pmdidPartKeyType,
+		IMDId *pmdidCmpExcl, IMDId *pmdidCmpIncl, ULONG ulPartLevel,
+		BOOL is_lower_bound);
+
+	// construct a test for the default partition
+	static CDXLNode *PdxlnDefaultPartitionTest(CMemoryPool *mp,
+											   ULONG ulPartLevel);
 
 	// compute a DXL datum from a point constraint
 	static CDXLDatum *PdxldatumFromPointConstraint(CMemoryPool *mp,
@@ -76,12 +162,6 @@ private:
 		CMemoryPool *mp, CMDAccessor *md_accessor,
 		CExpressionArray *pdrgpexprHashed, CConstraint *pcnstr);
 
-	// compute the direct dispatch info  from the constraints
-	// for a randomly distributed table
-	static CDXLDirectDispatchInfo *GetDXLDirectDispatchInfoRandDist(
-		CMemoryPool *mp, CMDAccessor *md_accessor, const CColRef *pcrDistrCol,
-		CConstraint *pcnstrDistrCol);
-
 	// compute the direct dispatch info for a single distribution key from the constraints
 	// on the distribution key
 	static CDXLDirectDispatchInfo *PdxlddinfoSingleDistrKey(
@@ -90,13 +170,68 @@ private:
 
 	// check if the given constant value for a particular distribution column can be used
 	// to identify which segment to direct dispatch to.
-	static BOOL FDirectDispatchable(CMDAccessor *md_accessor,
-									const CColRef *pcrDistrCol,
+	static BOOL FDirectDispatchable(const CColRef *pcrDistrCol,
 									const CDXLDatum *dxl_datum);
 
 public:
 	// construct a default properties container
 	static CDXLPhysicalProperties *GetProperties(CMemoryPool *mp);
+
+	// create a scalar const value expression for the given bool value
+	static CDXLNode *PdxlnBoolConst(CMemoryPool *mp, CMDAccessor *md_accessor,
+									BOOL value);
+
+	// create a scalar const value expression for the given int4 value
+	static CDXLNode *PdxlnInt4Const(CMemoryPool *mp, CMDAccessor *md_accessor,
+									INT val);
+
+	// construct a filter node for a list partition predicate
+	static CDXLNode *PdxlnListFilterScCmp(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CDXLNode *pdxlnPartKey,
+		CDXLNode *pdxlnScalar, IMDId *pmdidTypePartKey, IMDId *pmdidTypeOther,
+		IMDType::ECmpType cmp_type, ULONG ulPartLevel, BOOL fHasDefaultPart);
+
+	// construct a DXL node for the part key portion of the list partition filter
+	static CDXLNode *PdxlnListFilterPartKey(CMemoryPool *mp,
+											CMDAccessor *md_accessor,
+											CExpression *pexprPartKey,
+											IMDId *pmdidTypePartKey,
+											ULONG ulPartLevel);
+
+	// construct a filter node for a range predicate
+	static CDXLNode *PdxlnRangeFilterScCmp(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CDXLNode *pdxlnScalar,
+		IMDId *pmdidTypePartKey, IMDId *pmdidTypeOther,
+		IMDId *pmdidTypeCastExpr, IMDId *mdid_cast_func,
+		IMDType::ECmpType cmp_type, ULONG ulPartLevel);
+
+	// construct a range filter for an equality comparison
+	static CDXLNode *PdxlnRangeFilterEqCmp(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CDXLNode *pdxlnScalar,
+		IMDId *pmdidTypePartKey, IMDId *pmdidTypeOther,
+		IMDId *pmdidTypeCastExpr, IMDId *mdid_cast_func, ULONG ulPartLevel);
+
+	// construct a predicate for the lower or upper bound of a partition
+	static CDXLNode *PdxlnRangeFilterPartBound(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CDXLNode *pdxlnScalar,
+		IMDId *pmdidTypePartKey, IMDId *pmdidTypeOther,
+		IMDId *pmdidTypeCastExpr, IMDId *mdid_cast_func, ULONG ulPartLevel,
+		ULONG fLowerBound, IMDType::ECmpType cmp_type);
+
+	// construct a test for partial scan in the partial partition propagator
+	static CDXLNode *PdxlnPartialScanTest(CMemoryPool *mp,
+										  CMDAccessor *md_accessor,
+										  CColumnFactory *col_factory,
+										  const CPartConstraint *ppartcnstr,
+										  CColRef2dArray *pdrgpdrgpcrPartKeys,
+										  CharPtrArray *pdrgszPartTypes);
+
+	// construct a nested if statement testing the constraints in the
+	// given part index map and propagating to the right part index id
+	static CDXLNode *PdxlnPropagationExpressionForPartConstraints(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		UlongToPartConstraintMap *ppartcnstrmap,
+		CColRef2dArray *pdrgpdrgpcrPartKeys, CharPtrArray *pdrgszPartTypes);
 
 	// check if the DXL Node is a scalar const TRUE
 	static BOOL FScalarConstTrue(CMDAccessor *md_accessor, CDXLNode *dxlnode);
@@ -115,6 +250,20 @@ public:
 		CMemoryPool *mp, CColumnFactory *col_factory,
 		ColRefToDXLNodeMap *phmcrdxln, const CDXLNode *pdxlnProjListChild);
 
+	// construct the project list of a partition selector
+	static CDXLNode *PdxlnPrLPartitionSelector(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		ColRefToDXLNodeMap *phmcrdxln, BOOL fUseChildProjList,
+		CDXLNode *pdxlnPrLChild, CColRef *pcrOid, ULONG ulPartLevels,
+		BOOL fGeneratePartOid);
+
+	// construct the propagation expression for a partition selector
+	static CDXLNode *PdxlnPropExprPartitionSelector(
+		CMemoryPool *mp, CMDAccessor *md_accessor, CColumnFactory *col_factory,
+		BOOL fConditional, UlongToPartConstraintMap *ppartcnstrmap,
+		CColRef2dArray *pdrgpdrgpcrKeys, ULONG scan_id,
+		CharPtrArray *pdrgszPartTypes);
+
 	// create a DXL project elem node from as a scalar identifier for the
 	// child project element node
 	static CDXLNode *PdxlnProjElem(CMemoryPool *mp, CColumnFactory *col_factory,
@@ -125,7 +274,6 @@ public:
 	static CDXLNode *PdxlnIdent(CMemoryPool *mp,
 								ColRefToDXLNodeMap *phmcrdxlnSubplans,
 								ColRefToDXLNodeMap *phmcrdxlnIndexLookup,
-								ColRefToUlongMap *phmcrulPartColId,
 								const CColRef *colref);
 
 	// replace subplan entry in the given map with a dxl column reference
@@ -154,6 +302,14 @@ public:
 										 CDXLNode *first_child_dxlnode,
 										 CDXLNode *second_child_dxlnode,
 										 EdxlBoolExprType boolexptype);
+
+	// construct a partition selector node
+	static CDXLNode *PdxlnPartitionSelector(
+		CMemoryPool *mp, IMDId *mdid, ULONG ulPartLevels, ULONG scan_id,
+		CDXLPhysicalProperties *dxl_properties, CDXLNode *pdxlnPrL,
+		CDXLNode *pdxlnEqFilters, CDXLNode *pdxlnFilters,
+		CDXLNode *pdxlnResidual, CDXLNode *pdxlnPropagation,
+		CDXLNode *pdxlnPrintable, CDXLNode *child_dxlnode = NULL);
 
 	// create a DXL result node
 	static CDXLNode *PdxlnResult(CMemoryPool *mp,

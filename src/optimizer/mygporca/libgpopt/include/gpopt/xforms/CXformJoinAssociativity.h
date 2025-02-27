@@ -30,40 +30,43 @@ using namespace gpos;
 class CXformJoinAssociativity : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformJoinAssociativity(const CXformJoinAssociativity &);
+
 	// helper function for creating the new join predicate
-	static void CreatePredicates(CMemoryPool *mp, CExpression *pexpr,
-								 CExpressionArray *pdrgpexprLower,
-								 CExpressionArray *pdrgpexprUpper);
+	void CreatePredicates(CMemoryPool *mp, CExpression *pexpr,
+						  CExpressionArray *pdrgpexprLower,
+						  CExpressionArray *pdrgpexprUpper) const;
 
 public:
-	CXformJoinAssociativity(const CXformJoinAssociativity &) = delete;
-
 	// ctor
 	explicit CXformJoinAssociativity(CMemoryPool *mp);
 
 	// dtor
-	~CXformJoinAssociativity() override = default;
+	virtual ~CXformJoinAssociativity()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfJoinAssociativity;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformJoinAssociativity";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformJoinAssociativity
 

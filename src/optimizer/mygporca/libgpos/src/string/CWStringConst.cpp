@@ -13,7 +13,6 @@
 
 #include "gpos/base.h"
 #include "gpos/common/clibwrapper.h"
-#include "gpos/utils.h"
 
 using namespace gpos;
 
@@ -33,7 +32,7 @@ CWStringConst::CWStringConst(const WCHAR *w_str_buffer)
 				   ),
 	  m_w_str_buffer(w_str_buffer)
 {
-	GPOS_ASSERT(nullptr != w_str_buffer);
+	GPOS_ASSERT(NULL != w_str_buffer);
 	GPOS_ASSERT(IsValid());
 }
 
@@ -50,10 +49,10 @@ CWStringConst::CWStringConst(CMemoryPool *mp, const WCHAR *w_str_buffer)
 	: CWStringBase(GPOS_WSZ_LENGTH(w_str_buffer),
 				   true	 // owns_memory
 				   ),
-	  m_w_str_buffer(nullptr)
+	  m_w_str_buffer(NULL)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != w_str_buffer);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != w_str_buffer);
 
 	if (0 == m_length)
 	{
@@ -85,7 +84,7 @@ CWStringConst::CWStringConst(const CWStringConst &str)
 				   ),
 	  m_w_str_buffer(str.GetBuffer())
 {
-	GPOS_ASSERT(nullptr != m_w_str_buffer);
+	GPOS_ASSERT(NULL != m_w_str_buffer);
 	GPOS_ASSERT(IsValid());
 }
 //---------------------------------------------------------------------------
@@ -119,31 +118,4 @@ CWStringConst::GetBuffer() const
 	return m_w_str_buffer;
 }
 
-// equality
-gpos::BOOL
-CWStringConst::Equals(const CWStringConst *string1,
-					  const CWStringConst *string2)
-{
-	ULONG length = GPOS_WSZ_LENGTH(string1->GetBuffer());
-	return length == GPOS_WSZ_LENGTH(string2->GetBuffer()) &&
-		   0 == clib::Wcsncmp(string1->GetBuffer(), string2->GetBuffer(),
-							  length);
-}
-
-// hash function
-gpos::ULONG
-CWStringConst::HashValue(const CWStringConst *string)
-{
-	return gpos::HashByteArray(
-		(BYTE *) string->GetBuffer(),
-		GPOS_WSZ_LENGTH(string->GetBuffer()) * GPOS_SIZEOF(WCHAR));
-}
-
-// checks whether the string is byte-wise equal to another string
-gpos::BOOL
-CWStringConst::Equals(const CWStringBase *str) const
-{
-	GPOS_ASSERT(nullptr != str);
-	return CWStringBase::EqualsWChars(str->GetBuffer());
-}
 // EOF

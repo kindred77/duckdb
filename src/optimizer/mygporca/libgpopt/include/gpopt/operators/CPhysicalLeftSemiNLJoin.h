@@ -28,32 +28,34 @@ namespace gpopt
 class CPhysicalLeftSemiNLJoin : public CPhysicalNLJoin
 {
 private:
-public:
-	CPhysicalLeftSemiNLJoin(const CPhysicalLeftSemiNLJoin &) = delete;
+	// private copy ctor
+	CPhysicalLeftSemiNLJoin(const CPhysicalLeftSemiNLJoin &);
 
+public:
 	// ctor
 	explicit CPhysicalLeftSemiNLJoin(CMemoryPool *mp);
 
 	// dtor
-	~CPhysicalLeftSemiNLJoin() override;
+	virtual ~CPhysicalLeftSemiNLJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalLeftSemiNLJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalLeftSemiNLJoin";
 	}
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
 
 	// conversion function
 	static CPhysicalLeftSemiNLJoin *

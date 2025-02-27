@@ -32,7 +32,9 @@ using namespace gpos;
 class IMDInterface : public CRefCount
 {
 public:
-	~IMDInterface() override = default;
+	virtual ~IMDInterface()
+	{
+	}
 };
 }  // namespace gpmd
 

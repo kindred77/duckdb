@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CParseHandlerPhysicalAbstractBitmapScan.h
@@ -16,7 +16,6 @@
 #include "naucrates/dxl/operators/CDXLPhysicalDynamicBitmapTableScan.h"
 #include "naucrates/dxl/parser/CParseHandlerFactory.h"
 #include "naucrates/dxl/parser/CParseHandlerFilter.h"
-#include "naucrates/dxl/parser/CParseHandlerMetadataIdList.h"
 #include "naucrates/dxl/parser/CParseHandlerPhysicalBitmapTableScan.h"
 #include "naucrates/dxl/parser/CParseHandlerPhysicalDynamicBitmapTableScan.h"
 #include "naucrates/dxl/parser/CParseHandlerProjList.h"
@@ -56,16 +55,6 @@ CParseHandlerPhysicalAbstractBitmapScan::StartElementHelper(
 			m_mp, CDXLTokens::XmlstrToken(EdxltokenTableDescr),
 			m_parse_handler_mgr, this);
 	m_parse_handler_mgr->ActivateParseHandler(table_descr_parse_handler);
-
-	CParseHandlerBase *partition_mdids_parse_handler = nullptr;
-	if (EdxltokenPhysicalDynamicBitmapTableScan == token_type)
-	{
-		partition_mdids_parse_handler = CParseHandlerFactory::GetParseHandler(
-			m_mp, CDXLTokens::XmlstrToken(EdxltokenMetadataIdList),
-			m_parse_handler_mgr, this);
-		m_parse_handler_mgr->ActivateParseHandler(
-			partition_mdids_parse_handler);
-	}
 
 	// parse handler for the bitmap access path
 	CParseHandlerBase *bitmap_parse_handler =
@@ -108,10 +97,6 @@ CParseHandlerPhysicalAbstractBitmapScan::StartElementHelper(
 	this->Append(filter_parse_handler);
 	this->Append(recheck_cond_parse_handler);
 	this->Append(bitmap_parse_handler);
-	if (EdxltokenPhysicalDynamicBitmapTableScan == token_type)
-	{
-		this->Append(partition_mdids_parse_handler);
-	}
 	this->Append(table_descr_parse_handler);
 }
 
@@ -126,7 +111,7 @@ CParseHandlerPhysicalAbstractBitmapScan::StartElementHelper(
 void
 CParseHandlerPhysicalAbstractBitmapScan::EndElementHelper(
 	const XMLCh *const element_local_name, Edxltoken token_type,
-	ULongPtrArray *selector_ids)
+	ULONG part_idx_id, ULONG part_idx_id_printable)
 {
 	if (0 != XMLString::compareString(CDXLTokens::XmlstrToken(token_type),
 									  element_local_name))
@@ -137,33 +122,26 @@ CParseHandlerPhysicalAbstractBitmapScan::EndElementHelper(
 				   str->GetBuffer());
 	}
 
-	int i = 0;
 	// construct nodes from the created child nodes
 	CParseHandlerProperties *prop_parse_handler =
-		dynamic_cast<CParseHandlerProperties *>((*this)[i++]);
+		dynamic_cast<CParseHandlerProperties *>((*this)[0]);
 	CParseHandlerProjList *proj_list_parse_handler =
-		dynamic_cast<CParseHandlerProjList *>((*this)[i++]);
+		dynamic_cast<CParseHandlerProjList *>((*this)[1]);
 	CParseHandlerFilter *filter_parse_handler =
-		dynamic_cast<CParseHandlerFilter *>((*this)[i++]);
+		dynamic_cast<CParseHandlerFilter *>((*this)[2]);
 	CParseHandlerFilter *recheck_cond_parse_handler =
-		dynamic_cast<CParseHandlerFilter *>((*this)[i++]);
+		dynamic_cast<CParseHandlerFilter *>((*this)[3]);
 	CParseHandlerScalarOp *bitmap_parse_handler =
-		dynamic_cast<CParseHandlerScalarOp *>((*this)[i++]);
-	CParseHandlerMetadataIdList *partition_mdids_parse_handler = nullptr;
-	if (EdxltokenPhysicalDynamicBitmapTableScan == token_type)
-	{
-		partition_mdids_parse_handler =
-			dynamic_cast<CParseHandlerMetadataIdList *>((*this)[i++]);
-	}
+		dynamic_cast<CParseHandlerScalarOp *>((*this)[4]);
 	CParseHandlerTableDescr *table_descr_parse_handler =
-		dynamic_cast<CParseHandlerTableDescr *>((*this)[i++]);
+		dynamic_cast<CParseHandlerTableDescr *>((*this)[5]);
 
-	GPOS_ASSERT(nullptr != table_descr_parse_handler->GetDXLTableDescr());
+	GPOS_ASSERT(NULL != table_descr_parse_handler->GetDXLTableDescr());
 
 	// set table descriptor
 	CDXLTableDescr *table_descr = table_descr_parse_handler->GetDXLTableDescr();
 	table_descr->AddRef();
-	CDXLPhysical *dxl_op = nullptr;
+	CDXLPhysical *dxl_op = NULL;
 
 	if (EdxltokenPhysicalBitmapTableScan == token_type)
 	{
@@ -172,15 +150,12 @@ CParseHandlerPhysicalAbstractBitmapScan::EndElementHelper(
 	else
 	{
 		GPOS_ASSERT(EdxltokenPhysicalDynamicBitmapTableScan == token_type);
-		IMdIdArray *mdid_partitions_array =
-			partition_mdids_parse_handler->GetMdIdArray();
-		mdid_partitions_array->AddRef();
 		dxl_op = GPOS_NEW(m_mp) CDXLPhysicalDynamicBitmapTableScan(
-			m_mp, table_descr, mdid_partitions_array, selector_ids);
+			m_mp, table_descr, part_idx_id, part_idx_id_printable);
 	}
 	m_dxl_node = GPOS_NEW(m_mp) CDXLNode(m_mp, dxl_op);
 
-	// set statistics and physical properties
+	// set statictics and physical properties
 	CParseHandlerUtils::SetProperties(m_dxl_node, prop_parse_handler);
 
 	// add constructed children

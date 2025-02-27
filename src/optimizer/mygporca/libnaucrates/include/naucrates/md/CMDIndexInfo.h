@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software Inc.
 //
 //	@filename:
 //		CMDIndexInfo.h
@@ -37,7 +37,7 @@ public:
 	CMDIndexInfo(IMDId *mdid, BOOL is_partial);
 
 	// dtor
-	~CMDIndexInfo() override;
+	virtual ~CMDIndexInfo();
 
 	// index mdid
 	IMDId *MDId() const;

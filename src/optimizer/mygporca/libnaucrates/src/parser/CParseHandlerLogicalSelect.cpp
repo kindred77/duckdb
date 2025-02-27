@@ -45,7 +45,9 @@ CParseHandlerLogicalSelect::CParseHandlerLogicalSelect(
 //		Destructor
 //
 //---------------------------------------------------------------------------
-CParseHandlerLogicalSelect::~CParseHandlerLogicalSelect() = default;
+CParseHandlerLogicalSelect::~CParseHandlerLogicalSelect()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -122,7 +124,7 @@ CParseHandlerLogicalSelect::EndElement(const XMLCh *const,	// element_uri,
 				   str->GetBuffer());
 	}
 
-	GPOS_ASSERT(nullptr != m_dxl_node);
+	GPOS_ASSERT(NULL != m_dxl_node);
 
 	CParseHandlerScalarOp *scalar_cond_parse_handler =
 		dynamic_cast<CParseHandlerScalarOp *>((*this)[0]);

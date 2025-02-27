@@ -28,7 +28,7 @@ class COperator;
 class CReqdProp;
 
 // dynamic array for required properties
-using CReqdPropArray = CDynamicPtrArray<CReqdProp, CleanupRelease>;
+typedef CDynamicPtrArray<CReqdProp, CleanupRelease> CReqdPropArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -78,14 +78,15 @@ public:
 	};
 
 private:
-public:
-	CReqdProp(const CReqdProp &) = delete;
+	// private copy ctor
+	CReqdProp(const CReqdProp &);
 
+public:
 	// ctor
 	CReqdProp();
 
 	// dtor
-	~CReqdProp() override;
+	virtual ~CReqdProp();
 
 	// is it a relational property?
 	virtual BOOL
@@ -105,8 +106,6 @@ public:
 	virtual void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
 						 CReqdProp *prpInput, ULONG child_index,
 						 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) = 0;
-
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 
 };	// class CReqdProp
 

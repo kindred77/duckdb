@@ -28,33 +28,36 @@ namespace gpopt
 class CLogicalLeftSemiJoin : public CLogicalJoin
 {
 private:
-public:
-	CLogicalLeftSemiJoin(const CLogicalLeftSemiJoin &) = delete;
+	// private copy ctor
+	CLogicalLeftSemiJoin(const CLogicalLeftSemiJoin &);
 
+public:
 	// ctor
 	explicit CLogicalLeftSemiJoin(
 		CMemoryPool *mp, CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CLogicalLeftSemiJoin() override = default;
+	virtual ~CLogicalLeftSemiJoin()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftSemiJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftSemiJoin";
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL
-	FCanPullProjectionsUp(ULONG child_index) const override
+	virtual BOOL
+	FCanPullProjectionsUp(ULONG child_index) const
 	{
 		return (0 == child_index);
 	}
@@ -64,29 +67,29 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &hdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &hdl);
 
 	// derive not nullable output columns
-	CColRefSet *
+	virtual CColRefSet *
 	DeriveNotNullColumns(CMemoryPool *,	 // mp
-						 CExpressionHandle &exprhdl) const override
+						 CExpressionHandle &exprhdl) const
 	{
 		return PcrsDeriveNotNullPassThruOuter(exprhdl);
 	}
 
 	// dervive keys
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
@@ -96,16 +99,17 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// promise level for stat derivation
-	EStatPromise
+	virtual EStatPromise
 	Esp(CExpressionHandle &	 // exprhdl
-	) const override
+	) const
 	{
 		// semi join can be converted to inner join, which is used for stat derivation
 		return EspMedium;
@@ -119,7 +123,7 @@ public:
 	static CLogicalLeftSemiJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftSemiJoin == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftSemiJoin *>(pop);

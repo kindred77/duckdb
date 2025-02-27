@@ -31,20 +31,24 @@ using namespace gpos;
 class CDXLWindowKey : public CRefCount
 {
 private:
+	// memory pool;
+	CMemoryPool *m_mp;
+
 	// window frame associated with the window key
-	CDXLWindowFrame *m_window_frame_dxl{nullptr};
+	CDXLWindowFrame *m_window_frame_dxl;
+
+	// private copy ctor
+	CDXLWindowKey(const CDXLWindowKey &);
 
 	// sorting columns
-	CDXLNode *m_sort_col_list_dxlnode{nullptr};
+	CDXLNode *m_sort_col_list_dxlnode;
 
 public:
-	CDXLWindowKey(const CDXLWindowKey &) = delete;
-
 	// ctor
-	CDXLWindowKey();
+	explicit CDXLWindowKey(CMemoryPool *mp);
 
 	// dtor
-	~CDXLWindowKey() override;
+	virtual ~CDXLWindowKey();
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *) const;
@@ -70,7 +74,7 @@ public:
 	}
 };
 
-using CDXLWindowKeyArray = CDynamicPtrArray<CDXLWindowKey, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLWindowKey, CleanupRelease> CDXLWindowKeyArray;
 }  // namespace gpdxl
 #endif	// !GPDXL_CDXLWindowKey_H
 

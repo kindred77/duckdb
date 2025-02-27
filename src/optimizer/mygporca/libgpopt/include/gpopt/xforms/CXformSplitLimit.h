@@ -30,8 +30,11 @@ using namespace gpos;
 class CXformSplitLimit : public CXformExploration
 {
 private:
+	// private copy ctor
+	CXformSplitLimit(const CXformSplitLimit &);
+
 	// helper function for creating a limit expression
-	static CExpression *PexprLimit(
+	CExpression *PexprLimit(
 		CMemoryPool *mp,				// memory pool
 		CExpression *pexprRelational,	// relational child
 		CExpression *pexprScalarStart,	// limit offset
@@ -39,44 +42,44 @@ private:
 		COrderSpec *pos,				// ordering specification
 		BOOL fGlobal,					// is it a local or global limit
 		BOOL fHasCount,					// does limit specify a number of rows
-		BOOL fTopLimitUnderDML);
+		BOOL fTopLimitUnderDML) const;
 
 public:
-	CXformSplitLimit(const CXformSplitLimit &) = delete;
-
 	// ctor
 	explicit CXformSplitLimit(CMemoryPool *mp);
 
 	// dtor
-	~CXformSplitLimit() override = default;
+	virtual ~CXformSplitLimit()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSplitLimit;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSplitLimit";
 	}
 
 	// Compatibility function for splitting limit
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSplitLimit != exfid);
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformSplitLimit
 

@@ -74,7 +74,7 @@ IDatumArray *
 CTranslatorDXLToExprUtils::Pdrgpdatum(CMemoryPool *mp, CMDAccessor *md_accessor,
 									  const CDXLDatumArray *pdrgpdxldatum)
 {
-	GPOS_ASSERT(nullptr != pdrgpdxldatum);
+	GPOS_ASSERT(NULL != pdrgpdxldatum);
 
 	IDatumArray *pdrgdatum = GPOS_NEW(mp) IDatumArray(mp);
 	const ULONG length = pdrgpdxldatum->Size();
@@ -127,8 +127,8 @@ CTranslatorDXLToExprUtils::AddKeySets(CMemoryPool *mp,
 									  const IMDRelation *pmdrel,
 									  UlongToUlongMap *phmululColMapping)
 {
-	GPOS_ASSERT(nullptr != ptabdesc);
-	GPOS_ASSERT(nullptr != pmdrel);
+	GPOS_ASSERT(NULL != ptabdesc);
+	GPOS_ASSERT(NULL != pmdrel);
 
 	const ULONG ulKeySets = pmdrel->KeySetCount();
 	for (ULONG ul = 0; ul < ulKeySets; ul++)
@@ -142,7 +142,7 @@ CTranslatorDXLToExprUtils::AddKeySets(CMemoryPool *mp,
 			// populate current keyset
 			ULONG ulOriginalKey = *((*pdrgpulKeys)[ulKey]);
 			ULONG *pulRemappedKey = phmululColMapping->Find(&ulOriginalKey);
-			GPOS_ASSERT(nullptr != pulRemappedKey);
+			GPOS_ASSERT(NULL != pulRemappedKey);
 
 			pbs->ExchangeSet(*pulRemappedKey);
 		}
@@ -166,7 +166,7 @@ BOOL
 CTranslatorDXLToExprUtils::FScalarBool(const CDXLNode *dxlnode,
 									   EdxlBoolExprType edxlboolexprtype)
 {
-	GPOS_ASSERT(nullptr != dxlnode);
+	GPOS_ASSERT(NULL != dxlnode);
 
 	CDXLOperator *dxl_op = dxlnode->GetOperator();
 	if (EdxlopScalarBoolExpr == dxl_op->GetDXLOperator())
@@ -227,7 +227,7 @@ CTranslatorDXLToExprUtils::Pdrgpcr(CMemoryPool *mp,
 								   UlongToColRefMap *colref_mapping,
 								   const ULongPtrArray *colids)
 {
-	GPOS_ASSERT(nullptr != colids);
+	GPOS_ASSERT(NULL != colids);
 
 	CColRefArray *colref_array = GPOS_NEW(mp) CColRefArray(mp);
 
@@ -236,9 +236,9 @@ CTranslatorDXLToExprUtils::Pdrgpcr(CMemoryPool *mp,
 		ULONG *pulColId = (*colids)[ul];
 		CColRef *colref = colref_mapping->Find(pulColId);
 		colref->MarkAsUsed();
-		GPOS_ASSERT(nullptr != colref);
+		GPOS_ASSERT(NULL != colref);
 
-		colref_array->Append(colref);
+		colref_array->Append(const_cast<CColRef *>(colref));
 	}
 
 	return colref_array;
@@ -257,14 +257,14 @@ BOOL
 CTranslatorDXLToExprUtils::FCastFunc(CMDAccessor *md_accessor,
 									 const CDXLNode *dxlnode, IMDId *pmdidInput)
 {
-	GPOS_ASSERT(nullptr != dxlnode);
+	GPOS_ASSERT(NULL != dxlnode);
 
 	if (1 != dxlnode->Arity())
 	{
 		return false;
 	}
 
-	if (nullptr == pmdidInput)
+	if (NULL == pmdidInput)
 	{
 		return false;
 	}

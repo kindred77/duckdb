@@ -38,25 +38,26 @@ enum EdxlLimit
 class CDXLPhysicalLimit : public CDXLPhysical
 {
 private:
-public:
-	CDXLPhysicalLimit(CDXLPhysicalLimit &) = delete;
+	// private copy ctor
+	CDXLPhysicalLimit(CDXLPhysicalLimit &);
 
+public:
 	// ctor/dtor
 	explicit CDXLPhysicalLimit(CMemoryPool *mp);
 
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *node) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *node) const;
 
 	// conversion function
 	static CDXLPhysicalLimit *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalLimit == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalLimit *>(dxl_op);
@@ -65,7 +66,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

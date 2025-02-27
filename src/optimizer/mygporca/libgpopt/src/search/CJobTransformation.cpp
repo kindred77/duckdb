@@ -64,7 +64,9 @@ const WCHAR rgwszEvents[CJobTransformation::eevSentinel]
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobTransformation::CJobTransformation() = default;
+CJobTransformation::CJobTransformation()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -75,7 +77,9 @@ CJobTransformation::CJobTransformation() = default;
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CJobTransformation::~CJobTransformation() = default;
+CJobTransformation::~CJobTransformation()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -90,8 +94,8 @@ void
 CJobTransformation::Init(CGroupExpression *pgexpr, CXform *pxform)
 {
 	GPOS_ASSERT(!FInit());
-	GPOS_ASSERT(nullptr != pgexpr);
-	GPOS_ASSERT(nullptr != pxform);
+	GPOS_ASSERT(NULL != pgexpr);
+	GPOS_ASSERT(NULL != pxform);
 
 	m_pgexpr = pgexpr;
 	m_xform = pxform;

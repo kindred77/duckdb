@@ -60,7 +60,9 @@ CPhysicalComputeScalar::CPhysicalComputeScalar(CMemoryPool *mp) : CPhysical(mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalComputeScalar::~CPhysicalComputeScalar() = default;
+CPhysicalComputeScalar::~CPhysicalComputeScalar()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -173,7 +175,7 @@ CPhysicalComputeScalar::PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 		// check if singleton/replicated distribution needs to be requested
 		CDistributionSpec *pds = PdsRequireSingletonOrReplicated(
 			mp, exprhdl, pdsRequired, child_index, ulOptReq);
-		if (nullptr != pds)
+		if (NULL != pds)
 		{
 			return pds;
 		}
@@ -261,13 +263,32 @@ CPhysicalComputeScalar::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 ) const
 {
 	GPOS_ASSERT(0 == child_index);
-	if (prsRequired->IsOriginNLJoin())
-	{
-		CRewindabilitySpec *prs = GPOS_NEW(mp) CRewindabilitySpec(
-			CRewindabilitySpec::ErtNone, prsRequired->Emht());
-		return prs;
-	}
+
 	return PrsPassThru(mp, exprhdl, prsRequired, child_index);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalComputeScalar::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalComputeScalar::PppsRequired(CMemoryPool *mp,
+									 CExpressionHandle &exprhdl,
+									 CPartitionPropagationSpec *pppsRequired,
+									 ULONG child_index,
+									 CDrvdPropArray *,	//pdrgpdpCtxt,
+									 ULONG				//ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	return CPhysical::PppsRequiredPushThru(mp, exprhdl, pppsRequired,
+										   child_index);
 }
 
 //---------------------------------------------------------------------------
@@ -309,7 +330,7 @@ CPhysicalComputeScalar::FProvidesReqdCols(CExpressionHandle &exprhdl,
 										  ULONG	 // ulOptReq
 ) const
 {
-	GPOS_ASSERT(nullptr != pcrsRequired);
+	GPOS_ASSERT(NULL != pcrsRequired);
 	GPOS_ASSERT(2 == exprhdl.Arity());
 
 	CColRefSet *pcrs = GPOS_NEW(m_mp) CColRefSet(m_mp);
@@ -424,7 +445,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalComputeScalar::EpetOrder(CExpressionHandle &exprhdl,
 								  const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	COrderSpec *pos = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Pos();
@@ -459,11 +480,6 @@ CEnfdProp::EPropEnforcingType
 CPhysicalComputeScalar::EpetRewindability(CExpressionHandle &exprhdl,
 										  const CEnfdRewindability *per) const
 {
-	if (per->PrsRequired()->IsOriginNLJoin())
-	{
-		return CEnfdProp::EpetRequired;
-	}
-
 	CColRefSet *pcrsUsed = exprhdl.DeriveUsedColumns(1);
 	CColRefSet *pcrsCorrelatedApply = exprhdl.DeriveCorrelatedApplyColumns();
 	if (!pcrsUsed->IsDisjoint(pcrsCorrelatedApply))

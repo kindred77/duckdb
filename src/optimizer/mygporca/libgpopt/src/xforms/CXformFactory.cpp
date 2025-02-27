@@ -17,7 +17,7 @@
 using namespace gpopt;
 
 // global instance of xform factory
-CXformFactory *CXformFactory::m_pxff = nullptr;
+CXformFactory *CXformFactory::m_pxff = NULL;
 
 
 //---------------------------------------------------------------------------
@@ -30,17 +30,17 @@ CXformFactory *CXformFactory::m_pxff = nullptr;
 //---------------------------------------------------------------------------
 CXformFactory::CXformFactory(CMemoryPool *mp)
 	: m_mp(mp),
-	  m_phmszxform(nullptr),
-	  m_pxfsExploration(nullptr),
-	  m_pxfsImplementation(nullptr),
+	  m_phmszxform(NULL),
+	  m_pxfsExploration(NULL),
+	  m_pxfsImplementation(NULL),
 	  m_lastAddedOrSkippedXformId(-1)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 	// null out array so dtor can be called prematurely
 	for (ULONG i = 0; i < CXform::ExfSentinel; i++)
 	{
-		m_rgpxf[i] = nullptr;
+		m_rgpxf[i] = NULL;
 	}
 	m_phmszxform = GPOS_NEW(mp) XformNameToXformMap(mp);
 	m_pxfsExploration = GPOS_NEW(mp) CXformSet(mp);
@@ -58,19 +58,19 @@ CXformFactory::CXformFactory(CMemoryPool *mp)
 //---------------------------------------------------------------------------
 CXformFactory::~CXformFactory()
 {
-	GPOS_ASSERT(nullptr == m_pxff && "Xform factory has not been shut down");
+	GPOS_ASSERT(NULL == m_pxff && "Xform factory has not been shut down");
 
 	// delete all xforms in the array
 	for (ULONG i = 0; i < CXform::ExfSentinel; i++)
 	{
-		if (nullptr == m_rgpxf[i])
+		if (NULL == m_rgpxf[i])
 		{
 			// dtor called after failing to populate array
 			break;
 		}
 
 		m_rgpxf[i]->Release();
-		m_rgpxf[i] = nullptr;
+		m_rgpxf[i] = NULL;
 	}
 
 	m_phmszxform->Release();
@@ -91,10 +91,10 @@ CXformFactory::~CXformFactory()
 void
 CXformFactory::Add(CXform *pxform)
 {
-	GPOS_ASSERT(nullptr != pxform);
+	GPOS_ASSERT(NULL != pxform);
 	CXform::EXformId exfid = pxform->Exfid();
 
-	GPOS_ASSERT(nullptr == m_rgpxf[exfid]);
+	GPOS_ASSERT(NULL == m_rgpxf[exfid]);
 
 	m_lastAddedOrSkippedXformId++;
 	GPOS_ASSERT(exfid == m_lastAddedOrSkippedXformId &&
@@ -106,7 +106,9 @@ CXformFactory::Add(CXform *pxform)
 	CHAR *szXformName = GPOS_NEW_ARRAY(m_mp, CHAR, length + 1);
 	clib::Strncpy(szXformName, pxform->SzId(), length + 1);
 
-	BOOL fInserted GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+	BOOL fInserted =
+#endif
 		m_phmszxform->Insert(szXformName, pxform);
 	GPOS_ASSERT(fInserted);
 
@@ -155,7 +157,7 @@ CXformFactory::Instantiate()
 	Add(GPOS_NEW(m_mp) CXformSelect2Filter(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSelect2IndexGet(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSelect2DynamicIndexGet(m_mp));
-	SkipUnused(1);
+	Add(GPOS_NEW(m_mp) CXformSelect2PartialDynamicIndexGet(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSimplifySelectWithSubquery(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSimplifyProjectWithSubquery(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSelect2Apply(m_mp));
@@ -165,9 +167,9 @@ CXformFactory::Instantiate()
 	Add(GPOS_NEW(m_mp) CXformSubqNAryJoin2Apply(m_mp));
 	SkipUnused(2);
 	Add(GPOS_NEW(m_mp) CXformInnerApplyWithOuterKey2InnerJoin(m_mp));
-	SkipUnused(1);
+	Add(GPOS_NEW(m_mp) CXformInnerJoin2NLJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementIndexApply(m_mp));
-	SkipUnused(1);
+	Add(GPOS_NEW(m_mp) CXformInnerJoin2HashJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformInnerApply2InnerJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformInnerApply2InnerJoinNoCorrelations(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementInnerCorrelatedApply(m_mp));
@@ -213,7 +215,7 @@ CXformFactory::Instantiate()
 	Add(GPOS_NEW(m_mp) CXformDelete2DML(m_mp));
 	Add(GPOS_NEW(m_mp) CXformUpdate2DML(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementDML(m_mp));
-	SkipUnused(1);
+	Add(GPOS_NEW(m_mp) CXformImplementRowTrigger(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementSplit(m_mp));
 	Add(GPOS_NEW(m_mp) CXformJoinCommutativity(m_mp));
 	Add(GPOS_NEW(m_mp) CXformJoinAssociativity(m_mp));
@@ -256,12 +258,12 @@ CXformFactory::Instantiate()
 	Add(GPOS_NEW(m_mp) CXformImplementCTEProducer(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementCTEConsumer(m_mp));
 	Add(GPOS_NEW(m_mp) CXformExpandFullOuterJoin(m_mp));
-	Add(GPOS_NEW(m_mp) CXformForeignGet2ForeignScan(m_mp));
+	Add(GPOS_NEW(m_mp) CXformExternalGet2ExternalScan(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSelect2BitmapBoolOp(m_mp));
 	Add(GPOS_NEW(m_mp) CXformSelect2DynamicBitmapBoolOp(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementBitmapTableGet(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementDynamicBitmapTableGet(m_mp));
-	SkipUnused(1);
+	Add(GPOS_NEW(m_mp) CXformInnerJoin2PartialDynamicIndexGetApply(m_mp));
 	Add(GPOS_NEW(m_mp) CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementLeftSemiCorrelatedApply(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementLeftSemiCorrelatedApplyIn(m_mp));
@@ -273,7 +275,10 @@ CXformFactory::Instantiate()
 	SkipUnused(1);
 	Add(GPOS_NEW(m_mp) CXformImplementPartitionSelector(m_mp));
 	Add(GPOS_NEW(m_mp) CXformMaxOneRow2Assert(m_mp));
-	SkipUnused(6);
+	SkipUnused(2);
+	Add(GPOS_NEW(m_mp)
+			CXformInnerJoinWithInnerSelect2PartialDynamicIndexGetApply(m_mp));
+	SkipUnused(3);
 	Add(GPOS_NEW(m_mp) CXformGbAggWithMDQA2Join(m_mp));
 	Add(GPOS_NEW(m_mp) CXformCollapseProject(m_mp));
 	Add(GPOS_NEW(m_mp) CXformRemoveSubqDistinct(m_mp));
@@ -286,14 +291,13 @@ CXformFactory::Instantiate()
 	Add(GPOS_NEW(m_mp) CXformIndexGet2IndexOnlyScan(m_mp));
 	Add(GPOS_NEW(m_mp) CXformJoin2BitmapIndexGetApply(m_mp));
 	Add(GPOS_NEW(m_mp) CXformJoin2IndexGetApply(m_mp));
-	SkipUnused(2);
+	Add(GPOS_NEW(m_mp) CXformMultiExternalGet2MultiExternalScan(m_mp));
+	Add(GPOS_NEW(m_mp) CXformExpandDynamicGetWithExternalPartitions(m_mp));
 	Add(GPOS_NEW(m_mp) CXformLeftJoin2RightJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformRightOuterJoin2HashJoin(m_mp));
 	Add(GPOS_NEW(m_mp) CXformImplementInnerJoin(m_mp));
-	Add(GPOS_NEW(m_mp) CXformDynamicForeignGet2DynamicForeignScan(m_mp));
-	Add(GPOS_NEW(m_mp) CXformExpandDynamicGetWithForeignPartitions(m_mp));
 
-	GPOS_ASSERT(nullptr != m_rgpxf[CXform::ExfSentinel - 1] &&
+	GPOS_ASSERT(NULL != m_rgpxf[CXform::ExfSentinel - 1] &&
 				"Not all xforms have been instantiated");
 }
 
@@ -337,7 +341,7 @@ CXformFactory::IsXformIdUsed(CXform::EXformId exfid)
 {
 	GPOS_ASSERT(exfid <= m_lastAddedOrSkippedXformId);
 
-	return (nullptr != m_rgpxf[exfid]);
+	return (NULL != m_rgpxf[exfid]);
 }
 
 
@@ -352,7 +356,7 @@ CXformFactory::IsXformIdUsed(CXform::EXformId exfid)
 GPOS_RESULT
 CXformFactory::Init()
 {
-	GPOS_ASSERT(nullptr == Pxff() && "Xform factory was already initialized");
+	GPOS_ASSERT(NULL == Pxff() && "Xform factory was already initialized");
 
 	GPOS_RESULT eres = GPOS_OK;
 
@@ -368,7 +372,7 @@ CXformFactory::Init()
 	{
 		// destroy memory pool if global instance was not created
 		CMemoryPoolManager::GetMemoryPoolMgr()->Destroy(mp);
-		m_pxff = nullptr;
+		m_pxff = NULL;
 
 		if (GPOS_MATCH_EX(ex, CException::ExmaSystem, CException::ExmiOOM))
 		{
@@ -403,12 +407,12 @@ CXformFactory::Shutdown()
 {
 	CXformFactory *pxff = CXformFactory::Pxff();
 
-	GPOS_ASSERT(nullptr != pxff && "Xform factory has not been initialized");
+	GPOS_ASSERT(NULL != pxff && "Xform factory has not been initialized");
 
 	CMemoryPool *mp = pxff->m_mp;
 
 	// destroy xform factory
-	CXformFactory::m_pxff = nullptr;
+	CXformFactory::m_pxff = NULL;
 	GPOS_DELETE(pxff);
 
 	// release allocated memory pool

@@ -27,7 +27,7 @@ using namespace gpopt;
 CPrintPrefix::CPrintPrefix(const CPrintPrefix *ppfx, const CHAR *sz)
 	: m_ppfx(ppfx), m_sz(sz)
 {
-	GPOS_ASSERT(nullptr != sz);
+	GPOS_ASSERT(NULL != sz);
 }
 
 
@@ -46,7 +46,7 @@ CPrintPrefix::OsPrint(IOstream &os) const
 {
 	GPOS_CHECK_STACK_SIZE;
 
-	if (nullptr != m_ppfx)
+	if (NULL != m_ppfx)
 	{
 		(void) m_ppfx->OsPrint(os);
 	}

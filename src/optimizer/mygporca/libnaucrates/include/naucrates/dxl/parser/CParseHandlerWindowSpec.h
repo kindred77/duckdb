@@ -47,24 +47,25 @@ private:
 	// does the window spec have a frame definition
 	BOOL m_has_window_frame;
 
+	// private copy ctor
+	CParseHandlerWindowSpec(const CParseHandlerWindowSpec &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerWindowSpec(const CParseHandlerWindowSpec &) = delete;
-
 	// ctor
 	CParseHandlerWindowSpec(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,

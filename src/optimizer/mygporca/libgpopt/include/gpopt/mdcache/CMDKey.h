@@ -45,7 +45,9 @@ public:
 	explicit CMDKey(const IMDId *mdid);
 
 	// dtor
-	~CMDKey() = default;
+	~CMDKey()
+	{
+	}
 
 
 	const IMDId *

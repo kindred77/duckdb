@@ -29,46 +29,49 @@ namespace gpopt
 class CLogicalSequence : public CLogical
 {
 private:
-public:
-	CLogicalSequence(const CLogicalSequence &) = delete;
+	// private copy ctor
+	CLogicalSequence(const CLogicalSequence &);
 
+public:
 	// ctor
 	explicit CLogicalSequence(CMemoryPool *mp);
 
 	// dtor
-	~CLogicalSequence() override = default;
+	virtual ~CLogicalSequence()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalSequence;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalSequence";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -78,25 +81,25 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &exprhdl);
 
 	// dervive keys
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive partition consumer info
-	CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
-								   CExpressionHandle &exprhdl) const override;
+	virtual CPartInfo *DerivePartitionInfo(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, exprhdl.Arity() - 1);
 	}
@@ -106,9 +109,9 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsInput,
-			 ULONG child_index) const override
+			 ULONG child_index) const
 	{
 		const ULONG ulLastChildIndex = exprhdl.Arity() - 1;
 		if (child_index == ulLastChildIndex)
@@ -122,11 +125,11 @@ public:
 	}
 
 	// derive statistics
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *,	 //mp,
 				 CExpressionHandle &exprhdl,
 				 IStatisticsArray *	 //stats_ctxt
-	) const override
+	) const
 	{
 		// pass through stats from last child
 		IStatistics *stats = exprhdl.Pstats(exprhdl.Arity() - 1);
@@ -140,11 +143,11 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -157,7 +160,7 @@ public:
 	static CLogicalSequence *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalSequence == pop->Eopid());
 
 		return dynamic_cast<CLogicalSequence *>(pop);

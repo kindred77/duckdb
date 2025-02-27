@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CMDArrayCoerceCastGPDB.h
@@ -27,7 +27,7 @@ class CMDArrayCoerceCastGPDB : public CMDCastGPDB
 {
 private:
 	// DXL for object
-	const CWStringDynamic *m_dxl_str = nullptr;
+	const CWStringDynamic *m_dxl_str;
 
 	// type mod
 	INT m_type_modifier;
@@ -41,26 +41,27 @@ private:
 	// location
 	INT m_location;
 
-	// Src element MDId
-	IMDId *m_mdid_src_elemtype;
+	// private copy ctor
+	CMDArrayCoerceCastGPDB(const CMDArrayCoerceCastGPDB &);
 
 public:
-	CMDArrayCoerceCastGPDB(const CMDArrayCoerceCastGPDB &) = delete;
-
 	// ctor
 	CMDArrayCoerceCastGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 						   IMDId *mdid_src, IMDId *mdid_dest,
 						   BOOL is_binary_coercible, IMDId *mdid_cast_func,
 						   EmdCoercepathType path_type, INT type_modifier,
 						   BOOL is_explicit, EdxlCoercionForm dxl_coerce_format,
-						   INT location, IMDId *mdid_src_elemtype);
+						   INT location);
 
 	// dtor
-	~CMDArrayCoerceCastGPDB() override;
-
+	virtual ~CMDArrayCoerceCastGPDB();
 
 	// accessors
-	virtual const CWStringDynamic *Pstr();
+	virtual const CWStringDynamic *
+	Pstr() const
+	{
+		return m_dxl_str;
+	}
 
 	// return type modifier
 	virtual INT TypeModifier() const;
@@ -73,15 +74,12 @@ public:
 	// return token location
 	virtual INT Location() const;
 
-	// return src element type
-	virtual IMDId *GetSrcElemTypeMdId() const;
-
 	// serialize object in DXL format
-	void Serialize(gpdxl::CXMLSerializer *xml_serializer) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the type in the provided stream
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 };
 }  // namespace gpmd

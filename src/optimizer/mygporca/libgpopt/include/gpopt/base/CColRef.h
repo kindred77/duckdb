@@ -29,17 +29,18 @@ using namespace gpmd;
 class CColRef;
 
 // colref array
-using CColRefArray = CDynamicPtrArray<CColRef, CleanupNULL>;
-using CColRef2dArray = CDynamicPtrArray<CColRefArray, CleanupRelease>;
+typedef CDynamicPtrArray<CColRef, CleanupNULL> CColRefArray;
+typedef CDynamicPtrArray<CColRefArray, CleanupRelease> CColRef2dArray;
 
 // hash map mapping ULONG -> CColRef
-using UlongToColRefMap =
-	CHashMap<ULONG, CColRef, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupNULL<CColRef>>;
+typedef CHashMap<ULONG, CColRef, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupNULL<CColRef> >
+	UlongToColRefMap;
 // iterator
-using UlongToColRefMapIter =
-	CHashMapIter<ULONG, CColRef, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupNULL<CColRef>>;
+typedef CHashMapIter<ULONG, CColRef, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupNULL<CColRef> >
+	UlongToColRefMapIter;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -72,6 +73,9 @@ private:
 	// name: SQL alias or artificial name
 	const CName *m_pname;
 
+	// private copy ctor
+	CColRef(const CColRef &);
+
 	// track the usage of colref (used/unused/unknown)
 	EUsedStatus m_used;
 
@@ -79,8 +83,6 @@ private:
 	IMDId *m_mdid_table;
 
 public:
-	CColRef(const CColRef &) = delete;
-
 	enum Ecolreftype
 	{
 		EcrtTable,
@@ -235,14 +237,6 @@ operator<<(IOstream &os, CColRef &cr)
 {
 	return cr.OsPrint(os);
 }
-
-// hash map: CColRef -> ULONG
-using ColRefToUlongMap =
-	CHashMap<CColRef, ULONG, CColRef::HashValue, gpos::Equals<CColRef>,
-			 CleanupNULL<CColRef>, CleanupDelete<ULONG>>;
-
-using ColRefToUlongMapArray =
-	CDynamicPtrArray<ColRefToUlongMap, CleanupRelease>;
 
 }  // namespace gpopt
 

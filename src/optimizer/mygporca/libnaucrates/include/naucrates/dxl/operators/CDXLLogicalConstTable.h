@@ -38,24 +38,25 @@ private:
 	// array of datum arrays (const tuples)
 	CDXLDatum2dArray *m_const_tuples_datum_array;
 
-public:
-	CDXLLogicalConstTable(CDXLLogicalConstTable &) = delete;
+	// private copy ctor
+	CDXLLogicalConstTable(CDXLLogicalConstTable &);
 
+public:
 	// ctor
 	CDXLLogicalConstTable(CMemoryPool *mp,
 						  CDXLColDescrArray *dxl_col_descr_array,
 						  CDXLDatum2dArray *pdrgpdrgpdxldatum);
 
 	//dtor
-	~CDXLLogicalConstTable() override;
+	virtual ~CDXLLogicalConstTable();
 
 	// accessors
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// column descriptors
 	const CDXLColDescrArray *
@@ -85,17 +86,17 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// check if given column is defined by operator
-	BOOL IsColDefined(ULONG colid) const override;
+	virtual BOOL IsColDefined(ULONG colid) const;
 
 	// conversion function
 	static CDXLLogicalConstTable *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalConstTable == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalConstTable *>(dxl_op);
@@ -104,7 +105,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

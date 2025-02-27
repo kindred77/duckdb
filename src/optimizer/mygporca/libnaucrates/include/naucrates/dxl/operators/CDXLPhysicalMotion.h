@@ -35,6 +35,9 @@ using namespace gpos;
 class CDXLPhysicalMotion : public CDXLPhysical
 {
 private:
+	// private copy ctor
+	CDXLPhysicalMotion(CDXLPhysicalMotion &);
+
 	// serialize the given list of segment ids into a comma-separated string
 	CWStringDynamic *GetSegIdsCommaSeparatedStr(
 		const IntPtrArray *segment_ids_array) const;
@@ -54,12 +57,10 @@ protected:
 
 
 public:
-	CDXLPhysicalMotion(CDXLPhysicalMotion &) = delete;
-
 	// ctor/dtor
 	explicit CDXLPhysicalMotion(CMemoryPool *mp);
 
-	~CDXLPhysicalMotion() override;
+	virtual ~CDXLPhysicalMotion();
 
 	// accessors
 	const IntPtrArray *GetInputSegIdsArray() const;
@@ -78,7 +79,7 @@ public:
 	static CDXLPhysicalMotion *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(
 			EdxlopPhysicalMotionGather == dxl_op->GetDXLOperator() ||
 			EdxlopPhysicalMotionBroadcast == dxl_op->GetDXLOperator() ||

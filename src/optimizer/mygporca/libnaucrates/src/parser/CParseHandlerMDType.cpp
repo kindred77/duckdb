@@ -40,35 +40,34 @@ CParseHandlerMDType::CParseHandlerMDType(
 	CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 	CParseHandlerBase *parse_handler_root)
 	: CParseHandlerMetadataObject(mp, parse_handler_mgr, parse_handler_root),
-	  m_mdid(nullptr),
-	  m_distr_opfamily(nullptr),
-	  m_legacy_distr_opfamily(nullptr),
-	  m_part_opfamily(nullptr),
-	  m_mdname(nullptr),
-	  m_mdid_eq_op(nullptr),
-	  m_mdid_neq_op(nullptr),
-	  m_mdid_lt_op(nullptr),
-	  m_mdid_lteq_op(nullptr),
-	  m_mdid_gt_op(nullptr),
-	  m_mdid_gteq_op(nullptr),
-	  m_mdid_cmp_op(nullptr),
-	  m_mdid_min_op(nullptr),
-	  m_mdid_max_op(nullptr),
-	  m_mdid_avg_op(nullptr),
-	  m_mdid_sum_op(nullptr),
-	  m_mdid_count_op(nullptr),
+	  m_mdid(NULL),
+	  m_distr_opfamily(NULL),
+	  m_legacy_distr_opfamily(NULL),
+	  m_mdname(NULL),
+	  m_mdid_eq_op(NULL),
+	  m_mdid_neq_op(NULL),
+	  m_mdid_lt_op(NULL),
+	  m_mdid_lteq_op(NULL),
+	  m_mdid_gt_op(NULL),
+	  m_mdid_gteq_op(NULL),
+	  m_mdid_cmp_op(NULL),
+	  m_mdid_min_op(NULL),
+	  m_mdid_max_op(NULL),
+	  m_mdid_avg_op(NULL),
+	  m_mdid_sum_op(NULL),
+	  m_mdid_count_op(NULL),
 	  m_is_hashable(false),
 	  m_is_composite(false),
 	  m_is_text_related(false),
-	  m_mdid_base_rel(nullptr),
-	  m_mdid_array_type(nullptr)
+	  m_mdid_base_rel(NULL),
+	  m_mdid_array_type(NULL)
 {
 	// default: no aggregates for type
-	m_mdid_min_op = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, 0);
-	m_mdid_max_op = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, 0);
-	m_mdid_avg_op = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, 0);
-	m_mdid_sum_op = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, 0);
-	m_mdid_count_op = GPOS_NEW(mp) CMDIdGPDB(IMDId::EmdidGeneral, 0);
+	m_mdid_min_op = GPOS_NEW(mp) CMDIdGPDB(0);
+	m_mdid_max_op = GPOS_NEW(mp) CMDIdGPDB(0);
+	m_mdid_avg_op = GPOS_NEW(mp) CMDIdGPDB(0);
+	m_mdid_sum_op = GPOS_NEW(mp) CMDIdGPDB(0);
+	m_mdid_count_op = GPOS_NEW(mp) CMDIdGPDB(0);
 }
 
 
@@ -85,7 +84,6 @@ CParseHandlerMDType::~CParseHandlerMDType()
 	m_mdid->Release();
 	CRefCount::SafeRelease(m_distr_opfamily);
 	CRefCount::SafeRelease(m_legacy_distr_opfamily);
-	CRefCount::SafeRelease(m_part_opfamily);
 	m_mdid_eq_op->Release();
 	m_mdid_neq_op->Release();
 	m_mdid_lt_op->Release();
@@ -164,7 +162,7 @@ CParseHandlerMDType::StartElement(const XMLCh *const,  // element_uri,
 			// parse if type is composite
 			const XMLCh *attribute_val_xml = attrs.getValue(
 				CDXLTokens::XmlstrToken(EdxltokenMDTypeComposite));
-			if (nullptr == attribute_val_xml)
+			if (NULL == attribute_val_xml)
 			{
 				m_is_composite = false;
 			}
@@ -193,7 +191,7 @@ CParseHandlerMDType::StartElement(const XMLCh *const,  // element_uri,
 
 			const XMLCh *xml_is_text_related = attrs.getValue(
 				CDXLTokens::XmlstrToken(EdxltokenMDTypeIsTextRelated));
-			if (nullptr == xml_is_text_related)
+			if (NULL == xml_is_text_related)
 			{
 				m_is_text_related = false;
 			}
@@ -245,11 +243,10 @@ CParseHandlerMDType::ParseMdid(const XMLCh *element_local_name,
 		{EdxltokenMDTypeAggCount, &m_mdid_count_op},
 		{EdxltokenMDTypeDistrOpfamily, &m_distr_opfamily},
 		{EdxltokenMDTypeLegacyDistrOpfamily, &m_legacy_distr_opfamily},
-		{EdxltokenMDTypePartOpfamily, &m_part_opfamily},
 	};
 
 	Edxltoken token_type = EdxltokenSentinel;
-	IMDId **token_mdid = nullptr;
+	IMDId **token_mdid = NULL;
 	for (ULONG ul = 0; ul < GPOS_ARRAY_SIZE(rgmdidmap); ul++)
 	{
 		SMdidMapElem mdidmapelem = rgmdidmap[ul];
@@ -263,7 +260,7 @@ CParseHandlerMDType::ParseMdid(const XMLCh *element_local_name,
 	}
 
 	GPOS_ASSERT(EdxltokenSentinel != token_type);
-	GPOS_ASSERT(nullptr != token_mdid);
+	GPOS_ASSERT(NULL != token_mdid);
 
 	if (m_mdid_min_op == *token_mdid || m_mdid_max_op == *token_mdid ||
 		m_mdid_avg_op == *token_mdid || m_mdid_sum_op == *token_mdid ||
@@ -286,9 +283,9 @@ CParseHandlerMDType::ParseMdid(const XMLCh *element_local_name,
 //
 //---------------------------------------------------------------------------
 BOOL
-CParseHandlerMDType::IsBuiltInType(const IMDId *mdid)
+CParseHandlerMDType::IsBuiltInType(const IMDId *mdid) const
 {
-	if (IMDId::EmdidGeneral != mdid->MdidType())
+	if (IMDId::EmdidGPDB != mdid->MdidType())
 	{
 		return false;
 	}
@@ -306,6 +303,50 @@ CParseHandlerMDType::IsBuiltInType(const IMDId *mdid)
 		default:
 			return false;
 	}
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CParseHandlerMDType::GetTokenMDid
+//
+//	@doc:
+//		Return the address of the mdid variable corresponding to the dxl token
+//
+//---------------------------------------------------------------------------
+IMDId **
+CParseHandlerMDType::GetTokenMDid(Edxltoken token_type)
+{
+	switch (token_type)
+	{
+		case EdxltokenMDTypeEqOp:
+			return &m_mdid_eq_op;
+
+		case EdxltokenMDTypeNEqOp:
+			return &m_mdid_neq_op;
+
+		case EdxltokenMDTypeLTOp:
+			return &m_mdid_lt_op;
+
+		case EdxltokenMDTypeLEqOp:
+			return &m_mdid_lteq_op;
+
+		case EdxltokenMDTypeGTOp:
+			return &m_mdid_gt_op;
+
+		case EdxltokenMDTypeGEqOp:
+			return &m_mdid_gteq_op;
+
+		case EdxltokenMDTypeCompOp:
+			return &m_mdid_cmp_op;
+
+		case EdxltokenMDTypeArray:
+			return &m_mdid_array_type;
+
+		default:
+			break;
+	}
+	GPOS_ASSERT(!"Unexpected DXL token when parsing MDType");
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -356,17 +397,13 @@ CParseHandlerMDType::EndElement(const XMLCh *const,	 // element_uri,
 
 			default:
 				m_mdid->AddRef();
-				if (nullptr != m_distr_opfamily)
+				if (NULL != m_distr_opfamily)
 				{
 					m_distr_opfamily->AddRef();
 				}
-				if (nullptr != m_legacy_distr_opfamily)
+				if (NULL != m_legacy_distr_opfamily)
 				{
 					m_legacy_distr_opfamily->AddRef();
-				}
-				if (nullptr != m_part_opfamily)
-				{
-					m_part_opfamily->AddRef();
 				}
 				m_mdid_eq_op->AddRef();
 				m_mdid_neq_op->AddRef();
@@ -380,7 +417,7 @@ CParseHandlerMDType::EndElement(const XMLCh *const,	 // element_uri,
 				m_mdid_avg_op->AddRef();
 				m_mdid_sum_op->AddRef();
 				m_mdid_count_op->AddRef();
-				if (nullptr != m_mdid_base_rel)
+				if (NULL != m_mdid_base_rel)
 				{
 					m_mdid_base_rel->AddRef();
 				}
@@ -394,13 +431,13 @@ CParseHandlerMDType::EndElement(const XMLCh *const,	 // element_uri,
 				m_imd_obj = GPOS_NEW(m_mp) CMDTypeGenericGPDB(
 					m_mp, m_mdid, m_mdname, m_is_redistributable,
 					m_istype_fixed_Length, length, m_type_passed_by_value,
-					m_distr_opfamily, m_legacy_distr_opfamily, m_part_opfamily,
-					m_mdid_eq_op, m_mdid_neq_op, m_mdid_lt_op, m_mdid_lteq_op,
-					m_mdid_gt_op, m_mdid_gteq_op, m_mdid_cmp_op, m_mdid_min_op,
-					m_mdid_max_op, m_mdid_avg_op, m_mdid_sum_op,
-					m_mdid_count_op, m_is_hashable, m_is_merge_joinable,
-					m_is_composite, m_is_text_related, m_mdid_base_rel,
-					m_mdid_array_type, m_type_length);
+					m_distr_opfamily, m_legacy_distr_opfamily, m_mdid_eq_op,
+					m_mdid_neq_op, m_mdid_lt_op, m_mdid_lteq_op, m_mdid_gt_op,
+					m_mdid_gteq_op, m_mdid_cmp_op, m_mdid_min_op, m_mdid_max_op,
+					m_mdid_avg_op, m_mdid_sum_op, m_mdid_count_op,
+					m_is_hashable, m_is_merge_joinable, m_is_composite,
+					m_is_text_related, m_mdid_base_rel, m_mdid_array_type,
+					m_type_length);
 				break;
 		}
 

@@ -38,20 +38,20 @@ private:
 	// return type
 	IMDId *m_mdid_type;
 
+	// private copy ctor
+	CParseHandlerScalarCaseTest(const CParseHandlerScalarCaseTest &);
+
 	// process the start of an element
 	void StartElement(const XMLCh *const element_uri,
 					  const XMLCh *const element_local_name,
-					  const XMLCh *const element_qname,
-					  const Attributes &attr) override;
+					  const XMLCh *const element_qname, const Attributes &attr);
 
 	// process the end of an element
 	void EndElement(const XMLCh *const element_uri,
 					const XMLCh *const element_local_name,
-					const XMLCh *const element_qname) override;
+					const XMLCh *const element_qname);
 
 public:
-	CParseHandlerScalarCaseTest(const CParseHandlerScalarCaseTest &) = delete;
-
 	// ctor
 	CParseHandlerScalarCaseTest(CMemoryPool *mp,
 								CParseHandlerManager *parse_handler_mgr,

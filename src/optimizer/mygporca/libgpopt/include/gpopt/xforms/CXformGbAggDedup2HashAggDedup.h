@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformGbAggDedup2HashAggDedup.h
@@ -30,33 +30,35 @@ using namespace gpos;
 class CXformGbAggDedup2HashAggDedup : public CXformGbAgg2HashAgg
 {
 private:
-public:
-	CXformGbAggDedup2HashAggDedup(const CXformGbAggDedup2HashAggDedup &) =
-		delete;
+	// private copy ctor
+	CXformGbAggDedup2HashAggDedup(const CXformGbAggDedup2HashAggDedup &);
 
+public:
 	// ctor
 	CXformGbAggDedup2HashAggDedup(CMemoryPool *mp);
 
 	// dtor
-	~CXformGbAggDedup2HashAggDedup() override = default;
+	virtual ~CXformGbAggDedup2HashAggDedup()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfGbAggDedup2HashAggDedup;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformGbAggDedup2HashAggDedup";
 	}
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformGbAggDedup2HashAggDedup
 

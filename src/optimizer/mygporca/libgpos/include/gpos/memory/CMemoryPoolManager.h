@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+//	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
 //
 //
@@ -37,13 +37,13 @@ namespace gpos
 class CMemoryPoolManager
 {
 private:
-	using MemoryPoolKeyAccessor =
-		CSyncHashtableAccessByKey<CMemoryPool, ULONG_PTR>;
+	typedef CSyncHashtableAccessByKey<CMemoryPool, ULONG_PTR>
+		MemoryPoolKeyAccessor;
 
-	using MemoryPoolIter = CSyncHashtableIter<CMemoryPool, ULONG_PTR>;
+	typedef CSyncHashtableIter<CMemoryPool, ULONG_PTR> MemoryPoolIter;
 
-	using MemoryPoolIterAccessor =
-		CSyncHashtableAccessByIter<CMemoryPool, ULONG_PTR>;
+	typedef CSyncHashtableAccessByIter<CMemoryPool, ULONG_PTR>
+		MemoryPoolIterAccessor;
 
 	// memory pool in which all objects created by the manager itself
 	// are allocated - must be thread-safe
@@ -53,6 +53,9 @@ private:
 	// are allocated
 	CMemoryPool *m_global_memory_pool;
 
+	// are allocations using global new operator allowed?
+	BOOL m_allow_global_new;
+
 	// hash table to maintain created pools
 	CSyncHashtable<CMemoryPool, ULONG_PTR> *m_ht_all_pools;
 
@@ -61,6 +64,9 @@ private:
 
 	// create new pool of given type
 	virtual CMemoryPool *NewMemoryPool();
+
+	// no copy ctor
+	CMemoryPoolManager(const CMemoryPoolManager &);
 
 	// clean-up memory pools
 	void Cleanup();
@@ -123,8 +129,6 @@ protected:
 	}
 
 public:
-	CMemoryPoolManager(const CMemoryPoolManager &) = delete;
-
 	// create new memory pool
 	CMemoryPool *CreateMemoryPool();
 
@@ -149,7 +153,30 @@ public:
 		return m_global_memory_pool;
 	}
 
-	virtual ~CMemoryPoolManager() = default;
+	virtual ~CMemoryPoolManager()
+	{
+	}
+
+	// are allocations using global new operator allowed?
+	BOOL
+	IsGlobalNewAllowed() const
+	{
+		return m_allow_global_new;
+	}
+
+	// disable allocations using global new operator
+	void
+	DisableGlobalNew()
+	{
+		m_allow_global_new = false;
+	}
+
+	// enable allocations using global new operator
+	void
+	EnableGlobalNew()
+	{
+		m_allow_global_new = true;
+	}
 
 	// return total allocated size in bytes
 	ULLONG TotalAllocatedSize();

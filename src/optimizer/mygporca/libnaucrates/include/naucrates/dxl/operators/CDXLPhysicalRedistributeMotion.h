@@ -47,18 +47,18 @@ private:
 	// is this a duplicate sensitive redistribute motion
 	BOOL m_is_duplicate_sensitive;
 
+	// private copy ctor
+	CDXLPhysicalRedistributeMotion(const CDXLPhysicalRedistributeMotion &);
+
 
 public:
-	CDXLPhysicalRedistributeMotion(const CDXLPhysicalRedistributeMotion &) =
-		delete;
-
 	// ctor
 	CDXLPhysicalRedistributeMotion(CMemoryPool *mp,
 								   BOOL is_duplicate_sensitive);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// does motion remove duplicates
 	BOOL
@@ -68,21 +68,21 @@ public:
 	}
 
 	// index of relational child node in the children array
-	ULONG
-	GetRelationChildIdx() const override
+	virtual ULONG
+	GetRelationChildIdx() const
 	{
 		return EdxlrmIndexChild;
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalRedistributeMotion *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalMotionRedistribute ==
 					dxl_op->GetDXLOperator());
 
@@ -92,7 +92,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

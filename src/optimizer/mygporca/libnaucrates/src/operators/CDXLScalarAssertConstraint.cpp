@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2015 VMware, Inc. or its affiliates.
+//	Copyright (C) 2015 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarAssertConstraint.cpp
@@ -30,7 +30,7 @@ CDXLScalarAssertConstraint::CDXLScalarAssertConstraint(CMemoryPool *mp,
 													   CWStringBase *error_msg)
 	: CDXLScalar(mp), m_error_msg(error_msg)
 {
-	GPOS_ASSERT(nullptr != error_msg);
+	GPOS_ASSERT(NULL != error_msg);
 }
 
 //---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 Pivotal, Inc.
+//	Copyright (C) 2022 VMware, Inc. or its affiliates.
 //
 //	@filename:
 //		CScalarValuesList.cpp
@@ -39,12 +39,7 @@ CScalarValuesList::CScalarValuesList(CMemoryPool *mp) : CScalar(mp)
 BOOL
 CScalarValuesList::Matches(COperator *pop) const
 {
-	if (pop->Eopid() != Eopid())
-	{
-		return false;
-	}
-
-	return true;
+	return pop->Eopid() == Eopid();
 }
 
 // EOF

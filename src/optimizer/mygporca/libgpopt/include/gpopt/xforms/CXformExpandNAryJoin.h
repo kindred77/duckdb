@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformExpandNAryJoin : public CXformExploration
 {
 private:
-public:
-	CXformExpandNAryJoin(const CXformExpandNAryJoin &) = delete;
+	// private copy ctor
+	CXformExpandNAryJoin(const CXformExpandNAryJoin &);
 
+public:
 	// ctor
 	explicit CXformExpandNAryJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformExpandNAryJoin() override = default;
+	virtual ~CXformExpandNAryJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfExpandNAryJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformExpandNAryJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformExpandNAryJoin
 

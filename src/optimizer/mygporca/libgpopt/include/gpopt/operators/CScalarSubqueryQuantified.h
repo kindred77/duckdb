@@ -51,6 +51,9 @@ private:
 	// column reference used in comparison
 	const CColRef *m_pcr;
 
+	// private copy ctor
+	CScalarSubqueryQuantified(const CScalarSubqueryQuantified &);
+
 protected:
 	// ctor
 	CScalarSubqueryQuantified(CMemoryPool *mp, IMDId *scalar_op_mdid,
@@ -58,11 +61,9 @@ protected:
 							  const CColRef *colref);
 
 	// dtor
-	~CScalarSubqueryQuantified() override;
+	virtual ~CScalarSubqueryQuantified();
 
 public:
-	CScalarSubqueryQuantified(const CScalarSubqueryQuantified &) = delete;
-
 	// operator mdid accessor
 	IMDId *MdIdOp() const;
 
@@ -77,41 +78,41 @@ public:
 	}
 
 	// return the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return locally used columns
-	CColRefSet *PcrsUsed(CMemoryPool *mp, CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *PcrsUsed(CMemoryPool *mp, CExpressionHandle &exprhdl);
 
 	// derive partition consumer info
-	CPartInfo *PpartinfoDerive(CMemoryPool *mp,
-							   CExpressionHandle &exprhdl) const override;
+	virtual CPartInfo *PpartinfoDerive(CMemoryPool *mp,
+									   CExpressionHandle &exprhdl) const;
 
 	// conversion function
 	static CScalarSubqueryQuantified *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSubqueryAny == pop->Eopid() ||
 					EopScalarSubqueryAll == pop->Eopid());
 
-		return dynamic_cast<CScalarSubqueryQuantified *>(pop);
+		return reinterpret_cast<CScalarSubqueryQuantified *>(pop);
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CScalarSubqueryQuantified
 }  // namespace gpopt

@@ -31,9 +31,9 @@ using namespace gpopt;
 CPhysicalSort::CPhysicalSort(CMemoryPool *mp, COrderSpec *pos)
 	: CPhysical(mp),
 	  m_pos(pos),  // caller must add-ref pos
-	  m_pcrsSort(nullptr)
+	  m_pcrsSort(NULL)
 {
-	GPOS_ASSERT(nullptr != pos);
+	GPOS_ASSERT(NULL != pos);
 
 	m_pcrsSort = Pos()->PcrsUsed(mp);
 }
@@ -196,6 +196,33 @@ CPhysicalSort::PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CPhysicalSort::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalSort::PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+							CPartitionPropagationSpec *pppsRequired,
+							ULONG
+#ifdef GPOS_DEBUG
+								child_index
+#endif
+							,
+							CDrvdPropArray *,  //pdrgpdpCtxt,
+							ULONG			   //ulOptReq
+)
+{
+	GPOS_ASSERT(0 == child_index);
+	GPOS_ASSERT(NULL != pppsRequired);
+
+	return CPhysical::PppsRequiredPushThruUnresolvedUnary(
+		mp, exprhdl, pppsRequired, CPhysical::EppcAllowed, NULL);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CPhysicalSort::PcteRequired
 //
 //	@doc:
@@ -302,7 +329,7 @@ CEnfdProp::EPropEnforcingType
 CPhysicalSort::EpetOrder(CExpressionHandle &,  // exprhdl
 						 const CEnfdOrder *peo) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	if (peo->FCompatible(m_pos))
@@ -333,7 +360,7 @@ CPhysicalSort::EpetDistribution(CExpressionHandle & /*exprhdl*/,
 #endif	// GPOS_DEBUG
 ) const
 {
-	GPOS_ASSERT(nullptr != ped);
+	GPOS_ASSERT(NULL != ped);
 
 	// distribution enforcers have already been added
 	return CEnfdProp::EpetUnnecessary;

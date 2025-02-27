@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal, Inc.
 //
 //	@filename:
 //		COptimizerConfig.h
@@ -72,7 +72,7 @@ public:
 					 CWindowOids *pdefoidsGPDB);
 
 	// dtor
-	~COptimizerConfig() override;
+	virtual ~COptimizerConfig();
 
 
 	// plan enumeration configuration

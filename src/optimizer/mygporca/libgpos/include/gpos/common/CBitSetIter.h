@@ -40,13 +40,16 @@ private:
 	// is iterator active or exhausted
 	BOOL m_active;
 
-public:
-	CBitSetIter(const CBitSetIter &) = delete;
+	// private copy ctor
+	CBitSetIter(const CBitSetIter &);
 
+public:
 	// ctor
 	explicit CBitSetIter(const CBitSet &bs);
 	// dtor
-	~CBitSetIter() = default;
+	~CBitSetIter()
+	{
+	}
 
 	// short hand for cast
 	operator BOOL() const

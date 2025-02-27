@@ -19,7 +19,6 @@
 
 #include "gpopt/base/CColRef.h"
 #include "gpopt/base/CColRefSet.h"
-#include "naucrates/md/IMDIndex.h"
 
 namespace gpopt
 {
@@ -30,25 +29,26 @@ class CExpression;
 class CConstraint;
 
 // constraint array
-using CConstraintArray = CDynamicPtrArray<CConstraint, CleanupRelease>;
+typedef CDynamicPtrArray<CConstraint, CleanupRelease> CConstraintArray;
 
 // hash map mapping CColRef -> CConstraintArray
-using ColRefToConstraintArrayMap =
-	CHashMap<CColRef, CConstraintArray, CColRef::HashValue, CColRef::Equals,
-			 CleanupNULL<CColRef>, CleanupRelease<CConstraintArray>>;
+typedef CHashMap<CColRef, CConstraintArray, CColRef::HashValue, CColRef::Equals,
+				 CleanupNULL<CColRef>, CleanupRelease<CConstraintArray> >
+	ColRefToConstraintArrayMap;
 
 // mapping CConstraint -> BOOL to cache previous containment queries,
 // we use pointer equality here for fast map lookup -- since we do shallow comparison, we do not take ownership
 // of pointer values
-using ConstraintContainmentMap =
-	CHashMap<CConstraint, BOOL, gpos::HashPtr<CConstraint>,
-			 gpos::EqualPtr<CConstraint>, CleanupNULL<CConstraint>,
-			 CleanupNULL<BOOL>>;
+typedef CHashMap<CConstraint, BOOL, gpos::HashPtr<CConstraint>,
+				 gpos::EqualPtr<CConstraint>, CleanupNULL<CConstraint>,
+				 CleanupNULL<BOOL> >
+	ConstraintContainmentMap;
 
 // hash map mapping ULONG -> CConstraint
-using UlongToConstraintMap =
-	CHashMap<ULONG, CConstraint, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupRelease<CConstraint>>;
+typedef CHashMap<ULONG, CConstraint, gpos::HashValue<ULONG>,
+				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+				 CleanupRelease<CConstraint> >
+	UlongToConstraintMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -79,6 +79,9 @@ private:
 	// constant false
 	static BOOL m_fFalse;
 
+	// hidden copy ctor
+	CConstraint(const CConstraint &);
+
 	// return address of static BOOL constant based on passed BOOL value
 	static BOOL *
 	PfVal(BOOL value)
@@ -94,7 +97,7 @@ private:
 	// add column as a new equivalence class, if it is not already in one of the
 	// existing equivalence classes
 	static void AddColumnToEquivClasses(CMemoryPool *mp, const CColRef *colref,
-										CColRefSetArray *pdrgpcrs);
+										CColRefSetArray **ppdrgpcrs);
 
 	// create constraint from scalar comparison
 	static CConstraint *PcnstrFromScalarCmp(CMemoryPool *mp, CExpression *pexpr,
@@ -102,10 +105,10 @@ private:
 											BOOL infer_nulls_as = false);
 
 	// create constraint from scalar boolean expression
-	static CConstraint *PcnstrFromScalarBoolOp(
-		CMemoryPool *mp, CExpression *pexpr, CColRefSetArray **ppdrgpcrs,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
+	static CConstraint *PcnstrFromScalarBoolOp(CMemoryPool *mp,
+											   CExpression *pexpr,
+											   CColRefSetArray **ppdrgpcrs,
+											   BOOL infer_nulls_as = false);
 
 	// create conjunction/disjunction from array of constraints
 	static CConstraint *PcnstrConjDisj(CMemoryPool *mp,
@@ -128,28 +131,28 @@ protected:
 
 	// construct a conjunction or disjunction scalar expression from an
 	// array of constraints
-	static CExpression *PexprScalarConjDisj(CMemoryPool *mp,
-											CConstraintArray *pdrgpcnstr,
-											BOOL fConj);
+	CExpression *PexprScalarConjDisj(CMemoryPool *mp,
+									 CConstraintArray *pdrgpcnstr,
+									 BOOL fConj) const;
 
 	// flatten an array of constraints to be used as constraint children
-	static CConstraintArray *PdrgpcnstrFlatten(CMemoryPool *mp,
-											   CConstraintArray *pdrgpcnstr,
-											   EConstraintType ect);
+	CConstraintArray *PdrgpcnstrFlatten(CMemoryPool *mp,
+										CConstraintArray *pdrgpcnstr,
+										EConstraintType ect) const;
 
 	// combine any two or more constraints that reference only one particular column
-	static CConstraintArray *PdrgpcnstrDeduplicate(CMemoryPool *mp,
-												   CConstraintArray *pdrgpcnstr,
-												   EConstraintType ect);
+	CConstraintArray *PdrgpcnstrDeduplicate(CMemoryPool *mp,
+											CConstraintArray *pdrgpcnstr,
+											EConstraintType ect) const;
 
 	// mapping between columns and arrays of constraints
-	static ColRefToConstraintArrayMap *Phmcolconstr(
-		CMemoryPool *mp, CColRefSet *pcrs, CConstraintArray *pdrgpcnstr);
+	ColRefToConstraintArrayMap *Phmcolconstr(
+		CMemoryPool *mp, CColRefSet *pcrs, CConstraintArray *pdrgpcnstr) const;
 
 	// return a copy of the conjunction/disjunction constraint for a different column
-	static CConstraint *PcnstrConjDisjRemapForColumn(
-		CMemoryPool *mp, CColRef *colref, CConstraintArray *pdrgpcnstr,
-		BOOL fConj);
+	CConstraint *PcnstrConjDisjRemapForColumn(CMemoryPool *mp, CColRef *colref,
+											  CConstraintArray *pdrgpcnstr,
+											  BOOL fConj) const;
 
 	// create constraint from scalar array comparison expression originally generated for
 	// "scalar op ANY/ALL (array)" construct
@@ -158,17 +161,12 @@ protected:
 												 CColRef *colref,
 												 BOOL infer_nulls_as = false);
 
-	static CColRefSet *PcrsFromConstraints(CMemoryPool *mp,
-										   CConstraintArray *pdrgpcnstr);
-
 public:
-	CConstraint(const CConstraint &) = delete;
-
 	// ctor
-	explicit CConstraint(CMemoryPool *mp, CColRefSet *pcrsUsed);
+	explicit CConstraint(CMemoryPool *mp);
 
 	// dtor
-	~CConstraint() override;
+	virtual ~CConstraint();
 
 	// constraint type accessor
 	virtual EConstraintType Ect() const = 0;
@@ -208,12 +206,6 @@ public:
 		return false;
 	}
 
-	virtual CConstraint *
-	GetConstraintOnSegmentId() const
-	{
-		return nullptr;
-	}
-
 	// return a copy of the constraint with remapped columns
 	virtual CConstraint *PcnstrCopyWithRemappedColumns(
 		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist) = 0;
@@ -224,7 +216,7 @@ public:
 		   const CColRef *	//colref
 	)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// return constraint on a given set of columns
@@ -233,7 +225,7 @@ public:
 		   CColRefSet *	   //pcrs
 	)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	// return a clone of the constraint for a different column
@@ -242,14 +234,10 @@ public:
 
 	// create constraint from scalar expression and pass back any discovered
 	// equivalence classes
-	static CConstraint *PcnstrFromScalarExpr(
-		CMemoryPool *mp, CExpression *pexpr, CColRefSetArray **ppdrgpcrs,
-		BOOL infer_nulls_as = false,
-		IMDIndex::EmdindexType access_method = IMDIndex::EmdindSentinel);
-
-	// create constraint from EXISTS/ANY scalar subquery
-	static CConstraint *PcnstrFromExistsAnySubquery(
-		CMemoryPool *mp, CExpression *pexpr, CColRefSetArray **ppdrgpcrs);
+	static CConstraint *PcnstrFromScalarExpr(CMemoryPool *mp,
+											 CExpression *pexpr,
+											 CColRefSetArray **ppdrgpcrs,
+											 BOOL infer_nulls_as = false);
 
 	// create conjunction from array of constraints
 	static CConstraint *PcnstrConjunction(CMemoryPool *mp,
@@ -269,7 +257,6 @@ public:
 												CConstraintArray *pdrgpcnstr,
 												CColRef *colref,
 												BOOL fExclusive);
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 
 };	// class CConstraint
 

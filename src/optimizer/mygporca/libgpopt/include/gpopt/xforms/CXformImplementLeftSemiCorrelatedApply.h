@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates..
+//	Copyright (C) 2014 Pivotal Inc..
 //
 //	@filename:
 //		CXformImplementLeftSemiCorrelatedApply.h
@@ -36,10 +36,11 @@ class CXformImplementLeftSemiCorrelatedApply
 											CPhysicalCorrelatedLeftSemiNLJoin>
 {
 private:
-public:
+	// private copy ctor
 	CXformImplementLeftSemiCorrelatedApply(
-		const CXformImplementLeftSemiCorrelatedApply &) = delete;
+		const CXformImplementLeftSemiCorrelatedApply &);
 
+public:
 	// ctor
 	explicit CXformImplementLeftSemiCorrelatedApply(CMemoryPool *mp)
 		: CXformImplementCorrelatedApply<CLogicalLeftSemiCorrelatedApply,
@@ -48,17 +49,19 @@ public:
 	}
 
 	// dtor
-	~CXformImplementLeftSemiCorrelatedApply() override = default;
+	virtual ~CXformImplementLeftSemiCorrelatedApply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementLeftSemiCorrelatedApply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementLeftSemiCorrelatedApply";
 	}

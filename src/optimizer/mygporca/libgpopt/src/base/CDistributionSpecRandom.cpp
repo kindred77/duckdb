@@ -34,6 +34,7 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CDistributionSpecRandom::CDistributionSpecRandom()
+	: m_is_duplicate_sensitive(false), m_fSatisfiedBySingleton(true)
 {
 	if (COptCtxt::PoctxtFromTLS()->FDMLQuery())
 	{
@@ -41,10 +42,12 @@ CDistributionSpecRandom::CDistributionSpecRandom()
 		// Const Tables in DML queries
 		MarkDuplicateSensitive();
 	}
+
+	m_gp_segment_id = NULL;
 }
 
 CDistributionSpecRandom::CDistributionSpecRandom(CColRef *gp_segment_id_)
-	: m_gp_segment_id(gp_segment_id_)
+	: m_is_duplicate_sensitive(false), m_gp_segment_id(gp_segment_id_)
 {
 	if (COptCtxt::PoctxtFromTLS()->FDMLQuery())
 	{
@@ -73,10 +76,10 @@ CDistributionSpecRandom::Matches(const CDistributionSpec *pds) const
 		// If both gp_segment_ids are not null, they match iff they are equal
 		const CDistributionSpecRouted *pdsRouted =
 			static_cast<const CDistributionSpecRouted *>(pds);
-		GPOS_ASSERT(pdsRouted != nullptr);
+		GPOS_ASSERT(pdsRouted != NULL);
 
-		const BOOL localNull = m_gp_segment_id == nullptr;
-		const BOOL pdsNull = pdsRouted->Pcr() == nullptr;
+		const BOOL localNull = m_gp_segment_id == NULL;
+		const BOOL pdsNull = pdsRouted->Pcr() == NULL;
 
 		if (localNull || pdsNull)
 		{
@@ -145,10 +148,10 @@ CDistributionSpecRandom::AppendEnforcers(CMemoryPool *mp,
 										 CExpressionArray *pdrgpexpr,
 										 CExpression *pexpr)
 {
-	GPOS_ASSERT(nullptr != mp);
-	GPOS_ASSERT(nullptr != prpp);
-	GPOS_ASSERT(nullptr != pdrgpexpr);
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != prpp);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(!GPOS_FTRACE(EopttraceDisableMotions));
 	GPOS_ASSERT(
 		this == prpp->Ped()->PdsRequired() &&
@@ -189,7 +192,7 @@ CDistributionSpecRandom::AppendEnforcers(CMemoryPool *mp,
 
 	CDistributionSpec *expr_dist_spec =
 		CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Pds();
-	CDistributionSpecRandom *random_dist_spec = nullptr;
+	CDistributionSpecRandom *random_dist_spec = NULL;
 
 	if (CUtils::FDuplicateHazardDistributionSpec(expr_dist_spec))
 	{

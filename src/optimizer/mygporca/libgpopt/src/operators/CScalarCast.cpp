@@ -15,7 +15,6 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CDrvdPropScalar.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/mdcache/CMDAccessorUtils.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "naucrates/md/IMDTypeBool.h"
@@ -41,7 +40,7 @@ CScalarCast::CScalarCast(CMemoryPool *mp, IMDId *return_type_mdid,
 	  m_returns_null_on_null_input(false),
 	  m_fBoolReturnType(false)
 {
-	if (nullptr != m_func_mdid && m_func_mdid->IsValid())
+	if (NULL != m_func_mdid && m_func_mdid->IsValid())
 	{
 		CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 		const IMDFunction *pmdfunc = md_accessor->RetrieveFunc(m_func_mdid);

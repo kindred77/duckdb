@@ -26,7 +26,7 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CXformImplementation::CXformImplementation(CExpression *pexpr) : CXform(pexpr)
 {
-	GPOS_ASSERT(nullptr != pexpr);
+	GPOS_ASSERT(NULL != pexpr);
 }
 
 
@@ -38,7 +38,9 @@ CXformImplementation::CXformImplementation(CExpression *pexpr) : CXform(pexpr)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CXformImplementation::~CXformImplementation() = default;
+CXformImplementation::~CXformImplementation()
+{
+}
 
 
 // EOF

@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformCTEAnchor2Sequence : public CXformExploration
 {
 private:
-public:
-	CXformCTEAnchor2Sequence(const CXformCTEAnchor2Sequence &) = delete;
+	// private copy ctor
+	CXformCTEAnchor2Sequence(const CXformCTEAnchor2Sequence &);
 
+public:
 	// ctor
 	explicit CXformCTEAnchor2Sequence(CMemoryPool *mp);
 
 	// dtor
-	~CXformCTEAnchor2Sequence() override = default;
+	virtual ~CXformCTEAnchor2Sequence()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfCTEAnchor2Sequence;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformCTEAnchor2Sequence";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformCTEAnchor2Sequence
 }  // namespace gpopt

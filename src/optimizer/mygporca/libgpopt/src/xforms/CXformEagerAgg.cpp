@@ -1,7 +1,7 @@
 
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal Inc.
 //
 //	@filename:
 //		CXformEagerAgg.cpp
@@ -18,7 +18,6 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CColRefSetIter.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CLogicalGbAgg.h"
 #include "gpopt/operators/CLogicalInnerJoin.h"
 #include "gpopt/operators/CPatternLeaf.h"
@@ -79,7 +78,7 @@ void
 CXformEagerAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 						  CExpression *agg_expr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, agg_expr));
 	GPOS_ASSERT(FCheckPattern(agg_expr));
 
@@ -120,8 +119,8 @@ CXformEagerAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 	push_down_gb_cols->Intersection(outer_child_cols);
 
 	/* create new project lists for the two new Gb aggregates */
-	CExpression *lower_expr_proj_list = nullptr;
-	CExpression *upper_expr_proj_list = nullptr;
+	CExpression *lower_expr_proj_list = NULL;
+	CExpression *upper_expr_proj_list = NULL;
 	(void) PopulateLowerUpperProjectList(
 		mp, agg_proj_list_expr, &lower_expr_proj_list, &upper_expr_proj_list);
 
@@ -160,7 +159,7 @@ CXformEagerAgg::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 // Only following aggregates are supported:
 // 	min, max, sum, count, avg
 BOOL
-CXformEagerAgg::CanPushAggBelowJoin(CExpression *scalar_agg_func_expr)
+CXformEagerAgg::CanPushAggBelowJoin(CExpression *scalar_agg_func_expr) const
 {
 	CScalarAggFunc *scalar_agg_func =
 		CScalarAggFunc::PopConvert(scalar_agg_func_expr->Pop());
@@ -210,7 +209,7 @@ CXformEagerAgg::CanPushAggBelowJoin(CExpression *scalar_agg_func_expr)
 //		- Single expression input in the agg
 //		- Input expression only part of outer child
 BOOL
-CXformEagerAgg::CanApplyTransform(CExpression *gb_agg_expr)
+CXformEagerAgg::CanApplyTransform(CExpression *gb_agg_expr) const
 {
 	CExpression *join_expr = (*gb_agg_expr)[0];
 	CExpression *agg_proj_list_expr = (*gb_agg_expr)[1];
@@ -255,7 +254,7 @@ CXformEagerAgg::PopulateLowerUpperProjectList(
 		*orig_proj_list,  // project list of the original global aggregate
 	CExpression **lower_proj_list,	// project list of the new lower aggregate
 	CExpression **upper_proj_list	// project list of the new upper aggregate
-)
+) const
 {
 	// build an array of project elements for the new lower and upper aggregates
 	CExpressionArray *lower_proj_elem_array = GPOS_NEW(mp) CExpressionArray(mp);
@@ -274,7 +273,7 @@ CXformEagerAgg::PopulateLowerUpperProjectList(
 			CScalarAggFunc::PopConvert(orig_agg_expr->Pop());
 		IMDId *orig_agg_mdid = orig_agg_func->MDId();
 		// min and max
-		CExpression *lower_proj_elem_expr = nullptr;
+		CExpression *lower_proj_elem_expr = NULL;
 		PopulateLowerProjectElement(
 			mp, orig_agg_mdid,
 			GPOS_NEW(mp)
@@ -283,7 +282,7 @@ CXformEagerAgg::PopulateLowerUpperProjectList(
 			&lower_proj_elem_expr);
 		lower_proj_elem_array->Append(lower_proj_elem_expr);
 
-		CExpression *upper_proj_elem_expr = nullptr;
+		CExpression *upper_proj_elem_expr = NULL;
 		PopulateUpperProjectElement(
 			mp, orig_agg_mdid,
 			GPOS_NEW(mp)
@@ -312,15 +311,15 @@ CXformEagerAgg::PopulateLowerProjectElement(
 	CWStringConst *agg_name, CExpressionArray *agg_arg_array, BOOL is_distinct,
 	CExpression **
 		lower_proj_elem_expr  // output project element of the new lower aggregate
-)
+) const
 {
 	CColumnFactory *col_factory = COptCtxt::PoctxtFromTLS()->Pcf();
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 
 	agg_mdid->AddRef();
-	CScalarAggFunc *lower_agg_func = CUtils::PopAggFunc(
-		mp, agg_mdid, agg_name, is_distinct, EaggfuncstageLocal, true, nullptr,
-		EaggfunckindNormal, GPOS_NEW(mp) ULongPtrArray(mp), false);
+	CScalarAggFunc *lower_agg_func =
+		CUtils::PopAggFunc(mp, agg_mdid, agg_name, is_distinct,
+						   EaggfuncstageLocal, true, NULL, EaggfunckindNormal);
 	// add the arguments for the lower aggregate function, which is
 	// going to be the same as the original aggregate function
 	agg_arg_array->AddRef();
@@ -351,34 +350,20 @@ CXformEagerAgg::PopulateUpperProjectElement(
 	BOOL is_distinct,
 	CExpression **
 		upper_proj_elem_expr  // output project element of the new lower aggregate
-)
+) const
 {
 	// create a new operator
 	agg_mdid->AddRef();
-	CScalarAggFunc *upper_agg_func = CUtils::PopAggFunc(
-		mp, agg_mdid, agg_name, is_distinct, EaggfuncstageGlobal, true, nullptr,
-		EaggfunckindNormal, GPOS_NEW(mp) ULongPtrArray(mp), false);
+	CScalarAggFunc *upper_agg_func =
+		CUtils::PopAggFunc(mp, agg_mdid, agg_name, is_distinct,
+						   EaggfuncstageGlobal, true, NULL, EaggfunckindNormal);
 
 	// populate the argument list for the upper aggregate function
-	CExpressionArray *upper_agg_arg_array = GPOS_NEW(mp) CExpressionArray(mp);
-
 	CExpressionArray *args = GPOS_NEW(mp) CExpressionArray(mp);
 	args->Append(CUtils::PexprScalarIdent(mp, lower_colref));
 
-	upper_agg_arg_array->Append(
-		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarValuesList(mp), args));
-	upper_agg_arg_array->Append(
-		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarValuesList(mp),
-								 GPOS_NEW(mp) CExpressionArray(mp)));
-	upper_agg_arg_array->Append(
-		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarValuesList(mp),
-								 GPOS_NEW(mp) CExpressionArray(mp)));
-	upper_agg_arg_array->Append(
-		GPOS_NEW(mp) CExpression(mp, GPOS_NEW(mp) CScalarValuesList(mp),
-								 GPOS_NEW(mp) CExpressionArray(mp)));
-
-	CExpression *upper_agg_expr =
-		GPOS_NEW(mp) CExpression(mp, upper_agg_func, upper_agg_arg_array);
+	CExpression *upper_agg_expr = GPOS_NEW(mp)
+		CExpression(mp, upper_agg_func, CUtils::PexprAggFuncArgs(mp, args));
 
 
 	// determine column reference for the new project element

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CConstExprEvaluatorDefault.h
@@ -36,22 +36,23 @@ namespace gpopt
 class CConstExprEvaluatorDefault : public IConstExprEvaluator
 {
 private:
-public:
-	CConstExprEvaluatorDefault(const CConstExprEvaluatorDefault &) = delete;
+	// private copy ctor
+	CConstExprEvaluatorDefault(const CConstExprEvaluatorDefault &);
 
+public:
 	// ctor
 	CConstExprEvaluatorDefault() : IConstExprEvaluator()
 	{
 	}
 
 	// dtor
-	~CConstExprEvaluatorDefault() override;
+	virtual ~CConstExprEvaluatorDefault();
 
 	// Evaluate the given expression and return the result as a new expression
-	CExpression *PexprEval(CExpression *pexpr) override;
+	virtual CExpression *PexprEval(CExpression *pexpr);
 
 	// Returns true iff the evaluator can evaluate constant expressions
-	BOOL FCanEvalExpressions() override;
+	virtual BOOL FCanEvalExpressions();
 };
 }  // namespace gpopt
 

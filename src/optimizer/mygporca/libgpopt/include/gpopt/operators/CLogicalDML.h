@@ -40,6 +40,7 @@ public:
 		EdmlSentinel
 	};
 
+	static const WCHAR m_rgwszDml[EdmlSentinel][10];
 
 private:
 	// dml operator
@@ -57,40 +58,44 @@ private:
 	// action column
 	CColRef *m_pcrAction;
 
+	// table oid column
+	CColRef *m_pcrTableOid;
+
 	// ctid column
 	CColRef *m_pcrCtid;
 
 	// segmentId column
 	CColRef *m_pcrSegmentId;
 
-	// Split Update
-	BOOL m_fSplit;
+	// tuple oid column if one exists
+	CColRef *m_pcrTupleOid;
+
+	// private copy ctor
+	CLogicalDML(const CLogicalDML &);
 
 public:
-	CLogicalDML(const CLogicalDML &) = delete;
-
 	// ctor
 	explicit CLogicalDML(CMemoryPool *mp);
 
 	// ctor
 	CLogicalDML(CMemoryPool *mp, EDMLOperator edmlop,
 				CTableDescriptor *ptabdesc, CColRefArray *colref_array,
-				CBitSet *pbsModified, CColRef *pcrAction, CColRef *pcrCtid,
-				CColRef *pcrSegmentId, BOOL fSplit);
+				CBitSet *pbsModified, CColRef *pcrAction, CColRef *pcrTableOid,
+				CColRef *pcrCtid, CColRef *pcrSegmentId, CColRef *pcrTupleOid);
 
 	// dtor
-	~CLogicalDML() override;
+	virtual ~CLogicalDML();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalDML;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalDML";
 	}
@@ -123,6 +128,13 @@ public:
 		return m_pcrAction;
 	}
 
+	// table oid column
+	CColRef *
+	PcrTableOid() const
+	{
+		return m_pcrTableOid;
+	}
+
 	// ctid column
 	CColRef *
 	PcrCtid() const
@@ -144,62 +156,61 @@ public:
 		return m_ptabdesc;
 	}
 
-	// Is update using split
-	BOOL
-	FSplit() const
+	// tuple oid column
+	CColRef *
+	PcrTupleOid() const
 	{
-		return m_fSplit;
+		return m_pcrTupleOid;
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
-									CExpressionHandle &exprhdl) override;
+	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
+											CExpressionHandle &exprhdl);
 
 	// derive constraint property
-	CPropConstraint *DerivePropertyConstraint(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CPropConstraint *DerivePropertyConstraint(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive partition consumer info
-	CPartInfo *
+	virtual CPartInfo *
 	DerivePartitionInfo(CMemoryPool *,	// mp,
-						CExpressionHandle &exprhdl) const override
+						CExpressionHandle &exprhdl) const
 	{
 		return PpartinfoPassThruOuter(exprhdl);
 	}
 
 	// compute required stats columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *,		   // mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *pcrsInput,
 			 ULONG	// child_index
-	) const override
+	) const
 	{
 		return PcrsStatsPassThru(pcrsInput);
 	}
@@ -209,19 +220,20 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// derive key collections
-	CKeyCollection *DeriveKeyCollection(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CKeyCollection *DeriveKeyCollection(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	// stat promise
-	EStatPromise
-	Esp(CExpressionHandle &) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &) const
 	{
 		return CLogical::EspHigh;
 	}
@@ -234,17 +246,14 @@ public:
 	static CLogicalDML *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalDML == pop->Eopid());
 
 		return dynamic_cast<CLogicalDML *>(pop);
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
-
-	// Helper function to print DML operator type.
-	static void PrintOperatorType(IOstream &os, EDMLOperator, BOOL fSplit);
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CLogicalDML
 }  // namespace gpopt

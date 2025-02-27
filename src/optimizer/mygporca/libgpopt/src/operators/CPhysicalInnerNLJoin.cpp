@@ -52,7 +52,9 @@ CPhysicalInnerNLJoin::CPhysicalInnerNLJoin(CMemoryPool *mp)
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalInnerNLJoin::~CPhysicalInnerNLJoin() = default;
+CPhysicalInnerNLJoin::~CPhysicalInnerNLJoin()
+{
+}
 
 
 
@@ -73,11 +75,11 @@ CPhysicalInnerNLJoin::~CPhysicalInnerNLJoin() = default;
 //
 //---------------------------------------------------------------------------
 CDistributionSpec *
-CPhysicalInnerNLJoin::PdsRequired(CMemoryPool *mp GPOS_UNUSED,
-								  CExpressionHandle &exprhdl GPOS_UNUSED,
+CPhysicalInnerNLJoin::PdsRequired(CMemoryPool * /*mp*/,
+								  CExpressionHandle & /*exprhdl*/,
 								  CDistributionSpec *,	//pdsRequired,
-								  ULONG child_index GPOS_UNUSED,
-								  CDrvdPropArray *pdrgpdpCtxt GPOS_UNUSED,
+								  ULONG /*child_index*/,
+								  CDrvdPropArray * /*pdrgpdpCtxt*/,
 								  ULONG	 // ulOptReq
 ) const
 {
@@ -85,7 +87,7 @@ CPhysicalInnerNLJoin::PdsRequired(CMemoryPool *mp GPOS_UNUSED,
 		CException::ExmaInvalid, CException::ExmiInvalid,
 		GPOS_WSZ_LIT(
 			"PdsRequired should not be called for CPhysicalInnerNLJoin"));
-	return nullptr;
+	return NULL;
 }
 
 CEnfdDistribution *
@@ -130,9 +132,7 @@ CPhysicalInnerNLJoin::Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
 				CPhysicalJoin::PedInnerHashedFromOuterHashed(
 					mp, exprhdl, dmatch, (*pdrgpdpCtxt)[0]);
 			if (pEnfdHashedDistribution)
-			{
 				return pEnfdHashedDistribution;
-			}
 		}
 		return CPhysicalJoin::Ped(mp, exprhdl, prppInput, child_index,
 								  pdrgpdpCtxt, ulOptReq);

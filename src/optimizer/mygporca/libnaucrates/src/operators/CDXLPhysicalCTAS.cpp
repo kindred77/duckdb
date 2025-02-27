@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLPhysicalCTAS.cpp
@@ -36,7 +36,8 @@ CDXLPhysicalCTAS::CDXLPhysicalCTAS(
 	CDXLCtasStorageOptions *dxl_ctas_opt,
 	IMDRelation::Ereldistrpolicy rel_distr_policy,
 	ULongPtrArray *distr_column_pos_array, IMdIdArray *distr_opclasses,
-	BOOL is_temporary, IMDRelation::Erelstoragetype rel_storage_type,
+	BOOL is_temporary, BOOL has_oids,
+	IMDRelation::Erelstoragetype rel_storage_type,
 	ULongPtrArray *src_colids_array, IntPtrArray *vartypemod_array)
 	: CDXLPhysical(mp),
 	  m_mdname_schema(mdname_schema),
@@ -47,17 +48,18 @@ CDXLPhysicalCTAS::CDXLPhysicalCTAS(
 	  m_distr_column_pos_array(distr_column_pos_array),
 	  m_distr_opclasses(distr_opclasses),
 	  m_is_temp_table(is_temporary),
+	  m_has_oids(has_oids),
 	  m_rel_storage_type(rel_storage_type),
 	  m_src_colids_array(src_colids_array),
 	  m_vartypemod_array(vartypemod_array)
 {
-	GPOS_ASSERT(nullptr != mdname_rel);
-	GPOS_ASSERT(nullptr != dxl_col_descr_array);
-	GPOS_ASSERT(nullptr != dxl_ctas_opt);
+	GPOS_ASSERT(NULL != mdname_rel);
+	GPOS_ASSERT(NULL != dxl_col_descr_array);
+	GPOS_ASSERT(NULL != dxl_ctas_opt);
 	GPOS_ASSERT_IFF(IMDRelation::EreldistrHash == rel_distr_policy,
-					nullptr != distr_column_pos_array);
-	GPOS_ASSERT(nullptr != src_colids_array);
-	GPOS_ASSERT(nullptr != vartypemod_array);
+					NULL != distr_column_pos_array);
+	GPOS_ASSERT(NULL != src_colids_array);
+	GPOS_ASSERT(NULL != vartypemod_array);
 	GPOS_ASSERT(dxl_col_descr_array->Size() == vartypemod_array->Size());
 	GPOS_ASSERT(IMDRelation::ErelstorageSentinel > rel_storage_type);
 	GPOS_ASSERT(IMDRelation::EreldistrSentinel > rel_distr_policy);
@@ -126,7 +128,7 @@ CDXLPhysicalCTAS::SerializeToDXL(CXMLSerializer *xml_serializer,
 	const CWStringConst *element_name = GetOpNameStr();
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix), element_name);
-	if (nullptr != m_mdname_schema)
+	if (NULL != m_mdname_schema)
 	{
 		xml_serializer->AddAttribute(
 			CDXLTokens::GetDXLTokenStr(EdxltokenSchema),
@@ -136,7 +138,9 @@ CDXLPhysicalCTAS::SerializeToDXL(CXMLSerializer *xml_serializer,
 								 m_mdname_rel->GetMDName());
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenRelTemporary), m_is_temp_table);
-	GPOS_ASSERT(nullptr != IMDRelation::GetStorageTypeStr(m_rel_storage_type));
+	xml_serializer->AddAttribute(
+		CDXLTokens::GetDXLTokenStr(EdxltokenRelHasOids), m_has_oids);
+	GPOS_ASSERT(NULL != IMDRelation::GetStorageTypeStr(m_rel_storage_type));
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageType),
 		IMDRelation::GetStorageTypeStr(m_rel_storage_type));
@@ -148,12 +152,12 @@ CDXLPhysicalCTAS::SerializeToDXL(CXMLSerializer *xml_serializer,
 
 	if (IMDRelation::EreldistrHash == m_rel_distr_policy)
 	{
-		GPOS_ASSERT(nullptr != m_distr_column_pos_array);
+		GPOS_ASSERT(NULL != m_distr_column_pos_array);
 
 		// serialize distribution columns
 		CWStringDynamic *str_distribution_columns =
 			CDXLUtils::Serialize(m_mp, m_distr_column_pos_array);
-		GPOS_ASSERT(nullptr != str_distribution_columns);
+		GPOS_ASSERT(NULL != str_distribution_columns);
 
 		xml_serializer->AddAttribute(
 			CDXLTokens::GetDXLTokenStr(EdxltokenDistrColumns),
@@ -164,7 +168,7 @@ CDXLPhysicalCTAS::SerializeToDXL(CXMLSerializer *xml_serializer,
 	// serialize input columns
 	CWStringDynamic *str_input_cols =
 		CDXLUtils::Serialize(m_mp, m_src_colids_array);
-	GPOS_ASSERT(nullptr != str_input_cols);
+	GPOS_ASSERT(NULL != str_input_cols);
 
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenInsertCols), str_input_cols);
@@ -173,7 +177,7 @@ CDXLPhysicalCTAS::SerializeToDXL(CXMLSerializer *xml_serializer,
 	// serialize vartypmod list
 	CWStringDynamic *str_vartypmod_list =
 		CDXLUtils::Serialize(m_mp, m_vartypemod_array);
-	GPOS_ASSERT(nullptr != str_vartypmod_list);
+	GPOS_ASSERT(NULL != str_vartypmod_list);
 
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenVarTypeModList),

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CMDRelationCtasGPDB.cpp
@@ -28,7 +28,7 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname_schema, CMDName *mdname,
-	BOOL fTemporary, Erelstoragetype rel_storage_type,
+	BOOL fTemporary, BOOL fHasOids, Erelstoragetype rel_storage_type,
 	Ereldistrpolicy rel_distr_policy, CMDColumnArray *mdcol_array,
 	ULongPtrArray *distr_col_array, IMdIdArray *distr_opfamiles,
 	IMdIdArray *distr_opclasses, ULongPtr2dArray *keyset_array,
@@ -39,6 +39,7 @@ CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 	  m_mdname_schema(mdname_schema),
 	  m_mdname(mdname),
 	  m_is_temp_table(fTemporary),
+	  m_has_oids(fHasOids),
 	  m_rel_storage_type(rel_storage_type),
 	  m_rel_distr_policy(rel_distr_policy),
 	  m_md_col_array(mdcol_array),
@@ -47,16 +48,16 @@ CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 	  m_distr_opclasses(distr_opclasses),
 	  m_keyset_array(keyset_array),
 	  m_system_columns(0),
-	  m_nondrop_col_pos_array(nullptr),
+	  m_nondrop_col_pos_array(NULL),
 	  m_dxl_ctas_storage_option(dxl_ctas_storage_options),
 	  m_vartypemod_array(vartypemod_array)
 {
 	GPOS_ASSERT(mdid->IsValid());
-	GPOS_ASSERT(nullptr != mdcol_array);
-	GPOS_ASSERT(nullptr != dxl_ctas_storage_options);
+	GPOS_ASSERT(NULL != mdcol_array);
+	GPOS_ASSERT(NULL != dxl_ctas_storage_options);
 	GPOS_ASSERT(IMDRelation::ErelstorageSentinel > m_rel_storage_type);
 	GPOS_ASSERT(0 == keyset_array->Size());
-	GPOS_ASSERT(nullptr != vartypemod_array);
+	GPOS_ASSERT(NULL != vartypemod_array);
 
 	m_attrno_nondrop_col_pos_map = GPOS_NEW(m_mp) IntToUlongMap(m_mp);
 	m_nondrop_col_pos_array = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
@@ -84,6 +85,8 @@ CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 
 		m_col_width_array->Append(GPOS_NEW(mp) CDouble(mdcol->Length()));
 	}
+	m_dxl_str = CDXLUtils::SerializeMDObj(
+		m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
 }
 
 //---------------------------------------------------------------------------
@@ -98,10 +101,7 @@ CMDRelationCtasGPDB::~CMDRelationCtasGPDB()
 {
 	GPOS_DELETE(m_mdname_schema);
 	GPOS_DELETE(m_mdname);
-	if (nullptr != m_dxl_str)
-	{
-		GPOS_DELETE(m_dxl_str);
-	}
+	GPOS_DELETE(m_dxl_str);
 	m_mdid->Release();
 	m_md_col_array->Release();
 	m_keyset_array->Release();
@@ -113,17 +113,6 @@ CMDRelationCtasGPDB::~CMDRelationCtasGPDB()
 	m_vartypemod_array->Release();
 	m_distr_opfamilies->Release();
 	m_distr_opclasses->Release();
-}
-
-const CWStringDynamic *
-CMDRelationCtasGPDB::GetStrRepr()
-{
-	if (nullptr == m_dxl_str)
-	{
-		m_dxl_str = CDXLUtils::SerializeMDObj(
-			m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
-	}
-	return m_dxl_str;
 }
 
 //---------------------------------------------------------------------------
@@ -193,7 +182,7 @@ CMDRelationCtasGPDB::GetRelDistribution() const
 ULONG
 CMDRelationCtasGPDB::ColumnCount() const
 {
-	GPOS_ASSERT(nullptr != m_md_col_array);
+	GPOS_ASSERT(NULL != m_md_col_array);
 
 	return m_md_col_array->Size();
 }
@@ -231,7 +220,7 @@ ULONG
 CMDRelationCtasGPDB::GetPosFromAttno(INT attno) const
 {
 	ULONG *att_pos = m_attrno_nondrop_col_pos_map->Find(&attno);
-	GPOS_ASSERT(nullptr != att_pos);
+	GPOS_ASSERT(NULL != att_pos);
 
 	return *att_pos;
 }
@@ -247,7 +236,7 @@ CMDRelationCtasGPDB::GetPosFromAttno(INT attno) const
 ULONG
 CMDRelationCtasGPDB::DistrColumnCount() const
 {
-	return (m_distr_col_array == nullptr) ? 0 : m_distr_col_array->Size();
+	return (m_distr_col_array == NULL) ? 0 : m_distr_col_array->Size();
 }
 
 //---------------------------------------------------------------------------
@@ -286,7 +275,7 @@ CMDRelationCtasGPDB::GetDistrColAt(ULONG pos) const
 IMDId *
 CMDRelationCtasGPDB::GetDistrOpfamilyAt(ULONG pos) const
 {
-	if (m_distr_opfamilies == nullptr)
+	if (m_distr_opfamilies == NULL)
 	{
 		GPOS_RAISE(CException::ExmaInvalid, CException::ExmiInvalid,
 				   GPOS_WSZ_LIT("GetDistrOpfamilyAt() returning NULL."));
@@ -313,7 +302,7 @@ CMDRelationCtasGPDB::Serialize(CXMLSerializer *xml_serializer) const
 
 	m_mdid->Serialize(xml_serializer,
 					  CDXLTokens::GetDXLTokenStr(EdxltokenMdid));
-	if (nullptr != m_mdname_schema)
+	if (NULL != m_mdname_schema)
 	{
 		xml_serializer->AddAttribute(
 			CDXLTokens::GetDXLTokenStr(EdxltokenSchema),
@@ -324,13 +313,15 @@ CMDRelationCtasGPDB::Serialize(CXMLSerializer *xml_serializer) const
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenRelTemporary), m_is_temp_table);
 	xml_serializer->AddAttribute(
+		CDXLTokens::GetDXLTokenStr(EdxltokenRelHasOids), m_has_oids);
+	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenRelStorageType),
 		IMDRelation::GetStorageTypeStr(m_rel_storage_type));
 
 	// serialize vartypmod list
 	CWStringDynamic *var_typemod_list_array =
 		CDXLUtils::Serialize(m_mp, m_vartypemod_array);
-	GPOS_ASSERT(nullptr != var_typemod_list_array);
+	GPOS_ASSERT(NULL != var_typemod_list_array);
 
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenVarTypeModList),
@@ -343,7 +334,7 @@ CMDRelationCtasGPDB::Serialize(CXMLSerializer *xml_serializer) const
 
 	if (EreldistrHash == m_rel_distr_policy)
 	{
-		GPOS_ASSERT(nullptr != m_distr_col_array);
+		GPOS_ASSERT(NULL != m_distr_col_array);
 
 		// serialize distribution columns
 		CWStringDynamic *distr_col_array =

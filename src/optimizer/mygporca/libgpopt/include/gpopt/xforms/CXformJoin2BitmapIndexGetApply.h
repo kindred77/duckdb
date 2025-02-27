@@ -23,10 +23,10 @@ using namespace gpos;
 class CXformJoin2BitmapIndexGetApply : public CXformJoin2IndexApplyGeneric
 {
 private:
-public:
-	CXformJoin2BitmapIndexGetApply(const CXformJoin2BitmapIndexGetApply &) =
-		delete;
+	// no copy ctor
+	CXformJoin2BitmapIndexGetApply(const CXformJoin2BitmapIndexGetApply &);
 
+public:
 	// ctor
 	explicit CXformJoin2BitmapIndexGetApply(CMemoryPool *mp)
 		: CXformJoin2IndexApplyGeneric(mp, true)
@@ -34,17 +34,19 @@ public:
 	}
 
 	// dtor
-	~CXformJoin2BitmapIndexGetApply() override = default;
+	virtual ~CXformJoin2BitmapIndexGetApply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfJoin2BitmapIndexGetApply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformJoin2BitmapIndexGetApply";
 	}

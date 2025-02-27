@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CDXLScalarValuesList.cpp
@@ -26,7 +26,9 @@ CDXLScalarValuesList::CDXLScalarValuesList(CMemoryPool *mp) : CDXLScalar(mp)
 }
 
 // destructor
-CDXLScalarValuesList::~CDXLScalarValuesList() = default;
+CDXLScalarValuesList::~CDXLScalarValuesList()
+{
+}
 
 // operator type
 Edxlopid
@@ -86,7 +88,7 @@ CDXLScalarValuesList::SerializeToDXL(CXMLSerializer *xml_serializer,
 CDXLScalarValuesList *
 CDXLScalarValuesList::Cast(CDXLOperator *dxl_op)
 {
-	GPOS_ASSERT(nullptr != dxl_op);
+	GPOS_ASSERT(NULL != dxl_op);
 	GPOS_ASSERT(EdxlopScalarValuesList == dxl_op->GetDXLOperator());
 
 	return dynamic_cast<CDXLScalarValuesList *>(dxl_op);

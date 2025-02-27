@@ -30,35 +30,37 @@ using namespace gpos;
 class CXformPushGbWithHavingBelowJoin : public CXformExploration
 {
 private:
-public:
-	CXformPushGbWithHavingBelowJoin(const CXformPushGbWithHavingBelowJoin &) =
-		delete;
+	// private copy ctor
+	CXformPushGbWithHavingBelowJoin(const CXformPushGbWithHavingBelowJoin &);
 
+public:
 	// ctor
 	explicit CXformPushGbWithHavingBelowJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformPushGbWithHavingBelowJoin() override = default;
+	virtual ~CXformPushGbWithHavingBelowJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfPushGbWithHavingBelowJoin;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformPushGbWithHavingBelowJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformPushGbWithHavingBelowJoin
 

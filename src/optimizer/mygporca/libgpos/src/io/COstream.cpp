@@ -25,8 +25,8 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 COstream::COstream()
-	: m_static_string_buffer(m_string_format_buffer, GPOS_OSTREAM_CONVBUF_SIZE)
-
+	: m_static_string_buffer(m_string_format_buffer, GPOS_OSTREAM_CONVBUF_SIZE),
+	  m_stream_manipulator(EsmDec)
 {
 }
 
@@ -212,10 +212,6 @@ COstream::operator<<(LINT input_long_int)
 IOstream &
 COstream::operator<<(const DOUBLE input_double)
 {
-	if (m_fullPrecision)
-	{
-		return AppendFormat(GPOS_WSZ_LIT("%.17f"), input_double);
-	}
 	return AppendFormat(GPOS_WSZ_LIT("%f"), input_double);
 }
 
@@ -280,7 +276,7 @@ COstream::operator<<(WOSTREAM &(*func_ptr)(WOSTREAM &) __attribute__((unused)))
 // standard-library implementations that may implement std::endl as a template.
 // It is enabled only for GNU libstdc++, where it is known to work.
 #if defined(GPOS_DEBUG) && defined(__GLIBCXX__)
-	using TManip = WOSTREAM &(*) (WOSTREAM &);
+	typedef WOSTREAM &(*TManip)(WOSTREAM &);
 	TManip tmf = func_ptr;
 	GPOS_ASSERT(tmf == static_cast<TManip>(std::endl) &&
 				"Only std::endl allowed");

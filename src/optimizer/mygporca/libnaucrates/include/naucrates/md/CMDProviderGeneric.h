@@ -51,9 +51,10 @@ private:
 	// mdid of oid
 	IMDId *m_mdid_oid;
 
-public:
-	CMDProviderGeneric(const CMDProviderGeneric &) = delete;
+	// private copy ctor
+	CMDProviderGeneric(const CMDProviderGeneric &);
 
+public:
 	// ctor/dtor
 	CMDProviderGeneric(CMemoryPool *mp);
 
@@ -64,7 +65,7 @@ public:
 	IMDId *MDId(IMDType::ETypeInfo type_info) const;
 
 	// default system id
-	static CSystemId SysidDefault();
+	CSystemId SysidDefault() const;
 };
 }  // namespace gpmd
 

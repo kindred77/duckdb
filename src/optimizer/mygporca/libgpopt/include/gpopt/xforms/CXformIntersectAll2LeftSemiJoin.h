@@ -30,41 +30,43 @@ using namespace gpos;
 class CXformIntersectAll2LeftSemiJoin : public CXformExploration
 {
 private:
-public:
-	CXformIntersectAll2LeftSemiJoin(const CXformIntersectAll2LeftSemiJoin &) =
-		delete;
+	// private copy ctor
+	CXformIntersectAll2LeftSemiJoin(const CXformIntersectAll2LeftSemiJoin &);
 
+public:
 	// ctor
 	explicit CXformIntersectAll2LeftSemiJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformIntersectAll2LeftSemiJoin() override = default;
+	virtual ~CXformIntersectAll2LeftSemiJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfIntersectAll2LeftSemiJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformIntersectAll2LeftSemiJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformIntersectAll2LeftSemiJoin
 

@@ -29,9 +29,10 @@ namespace gpopt
 class CLogicalLeftOuterApply : public CLogicalApply
 {
 private:
-public:
-	CLogicalLeftOuterApply(const CLogicalLeftOuterApply &) = delete;
+	// private copy ctor
+	CLogicalLeftOuterApply(const CLogicalLeftOuterApply &);
 
+public:
 	// ctor for patterns
 	explicit CLogicalLeftOuterApply(CMemoryPool *mp);
 
@@ -40,41 +41,40 @@ public:
 						   EOperatorId eopidOriginSubq);
 
 	// dtor
-	~CLogicalLeftOuterApply() override;
+	virtual ~CLogicalLeftOuterApply();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftOuterApply;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftOuterApply";
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	BOOL
-	FCanPullProjectionsUp(ULONG child_index) const override
+	virtual BOOL
+	FCanPullProjectionsUp(ULONG child_index) const
 	{
 		return (0 == child_index);
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *
-	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl) override
+	virtual CColRefSet *
+	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl)
 	{
 		GPOS_ASSERT(3 == exprhdl.Arity());
 
@@ -82,22 +82,22 @@ public:
 	}
 
 	// derive not nullable output columns
-	CColRefSet *
+	virtual CColRefSet *
 	DeriveNotNullColumns(CMemoryPool *,	 // mp
-						 CExpressionHandle &exprhdl) const override
+						 CExpressionHandle &exprhdl) const
 	{
 		// left outer apply passes through not null columns from outer child only
 		return PcrsDeriveNotNullPassThruOuter(exprhdl);
 	}
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *
+	virtual CPropConstraint *
 	DerivePropertyConstraint(CMemoryPool *,	 //mp,
-							 CExpressionHandle &exprhdl) const override
+							 CExpressionHandle &exprhdl) const
 	{
 		return PpcDeriveConstraintPassThru(exprhdl, 0 /*ulChild*/);
 	}
@@ -107,7 +107,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ public:
 	static CLogicalLeftOuterApply *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftOuterApply == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftOuterApply *>(pop);

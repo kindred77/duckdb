@@ -43,24 +43,25 @@ private:
 	// oid value
 	OID m_oid_val;
 
-public:
-	CDXLDatumOid(const CDXLDatumOid &) = delete;
+	// private copy ctor
+	CDXLDatumOid(const CDXLDatumOid &);
 
+public:
 	// ctor
 	CDXLDatumOid(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, OID oid_val);
 
 	// dtor
-	~CDXLDatumOid() override = default;
+	virtual ~CDXLDatumOid(){};
 
 	// accessor of oid value
 	OID OidValue() const;
 
 	// serialize the datum as the given element
-	void Serialize(CXMLSerializer *xml_serializer) override;
+	virtual void Serialize(CXMLSerializer *xml_serializer);
 
 	// datum type
-	EdxldatumType
-	GetDatumType() const override
+	virtual EdxldatumType
+	GetDatumType() const
 	{
 		return CDXLDatum::EdxldatumOid;
 	}
@@ -69,7 +70,7 @@ public:
 	static CDXLDatumOid *
 	Cast(CDXLDatum *dxl_datum)
 	{
-		GPOS_ASSERT(nullptr != dxl_datum);
+		GPOS_ASSERT(NULL != dxl_datum);
 		GPOS_ASSERT(CDXLDatum::EdxldatumOid == dxl_datum->GetDatumType());
 
 		return dynamic_cast<CDXLDatumOid *>(dxl_datum);

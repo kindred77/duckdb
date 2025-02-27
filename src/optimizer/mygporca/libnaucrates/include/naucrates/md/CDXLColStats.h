@@ -70,11 +70,12 @@ private:
 	BOOL m_is_col_stats_missing;
 
 	// DXL string for object
-	CWStringDynamic *m_dxl_str = nullptr;
+	CWStringDynamic *m_dxl_str;
+
+	// private copy ctor
+	CDXLColStats(const CDXLColStats &);
 
 public:
-	CDXLColStats(const CDXLColStats &) = delete;
-
 	// ctor
 	CDXLColStats(CMemoryPool *mp, CMDIdColStats *mdid_col_stats,
 				 CMDName *mdname, CDouble width, CDouble null_freq,
@@ -83,64 +84,64 @@ public:
 				 BOOL is_col_stats_missing);
 
 	// dtor
-	~CDXLColStats() override;
+	virtual ~CDXLColStats();
 
 	// the metadata id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// relation name
-	CMDName Mdname() const override;
+	virtual CMDName Mdname() const;
 
 	// DXL string representation of cache object
-	const CWStringDynamic *GetStrRepr() override;
+	virtual const CWStringDynamic *GetStrRepr() const;
 
 	// number of buckets
-	ULONG Buckets() const override;
+	virtual ULONG Buckets() const;
 
 	// width
-	CDouble
-	Width() const override
+	virtual CDouble
+	Width() const
 	{
 		return m_width;
 	}
 
 	// null fraction
-	CDouble
-	GetNullFreq() const override
+	virtual CDouble
+	GetNullFreq() const
 	{
 		return m_null_freq;
 	}
 
 	// ndistinct of remaining tuples
 	CDouble
-	GetDistinctRemain() const override
+	GetDistinctRemain() const
 	{
 		return m_distinct_remaining;
 	}
 
 	// frequency of remaining tuples
 	CDouble
-	GetFreqRemain() const override
+	GetFreqRemain() const
 	{
 		return m_freq_remaining;
 	}
 
 	// is the column statistics missing in the database
 	BOOL
-	IsColStatsMissing() const override
+	IsColStatsMissing() const
 	{
 		return m_is_col_stats_missing;
 	}
 
 	// get the bucket at the given position
-	const CDXLBucket *GetDXLBucketAt(ULONG ul) const override;
+	virtual const CDXLBucket *GetDXLBucketAt(ULONG ul) const;
 
 	// serialize column stats in DXL format
-	void Serialize(gpdxl::CXMLSerializer *) const override;
+	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the column stats
-	void DebugPrint(IOstream &os) const override;
+	virtual void DebugPrint(IOstream &os) const;
 #endif
 
 	// dummy colstats
@@ -149,7 +150,7 @@ public:
 };
 
 // array of dxl column stats
-using CDXLColStatsArray = CDynamicPtrArray<CDXLColStats, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLColStats, CleanupRelease> CDXLColStatsArray;
 }  // namespace gpmd
 
 

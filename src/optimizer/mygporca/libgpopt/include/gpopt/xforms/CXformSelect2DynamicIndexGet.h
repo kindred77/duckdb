@@ -44,28 +44,30 @@ public:
 	explicit CXformSelect2DynamicIndexGet(CMemoryPool *mp);
 
 	// dtor
-	~CXformSelect2DynamicIndexGet() override = default;
+	virtual ~CXformSelect2DynamicIndexGet()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSelect2DynamicIndexGet;
 	}
 
 	// xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSelect2DynamicIndexGet";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 
 };	// class CXformSelect2DynamicIndexGet

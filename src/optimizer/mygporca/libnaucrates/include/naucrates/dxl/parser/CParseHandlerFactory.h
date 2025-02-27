@@ -27,9 +27,9 @@ using namespace gpos;
 XERCES_CPP_NAMESPACE_USE
 
 // shorthand for functions creating operator parse handlers
-using ParseHandlerOpCreatorFunc = CParseHandlerBase *(CMemoryPool *,
-													  CParseHandlerManager *,
-													  CParseHandlerBase *);
+typedef CParseHandlerBase *(ParseHandlerOpCreatorFunc)(CMemoryPool *mp,
+													   CParseHandlerManager *,
+													   CParseHandlerBase *);
 
 // fwd decl
 class CDXLTokens;
@@ -61,9 +61,9 @@ IsXMLStrEqual(const XMLCh *xml_str1, const XMLCh *xml_str2)
 //---------------------------------------------------------------------------
 class CParseHandlerFactory
 {
-	using TokenParseHandlerFuncMap =
-		CHashMap<const XMLCh, ParseHandlerOpCreatorFunc, GetHashXMLStr,
-				 IsXMLStrEqual, CleanupNULL, CleanupNULL>;
+	typedef CHashMap<const XMLCh, ParseHandlerOpCreatorFunc, GetHashXMLStr,
+					 IsXMLStrEqual, CleanupNULL, CleanupNULL>
+		TokenParseHandlerFuncMap;
 
 	// pair of DXL token type and the corresponding parse handler
 	struct SParseHandlerMapping
@@ -147,6 +147,11 @@ private:
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
+	// construct a MD external relation parse handler
+	static CParseHandlerBase *CreateMDRelationExtParseHandler(
+		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
+		CParseHandlerBase *parse_handler_root);
+
 	// construct a MD CTAS relation parse handler
 	static CParseHandlerBase *CreateMDRelationCTASParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
@@ -159,41 +164,6 @@ private:
 
 	// construct a relation stats parse handler
 	static CParseHandlerBase *CreateRelStatsParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct a relation extended stats metadata parse handler
-	static CParseHandlerBase *CreateRelationExtStatsParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats parse handler
-	static CParseHandlerBase *CreateExtStatsParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats metadata parse handler
-	static CParseHandlerBase *CreateExtStatsInfoParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats dependencies parse handler
-	static CParseHandlerBase *CreateExtStatsDependenciesParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats dependency parse handler
-	static CParseHandlerBase *CreateExtStatsDependencyParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats ndistinct list parse handler
-	static CParseHandlerBase *CreateExtStatsNDistinctListParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct an extended stats ndistinct parse handler
-	static CParseHandlerBase *CreateExtStatsNDistinctParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -224,6 +194,11 @@ private:
 
 	// construct an MD aggregate operation parse handler
 	static CParseHandlerBase *CreateMDAggParseHandler(
+		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
+		CParseHandlerBase *parse_handler_root);
+
+	// construct an MD trigger parse handler
+	static CParseHandlerBase *CreateMDTriggerParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -296,8 +271,8 @@ private:
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
-	// construct an foreign scan parse handler
-	static CParseHandlerBase *CreateForeignScanParseHandler(
+	// construct an external scan parse handler
+	static CParseHandlerBase *CreateExternalScanParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -343,11 +318,6 @@ private:
 
 	// construct a dynamic table scan parse handler
 	static CParseHandlerBase *CreateDTSParseHandler(
-		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
-		CParseHandlerBase *parse_handler_root);
-
-	// construct a dynamic foreign scan parse handler
-	static CParseHandlerBase *CreateDFSParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -419,6 +389,11 @@ private:
 
 	// construct a scalar operator list
 	static CParseHandlerBase *CreateScOpListParseHandler(
+		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
+		CParseHandlerBase *parse_handler_root);
+
+	// construct a scalar part oid
+	static CParseHandlerBase *CreateScPartOidParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -753,8 +728,8 @@ private:
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
-	// construct a logical foreign get parse handler
-	static CParseHandlerBase *CreateLogicalForeignGetParseHandler(
+	// construct a logical external get parse handler
+	static CParseHandlerBase *CreateLogicalExtGetParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 
@@ -840,6 +815,11 @@ private:
 
 	// construct a physical split parse handler
 	static CParseHandlerBase *CreatePhysicalSplitParseHandler(
+		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
+		CParseHandlerBase *parse_handler_root);
+
+	// construct a physical row trigger parse handler
+	static CParseHandlerBase *CreatePhysicalRowTriggerParseHandler(
 		CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 		CParseHandlerBase *parse_handler_root);
 

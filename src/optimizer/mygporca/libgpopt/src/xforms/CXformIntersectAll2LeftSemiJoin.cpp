@@ -17,9 +17,9 @@
 #include "gpopt/base/CUtils.h"
 #include "gpopt/exception.h"
 #include "gpopt/operators/CLogicalIntersectAll.h"
-#include "gpopt/operators/CLogicalLeftSemiJoin.h"
 #include "gpopt/operators/COperator.h"
 #include "gpopt/operators/CPatternLeaf.h"
+#include "gpopt/translate/CTranslatorDXLToExpr.h"
 #include "gpopt/xforms/CXformUtils.h"
 
 using namespace gpmd;
@@ -62,8 +62,8 @@ CXformIntersectAll2LeftSemiJoin::Transform(CXformContext *pxfctxt,
 										   CXformResult *pxfres,
 										   CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 

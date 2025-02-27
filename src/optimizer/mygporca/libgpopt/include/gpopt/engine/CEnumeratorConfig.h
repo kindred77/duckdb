@@ -33,7 +33,7 @@ using namespace gpos;
 class CExpression;
 
 // type definition of plan checker
-using FnPlanChecker = BOOL(CExpression *);
+typedef BOOL(FnPlanChecker)(CExpression *);
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -71,7 +71,7 @@ private:
 		}
 
 		// dtor
-		virtual ~SSamplePlan() = default;
+		virtual ~SSamplePlan(){};
 
 		// return plan id
 		ULLONG
@@ -90,7 +90,7 @@ private:
 	};	// struct SSamplePlan
 
 	// array og unsigned long long int
-	using SSamplePlanArray = CDynamicPtrArray<SSamplePlan, CleanupDelete>;
+	typedef CDynamicPtrArray<SSamplePlan, CleanupDelete> SSamplePlanArray;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -137,18 +137,19 @@ private:
 	// initialize size of cost distribution
 	void InitCostDistrSize();
 
+	// inaccessible copy ctor
+	CEnumeratorConfig(const CEnumeratorConfig &);
+
 	// compute Gaussian probability value
 	static DOUBLE DGaussian(DOUBLE d, DOUBLE dMean, DOUBLE dStd);
 
 public:
-	CEnumeratorConfig(const CEnumeratorConfig &) = delete;
-
 	// ctor
 	CEnumeratorConfig(CMemoryPool *mp, ULLONG plan_id, ULLONG ullSamples,
 					  CDouble cost_threshold = GPOPT_UNBOUNDED_COST_THRESHOLD);
 
 	// dtor
-	~CEnumeratorConfig() override;
+	virtual ~CEnumeratorConfig();
 
 	// return plan id
 	ULLONG
@@ -250,15 +251,15 @@ public:
 	}
 
 	// is enumeration enabled?
-	static BOOL
-	FEnumerate()
+	BOOL
+	FEnumerate() const
 	{
 		return GPOS_FTRACE(EopttraceEnumeratePlans);
 	}
 
 	// is sampling enabled?
-	static BOOL
-	FSample()
+	BOOL
+	FSample() const
 	{
 		return GPOS_FTRACE(EopttraceSamplePlans);
 	}
@@ -274,7 +275,7 @@ public:
 	void
 	SetPlanChecker(FnPlanChecker *pfpc)
 	{
-		GPOS_ASSERT(nullptr != pfpc);
+		GPOS_ASSERT(NULL != pfpc);
 
 		m_pfpc = pfpc;
 	}
@@ -298,9 +299,9 @@ public:
 	BOOL
 	FCheckPlan(CExpression *pexpr) const
 	{
-		GPOS_ASSERT(nullptr != pexpr);
+		GPOS_ASSERT(NULL != pexpr);
 
-		if (nullptr != m_pfpc)
+		if (NULL != m_pfpc)
 		{
 			return m_pfpc(pexpr);
 		}
@@ -320,9 +321,9 @@ public:
 	void PrintPlanSample() const;
 
 	// compute Gaussian kernel density
-	static void GussianKernelDensity(const DOUBLE *pdObervationX,
-									 const DOUBLE *pdObervationY,
-									 ULONG ulObservations, const DOUBLE *pdX,
+	static void GussianKernelDensity(DOUBLE *pdObervationX,
+									 DOUBLE *pdObervationY,
+									 ULONG ulObservations, DOUBLE *pdX,
 									 DOUBLE *pdY, ULONG size);
 
 	// generate default enumerator configurations

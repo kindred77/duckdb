@@ -79,17 +79,9 @@ CXformSelect2DynamicIndexGet::Transform(CXformContext *pxfctxt,
 										CXformResult *pxfres,
 										CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
-
-	CLogicalDynamicGet *popGet =
-		CLogicalDynamicGet::PopConvert((*pexpr)[0]->Pop());
-	// Do not run if contains foreign partitions, instead run CXformExpandDynamicGetWithForeignPartitions
-	if (popGet->ContainsForeignParts())
-	{
-		return;
-	}
 
 	CMemoryPool *mp = pxfctxt->Pmp();
 
@@ -128,10 +120,15 @@ CXformSelect2DynamicIndexGet::Transform(CXformContext *pxfctxt,
 	{
 		IMDId *pmdidIndex = pmdrel->IndexMDidAt(ul);
 		const IMDIndex *pmdindex = md_accessor->RetrieveIndex(pmdidIndex);
+		CPartConstraint *ppartcnstrIndex = CUtils::PpartcnstrFromMDPartCnstr(
+			mp, COptCtxt::PoctxtFromTLS()->Pmda(),
+			popDynamicGet->PdrgpdrgpcrPart(), pmdindex->MDPartConstraint(),
+			popDynamicGet->PdrgpcrOutput());
 		CExpression *pexprDynamicIndexGet = CXformUtils::PexprLogicalIndexGet(
 			mp, md_accessor, pexprRelational, pexpr->Pop()->UlOpId(), pdrgpexpr,
-			pcrsReqd, pcrsScalarExpr, nullptr /*outer_refs*/, pmdindex, pmdrel);
-		if (nullptr != pexprDynamicIndexGet)
+			pcrsReqd, pcrsScalarExpr, NULL /*outer_refs*/, pmdindex, pmdrel,
+			false /*fAllowPartialIndex*/, ppartcnstrIndex);
+		if (NULL != pexprDynamicIndexGet)
 		{
 			// create a redundant SELECT on top of DynamicIndexGet to be able to use predicate in partition elimination
 

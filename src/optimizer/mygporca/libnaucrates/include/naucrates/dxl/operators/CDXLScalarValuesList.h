@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2017 VMware, Inc. or its affiliates.
+//	Copyright (C) 2017 Pivotal Software, Inc.
 //
 //	@filename:
 //		CDXLScalarValuesList.h
@@ -27,24 +27,25 @@ using namespace gpmd;
 class CDXLScalarValuesList : public CDXLScalar
 {
 private:
-public:
-	CDXLScalarValuesList(CDXLScalarValuesList &) = delete;
+	// private copy ctor
+	CDXLScalarValuesList(CDXLScalarValuesList &);
 
+public:
 	// ctor
 	CDXLScalarValuesList(CMemoryPool *mp);
 
 	// dtor
-	~CDXLScalarValuesList() override;
+	virtual ~CDXLScalarValuesList();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// serialize operator in DXL format
 	void SerializeToDXL(CXMLSerializer *xml_serializer, const CDXLNode *dxlnode,
@@ -54,13 +55,12 @@ public:
 	static CDXLScalarValuesList *Cast(CDXLOperator *dxl_op);
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor * /*md_accessor*/) const override;
+	virtual BOOL HasBoolResult(CMDAccessor * /*md_accessor*/) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

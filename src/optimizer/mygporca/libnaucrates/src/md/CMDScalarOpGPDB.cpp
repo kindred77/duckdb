@@ -52,7 +52,9 @@ CMDScalarOpGPDB::CMDScalarOpGPDB(
 	  m_mdid_legacy_hash_opfamily(mdid_legacy_hash_opfamily),
 	  m_is_ndv_preserving(is_ndv_preserving)
 {
-	GPOS_ASSERT(nullptr != mdid_opfamilies_array);
+	GPOS_ASSERT(NULL != mdid_opfamilies_array);
+	m_dxl_str = CDXLUtils::SerializeMDObj(
+		m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
 }
 
 
@@ -78,22 +80,8 @@ CMDScalarOpGPDB::~CMDScalarOpGPDB()
 	CRefCount::SafeRelease(m_mdid_legacy_hash_opfamily);
 
 	GPOS_DELETE(m_mdname);
-	if (nullptr != m_dxl_str)
-	{
-		GPOS_DELETE(m_dxl_str);
-	}
+	GPOS_DELETE(m_dxl_str);
 	m_mdid_opfamilies_array->Release();
-}
-
-const CWStringDynamic *
-CMDScalarOpGPDB::GetStrRepr()
-{
-	if (nullptr == m_dxl_str)
-	{
-		m_dxl_str = CDXLUtils::SerializeMDObj(
-			m_mp, this, false /*fSerializeHeader*/, false /*indentation*/);
-	}
-	return m_dxl_str;
 }
 
 //---------------------------------------------------------------------------

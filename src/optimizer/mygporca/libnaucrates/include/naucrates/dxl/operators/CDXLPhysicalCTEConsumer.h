@@ -35,21 +35,22 @@ private:
 	// output column ids
 	ULongPtrArray *m_output_colids_array;
 
-public:
-	CDXLPhysicalCTEConsumer(CDXLPhysicalCTEConsumer &) = delete;
+	// private copy ctor
+	CDXLPhysicalCTEConsumer(CDXLPhysicalCTEConsumer &);
 
+public:
 	// ctor
 	CDXLPhysicalCTEConsumer(CMemoryPool *mp, ULONG id,
 							ULongPtrArray *output_colids_array);
 
 	// dtor
-	~CDXLPhysicalCTEConsumer() override;
+	virtual ~CDXLPhysicalCTEConsumer();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// cte identifier
 	ULONG
@@ -65,22 +66,21 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLPhysicalCTEConsumer *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalCTEConsumer == dxl_op->GetDXLOperator());
 		return dynamic_cast<CDXLPhysicalCTEConsumer *>(dxl_op);
 	}

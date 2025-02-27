@@ -14,7 +14,6 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CColRefSet.h"
-#include "gpopt/base/COptCtxt.h"
 
 using namespace gpopt;
 
@@ -86,7 +85,7 @@ CScalarProjectElement::PopCopyWithRemappedColumns(
 {
 	ULONG id = m_pcr->Id();
 	CColRef *colref = colref_mapping->Find(&id);
-	if (nullptr == colref)
+	if (NULL == colref)
 	{
 		if (must_exist)
 		{
@@ -97,7 +96,9 @@ CScalarProjectElement::PopCopyWithRemappedColumns(
 			colref = col_factory->PcrCreate(m_pcr->RetrieveType(),
 											m_pcr->TypeModifier(), name);
 
-			BOOL result GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+			BOOL result =
+#endif	// GPOS_DEBUG
 				colref_mapping->Insert(GPOS_NEW(mp) ULONG(id), colref);
 			GPOS_ASSERT(result);
 		}

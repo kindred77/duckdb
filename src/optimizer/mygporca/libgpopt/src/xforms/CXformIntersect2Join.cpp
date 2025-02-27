@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal Inc.
 //
 //	@filename:
 //		CXformIntersect2Join.cpp
@@ -16,11 +16,10 @@
 #include "gpopt/base/CColRefComputed.h"
 #include "gpopt/base/CUtils.h"
 #include "gpopt/exception.h"
-#include "gpopt/operators/CLogicalInnerJoin.h"
 #include "gpopt/operators/CLogicalIntersect.h"
 #include "gpopt/operators/COperator.h"
 #include "gpopt/operators/CPatternLeaf.h"
-#include "gpopt/operators/CScalarProjectList.h"
+#include "gpopt/translate/CTranslatorDXLToExpr.h"
 #include "gpopt/xforms/CXformUtils.h"
 
 using namespace gpmd;
@@ -61,8 +60,8 @@ void
 CXformIntersect2Join::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 								CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 

@@ -48,16 +48,17 @@ private:
 	// array of derived column statistics
 	CDXLStatsDerivedColumnArray *m_dxl_stats_derived_col_array;
 
-public:
-	CDXLStatsDerivedRelation(const CDXLStatsDerivedRelation &) = delete;
+	// private copy ctor
+	CDXLStatsDerivedRelation(const CDXLStatsDerivedRelation &);
 
+public:
 	// ctor
 	CDXLStatsDerivedRelation(
 		CDouble rows, BOOL is_empty,
 		CDXLStatsDerivedColumnArray *dxl_stats_derived_col_array);
 
 	// dtor
-	~CDXLStatsDerivedRelation() override;
+	virtual ~CDXLStatsDerivedRelation();
 
 	// number of rows
 	CDouble
@@ -86,8 +87,8 @@ public:
 };
 
 // array of dxl buckets
-using CDXLStatsDerivedRelationArray =
-	CDynamicPtrArray<CDXLStatsDerivedRelation, CleanupRelease>;
+typedef CDynamicPtrArray<CDXLStatsDerivedRelation, CleanupRelease>
+	CDXLStatsDerivedRelationArray;
 }  // namespace gpmd
 
 #endif	// !GPMD_CDXLStatsDerivedRelation_H

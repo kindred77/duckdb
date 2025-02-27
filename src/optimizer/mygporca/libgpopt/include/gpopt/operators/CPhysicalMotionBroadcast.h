@@ -33,58 +33,60 @@ private:
 	// output distribution
 	CDistributionSpecReplicated *m_pdsReplicated;
 
-public:
-	CPhysicalMotionBroadcast(const CPhysicalMotionBroadcast &) = delete;
+	// private copy ctor
+	CPhysicalMotionBroadcast(const CPhysicalMotionBroadcast &);
 
+public:
 	// ctor
-	explicit CPhysicalMotionBroadcast(CMemoryPool *mp,
-									  BOOL ignore_broadcast_threshold);
+	explicit CPhysicalMotionBroadcast(CMemoryPool *mp);
 
 	// dtor
-	~CPhysicalMotionBroadcast() override;
+	virtual ~CPhysicalMotionBroadcast();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalMotionBroadcast;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalMotionBroadcast";
 	}
 
 	// output distribution accessor
-	CDistributionSpec *
-	Pds() const override
+	virtual CDistributionSpec *
+	Pds() const
 	{
 		return m_pdsReplicated;
 	}
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required output columns of the n-th child
-	CColRefSet *PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							 CColRefSet *pcrsInput, ULONG child_index,
-							 CDrvdPropArray *pdrgpdpCtxt,
-							 ULONG ulOptReq) override;
+	virtual CColRefSet *PcrsRequired(CMemoryPool *mp,
+									 CExpressionHandle &exprhdl,
+									 CColRefSet *pcrsInput, ULONG child_index,
+									 CDrvdPropArray *pdrgpdpCtxt,
+									 ULONG ulOptReq);
 
 	// compute required sort order of the n-th child
-	COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							COrderSpec *posInput, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt,
-							ULONG ulOptReq) const override;
+	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+									COrderSpec *posInput, ULONG child_index,
+									CDrvdPropArray *pdrgpdpCtxt,
+									ULONG ulOptReq) const;
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
 
 
 	//-------------------------------------------------------------------------------------
@@ -92,23 +94,23 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *PosDerive(CMemoryPool *mp,
-						  CExpressionHandle &exprhdl) const override;
+	virtual COrderSpec *PosDerive(CMemoryPool *mp,
+								  CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 	// conversion function
 	static CPhysicalMotionBroadcast *PopConvert(COperator *pop);

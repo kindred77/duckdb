@@ -30,27 +30,30 @@ using namespace gpos;
 class CScalarSubqueryNotExists : public CScalarSubqueryExistential
 {
 private:
-public:
-	CScalarSubqueryNotExists(const CScalarSubqueryNotExists &) = delete;
+	// private copy ctor
+	CScalarSubqueryNotExists(const CScalarSubqueryNotExists &);
 
+public:
 	// ctor
 	CScalarSubqueryNotExists(CMemoryPool *mp) : CScalarSubqueryExistential(mp)
 	{
 	}
 
 	// dtor
-	~CScalarSubqueryNotExists() override = default;
+	virtual ~CScalarSubqueryNotExists()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSubqueryNotExists;
 	}
 
 	// return a string for scalar subquery
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSubqueryNotExists";
 	}
@@ -59,10 +62,10 @@ public:
 	static CScalarSubqueryNotExists *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSubqueryNotExists == pop->Eopid());
 
-		return dynamic_cast<CScalarSubqueryNotExists *>(pop);
+		return reinterpret_cast<CScalarSubqueryNotExists *>(pop);
 	}
 
 };	// class CScalarSubqueryNotExists

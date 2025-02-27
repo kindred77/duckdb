@@ -28,6 +28,9 @@ namespace gpopt
 class CLogicalNAryJoin : public CLogicalJoin
 {
 private:
+	// private copy ctor
+	CLogicalNAryJoin(const CLogicalNAryJoin &);
+
 	// Indexes that help to find ON predicates for LOJs.
 	// If all joins in this NAry join are inner joins, this pointer is NULL and
 	// the scalar child of this NAry join contains all join predicates directly.
@@ -35,37 +38,34 @@ private:
 	// array has as many entries as there are logical children of the NAry
 	// join. For each logical child i, if that child i is part of an inner join
 	// or the outer table of an LOJ, then the corresponding entry
-	// (*m_lojChildPredIndexes)[i] in this array is 0
-	// (GPOPT_ZERO_INNER_JOIN_PRED_INDEX). If the logical child is the right table
-	// of an LOJ, the corresponding index indicates the child index of the
-	// CScalarNAryJoinPredList expression that contains the ON predicate for the
-	// LOJ.
+	// (*m_lojChildPredIndexes)[i] in this array is 0 (GPOPT_ZERO_INNER_JOIN_PRED_INDEX).
+	// If the logical child is the right table of an LOJ, the corresponding
+	// index indicates the child index of the CScalarNAryJoinPredList
+	// expression that contains the ON predicate for the LOJ.
 	ULongPtrArray *m_lojChildPredIndexes;
 
 public:
-	CLogicalNAryJoin(const CLogicalNAryJoin &) = delete;
-
 	// ctor
 	explicit CLogicalNAryJoin(CMemoryPool *mp);
 
 	CLogicalNAryJoin(CMemoryPool *mp, ULongPtrArray *lojChildIndexes);
 
 	// dtor
-	~CLogicalNAryJoin() override
+	virtual ~CLogicalNAryJoin()
 	{
 		CRefCount::SafeRelease(m_lojChildPredIndexes);
 	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalNAryJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalNAryJoin";
 	}
@@ -75,25 +75,25 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive not nullable columns
-	CColRefSet *DeriveNotNullColumns(CMemoryPool *mp,
-									 CExpressionHandle &exprhdl) const override;
+	virtual CColRefSet *DeriveNotNullColumns(CMemoryPool *mp,
+											 CExpressionHandle &exprhdl) const;
 
 	// derive max card
-	CMaxCard DeriveMaxCard(CMemoryPool *mp,
-						   CExpressionHandle &exprhdl) const override;
+	virtual CMaxCard DeriveMaxCard(CMemoryPool *mp,
+								   CExpressionHandle &exprhdl) const;
 
 	// derive constraint property
-	CPropConstraint *DerivePropertyConstraint(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CPropConstraint *DerivePropertyConstraint(
+		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Stats
 	//-------------------------------------------------------------------------------------
 
 	// promise level for stat derivation
-	EStatPromise
+	virtual EStatPromise
 	Esp(CExpressionHandle &	 // exprhdl
-	) const override
+	) const
 	{
 		// we should use the expanded join order for stat derivation
 		return EspLow;
@@ -104,7 +104,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ public:
 	static CLogicalNAryJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 
 		return dynamic_cast<CLogicalNAryJoin *>(pop);
 	}
@@ -125,13 +125,13 @@ public:
 	BOOL
 	HasOuterJoinChildren() const
 	{
-		return (nullptr != m_lojChildPredIndexes);
+		return (NULL != m_lojChildPredIndexes);
 	}
 
 	BOOL
 	IsInnerJoinChild(ULONG child_num) const
 	{
-		return (nullptr == m_lojChildPredIndexes ||
+		return (NULL == m_lojChildPredIndexes ||
 				*((*m_lojChildPredIndexes)[child_num]) == 0);
 	}
 
@@ -178,7 +178,7 @@ public:
 		CMemoryPool *mp, CExpression *old_nary_join_scalar_expr,
 		CExpression *new_inner_join_preds);
 
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CLogicalNAryJoin
 

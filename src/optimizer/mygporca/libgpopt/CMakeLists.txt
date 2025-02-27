@@ -16,6 +16,7 @@ list(APPEND srcs ${hdrs})
 add_library(gpopt STATIC ${srcs})
 
 target_link_libraries(gpopt
+                      #gpdbcost
                       naucrates
                       ${CMAKE_DL_LIBS}
                       gpos

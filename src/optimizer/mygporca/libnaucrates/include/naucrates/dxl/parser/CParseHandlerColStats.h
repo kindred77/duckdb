@@ -62,24 +62,25 @@ private:
 	// is the column statistics missing in the database
 	BOOL m_is_column_stats_missing;
 
+	// private copy ctor
+	CParseHandlerColStats(const CParseHandlerColStats &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerColStats(const CParseHandlerColStats &) = delete;
-
 	// ctor
 	CParseHandlerColStats(CMemoryPool *mp,
 						  CParseHandlerManager *parse_handler_mgr,

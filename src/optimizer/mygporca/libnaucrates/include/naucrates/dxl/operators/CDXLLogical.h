@@ -36,14 +36,15 @@ class CXMLSerializer;
 class CDXLLogical : public CDXLOperator
 {
 private:
-public:
-	CDXLLogical(const CDXLLogical &) = delete;
+	// private copy ctor
+	CDXLLogical(const CDXLLogical &);
 
+public:
 	// ctor/dtor
 	explicit CDXLLogical(CMemoryPool *mp);
 
 	// Get operator type
-	Edxloptype GetDXLOperatorType() const override;
+	Edxloptype GetDXLOperatorType() const;
 };
 }  // namespace gpdxl
 

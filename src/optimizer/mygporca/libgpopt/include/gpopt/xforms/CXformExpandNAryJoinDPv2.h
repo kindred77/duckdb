@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // Greenplum Database
-// Copyright (C) 2019 VMware, Inc. or its affiliates.
+// Copyright (C) 2019 Pivotal Inc.
 //
 //	@filename:
 //		CXformExpandNAryJoinDPv2.h
@@ -32,42 +32,45 @@ using namespace gpos;
 class CXformExpandNAryJoinDPv2 : public CXformExploration
 {
 private:
-public:
-	CXformExpandNAryJoinDPv2(const CXformExpandNAryJoinDPv2 &) = delete;
+	// private copy ctor
+	CXformExpandNAryJoinDPv2(const CXformExpandNAryJoinDPv2 &);
 
+public:
 	// ctor
 	explicit CXformExpandNAryJoinDPv2(CMemoryPool *mp);
 
 	// dtor
-	~CXformExpandNAryJoinDPv2() override = default;
+	virtual ~CXformExpandNAryJoinDPv2()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfExpandNAryJoinDPv2;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformExpandNAryJoinDPv2";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	BOOL
-	FNeedsStats() const override
+	virtual BOOL
+	FNeedsStats() const
 	{
 		return true;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformExpandNAryJoinDPv2
 

@@ -35,7 +35,7 @@ using namespace gpos;
 
 
 // ctor
-CMemoryPoolTracker::CMemoryPoolTracker() : CMemoryPool()
+CMemoryPoolTracker::CMemoryPoolTracker() : CMemoryPool(), m_alloc_sequence(0)
 {
 	m_allocations_list.Init(GPOS_OFFSET(SAllocHeader, m_link));
 }
@@ -70,10 +70,22 @@ CMemoryPoolTracker::NewImpl(const ULONG bytes, const CHAR *file,
 {
 	GPOS_ASSERT(bytes <= GPOS_MEM_ALLOC_MAX);
 	GPOS_ASSERT(bytes <= gpos::ulong_max);
+	GPOS_ASSERT_IMP(
+		(NULL != CMemoryPoolManager::GetMemoryPoolMgr()) &&
+			(this ==
+			 CMemoryPoolManager::GetMemoryPoolMgr()->GetGlobalMemoryPool()),
+		CMemoryPoolManager::GetMemoryPoolMgr()->IsGlobalNewAllowed() &&
+			"Use of new operator without target memory pool is prohibited, use New(...) instead");
 
 	ULONG alloc_size = GPOS_MEM_BYTES_TOTAL(bytes);
 
 	void *ptr = clib::Malloc(alloc_size);
+
+	// check if allocation failed
+	if (NULL == ptr)
+	{
+		return NULL;
+	}
 
 	GPOS_OOM_CHECK(ptr);
 
@@ -118,7 +130,7 @@ CMemoryPoolTracker::DeleteImpl(void *ptr, EAllocationType eat)
 	GPOS_RTL_ASSERT(eat == EatUnknown || *alloc_type == eat);
 
 	// update stats and allocation list
-	GPOS_ASSERT(nullptr != header->m_mp);
+	GPOS_ASSERT(NULL != header->m_mp);
 	header->m_mp->RecordFree(header);
 
 #ifdef GPOS_DEBUG
@@ -130,7 +142,7 @@ CMemoryPoolTracker::DeleteImpl(void *ptr, EAllocationType eat)
 }
 
 // get user requested size of allocation
-gpos::ULONG
+ULONG
 CMemoryPoolTracker::UserSizeOfAlloc(const void *ptr)
 {
 	const SAllocHeader *header = static_cast<const SAllocHeader *>(ptr) - 1;
@@ -157,10 +169,10 @@ CMemoryPoolTracker::TearDown()
 void
 CMemoryPoolTracker::WalkLiveObjects(gpos::IMemoryVisitor *visitor)
 {
-	GPOS_ASSERT(nullptr != visitor);
+	GPOS_ASSERT(NULL != visitor);
 
 	SAllocHeader *header = m_allocations_list.First();
-	while (nullptr != header)
+	while (NULL != header)
 	{
 		void *user = header + 1;
 

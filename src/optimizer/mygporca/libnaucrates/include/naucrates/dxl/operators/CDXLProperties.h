@@ -39,20 +39,21 @@ class CDXLProperties : public CRefCount
 {
 private:
 	// derived statistics
-	CDXLStatsDerivedRelation *m_dxl_stats_derived_relation{nullptr};
+	CDXLStatsDerivedRelation *m_dxl_stats_derived_relation;
+
+	// private copy ctor
+	CDXLProperties(const CDXLProperties &);
 
 protected:
 	// serialize statistics in DXL format
 	void SerializeStatsToDXL(CXMLSerializer *xml_serializer) const;
 
 public:
-	CDXLProperties(const CDXLProperties &) = delete;
-
 	// ctor
 	explicit CDXLProperties();
 
 	//dtor
-	~CDXLProperties() override;
+	virtual ~CDXLProperties();
 
 	// setter
 	virtual void SetStats(CDXLStatsDerivedRelation *dxl_stats_derived_relation);

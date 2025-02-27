@@ -74,19 +74,19 @@ class CCache
 
 public:
 	// type definition of key hashing and equality functions
-	using HashFuncPtr = ULONG (*)(const K &);
-	using EqualFuncPtr = BOOL (*)(const K &, const K &);
+	typedef ULONG (*HashFuncPtr)(const K &);
+	typedef BOOL (*EqualFuncPtr)(const K &, const K &);
 
 private:
-	using CCacheHashTableEntry = CCacheEntry<T, K>;
+	typedef CCacheEntry<T, K> CCacheHashTableEntry;
 
 	// type definition of hashtable, accessor and iterator
-	using CCacheHashtable = CSyncHashtable<CCacheHashTableEntry, K>;
-	using CCacheHashtableAccessor =
-		CSyncHashtableAccessByKey<CCacheHashTableEntry, K>;
-	using CCacheHashtableIter = CSyncHashtableIter<CCacheHashTableEntry, K>;
-	using CCacheHashtableIterAccessor =
-		CSyncHashtableAccessByIter<CCacheHashTableEntry, K>;
+	typedef CSyncHashtable<CCacheHashTableEntry, K> CCacheHashtable;
+	typedef CSyncHashtableAccessByKey<CCacheHashTableEntry, K>
+		CCacheHashtableAccessor;
+	typedef CSyncHashtableIter<CCacheHashTableEntry, K> CCacheHashtableIter;
+	typedef CSyncHashtableAccessByIter<CCacheHashTableEntry, K>
+		CCacheHashtableIterAccessor;
 
 	// memory pool for allocating hashtable and cache entries
 	CMemoryPool *m_mp;
@@ -128,7 +128,7 @@ private:
 	CCacheHashTableEntry *
 	InsertEntry(CCacheHashTableEntry *entry)
 	{
-		GPOS_ASSERT(nullptr != entry);
+		GPOS_ASSERT(NULL != entry);
 
 		if (0 != m_cache_quota && m_cache_size > m_cache_quota)
 		{
@@ -185,8 +185,8 @@ private:
 		// if we allow duplicates, insertion can be directly made;
 		// if we do not allow duplicates, we need to check first
 		CCacheHashTableEntry *ret = entry;
-		CCacheHashTableEntry *found = nullptr;
-		if (!m_unique || (m_unique && nullptr == (found = acc.Find())))
+		CCacheHashTableEntry *found = NULL;
+		if (!m_unique || (m_unique && NULL == (found = acc.Find())))
 		{
 			acc.Insert(entry);
 			m_cache_size += entry->Pmp()->TotalAllocatedSize();
@@ -210,12 +210,12 @@ private:
 
 		// look for the first unmarked entry matching the given key
 		CCacheHashTableEntry *entry = acc.Find();
-		while (nullptr != entry && entry->IsMarkedForDeletion())
+		while (NULL != entry && entry->IsMarkedForDeletion())
 		{
 			entry = acc.Next(entry);
 		}
 
-		if (nullptr != entry)
+		if (NULL != entry)
 		{
 			entry->SetGClockCounter(m_gclock_init_counter);
 			// increase ref count, since CCacheHashtableAccessor points to the obj
@@ -230,7 +230,7 @@ private:
 	void
 	ReleaseEntry(CCacheHashTableEntry *entry)
 	{
-		GPOS_ASSERT(nullptr != entry);
+		GPOS_ASSERT(NULL != entry);
 
 		// CacheEntry's destructor is the only place where ref count go from 1(EXPECTED_REF_COUNT_FOR_DELETE) to 0
 		GPOS_ASSERT(EXPECTED_REF_COUNT_FOR_DELETE < entry->RefCount() &&
@@ -266,7 +266,7 @@ private:
 	CCacheHashTableEntry *
 	Next(CCacheHashTableEntry *entry)
 	{
-		GPOS_ASSERT(nullptr != entry);
+		GPOS_ASSERT(NULL != entry);
 
 		CCacheHashTableEntry *current = entry;
 		K key = current->Key();
@@ -274,16 +274,16 @@ private:
 
 		// move forward until we find unmarked entry with the same key
 		CCacheHashTableEntry *next = acc.Next(current);
-		while (nullptr != next && next->IsMarkedForDeletion())
+		while (NULL != next && next->IsMarkedForDeletion())
 		{
 			next = acc.Next(next);
 		}
 
-		if (nullptr != next)
+		if (NULL != next)
 		{
 			next->IncRefCount();
 		}
-		GPOS_ASSERT_IMP(AllowsDuplicateKeys(), nullptr == next);
+		GPOS_ASSERT_IMP(AllowsDuplicateKeys(), NULL == next);
 
 		return next;
 	}
@@ -339,13 +339,13 @@ private:
 	{
 		m_hash_table.DestroyEntries(DestroyCacheEntryWithRefCountTest);
 		GPOS_DELETE(m_clock_hand);
-		m_clock_hand = nullptr;
+		m_clock_hand = NULL;
 	}
 
 	static void
 	DestroyCacheEntryWithRefCountTest(CCacheHashTableEntry *entry)
 	{
-		GPOS_ASSERT(nullptr != entry);
+		GPOS_ASSERT(NULL != entry);
 
 		// This assert is valid only when ccache get deleted. At that point nobody should hold a pointer to an object in CCache.
 		// If ref count is not 1, then we possibly have a leak.
@@ -360,7 +360,7 @@ private:
 	static void
 	DestroyCacheEntry(CCacheHashTableEntry *entry)
 	{
-		GPOS_ASSERT(nullptr != entry);
+		GPOS_ASSERT(NULL != entry);
 
 		// destroy the object before deleting memory pool. This cover the case where object & cacheentry use same memory pool
 		CMemoryPool *mp = entry->Pmp();
@@ -376,13 +376,13 @@ private:
 			   (m_clock_hand_advanced || m_clock_hand->Advance()))
 		{
 			m_clock_hand_advanced = false;
-			CCacheHashTableEntry *entry = nullptr;
+			CCacheHashTableEntry *entry = NULL;
 			BOOL deleted = false;
 			// Scope for CCacheHashtableIterAccessor
 			{
 				CCacheHashtableIterAccessor acc(*m_clock_hand);
 
-				if (nullptr != (entry = acc.Value()))
+				if (NULL != (entry = acc.Value()))
 				{
 					// can only remove when the clock hand points to a entry with 0 gclock counter
 					if (0 == entry->GetGClockCounter())
@@ -416,7 +416,7 @@ private:
 			// now free the memory of the evicted entry
 			if (deleted)
 			{
-				GPOS_ASSERT(nullptr != entry);
+				GPOS_ASSERT(NULL != entry);
 				DestroyCacheEntry(entry);
 			}
 		}
@@ -439,7 +439,7 @@ public:
 		  m_hash_func(hash_func),
 		  m_equal_func(equal_func)
 	{
-		GPOS_ASSERT(nullptr != m_mp &&
+		GPOS_ASSERT(NULL != m_mp &&
 					"Cache memory pool could not be initialized");
 
 		GPOS_ASSERT(0 != g_clock_init_counter);

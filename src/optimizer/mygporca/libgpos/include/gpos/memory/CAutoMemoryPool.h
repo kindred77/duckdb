@@ -49,23 +49,21 @@ public:
 	};
 
 private:
+	// private copy ctor
+	CAutoMemoryPool(const CAutoMemoryPool &);
+
 	// memory pool to protect
 	CMemoryPool *m_mp;
 
-#ifdef GPOS_DEBUG
 	// type of leak check to perform
 	ELeakCheck m_leak_check_type;
-#endif
 
 public:
-	CAutoMemoryPool(const CAutoMemoryPool &) = delete;
-
 	// ctor
 	CAutoMemoryPool(ELeakCheck leak_check_type = ElcExc);
 
-	// FIXME: should mark this noexcept in non-assert builds
 	// dtor
-	~CAutoMemoryPool() noexcept(false);
+	~CAutoMemoryPool();
 
 	// accessor
 	CMemoryPool *

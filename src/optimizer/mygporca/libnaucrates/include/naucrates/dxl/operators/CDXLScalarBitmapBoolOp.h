@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CDXLScalarBitmapBoolOp.h
@@ -47,18 +47,19 @@ private:
 	// operator type
 	const EdxlBitmapBoolOp m_bitmap_op_type;
 
-public:
-	CDXLScalarBitmapBoolOp(const CDXLScalarBitmapBoolOp &) = delete;
+	// private copy ctor
+	CDXLScalarBitmapBoolOp(const CDXLScalarBitmapBoolOp &);
 
+public:
 	// ctor
 	CDXLScalarBitmapBoolOp(CMemoryPool *mp, IMDId *mdid_type,
 						   EdxlBitmapBoolOp bitmap_op_type);
 
 	// dtor
-	~CDXLScalarBitmapBoolOp() override;
+	virtual ~CDXLScalarBitmapBoolOp();
 
 	// dxl operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// bitmap operator type
 	EdxlBitmapBoolOp GetDXLBitmapOpType() const;
@@ -67,28 +68,28 @@ public:
 	IMDId *MdidType() const;
 
 	// name of the DXL operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *dxlnode,
+							 BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLScalarBitmapBoolOp *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarBitmapBoolOp == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarBitmapBoolOp *>(dxl_op);

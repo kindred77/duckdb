@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformPushGbBelowSetOp.h
@@ -35,9 +35,10 @@ template <class TSetOp>
 class CXformPushGbBelowSetOp : public CXformExploration
 {
 private:
-public:
-	CXformPushGbBelowSetOp(const CXformPushGbBelowSetOp &) = delete;
+	// private copy ctor
+	CXformPushGbBelowSetOp(const CXformPushGbBelowSetOp &);
 
+public:
 	// ctor
 	explicit CXformPushGbBelowSetOp(CMemoryPool *mp)
 		: CXformExploration(
@@ -56,11 +57,13 @@ public:
 	}
 
 	// dtor
-	~CXformPushGbBelowSetOp() override = default;
+	virtual ~CXformPushGbBelowSetOp()
+	{
+	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
-	Exfp(CExpressionHandle &exprhdl) const override
+	virtual EXformPromise
+	Exfp(CExpressionHandle &exprhdl) const
 	{
 		CLogicalGbAgg *popGbAgg = CLogicalGbAgg::PopConvert(exprhdl.Pop());
 		if (popGbAgg->FGlobal())
@@ -72,11 +75,11 @@ public:
 	}
 
 	// actual transform
-	void
+	virtual void
 	Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-			  CExpression *pexpr) const override
+			  CExpression *pexpr) const
 	{
-		GPOS_ASSERT(nullptr != pxfctxt);
+		GPOS_ASSERT(NULL != pxfctxt);
 		GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 		GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -118,7 +121,7 @@ public:
 			CColRefArray *pdrgpcrChild = (*pdrgpdrgpcrInput)[ulChild];
 			CColRefSet *pcrsChild = GPOS_NEW(mp) CColRefSet(mp, pdrgpcrChild);
 
-			CColRefArray *pdrgpcrChildGb = nullptr;
+			CColRefArray *pdrgpcrChildGb = NULL;
 			if (!pcrsChild->Equals(pcrsOutput))
 			{
 				// use column mapping in SetOp to set child grouping colums

@@ -28,9 +28,9 @@ using namespace gpmd;
 class IDatum;
 
 // hash map mapping ULONG -> Datum
-using UlongToIDatumMap =
-	CHashMap<ULONG, IDatum, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupRelease<IDatum>>;
+typedef CHashMap<ULONG, IDatum, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
+				 CleanupDelete<ULONG>, CleanupRelease<IDatum> >
+	UlongToIDatumMap;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -43,14 +43,16 @@ using UlongToIDatumMap =
 class IDatum : public CRefCount, public DbgPrintMixin<IDatum>
 {
 private:
-public:
-	IDatum(const IDatum &) = delete;
+	// private copy ctor
+	IDatum(const IDatum &);
 
+
+public:
 	// ctor
-	IDatum() = default;
+	IDatum(){};
 
 	// dtor
-	~IDatum() override = default;
+	virtual ~IDatum(){};
 
 	// accessor for datum type
 	virtual IMDType::ETypeInfo GetDatumType() = 0;
@@ -141,11 +143,10 @@ public:
 	// check if the given pair of datums are stats comparable
 	virtual BOOL StatsAreComparable(const IDatum *datum) const;
 
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
 };	// class IDatum
 
 // array of idatums
-using IDatumArray = CDynamicPtrArray<IDatum, CleanupRelease>;
+typedef CDynamicPtrArray<IDatum, CleanupRelease> IDatumArray;
 }  // namespace gpnaucrates
 
 

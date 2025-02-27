@@ -48,8 +48,11 @@ private:
 	// do the columns across inputs need to be casted
 	BOOL m_cast_across_input_req;
 
+	// private copy ctor
+	CParseHandlerLogicalSetOp(const CParseHandlerLogicalSetOp &);
+
 	// return the set operation type
-	static EdxlSetOpType GetSetOpType(const XMLCh *const element_local_name);
+	EdxlSetOpType GetSetOpType(const XMLCh *const element_local_name);
 
 	// process the start of an element
 	void StartElement(
@@ -57,25 +60,23 @@ private:
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerLogicalSetOp(const CParseHandlerLogicalSetOp &) = delete;
-
 	// ctor
 	CParseHandlerLogicalSetOp(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,
 							  CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerLogicalSetOp() override;
+	~CParseHandlerLogicalSetOp();
 };
 }  // namespace gpdxl
 

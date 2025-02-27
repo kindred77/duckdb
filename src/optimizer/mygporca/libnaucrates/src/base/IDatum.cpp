@@ -30,7 +30,7 @@ FORCE_GENERATE_DBGSTR(gpmd::IDatum);
 BOOL
 IDatum::StatsAreEqual(const IDatum *datum) const
 {
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != datum);
 
 	// datums can be compared based on either LINT or Doubles or BYTEA values
 #ifdef GPOS_DEBUG
@@ -79,7 +79,7 @@ IDatum::StatsAreEqual(const IDatum *datum) const
 BOOL
 IDatum::StatsAreLessThan(const IDatum *datum) const
 {
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != datum);
 
 	// datums can be compared based on either LINT or Doubles or BYTEA values
 #ifdef GPOS_DEBUG
@@ -128,7 +128,7 @@ IDatum::StatsAreLessThan(const IDatum *datum) const
 CDouble
 IDatum::GetStatsDistanceFrom(const IDatum *datum) const
 {
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != datum);
 
 	// datums can be compared based on either LINT or Doubles or BYTEA values
 #ifdef GPOS_DEBUG
@@ -201,7 +201,7 @@ IDatum::GetValAsDouble() const
 BOOL
 IDatum::StatsAreComparable(const IDatum *datum) const
 {
-	GPOS_ASSERT(nullptr != datum);
+	GPOS_ASSERT(NULL != datum);
 
 	BOOL is_types_match = this->MDId()->Equals(datum->MDId());
 
@@ -213,9 +213,7 @@ IDatum::StatsAreComparable(const IDatum *datum) const
 			CMDTypeGenericGPDB::IsTimeRelatedType(this->MDId()) &&
 			CMDTypeGenericGPDB::IsTimeRelatedType(datum->MDId());
 		if (is_time_comparison)
-		{
 			return false;
-		}
 	}
 	// datums can be compared based on either LINT or Doubles or BYTEA values
 	BOOL is_double_comparison =

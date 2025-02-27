@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformLeftSemiJoin2InnerJoinUnderGb.h
@@ -30,36 +30,39 @@ using namespace gpos;
 class CXformLeftSemiJoin2InnerJoinUnderGb : public CXformExploration
 {
 private:
-public:
+	// private copy ctor
 	CXformLeftSemiJoin2InnerJoinUnderGb(
-		const CXformLeftSemiJoin2InnerJoinUnderGb &) = delete;
+		const CXformLeftSemiJoin2InnerJoinUnderGb &);
 
+public:
 	// ctor
 	explicit CXformLeftSemiJoin2InnerJoinUnderGb(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftSemiJoin2InnerJoinUnderGb() override = default;
+	virtual ~CXformLeftSemiJoin2InnerJoinUnderGb()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftSemiJoin2InnerJoinUnderGb;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftSemiJoin2InnerJoinUnderGb";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformLeftSemiJoin2InnerJoinUnderGb
 

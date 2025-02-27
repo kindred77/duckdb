@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2018 VMware, Inc. or its affiliates.
+//	Copyright 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CLeftOuterJoinStatsProcessor.cpp
@@ -21,18 +21,17 @@ CLeftOuterJoinStatsProcessor::CalcLOJoinStatsStatic(
 	CMemoryPool *mp, const IStatistics *outer_side_stats,
 	const IStatistics *inner_side_stats, CStatsPredJoinArray *join_preds_stats)
 {
-	GPOS_ASSERT(nullptr != outer_side_stats);
-	GPOS_ASSERT(nullptr != inner_side_stats);
-	GPOS_ASSERT(nullptr != join_preds_stats);
+	GPOS_ASSERT(NULL != outer_side_stats);
+	GPOS_ASSERT(NULL != inner_side_stats);
+	GPOS_ASSERT(NULL != join_preds_stats);
 
 	const CStatistics *result_stats_outer_side =
 		dynamic_cast<const CStatistics *>(outer_side_stats);
 	const CStatistics *result_stats_inner_side =
 		dynamic_cast<const CStatistics *>(inner_side_stats);
 
-	CStatistics *inner_join_stats =
-		CStatistics::CastStats(result_stats_outer_side->CalcInnerJoinStats(
-			mp, inner_side_stats, join_preds_stats));
+	CStatistics *inner_join_stats = result_stats_outer_side->CalcInnerJoinStats(
+		mp, inner_side_stats, join_preds_stats);
 	CDouble num_rows_inner_join = inner_join_stats->Rows();
 	CDouble num_rows_LASJ(1.0);
 
@@ -81,10 +80,10 @@ CLeftOuterJoinStatsProcessor::MakeLOJHistogram(
 	CStatsPredJoinArray *join_preds_stats, CDouble num_rows_inner_join,
 	CDouble *result_rows_LASJ)
 {
-	GPOS_ASSERT(nullptr != outer_side_stats);
-	GPOS_ASSERT(nullptr != inner_side_stats);
-	GPOS_ASSERT(nullptr != join_preds_stats);
-	GPOS_ASSERT(nullptr != inner_join_stats);
+	GPOS_ASSERT(NULL != outer_side_stats);
+	GPOS_ASSERT(NULL != inner_side_stats);
+	GPOS_ASSERT(NULL != join_preds_stats);
+	GPOS_ASSERT(NULL != inner_join_stats);
 
 	// build a bitset with all outer child columns contributing to the join
 	CBitSet *outer_side_join_cols = GPOS_NEW(mp) CBitSet(mp);
@@ -98,11 +97,10 @@ CLeftOuterJoinStatsProcessor::MakeLOJHistogram(
 	}
 
 	// for the columns in the outer child, compute the buckets that do not contribute to the inner join
-	CStatistics *LASJ_stats =
-		CStatistics::CastStats(outer_side_stats->CalcLASJoinStats(
-			mp, inner_side_stats, join_preds_stats,
-			false /* DoIgnoreLASJHistComputation */
-			));
+	CStatistics *LASJ_stats = outer_side_stats->CalcLASJoinStats(
+		mp, inner_side_stats, join_preds_stats,
+		false /* DoIgnoreLASJHistComputation */
+	);
 	CDouble num_rows_LASJ(0.0);
 	if (!LASJ_stats->IsEmpty())
 	{
@@ -120,13 +118,13 @@ CLeftOuterJoinStatsProcessor::MakeLOJHistogram(
 		ULONG colid = *(*outer_colids_with_stats)[i];
 		const CHistogram *inner_join_histogram =
 			inner_join_stats->GetHistogram(colid);
-		GPOS_ASSERT(nullptr != inner_join_histogram);
+		GPOS_ASSERT(NULL != inner_join_histogram);
 
 		if (outer_side_join_cols->Get(colid))
 		{
 			// add buckets from the outer histogram that do not contribute to the inner join
 			const CHistogram *LASJ_histogram = LASJ_stats->GetHistogram(colid);
-			GPOS_ASSERT(nullptr != LASJ_histogram);
+			GPOS_ASSERT(NULL != LASJ_histogram);
 
 			if (LASJ_histogram->IsWellDefined() && !LASJ_histogram->IsEmpty())
 			{
@@ -181,9 +179,9 @@ CLeftOuterJoinStatsProcessor::AddHistogramsLOJInner(
 	ULongPtrArray *inner_colids_with_stats, CDouble num_rows_LASJ,
 	CDouble num_rows_inner_join, UlongToHistogramMap *LOJ_histograms)
 {
-	GPOS_ASSERT(nullptr != inner_join_stats);
-	GPOS_ASSERT(nullptr != inner_colids_with_stats);
-	GPOS_ASSERT(nullptr != LOJ_histograms);
+	GPOS_ASSERT(NULL != inner_join_stats);
+	GPOS_ASSERT(NULL != inner_colids_with_stats);
+	GPOS_ASSERT(NULL != LOJ_histograms);
 
 	const ULONG num_inner_cols = inner_colids_with_stats->Size();
 
@@ -193,7 +191,7 @@ CLeftOuterJoinStatsProcessor::AddHistogramsLOJInner(
 
 		const CHistogram *inner_join_histogram =
 			inner_join_stats->GetHistogram(colid);
-		GPOS_ASSERT(nullptr != inner_join_histogram);
+		GPOS_ASSERT(NULL != inner_join_histogram);
 
 		// the number of nulls added to the inner side should be the number of rows of the LASJ on the outer side.
 		CHistogram *null_histogram = GPOS_NEW(mp) CHistogram(

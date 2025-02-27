@@ -16,7 +16,6 @@
 
 #include "gpos/base.h"
 #include "gpos/common/CDynamicPtrArray.h"
-#include "gpos/common/CHashMap.h"
 #include "gpos/common/CHashSet.h"
 #include "gpos/common/CHashSetIter.h"
 #include "gpos/common/DbgPrintMixin.h"
@@ -56,7 +55,7 @@ private:
 	// number of deletion locks -- each MDAccessor adds a new deletion lock if it uses
 	// an MDId object in its internal hash-table, the deletion lock is released when
 	// MDAccessor is destroyed
-	ULONG_PTR m_deletion_locks{0};
+	ULONG_PTR m_deletion_locks;
 
 public:
 	//------------------------------------------------------------------
@@ -68,25 +67,22 @@ public:
 	//------------------------------------------------------------------
 	enum EMDIdType
 	{
-		EmdidGeneral = 0,
+		EmdidGPDB = 0,
 		EmdidColStats = 1,
 		EmdidRelStats = 2,
 		EmdidCastFunc = 3,
 		EmdidScCmp = 4,
 		EmdidGPDBCtas = 5,
-		EmdidRel = 6,
-		EmdidInd = 7,
-		EmdidCheckConstraint = 8,
-		EmdidExtStats = 9,
-		EmdidExtStatsInfo = 10,
 		EmdidSentinel
 	};
 
 	// ctor
-	IMDId() = default;
+	IMDId() : m_deletion_locks(0)
+	{
+	}
 
 	// dtor
-	~IMDId() override = default;
+	virtual ~IMDId(){};
 
 	// type of mdid
 	virtual EMDIdType MdidType() const = 0;
@@ -105,8 +101,8 @@ public:
 	virtual ULONG HashValue() const = 0;
 
 	// return true if calling object's destructor is allowed
-	BOOL
-	Deletable() const override
+	virtual BOOL
+	Deletable() const
 	{
 		return (0 == m_deletion_locks);
 	}
@@ -139,7 +135,7 @@ public:
 	static ULONG
 	MDIdHash(const IMDId *mdid)
 	{
-		GPOS_ASSERT(nullptr != mdid);
+		GPOS_ASSERT(NULL != mdid);
 		return mdid->HashValue();
 	}
 
@@ -148,7 +144,7 @@ public:
 	static BOOL
 	MDIdCompare(const IMDId *left_mdid, const IMDId *right_mdid)
 	{
-		GPOS_ASSERT(nullptr != left_mdid && nullptr != right_mdid);
+		GPOS_ASSERT(NULL != left_mdid && NULL != right_mdid);
 		return left_mdid->Equals(right_mdid);
 	}
 
@@ -164,26 +160,22 @@ public:
 	static BOOL
 	IsValid(const IMDId *mdid)
 	{
-		return nullptr != mdid && mdid->IsValid();
+		return NULL != mdid && mdid->IsValid();
 	}
-
-	virtual gpos::IOstream &OsPrint(gpos::IOstream &os) const = 0;
-
-	// make a copy in the given memory pool
-	virtual IMDId *Copy(CMemoryPool *mp) const = 0;
 };
 
 // common structures over metadata id elements
-using IMdIdArray = CDynamicPtrArray<IMDId, CleanupRelease>;
+typedef CDynamicPtrArray<IMDId, CleanupRelease> IMdIdArray;
 
 // hash set for mdid
-using MdidHashSet =
-	CHashSet<IMDId, IMDId::MDIdHash, IMDId::MDIdCompare, CleanupRelease<IMDId>>;
+typedef CHashSet<IMDId, IMDId::MDIdHash, IMDId::MDIdCompare,
+				 CleanupRelease<IMDId> >
+	MdidHashSet;
 
 // iterator over the hash set for column id information for missing statistics
-using MdidHashSetIter = CHashSetIter<IMDId, IMDId::MDIdHash, IMDId::MDIdCompare,
-									 CleanupRelease<IMDId>>;
-
+typedef CHashSetIter<IMDId, IMDId::MDIdHash, IMDId::MDIdCompare,
+					 CleanupRelease<IMDId> >
+	MdidHashSetIter;
 }  // namespace gpmd
 
 FORCE_GENERATE_DBGSTR(gpmd::IMDId);

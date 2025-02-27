@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -31,59 +32,62 @@ using namespace gpos;
 class CScalarSwitchCase : public CScalar
 {
 private:
-public:
-	CScalarSwitchCase(const CScalarSwitchCase &) = delete;
+	// private copy ctor
+	CScalarSwitchCase(const CScalarSwitchCase &);
 
+public:
 	// ctor
 	explicit CScalarSwitchCase(CMemoryPool *mp);
 
 	// dtor
-	~CScalarSwitchCase() override = default;
+	virtual ~CScalarSwitchCase()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSwitchCase;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSwitchCase";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		GPOS_ASSERT(!"Invalid function call: CScalarSwitchCase::MdidType()");
-		return nullptr;
+		return NULL;
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult
-	Eber(ULongPtrArray *pdrgpulChildren) const override
+	virtual EBoolEvalResult
+	Eber(ULongPtrArray *pdrgpulChildren) const
 	{
 		return EberNullOnAllNullChildren(pdrgpulChildren);
 	}
@@ -92,7 +96,7 @@ public:
 	static CScalarSwitchCase *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSwitchCase == pop->Eopid());
 
 		return dynamic_cast<CScalarSwitchCase *>(pop);

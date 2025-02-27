@@ -34,18 +34,23 @@ class CGroupExpression;
 class CJobGroup : public CJob
 {
 private:
+	// private copy ctor
+	CJobGroup(const CJobGroup &);
+
 protected:
 	// target group
-	CGroup *m_pgroup{nullptr};
+	CGroup *m_pgroup;
 
 	// last scheduled group expression
 	CGroupExpression *m_pgexprLastScheduled;
 
 	// ctor
-	CJobGroup() = default;
+	CJobGroup() : m_pgroup(NULL)
+	{
+	}
 
 	// dtor
-	~CJobGroup() override = default;
+	virtual ~CJobGroup(){};
 
 	// initialize job
 	void Init(CGroup *pgroup);
@@ -63,16 +68,14 @@ protected:
 	virtual BOOL FScheduleGroupExpressions(CSchedulerContext *psc) = 0;
 
 	// job's function
-	BOOL FExecute(CSchedulerContext *psc) override = 0;
+	virtual BOOL FExecute(CSchedulerContext *psc) = 0;
 
 #ifdef GPOS_DEBUG
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override = 0;
+	virtual IOstream &OsPrint(IOstream &os) const = 0;
 
 #endif	// GPOS_DEBUG
-public:
-	CJobGroup(const CJobGroup &) = delete;
 
 };	// class CJobGroup
 

@@ -27,7 +27,7 @@ using namespace gpopt;
 CLogicalLeftOuterApply::CLogicalLeftOuterApply(CMemoryPool *mp)
 	: CLogicalApply(mp)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 	m_fPattern = true;
 }
@@ -58,7 +58,9 @@ CLogicalLeftOuterApply::CLogicalLeftOuterApply(CMemoryPool *mp,
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogicalLeftOuterApply::~CLogicalLeftOuterApply() = default;
+CLogicalLeftOuterApply::~CLogicalLeftOuterApply()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:

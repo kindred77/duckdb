@@ -15,12 +15,15 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CKeyCollection.h"
+#include "gpopt/base/CPartIndexMap.h"
 #include "gpopt/operators/CExpression.h"
 #include "gpopt/operators/CExpressionHandle.h"
 
 
 using namespace gpopt;
 
+const WCHAR CLogicalDML::m_rgwszDml[EdmlSentinel][10] = {
+	GPOS_WSZ_LIT("Insert"), GPOS_WSZ_LIT("Delete"), GPOS_WSZ_LIT("Update")};
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -32,13 +35,14 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CLogicalDML::CLogicalDML(CMemoryPool *mp)
 	: CLogical(mp),
-	  m_ptabdesc(nullptr),
-	  m_pdrgpcrSource(nullptr),
-	  m_pbsModified(nullptr),
-	  m_pcrAction(nullptr),
-	  m_pcrCtid(nullptr),
-	  m_pcrSegmentId(nullptr),
-	  m_fSplit(true)
+	  m_ptabdesc(NULL),
+	  m_pdrgpcrSource(NULL),
+	  m_pbsModified(NULL),
+	  m_pcrAction(NULL),
+	  m_pcrTableOid(NULL),
+	  m_pcrCtid(NULL),
+	  m_pcrSegmentId(NULL),
+	  m_pcrTupleOid(NULL)
 {
 	m_fPattern = true;
 }
@@ -54,36 +58,47 @@ CLogicalDML::CLogicalDML(CMemoryPool *mp)
 CLogicalDML::CLogicalDML(CMemoryPool *mp, EDMLOperator edmlop,
 						 CTableDescriptor *ptabdesc,
 						 CColRefArray *pdrgpcrSource, CBitSet *pbsModified,
-						 CColRef *pcrAction, CColRef *pcrCtid,
-						 CColRef *pcrSegmentId, BOOL fSplit)
+						 CColRef *pcrAction, CColRef *pcrTableOid,
+						 CColRef *pcrCtid, CColRef *pcrSegmentId,
+						 CColRef *pcrTupleOid)
 	: CLogical(mp),
 	  m_edmlop(edmlop),
 	  m_ptabdesc(ptabdesc),
 	  m_pdrgpcrSource(pdrgpcrSource),
 	  m_pbsModified(pbsModified),
 	  m_pcrAction(pcrAction),
+	  m_pcrTableOid(pcrTableOid),
 	  m_pcrCtid(pcrCtid),
 	  m_pcrSegmentId(pcrSegmentId),
-	  m_fSplit(fSplit)
+	  m_pcrTupleOid(pcrTupleOid)
 {
 	GPOS_ASSERT(EdmlSentinel != edmlop);
-	GPOS_ASSERT(nullptr != ptabdesc);
-	GPOS_ASSERT(nullptr != pdrgpcrSource);
-	GPOS_ASSERT(nullptr != pbsModified);
-	GPOS_ASSERT(nullptr != pcrAction);
+	GPOS_ASSERT(NULL != ptabdesc);
+	GPOS_ASSERT(NULL != pdrgpcrSource);
+	GPOS_ASSERT(NULL != pbsModified);
+	GPOS_ASSERT(NULL != pcrAction);
 	GPOS_ASSERT_IMP(EdmlDelete == edmlop || EdmlUpdate == edmlop,
-					nullptr != pcrCtid && nullptr != pcrSegmentId);
+					NULL != pcrCtid && NULL != pcrSegmentId);
 
 	m_pcrsLocalUsed->Include(m_pdrgpcrSource);
 	m_pcrsLocalUsed->Include(m_pcrAction);
-	if (nullptr != m_pcrCtid)
+	if (NULL != m_pcrTableOid)
+	{
+		m_pcrsLocalUsed->Include(m_pcrTableOid);
+	}
+	if (NULL != m_pcrCtid)
 	{
 		m_pcrsLocalUsed->Include(m_pcrCtid);
 	}
 
-	if (nullptr != m_pcrSegmentId)
+	if (NULL != m_pcrSegmentId)
 	{
 		m_pcrsLocalUsed->Include(m_pcrSegmentId);
+	}
+
+	if (NULL != m_pcrTupleOid)
+	{
+		m_pcrsLocalUsed->Include(m_pcrTupleOid);
 	}
 }
 
@@ -122,11 +137,12 @@ CLogicalDML::Matches(COperator *pop) const
 	CLogicalDML *popDML = CLogicalDML::PopConvert(pop);
 
 	return m_pcrAction == popDML->PcrAction() &&
+		   m_pcrTableOid == popDML->PcrTableOid() &&
 		   m_pcrCtid == popDML->PcrCtid() &&
 		   m_pcrSegmentId == popDML->PcrSegmentId() &&
+		   m_pcrTupleOid == popDML->PcrTupleOid() &&
 		   m_ptabdesc->MDId()->Equals(popDML->Ptabdesc()->MDId()) &&
-		   m_pdrgpcrSource->Equals(popDML->PdrgpcrSource()) &&
-		   m_fSplit == popDML->FSplit();
+		   m_pdrgpcrSource->Equals(popDML->PdrgpcrSource());
 }
 
 //---------------------------------------------------------------------------
@@ -143,6 +159,7 @@ CLogicalDML::HashValue() const
 	ULONG ulHash = gpos::CombineHashes(COperator::HashValue(),
 									   m_ptabdesc->MDId()->HashValue());
 	ulHash = gpos::CombineHashes(ulHash, gpos::HashPtr<CColRef>(m_pcrAction));
+	ulHash = gpos::CombineHashes(ulHash, gpos::HashPtr<CColRef>(m_pcrTableOid));
 	ulHash =
 		gpos::CombineHashes(ulHash, CUtils::UlHashColArray(m_pdrgpcrSource));
 
@@ -173,29 +190,38 @@ CLogicalDML::PopCopyWithRemappedColumns(CMemoryPool *mp,
 		CUtils::PdrgpcrRemap(mp, m_pdrgpcrSource, colref_mapping, must_exist);
 	CColRef *pcrAction =
 		CUtils::PcrRemap(m_pcrAction, colref_mapping, must_exist);
+	CColRef *pcrTableOid =
+		CUtils::PcrRemap(m_pcrTableOid, colref_mapping, must_exist);
 
 	// no need to remap modified columns bitset as it represent column indexes
 	// and not actual columns
 	m_pbsModified->AddRef();
 
-	CColRef *pcrCtid = nullptr;
-	if (nullptr != m_pcrCtid)
+	CColRef *pcrCtid = NULL;
+	if (NULL != m_pcrCtid)
 	{
 		pcrCtid = CUtils::PcrRemap(m_pcrCtid, colref_mapping, must_exist);
 	}
 
-	CColRef *pcrSegmentId = nullptr;
-	if (nullptr != m_pcrSegmentId)
+	CColRef *pcrSegmentId = NULL;
+	if (NULL != m_pcrSegmentId)
 	{
 		pcrSegmentId =
 			CUtils::PcrRemap(m_pcrSegmentId, colref_mapping, must_exist);
+	}
+
+	CColRef *pcrTupleOid = NULL;
+	if (NULL != m_pcrTupleOid)
+	{
+		pcrTupleOid =
+			CUtils::PcrRemap(m_pcrTupleOid, colref_mapping, must_exist);
 	}
 
 	m_ptabdesc->AddRef();
 
 	return GPOS_NEW(mp)
 		CLogicalDML(mp, m_edmlop, m_ptabdesc, colref_array, m_pbsModified,
-					pcrAction, pcrCtid, pcrSegmentId, m_fSplit);
+					pcrAction, pcrTableOid, pcrCtid, pcrSegmentId, pcrTupleOid);
 }
 
 //---------------------------------------------------------------------------
@@ -213,14 +239,19 @@ CLogicalDML::DeriveOutputColumns(CMemoryPool *mp,
 {
 	CColRefSet *pcrsOutput = GPOS_NEW(mp) CColRefSet(mp);
 	pcrsOutput->Include(m_pdrgpcrSource);
-	if (nullptr != m_pcrCtid)
+	if (NULL != m_pcrCtid)
 	{
-		GPOS_ASSERT(nullptr != m_pcrSegmentId);
+		GPOS_ASSERT(NULL != m_pcrSegmentId);
 		pcrsOutput->Include(m_pcrCtid);
 		pcrsOutput->Include(m_pcrSegmentId);
 	}
 
 	pcrsOutput->Include(m_pcrAction);
+
+	if (NULL != m_pcrTupleOid)
+	{
+		pcrsOutput->Include(m_pcrTupleOid);
+	}
 
 	return pcrsOutput;
 }
@@ -326,13 +357,20 @@ CLogicalDML::OsPrint(IOstream &os) const
 	}
 
 	os << SzId() << " (";
+	os << m_rgwszDml[m_edmlop] << ", ";
 	m_ptabdesc->Name().OsPrint(os);
-	CLogicalDML::PrintOperatorType(os, m_edmlop, m_fSplit);
-	os << "Affected Columns: [";
+	os << "), Affected Columns: [";
 	CUtils::OsPrintDrgPcr(os, m_pdrgpcrSource);
 	os << "], Action: (";
 	m_pcrAction->OsPrint(os);
 	os << ")";
+
+	if (m_pcrTableOid != NULL)
+	{
+		os << ", Oid: (";
+		m_pcrTableOid->OsPrint(os);
+		os << ")";
+	}
 
 	if (EdmlDelete == m_edmlop || EdmlUpdate == m_edmlop)
 	{
@@ -343,46 +381,6 @@ CLogicalDML::OsPrint(IOstream &os) const
 	}
 
 	return os;
-}
-
-//---------------------------------------------------------------------------
-//	@function:
-//		CLogicalDML::PrintOperatorType
-//
-//	@doc:
-//		Helper function to print DML operator type based on the given operator
-//	    enum, used in OSPrint to print objects.
-//
-//---------------------------------------------------------------------------
-void
-CLogicalDML::PrintOperatorType(IOstream &os, EDMLOperator edmlOperator,
-							   BOOL fSplit)
-{
-	switch (edmlOperator)
-	{
-		case EdmlInsert:
-			os << "), Insert, ";
-			break;
-
-		case EdmlDelete:
-			os << "), Delete, ";
-			break;
-
-		case EdmlUpdate:
-			if (fSplit)
-			{
-				os << "), Split Update, ";
-			}
-			else
-			{
-				os << "), In-place Update, ";
-			}
-			break;
-
-		default:
-			GPOS_ASSERT(!"Unrecognized DML Operator");
-			break;
-	}
 }
 
 // EOF

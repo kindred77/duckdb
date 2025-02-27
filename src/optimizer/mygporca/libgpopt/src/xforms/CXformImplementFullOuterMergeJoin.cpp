@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2019 VMware, Inc. or its affiliates.
+//	Copyright (C) 2019 Pivotal Software, Inc.
 
 #include "gpopt/xforms/CXformImplementFullOuterMergeJoin.h"
 
@@ -46,7 +46,7 @@ CXformImplementFullOuterMergeJoin::Transform(CXformContext *pxfctxt,
 											 CXformResult *pxfres,
 											 CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 

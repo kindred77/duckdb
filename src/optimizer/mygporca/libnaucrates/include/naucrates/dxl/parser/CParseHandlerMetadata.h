@@ -47,20 +47,23 @@ private:
 	// list of parsed metatadata source system ids
 	CSystemIdArray *m_system_id_array;
 
+	// private copy ctor
+	CParseHandlerMetadata(const CParseHandlerMetadata &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 	// parse an array of system ids from the XML attributes
 	CSystemIdArray *GetSrcSysIdArray(const Attributes &attr,
@@ -69,18 +72,16 @@ private:
 
 
 public:
-	CParseHandlerMetadata(const CParseHandlerMetadata &) = delete;
-
 	// ctor
 	CParseHandlerMetadata(CMemoryPool *mp,
 						  CParseHandlerManager *parse_handler_mgr,
 						  CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerMetadata() override;
+	virtual ~CParseHandlerMetadata();
 
 	// parse hander type
-	EDxlParseHandlerType GetParseHandlerType() const override;
+	virtual EDxlParseHandlerType GetParseHandlerType() const;
 
 	// return the list of parsed metadata objects
 	IMDCacheObjectArray *GetMdIdCachedObjArray();

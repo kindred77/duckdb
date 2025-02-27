@@ -38,42 +38,43 @@ private:
 	// is null
 	BOOL m_is_null;
 
-public:
-	CDatumInt4GPDB(const CDatumInt4GPDB &) = delete;
+	// private copy ctor
+	CDatumInt4GPDB(const CDatumInt4GPDB &);
 
+public:
 	// ctors
 	CDatumInt4GPDB(CSystemId sysid, INT val, BOOL is_null = false);
 	CDatumInt4GPDB(IMDId *mdid, INT val, BOOL is_null = false);
 
 	// dtor
-	~CDatumInt4GPDB() override;
+	virtual ~CDatumInt4GPDB();
 
 	// accessor of metadata type id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// accessor of size
-	ULONG Size() const override;
+	virtual ULONG Size() const;
 
 	// accessor of integer value
-	INT Value() const override;
+	virtual INT Value() const;
 
 	// accessor of is null
-	BOOL IsNull() const override;
+	virtual BOOL IsNull() const;
 
 	// return string representation
-	const CWStringConst *GetStrRepr(CMemoryPool *mp) const override;
+	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function for datums
-	BOOL Matches(const IDatum *) const override;
+	virtual BOOL Matches(const IDatum *) const;
 
 	// copy datum
-	IDatum *MakeCopy(CMemoryPool *mp) const override;
+	virtual IDatum *MakeCopy(CMemoryPool *mp) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CDatumInt4GPDB
 

@@ -30,9 +30,9 @@ using namespace gpopt;
 CPhysicalLeftAntiSemiHashJoin::CPhysicalLeftAntiSemiHashJoin(
 	CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
 	CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-	BOOL is_null_aware, CXform::EXformId origin_xform)
+	CXform::EXformId origin_xform)
 	: CPhysicalHashJoin(mp, pdrgpexprOuterKeys, pdrgpexprInnerKeys,
-						hash_opfamilies, is_null_aware, origin_xform)
+						hash_opfamilies, origin_xform)
 {
 }
 
@@ -45,7 +45,9 @@ CPhysicalLeftAntiSemiHashJoin::CPhysicalLeftAntiSemiHashJoin(
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CPhysicalLeftAntiSemiHashJoin::~CPhysicalLeftAntiSemiHashJoin() = default;
+CPhysicalLeftAntiSemiHashJoin::~CPhysicalLeftAntiSemiHashJoin()
+{
+}
 
 
 //---------------------------------------------------------------------------
@@ -64,6 +66,27 @@ CPhysicalLeftAntiSemiHashJoin::FProvidesReqdCols(CExpressionHandle &exprhdl,
 {
 	// left anti semi join only propagates columns from left child
 	return FOuterProvidesReqdCols(exprhdl, pcrsRequired);
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CPhysicalLeftAntiSemiHashJoin::PppsRequired
+//
+//	@doc:
+//		Compute required partition propagation of the n-th child
+//
+//---------------------------------------------------------------------------
+CPartitionPropagationSpec *
+CPhysicalLeftAntiSemiHashJoin::PppsRequired(
+	CMemoryPool *mp, CExpressionHandle &exprhdl,
+	CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+	CDrvdPropArray *,  // pdrgpdpCtxt,
+	ULONG			   // ulOptReq
+)
+{
+	// no partition elimination for LASJ: push request to the respective child
+	return CPhysical::PppsRequiredPushThruNAry(mp, exprhdl, pppsRequired,
+											   child_index);
 }
 
 // EOF

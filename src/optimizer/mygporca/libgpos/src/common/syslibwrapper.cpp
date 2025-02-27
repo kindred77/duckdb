@@ -39,9 +39,12 @@ using namespace gpos;
 void
 gpos::syslib::GetTimeOfDay(TIMEVAL *tv, TIMEZONE *tz)
 {
-	GPOS_ASSERT(nullptr != tv);
+	GPOS_ASSERT(NULL != tv);
 
-	INT res GPOS_ASSERTS_ONLY = gettimeofday(tv, tz);
+#ifdef GPOS_DEBUG
+	INT res =
+#endif	// GPOS_DEBUG
+		gettimeofday(tv, tz);
 
 	GPOS_ASSERT(0 == res);
 }
@@ -58,38 +61,42 @@ gpos::syslib::GetTimeOfDay(TIMEVAL *tv, TIMEZONE *tz)
 void
 gpos::syslib::GetRusage(RUSAGE *usage)
 {
-	GPOS_ASSERT(nullptr != usage);
+	GPOS_ASSERT(NULL != usage);
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-	FILETIME kernelTime;
-	FILETIME userTime;
-	[[maybe_unused]] WINBOOL res = !GetProcessTimes(GetCurrentProcess(), NULL, NULL, &kernelTime, &userTime);
-	ULARGE_INTEGER ui;
-	ui.LowPart = userTime.dwLowDateTime;
-	ui.HighPart = userTime.dwHighDateTime;
-	ULARGE_INTEGER si;
-	si.LowPart = kernelTime.dwLowDateTime;
-	si.HighPart = kernelTime.dwHighDateTime;
-	usage->ru_stime.tv_usec = si.QuadPart * 100;
-	usage->ru_utime.tv_usec = ui.QuadPart * 100;
+       FILETIME kernelTime;
+       FILETIME userTime;
+       [[maybe_unused]] WINBOOL res = !GetProcessTimes(GetCurrentProcess(), NULL, NULL, &kernelTime, &userTime);
+       ULARGE_INTEGER ui;
+       ui.LowPart = userTime.dwLowDateTime;
+       ui.HighPart = userTime.dwHighDateTime;
+       ULARGE_INTEGER si;
+       si.LowPart = kernelTime.dwLowDateTime;
+       si.HighPart = kernelTime.dwHighDateTime;
+       usage->ru_stime.tv_usec = si.QuadPart * 100;
+       usage->ru_utime.tv_usec = ui.QuadPart * 100;
 
-	// tms buffer;
+       // tms buffer;
     // clock_t ticks_per_second = sysconf(CLK_TCK);
-	// if (ticks_per_second == -1) {
+       // if (ticks_per_second == -1) {
     //     std::cout << "Error: sysconf" << std::endl;
     //     return;
     // }
-	// clock_t start_time = times(&buffer);
+       // clock_t start_time = times(&buffer);
     // if (start_time == (clock_t) -1) {
     //     std::cout << "Error: times" << std::endl;
     //     return;
     // }
-	// usage->ru_stime.tv_usec = buffer.tms_stime;
-	// usage->ru_utime.tv_usec = buffer.tms_utime;
+       // usage->ru_stime.tv_usec = buffer.tms_stime;
+       // usage->ru_utime.tv_usec = buffer.tms_utime;
 #else
-INT res GPOS_ASSERTS_ONLY = getrusage(RUSAGE_SELF, usage);
-#endif
 
+#ifdef GPOS_DEBUG
+	INT res =
+#endif	// GPOS_DEBUG
+		getrusage(RUSAGE_SELF, usage);
+
+#endif
 	GPOS_ASSERT(0 == res);
 }
 
@@ -103,13 +110,15 @@ INT res GPOS_ASSERTS_ONLY = getrusage(RUSAGE_SELF, usage);
 //
 //---------------------------------------------------------------------------
 void
-gpos::syslib::OpenLog([[maybe_unused]] const CHAR *ident, [[maybe_unused]] INT option, [[maybe_unused]] INT facility)
+gpos::syslib::OpenLog(const CHAR *ident, INT option, INT facility)
 {
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-	std::cout << "OpenLog not supported yet on WIN." << std::endl;
+       std::cout << "OpenLog not supported yet on WIN." << std::endl;
 #else
-	openlog(ident, option, facility);
+        openlog(ident, option, facility);
 #endif
+
 }
 
 
@@ -122,12 +131,12 @@ gpos::syslib::OpenLog([[maybe_unused]] const CHAR *ident, [[maybe_unused]] INT o
 //
 //---------------------------------------------------------------------------
 void
-gpos::syslib::SysLog([[maybe_unused]] INT priority, [[maybe_unused]] const CHAR *format)
+gpos::syslib::SysLog(INT priority, const CHAR *format)
 {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 	std::cout << "SysLog not supported yet on WIN." << std::endl;
 #else
-	syslog(priority, "%s", format);
+    syslog(priority, "%s", format);
 #endif
 }
 
@@ -144,9 +153,9 @@ void
 gpos::syslib::CloseLog()
 {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-	std::cout << "CloseLog not supported yet on WIN." << std::endl;
+    std::cout << "CloseLog not supported yet on WIN." << std::endl;
 #else
-	closelog();
+    closelog();
 #endif
 }
 

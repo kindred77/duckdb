@@ -36,32 +36,35 @@ private:
 	static BOOL FDropGbAgg(CMemoryPool *mp, CExpression *pexpr,
 						   CXformResult *pxfres);
 
-public:
-	CXformSimplifyGbAgg(const CXformSimplifyGbAgg &) = delete;
+	// private copy ctor
+	CXformSimplifyGbAgg(const CXformSimplifyGbAgg &);
 
+public:
 	// ctor
 	explicit CXformSimplifyGbAgg(CMemoryPool *mp);
 
 	// dtor
-	~CXformSimplifyGbAgg() override = default;
+	virtual ~CXformSimplifyGbAgg()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSimplifyGbAgg;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSimplifyGbAgg";
 	}
 
 	// Compatibility function for simplifying aggregates
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSimplifyGbAgg != exfid) &&
 			   (CXform::ExfSplitDQA != exfid) &&
@@ -70,11 +73,10 @@ public:
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformSimplifyGbAgg
 

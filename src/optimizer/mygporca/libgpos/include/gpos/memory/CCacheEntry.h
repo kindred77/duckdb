@@ -30,6 +30,40 @@ using namespace gpos;
 
 namespace gpos
 {
+//prototype
+template <class T, class K>
+class CCacheAccessor;
+
+
+
+// Template to convert object (any data type) to pointer
+template <class T>
+struct ptr
+{
+	T *
+	operator()(T &obj)
+	{
+		return &obj;
+	}
+
+	const T *
+	operator()(const T &obj)
+	{
+		return &obj;
+	}
+};
+
+// Template specialization for pointer type
+template <class T>
+struct ptr<T *>
+{
+	T *
+	operator()(T *ptr)
+	{
+		return ptr;
+	}
+};
+
 //---------------------------------------------------------------------------
 //	@class:
 //		CCacheEntry
@@ -118,21 +152,21 @@ public:
 	ULONG
 	RefCount() const
 	{
-		return (ULONG) m_val->RefCount();
+		return (ULONG) ptr<T>()(m_val)->RefCount();
 	}
 
 	// increments value's ref-count
 	void
 	IncRefCount()
 	{
-		m_val->AddRef();
+		ptr<T>()(m_val)->AddRef();
 	}
 
 	//decrements value's ref-count
 	void
 	DecRefCount()
 	{
-		m_val->Release();
+		ptr<T>()(m_val)->Release();
 	}
 
 	// sets the gclock counter for an entry; useful for updating counter upon access

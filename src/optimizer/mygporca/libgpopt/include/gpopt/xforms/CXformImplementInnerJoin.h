@@ -31,35 +31,38 @@ using namespace gpos;
 class CXformImplementInnerJoin : public CXformImplementation
 {
 private:
-public:
-	CXformImplementInnerJoin(const CXformImplementInnerJoin &) = delete;
+	// private copy ctor
+	CXformImplementInnerJoin(const CXformImplementInnerJoin &);
 
+public:
 	// ctor
 	explicit CXformImplementInnerJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementInnerJoin() override = default;
+	~CXformImplementInnerJoin()
+	{
+	}
 
 	// ident accessors
 	EXformId
-	Exfid() const override
+	Exfid() const
 	{
 		return ExfImplementInnerJoin;
 	}
 
 	// return a string for xform name
 	const CHAR *
-	SzId() const override
+	SzId() const
 	{
 		return "CXformImplementInnerJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformImplementInnerJoin
 

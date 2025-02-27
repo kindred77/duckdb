@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin.cpp
@@ -95,7 +95,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::Exfp(
 	CAutoMemoryPool amp;
 	CMemoryPool *mp = amp.Pmp();
 
-	if (nullptr == pexprScalar ||
+	if (NULL == pexprScalar ||
 		!CPredicateUtils::FSimpleEqualityUsingCols(mp, pexprScalar, pcrsInner))
 	{
 		return ExfpNone;
@@ -104,7 +104,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::Exfp(
 	if (GPOS_FTRACE(
 			gpos::
 				EopttraceApplyLeftOuter2InnerUnionAllLeftAntiSemiJoinDisregardingStats) ||
-		nullptr == exprhdl.Pgexpr())
+		NULL == exprhdl.Pgexpr())
 	{
 		return CXform::ExfpHigh;
 	}
@@ -134,7 +134,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::Exfp(
 //---------------------------------------------------------------------------
 BOOL
 CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::FApplyXformUsingStatsInfo(
-	const IStatistics *outer_stats, const IStatistics *inner_side_stats)
+	const IStatistics *outer_stats, const IStatistics *inner_side_stats) const
 {
 	if (GPOS_FTRACE(
 			gpos::
@@ -143,7 +143,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::FApplyXformUsingStatsInfo(
 		return true;
 	}
 
-	if (nullptr == outer_stats || nullptr == inner_side_stats)
+	if (NULL == outer_stats || NULL == inner_side_stats)
 	{
 		return false;
 	}
@@ -203,7 +203,7 @@ void
 CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::Transform(
 	CXformContext *pxfctxt, CXformResult *pxfres, CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -247,11 +247,11 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::Transform(
 	CColRefSet *pcrsScalar = pexprScalar->DeriveUsedColumns();
 	CColRefSet *pcrsInner = pexprInner->DeriveOutputColumns();
 
-	CColRefArray *pdrgpcrProjectOutput = nullptr;
+	CColRefArray *pdrgpcrProjectOutput = NULL;
 	CExpression *pexprProjectAppendNulls = PexprProjectOverLeftAntiSemiJoin(
 		mp, pdrgpcrOuter, pcrsScalar, pcrsInner, pdrgpcrJoinOutput, ulCTEJoinId,
 		ulCTEOuterId, &pdrgpcrProjectOutput);
-	GPOS_ASSERT(nullptr != pdrgpcrProjectOutput);
+	GPOS_ASSERT(NULL != pdrgpcrProjectOutput);
 
 	CColRef2dArray *pdrgpdrgpcrUnionInput = GPOS_NEW(mp) CColRef2dArray(mp);
 	pdrgpcrJoinOutput->AddRef();
@@ -287,7 +287,7 @@ BOOL
 CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::FValidInnerExpr(
 	CExpression *pexprInner)
 {
-	GPOS_ASSERT(nullptr != pexprInner);
+	GPOS_ASSERT(NULL != pexprInner);
 
 	// set of inner operator ids that should not be considered because they usually
 	// generate a relatively small number of tuples
@@ -340,7 +340,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::
 	ULongPtrArray *pdrgpulIndexesOfOuterInGby =
 		pdrgpcrJoinOutput->IndexesOfSubsequence(pdrgpcrOuterKeys);
 
-	GPOS_ASSERT(nullptr != pdrgpulIndexesOfOuterInGby);
+	GPOS_ASSERT(NULL != pdrgpulIndexesOfOuterInGby);
 	CColRefArray *pdrgpcrGbyKeys = CXformUtils::PdrgpcrReorderedSubsequence(
 		mp, pdrgpcrConsumer2Output, pdrgpulIndexesOfOuterInGby);
 
@@ -353,7 +353,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::
 
 	ULongPtrArray *pdrgpulIndexesOfOuterKeys =
 		pdrgpcrOuter->IndexesOfSubsequence(pdrgpcrOuterKeys);
-	GPOS_ASSERT(nullptr != pdrgpulIndexesOfOuterKeys);
+	GPOS_ASSERT(NULL != pdrgpulIndexesOfOuterKeys);
 	CColRefArray *pdrgpcrKeysInOuterCopy =
 		CXformUtils::PdrgpcrReorderedSubsequence(mp, pdrgpcrOuterCopy,
 												 pdrgpulIndexesOfOuterKeys);
@@ -393,10 +393,10 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::PexprProjectOverLeftAntiSemiJoin(
 	CColRefSet *pcrsInner, CColRefArray *pdrgpcrJoinOutput, ULONG ulCTEJoinId,
 	ULONG ulCTEOuterId, CColRefArray **ppdrgpcrProjectOutput)
 {
-	GPOS_ASSERT(nullptr != pdrgpcrOuter);
-	GPOS_ASSERT(nullptr != pcrsScalar);
-	GPOS_ASSERT(nullptr != pcrsInner);
-	GPOS_ASSERT(nullptr != pdrgpcrJoinOutput);
+	GPOS_ASSERT(NULL != pdrgpcrOuter);
+	GPOS_ASSERT(NULL != pcrsScalar);
+	GPOS_ASSERT(NULL != pcrsInner);
+	GPOS_ASSERT(NULL != pdrgpcrJoinOutput);
 
 	// make a copy of outer for the second CTE consumer (outer of LASJ)
 	CColRefArray *pdrgpcrOuterCopy = CUtils::PdrgpcrCopy(mp, pdrgpcrOuter);
@@ -407,7 +407,7 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::PexprProjectOverLeftAntiSemiJoin(
 
 	ULongPtrArray *pdrgpulIndexesOfOuter =
 		pdrgpcrJoinOutput->IndexesOfSubsequence(pdrgpcrOuter);
-	GPOS_ASSERT(nullptr != pdrgpulIndexesOfOuter);
+	GPOS_ASSERT(NULL != pdrgpulIndexesOfOuter);
 
 	UlongToColRefMap *colref_mapping = GPOS_NEW(mp) UlongToColRefMap(mp);
 	const ULONG ulOuterCopyLength = pdrgpcrOuterCopy->Size();
@@ -416,8 +416,11 @@ CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin::PexprProjectOverLeftAntiSemiJoin(
 	{
 		ULONG ulOrigIndex = *(*pdrgpulIndexesOfOuter)[ul];
 		CColRef *pcrOriginal = (*pdrgpcrJoinOutput)[ulOrigIndex];
-		BOOL fInserted GPOS_ASSERTS_ONLY = colref_mapping->Insert(
-			GPOS_NEW(mp) ULONG(pcrOriginal->Id()), (*pdrgpcrOuterCopy)[ul]);
+#ifdef GPOS_DEBUG
+		BOOL fInserted =
+#endif
+			colref_mapping->Insert(GPOS_NEW(mp) ULONG(pcrOriginal->Id()),
+								   (*pdrgpcrOuterCopy)[ul]);
 		GPOS_ASSERT(fInserted);
 	}
 

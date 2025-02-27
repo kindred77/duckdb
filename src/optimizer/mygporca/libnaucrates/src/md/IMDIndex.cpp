@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		IMDIndex.cpp
@@ -39,13 +39,9 @@ IMDIndex::GetDXLStr(EmdindexType index_type)
 			return CDXLTokens::GetDXLTokenStr(EdxltokenIndexTypeGist);
 		case EmdindGin:
 			return CDXLTokens::GetDXLTokenStr(EdxltokenIndexTypeGin);
-		case EmdindBrin:
-			return CDXLTokens::GetDXLTokenStr(EdxltokenIndexTypeBrin);
-		case EmdindHash:
-			return CDXLTokens::GetDXLTokenStr(EdxltokenIndexTypeHash);
 		default:
 			GPOS_ASSERT(!"Unrecognized index type");
-			return nullptr;
+			return NULL;
 	}
 }
 

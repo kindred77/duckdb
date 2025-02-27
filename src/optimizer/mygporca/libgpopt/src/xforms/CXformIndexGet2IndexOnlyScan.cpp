@@ -15,7 +15,6 @@
 
 #include "gpos/base.h"
 
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/metadata/CIndexDescriptor.h"
 #include "gpopt/metadata/CTableDescriptor.h"
 #include "gpopt/operators/CExpressionHandle.h"
@@ -53,12 +52,9 @@ CXformIndexGet2IndexOnlyScan::Exfp(CExpressionHandle &exprhdl) const
 
 	CTableDescriptor *ptabdesc = popGet->Ptabdesc();
 	CIndexDescriptor *pindexdesc = popGet->Pindexdesc();
-	BOOL possible_ao_table = ptabdesc->IsAORowOrColTable() ||
-							 ptabdesc->RetrieveRelStorageType() ==
-								 IMDRelation::ErelstorageMixedPartitioned;
 
 	if ((pindexdesc->IndexType() == IMDIndex::EmdindBtree &&
-		 possible_ao_table) ||
+		 ptabdesc->IsAORowOrColTable()) ||
 		!pindexdesc->SupportsIndexOnlyScan())
 	{
 		// we don't support btree index scans on AO tables
@@ -87,7 +83,7 @@ CXformIndexGet2IndexOnlyScan::Transform(CXformContext *pxfctxt,
 										CXformResult *pxfres,
 										CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -108,7 +104,7 @@ CXformIndexGet2IndexOnlyScan::Transform(CXformContext *pxfctxt,
 	const IMDIndex *pmdindex = md_accessor->RetrieveIndex(pindexdesc->MDId());
 
 	CColRefArray *pdrgpcrOutput = pop->PdrgpcrOutput();
-	GPOS_ASSERT(nullptr != pdrgpcrOutput);
+	GPOS_ASSERT(NULL != pdrgpcrOutput);
 	pdrgpcrOutput->AddRef();
 
 	CColRefSet *matched_cols =
@@ -150,7 +146,7 @@ CXformIndexGet2IndexOnlyScan::Transform(CXformContext *pxfctxt,
 	ptabdesc->AddRef();
 
 	COrderSpec *pos = pop->Pos();
-	GPOS_ASSERT(nullptr != pos);
+	GPOS_ASSERT(NULL != pos);
 	pos->AddRef();
 
 

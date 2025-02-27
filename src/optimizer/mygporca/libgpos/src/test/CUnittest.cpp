@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+//	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
 //	@filename:
 //		CUnittest.cpp
@@ -28,11 +28,11 @@ using namespace gpos;
 #define GPOS_OVERSIZED_POOL_SIZE 500 * 1024 * 1024
 
 // initialize static members
-CUnittest *CUnittest::m_rgut = nullptr;
-gpos::ULONG CUnittest::m_ulTests = 0;
-gpos::ULONG CUnittest::m_ulNested = 0;
-void (*CUnittest::m_pfConfig)() = nullptr;
-void (*CUnittest::m_pfCleanup)() = nullptr;
+CUnittest *CUnittest::m_rgut = NULL;
+ULONG CUnittest::m_ulTests = 0;
+ULONG CUnittest::m_ulNested = 0;
+void (*CUnittest::m_pfConfig)() = NULL;
+void (*CUnittest::m_pfCleanup)() = NULL;
 
 
 //---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 	: m_szTitle(szTitle),
 	  m_ett(ett),
 	  m_pfunc(pfunc),
-	  m_pfuncSubtest(nullptr),
+	  m_pfuncSubtest(NULL),
 	  m_ulSubtest(0),
 	  m_fExcep(false),
 	  m_ulMajor(CException::ExmaInvalid),
@@ -70,7 +70,7 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 	: m_szTitle(szTitle),
 	  m_ett(ett),
 	  m_pfunc(pfunc),
-	  m_pfuncSubtest(nullptr),
+	  m_pfuncSubtest(NULL),
 	  m_ulSubtest(0),
 	  m_fExcep(true),
 	  m_ulMajor(major),
@@ -90,7 +90,7 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 					 GPOS_RESULT (*pfuncSubtest)(ULONG), ULONG ulSubtest)
 	: m_szTitle(szTitle),
 	  m_ett(ett),
-	  m_pfunc(nullptr),
+	  m_pfunc(NULL),
 	  m_pfuncSubtest(pfuncSubtest),
 	  m_ulSubtest(ulSubtest),
 	  m_fExcep(false),
@@ -109,9 +109,16 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 //
 //---------------------------------------------------------------------------
 CUnittest::CUnittest(const CUnittest &ut)
-
-
-	= default;
+	: m_szTitle(ut.m_szTitle),
+	  m_ett(ut.m_ett),
+	  m_pfunc(ut.m_pfunc),
+	  m_pfuncSubtest(ut.m_pfuncSubtest),
+	  m_ulSubtest(ut.m_ulSubtest),
+	  m_fExcep(ut.m_fExcep),
+	  m_ulMajor(ut.m_ulMajor),
+	  m_ulMinor(ut.m_ulMinor)
+{
+}
 
 
 
@@ -123,7 +130,7 @@ CUnittest::CUnittest(const CUnittest &ut)
 //		Is test expected to throw?
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CUnittest::FThrows() const
 {
 	return m_fExcep;
@@ -138,7 +145,7 @@ CUnittest::FThrows() const
 //		Is given string equal to title of test?
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CUnittest::Equals(CHAR *sz) const
 {
 	return 0 == clib::Strcmp(sz, m_szTitle);
@@ -153,10 +160,68 @@ CUnittest::Equals(CHAR *sz) const
 //		Is test expected to throw given exception?
 //
 //---------------------------------------------------------------------------
-gpos::BOOL
+BOOL
 CUnittest::FThrows(ULONG major, ULONG minor) const
 {
 	return (m_ulMajor == major && m_ulMinor == minor);
+}
+
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CUnittest::EresExecLoop
+//
+//	@doc:
+//		Execute a single test -- top-level wrapper;
+//		Retries individual complex tests if exception simulation is enabled
+//
+//---------------------------------------------------------------------------
+GPOS_RESULT
+CUnittest::EresExecLoop(const CUnittest &ut)
+{
+	while (true)
+	{
+		GPOS_TRY
+		{
+			return EresExecTest(ut);
+		}
+		GPOS_CATCH_EX(ex)
+		{
+			// check for exception simulation
+			if (ITask::Self()->IsTraceSet(EtraceSimulateOOM))
+			{
+				GPOS_ASSERT(GPOS_MATCH_EX(ex, CException::ExmaSystem,
+										  CException::ExmiOOM));
+			}
+			else if (ITask::Self()->IsTraceSet(EtraceSimulateAbort))
+			{
+				GPOS_ASSERT(GPOS_MATCH_EX(ex, CException::ExmaSystem,
+										  CException::ExmiAbort));
+			}
+			else if (ITask::Self()->IsTraceSet(EtraceSimulateIOError))
+			{
+				GPOS_ASSERT(GPOS_MATCH_EX(ex, CException::ExmaSystem,
+										  CException::ExmiIOError));
+			}
+			else if (ITask::Self()->IsTraceSet(EtraceSimulateNetError))
+			{
+				GPOS_ASSERT(GPOS_MATCH_EX(ex, CException::ExmaSystem,
+										  CException::ExmiNetError));
+			}
+			else
+			{
+				// unexpected exception
+				GPOS_RETHROW(ex);
+			}
+
+			// reset & retry
+			GPOS_RESET_EX;
+		}
+		GPOS_CATCH_END;
+	}
+
+	GPOS_ASSERT(!"Unexpected end of loop");
+	return GPOS_FAILED;
 }
 
 
@@ -179,8 +244,8 @@ CUnittest::EresExecTest(const CUnittest &ut)
 		// reset cancellation flag
 		CTask::Self()->ResetCancel();
 
-		eres = ut.m_pfunc != nullptr ? ut.m_pfunc()
-									 : ut.m_pfuncSubtest(ut.m_ulSubtest);
+		eres = ut.m_pfunc != NULL ? ut.m_pfunc()
+								  : ut.m_pfuncSubtest(ut.m_ulSubtest);
 
 		// check if this was expected to throw
 		if (ut.FThrows())
@@ -210,6 +275,12 @@ CUnittest::EresExecTest(const CUnittest &ut)
 			return GPOS_OK;
 		}
 
+		// check if exception was injected by simulation
+		if (FSimulated(ex))
+		{
+			GPOS_RETHROW(ex);
+		}
+
 		GPOS_RESET_EX;
 	}
 	GPOS_CATCH_END;
@@ -217,6 +288,35 @@ CUnittest::EresExecTest(const CUnittest &ut)
 	return GPOS_FAILED;
 }
 
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CUnittest::FSimulated
+//
+//	@doc:
+//		Check if exception was injected by simulation
+//
+//---------------------------------------------------------------------------
+BOOL
+CUnittest::FSimulated(CException ex)
+{
+	ITask *ptsk = ITask::Self();
+	GPOS_ASSERT(NULL != ptsk);
+
+	return (ptsk->IsTraceSet(EtraceSimulateOOM) &&
+			GPOS_MATCH_EX(ex, CException::ExmaSystem, CException::ExmiOOM)) ||
+
+		   (ptsk->IsTraceSet(EtraceSimulateAbort) &&
+			GPOS_MATCH_EX(ex, CException::ExmaSystem, CException::ExmiAbort)) ||
+
+		   (ptsk->IsTraceSet(EtraceSimulateIOError) &&
+			GPOS_MATCH_EX(ex, CException::ExmaSystem,
+						  CException::ExmiIOError)) ||
+
+		   (ptsk->IsTraceSet(EtraceSimulateNetError) &&
+			GPOS_MATCH_EX(ex, CException::ExmaSystem,
+						  CException::ExmiNetError));
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -238,7 +338,7 @@ CUnittest::EresExecute(const CUnittest *rgut, const ULONG cSize)
 
 		{  // scope for timer
 			CAutoTimer timer(ut.m_szTitle, true /*fPrint*/);
-			eresPart = EresExecTest(ut);
+			eresPart = EresExecLoop(ut);
 		}
 
 		GPOS_TRACE_FORMAT("Unittest %s...%s.", ut.m_szTitle,
@@ -280,8 +380,8 @@ CUnittest::FindTest(CBitVector &bv, ETestType ett, CHAR *szTestName)
 		CUnittest &ut = CUnittest::m_rgut[i];
 
 		if ((ut.Ett() == ett &&
-			 (nullptr == szTestName || ut.Equals(szTestName))) ||
-			(nullptr != szTestName && ut.Equals(szTestName)))
+			 (NULL == szTestName || ut.Equals(szTestName))) ||
+			(NULL != szTestName && ut.Equals(szTestName)))
 		{
 			(void) bv.ExchangeSet(i);
 		}
@@ -305,7 +405,7 @@ CUnittest::FindTest(CBitVector &bv, ETestType ett, CHAR *szTestName)
 void
 CUnittest::SetTraceFlag(const CHAR *szTrace)
 {
-	CHAR *pcEnd = nullptr;
+	CHAR *pcEnd = NULL;
 	LINT lTrace = clib::Strtol(szTrace, &pcEnd, 0 /*iBase*/);
 
 	GPOS_SET_TRACE((ULONG) lTrace);
@@ -315,7 +415,7 @@ CUnittest::SetTraceFlag(const CHAR *szTrace)
 ULLONG
 CUnittest::UllParsePlanId(const CHAR *szPlanId)
 {
-	CHAR *pcEnd = nullptr;
+	CHAR *pcEnd = NULL;
 	LINT ullPlanId = clib::Strtol(szPlanId, &pcEnd, 0 /*iBase*/);
 	return ullPlanId;
 }
@@ -328,7 +428,7 @@ CUnittest::UllParsePlanId(const CHAR *szPlanId)
 //		Execute requested unittests
 //
 //---------------------------------------------------------------------------
-gpos::ULONG
+ULONG
 CUnittest::Driver(CBitVector *pbv)
 {
 	CAutoConfig ac(m_pfConfig, m_pfCleanup, m_ulNested);
@@ -378,7 +478,7 @@ CUnittest::Driver(CBitVector *pbv)
 //		Execute unittests by parsing input arguments
 //
 //---------------------------------------------------------------------------
-gpos::ULONG
+ULONG
 CUnittest::Driver(CMainArgs *pma)
 {
 	CBitVector bv(ITask::Self()->Pmp(), CUnittest::UlTests());
@@ -386,7 +486,7 @@ CUnittest::Driver(CMainArgs *pma)
 	CHAR ch = '\0';
 	while (pma->Getopt(&ch))
 	{
-		CHAR *szTestName = nullptr;
+		CHAR *szTestName = NULL;
 
 		switch (ch)
 		{
@@ -398,7 +498,7 @@ CUnittest::Driver(CMainArgs *pma)
 				break;
 
 			case 'x':
-				FindTest(bv, EttExtended, nullptr /*szTestName*/);
+				FindTest(bv, EttExtended, NULL /*szTestName*/);
 				break;
 
 			case 'T':

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 Pivotal, Inc.
+//	Copyright (C) 2022 VMware, Inc. or its affiliates.
 //
 //	@filename:
 //		CScalarValuesList.h
@@ -33,33 +33,33 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 class CScalarValuesList : public CScalar
 {
-public:
 	// private copy ctor
-	CScalarValuesList(const CScalarValuesList &) = delete;
+	CScalarValuesList(const CScalarValuesList &);
 
+public:
 	// ctor
 	CScalarValuesList(CMemoryPool *mp);
 
 	// ident accessors
 	EOperatorId
-	Eopid() const override
+	Eopid() const
 	{
 		return EopScalarValuesList;
 	}
 
 	// operator name
 	const CHAR *
-	SzId() const override
+	SzId() const
 	{
 		return "CScalarValuesList";
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
@@ -69,14 +69,14 @@ public:
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// type of expression's result
 	IMDId *
-	MdidType() const override
+	MdidType() const
 	{
 		CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 
@@ -87,7 +87,7 @@ public:
 	static CScalarValuesList *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarValuesList == pop->Eopid());
 
 		return dynamic_cast<CScalarValuesList *>(pop);

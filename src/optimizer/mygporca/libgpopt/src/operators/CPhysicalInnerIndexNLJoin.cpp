@@ -40,8 +40,8 @@ CPhysicalInnerIndexNLJoin::CPhysicalInnerIndexNLJoin(CMemoryPool *mp,
 	  m_pdrgpcrOuterRefs(colref_array),
 	  m_origJoinPred(origJoinPred)
 {
-	GPOS_ASSERT(nullptr != colref_array);
-	if (nullptr != origJoinPred)
+	GPOS_ASSERT(NULL != colref_array);
+	if (NULL != origJoinPred)
 	{
 		origJoinPred->AddRef();
 	}
@@ -93,11 +93,11 @@ CPhysicalInnerIndexNLJoin::Matches(COperator *pop) const
 //
 //---------------------------------------------------------------------------
 CDistributionSpec *
-CPhysicalInnerIndexNLJoin::PdsRequired(CMemoryPool *mp GPOS_UNUSED,
-									   CExpressionHandle &exprhdl GPOS_UNUSED,
+CPhysicalInnerIndexNLJoin::PdsRequired(CMemoryPool * /*mp*/,
+									   CExpressionHandle & /*exprhdl*/,
 									   CDistributionSpec *,	 //pdsRequired,
-									   ULONG child_index GPOS_UNUSED,
-									   CDrvdPropArray *pdrgpdpCtxt GPOS_UNUSED,
+									   ULONG /*child_index*/,
+									   CDrvdPropArray * /*pdrgpdpCtxt*/,
 									   ULONG  // ulOptReq
 ) const
 {
@@ -105,7 +105,7 @@ CPhysicalInnerIndexNLJoin::PdsRequired(CMemoryPool *mp GPOS_UNUSED,
 		CException::ExmaInvalid, CException::ExmiInvalid,
 		GPOS_WSZ_LIT(
 			"PdsRequired should not be called for CPhysicalInnerIndexNLJoin"));
-	return nullptr;
+	return NULL;
 }
 
 CEnfdDistribution *

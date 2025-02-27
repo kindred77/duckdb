@@ -42,32 +42,32 @@ private:
 	// time threshold in milliseconds
 	ULONG m_time_threshold;
 
+	// private ctor
+	CParseHandlerSearchStage(const CParseHandlerSearchStage &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	// private ctor
-	CParseHandlerSearchStage(const CParseHandlerSearchStage &) = delete;
-
 	// ctor
 	CParseHandlerSearchStage(CMemoryPool *mp,
 							 CParseHandlerManager *parse_handler_mgr,
 							 CParseHandlerBase *parse_handler_root);
 
 	// dtor
-	~CParseHandlerSearchStage() override;
+	virtual ~CParseHandlerSearchStage();
 
 	// returns stage xforms
 	CXformSet *
@@ -91,7 +91,7 @@ public:
 	}
 
 	EDxlParseHandlerType
-	GetParseHandlerType() const override
+	GetParseHandlerType() const
 	{
 		return EdxlphSearchStrategy;
 	}

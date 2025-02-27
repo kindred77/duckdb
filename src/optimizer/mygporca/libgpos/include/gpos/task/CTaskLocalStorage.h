@@ -36,8 +36,6 @@ class CTaskLocalStorageObject;
 class CTaskLocalStorage
 {
 public:
-	CTaskLocalStorage(const CTaskLocalStorage &) = delete;
-
 	enum Etlsidx
 	{
 		EtlsidxTest,	 // unittest slot
@@ -48,7 +46,9 @@ public:
 	};
 
 	// ctor
-	CTaskLocalStorage() = default;
+	CTaskLocalStorage()
+	{
+	}
 
 	// dtor
 	~CTaskLocalStorage();
@@ -85,6 +85,9 @@ public:
 private:
 	// hash table
 	CSyncHashtable<CTaskLocalStorageObject, Etlsidx> m_hash_table;
+
+	// private copy ctor
+	CTaskLocalStorage(const CTaskLocalStorage &);
 
 };	// class CTaskLocalStorage
 }  // namespace gpos

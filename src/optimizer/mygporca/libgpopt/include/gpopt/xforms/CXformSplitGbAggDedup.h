@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal, Inc.
 //
 //	@filename:
 //		CXformSplitGbAggDedup.h
@@ -30,39 +30,42 @@ using namespace gpos;
 class CXformSplitGbAggDedup : public CXformSplitGbAgg
 {
 private:
-public:
-	CXformSplitGbAggDedup(const CXformSplitGbAggDedup &) = delete;
+	// private copy ctor
+	CXformSplitGbAggDedup(const CXformSplitGbAggDedup &);
 
+public:
 	// ctor
 	explicit CXformSplitGbAggDedup(CMemoryPool *mp);
 
 	// dtor
-	~CXformSplitGbAggDedup() override = default;
+	virtual ~CXformSplitGbAggDedup()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSplitGbAggDedup;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSplitGbAggDedup";
 	}
 
 	// Compatibility function for splitting aggregates
-	BOOL
-	FCompatible(CXform::EXformId exfid) override
+	virtual BOOL
+	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSplitGbAggDedup != exfid);
 	}
 
 	// actual transform
-	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
+						   CExpression *pexpr) const;
 
 };	// class CXformSplitGbAggDedup
 

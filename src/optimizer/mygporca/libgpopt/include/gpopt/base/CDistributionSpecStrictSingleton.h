@@ -34,50 +34,50 @@ using namespace gpos;
 class CDistributionSpecStrictSingleton : public CDistributionSpecSingleton
 {
 private:
-public:
-	CDistributionSpecStrictSingleton(const CDistributionSpecStrictSingleton &) =
-		delete;
+	// copy ctor
+	CDistributionSpecStrictSingleton(const CDistributionSpecStrictSingleton &);
 
+public:
 	// ctor
 	explicit CDistributionSpecStrictSingleton(ESegmentType esegtype);
 
 	// distribution type accessor
-	EDistributionType
-	Edt() const override
+	virtual EDistributionType
+	Edt() const
 	{
 		return CDistributionSpec::EdtStrictSingleton;
 	}
 
 	// return true if distribution spec can be required
-	BOOL
-	FRequirable() const override
+	virtual BOOL
+	FRequirable() const
 	{
 		return false;
 	}
 
 	// does this distribution satisfy the given one
-	BOOL FSatisfies(const CDistributionSpec *pds) const override;
+	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// append enforcers to dynamic array for the given plan properties
-	void
+	virtual void
 	AppendEnforcers(CMemoryPool *,		  // mp
 					CExpressionHandle &,  // exprhdl
 					CReqdPropPlan *,	  // prpp
 					CExpressionArray *,	  // pdrgpexpr
 					CExpression *		  // pexpr
-					) override
+	)
 	{
 		GPOS_ASSERT(!"attempt to enforce strict SINGLETON distribution");
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// conversion function
 	static CDistributionSpecStrictSingleton *
 	PdssConvert(CDistributionSpec *pds)
 	{
-		GPOS_ASSERT(nullptr != pds);
+		GPOS_ASSERT(NULL != pds);
 		GPOS_ASSERT(EdtStrictSingleton == pds->Edt());
 
 		return dynamic_cast<CDistributionSpecStrictSingleton *>(pds);

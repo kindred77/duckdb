@@ -28,8 +28,9 @@ class CMemoProxy;
 class COptimizationContext;
 
 // memo tree map definition
-using MemoTreeMap = CTreeMap<CCostContext, CExpression, CDrvdPropCtxtPlan,
-							 CCostContext::HashValue, CCostContext::Equals>;
+typedef CTreeMap<CCostContext, CExpression, CDrvdPropCtxtPlan,
+				 CCostContext::HashValue, CCostContext::Equals>
+	MemoTreeMap;
 
 using namespace gpos;
 
@@ -45,15 +46,19 @@ class CMemo : public gpos::DbgPrintMixin<CMemo>
 {
 private:
 	// definition of hash table key accessor
-	using ShtAcc =
-		CSyncHashtableAccessByKey<CGroupExpression, CGroupExpression>;
+	typedef CSyncHashtableAccessByKey<CGroupExpression,	 // entry
+									  CGroupExpression>
+		ShtAcc;
 
 	// definition of hash table iterator
-	using ShtIter = CSyncHashtableIter<CGroupExpression, CGroupExpression>;
+	typedef CSyncHashtableIter<CGroupExpression,  // entry
+							   CGroupExpression>
+		ShtIter;
 
 	// definition of hash table iterator accessor
-	using ShtAccIter =
-		CSyncHashtableAccessByIter<CGroupExpression, CGroupExpression>;
+	typedef CSyncHashtableAccessByIter<CGroupExpression,  // entry
+									   CGroupExpression>
+		ShtAccIter;
 
 	// memory pool
 	CMemoryPool *m_mp;
@@ -92,9 +97,10 @@ private:
 	BOOL FNewGroup(CGroup **ppgroupTarget, CGroupExpression *pgexpr,
 				   BOOL fScalar);
 
-public:
-	CMemo(const CMemo &) = delete;
+	// private copy ctor
+	CMemo(const CMemo &);
 
+public:
 	// ctor
 	explicit CMemo(CMemoryPool *mp);
 
@@ -122,7 +128,7 @@ public:
 	ULONG UlDuplicateGroups();
 
 	// mark groups as duplicates
-	static void MarkDuplicates(CGroup *pgroupFst, CGroup *pgroupSnd);
+	void MarkDuplicates(CGroup *pgroupFst, CGroup *pgroupSnd);
 
 	// return tree map
 	MemoTreeMap *

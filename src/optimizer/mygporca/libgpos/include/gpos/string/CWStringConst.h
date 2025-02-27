@@ -42,20 +42,10 @@ public:
 	CWStringConst(const CWStringConst &);
 
 	//dtor
-	~CWStringConst() override;
+	~CWStringConst();
 
 	// returns the wide character buffer storing the string
-	const WCHAR *GetBuffer() const override;
-
-	// equality
-	static BOOL Equals(const CWStringConst *string1,
-					   const CWStringConst *string2);
-
-	// hash function
-	static ULONG HashValue(const CWStringConst *string);
-
-	// checks whether the string is byte-wise equal to another string
-	BOOL Equals(const CWStringBase *str) const override;
+	const WCHAR *GetBuffer() const;
 };
 }  // namespace gpos
 

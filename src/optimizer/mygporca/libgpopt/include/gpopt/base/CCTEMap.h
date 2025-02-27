@@ -29,15 +29,16 @@ namespace gpopt
 using namespace gpos;
 
 // hash map from CTE id to corresponding producer plan properties
-using UlongToDrvdPropPlanMap =
-	CHashMap<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-			 CleanupDelete<ULONG>, CleanupRelease<CDrvdPropPlan>>;
+typedef CHashMap<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>,
+				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+				 CleanupRelease<CDrvdPropPlan> >
+	UlongToDrvdPropPlanMap;
 
 // iterator for plan properties map
-using UlongToDrvdPropPlanMapIter =
-	CHashMapIter<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CDrvdPropPlan>>;
+typedef CHashMapIter<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CDrvdPropPlan> >
+	UlongToDrvdPropPlanMapIter;
 
 // forward declaration
 class CCTEReq;
@@ -84,19 +85,20 @@ private:
 		// derived plan properties if entry corresponds to CTE producer
 		CDrvdPropPlan *m_pdpplan;
 
-	public:
-		CCTEMapEntry(const CCTEMapEntry &) = delete;
+		// private copy ctor
+		CCTEMapEntry(const CCTEMapEntry &);
 
+	public:
 		// ctor
 		CCTEMapEntry(ULONG id, CCTEMap::ECteType ect, CDrvdPropPlan *pdpplan)
 			: m_id(id), m_ect(ect), m_pdpplan(pdpplan)
 		{
 			GPOS_ASSERT(EctSentinel > ect);
-			GPOS_ASSERT_IMP(EctProducer == ect, nullptr != pdpplan);
+			GPOS_ASSERT_IMP(EctProducer == ect, NULL != pdpplan);
 		}
 
 		// dtor
-		~CCTEMapEntry() override
+		virtual ~CCTEMapEntry()
 		{
 			CRefCount::SafeRelease(m_pdpplan);
 		}
@@ -132,11 +134,11 @@ private:
 		}
 
 		// print function
-		IOstream &
+		virtual IOstream &
 		OsPrint(IOstream &os) const
 		{
 			os << m_id << (EctProducer == m_ect ? "p" : "c");
-			if (nullptr != m_pdpplan)
+			if (NULL != m_pdpplan)
 			{
 				os << "(" << *m_pdpplan << ")";
 			}
@@ -147,22 +149,25 @@ private:
 	};	// class CCTEMapEntry
 
 	// map CTE id to CTE map entry
-	using UlongToCTEMapEntryMap =
-		CHashMap<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-				 CleanupRelease<CCTEMapEntry>>;
+	typedef CHashMap<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
+					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+					 CleanupRelease<CCTEMapEntry> >
+		UlongToCTEMapEntryMap;
 
 	// map iterator
-	using UlongToCTEMapEntryMapIter =
-		CHashMapIter<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
-					 CleanupRelease<CCTEMapEntry>>;
+	typedef CHashMapIter<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
+						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+						 CleanupRelease<CCTEMapEntry> >
+		UlongToCTEMapEntryMapIter;
 
 	// memory pool
 	CMemoryPool *m_mp;
 
 	// cte map
 	UlongToCTEMapEntryMap *m_phmcm;
+
+	// private copy ctor
+	CCTEMap(const CCTEMap &);
 
 	// lookup info for given cte id
 	CCTEMapEntry *PcmeLookup(ULONG ulCteId) const;
@@ -172,13 +177,11 @@ private:
 							  CCTEMap *pcmResult);
 
 public:
-	CCTEMap(const CCTEMap &) = delete;
-
 	// ctor
 	explicit CCTEMap(CMemoryPool *mp);
 
 	// dtor
-	~CCTEMap() override;
+	virtual ~CCTEMap();
 
 	// return the CTE type associated with the given ID in the map
 	ECteType Ect(const ULONG id) const;
@@ -210,7 +213,7 @@ public:
 											  const CCTEReq *pcter) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// combine the two given maps and return the resulting map
 	static CCTEMap *PcmCombine(CMemoryPool *mp, const CCTEMap &cmFirst,

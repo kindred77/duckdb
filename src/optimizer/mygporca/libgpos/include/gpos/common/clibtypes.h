@@ -35,22 +35,22 @@ using RUSAGE = struct rusage;
 #endif
 
 // represent an elapsed time
-using TIMEVAL = struct timeval;
+typedef struct timeval TIMEVAL;
 
 // hold minimal information about the local time zone
-using TIMEZONE = struct timezone;
+typedef struct timezone TIMEZONE;
 
 // represents an elapsed time
-using TIMESPEC = struct timespec;
+typedef struct timespec TIMESPEC;
 
 // store system time values
-using TIME_T = time_t;
+typedef time_t TIME_T;
 
 // containing a calendar date and time broken down into its components.
-using TIME = struct tm;
+typedef struct tm TIME;
 
 // store information of a calling process
-using DL_INFO = Dl_info;
+typedef Dl_info DL_INFO;
 }  // namespace gpos
 
 #endif	// !GPOS_clibtypes_H

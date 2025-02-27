@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CMDIdGPDBCtas.cpp
@@ -30,7 +30,7 @@ CMDIdGPDBCtas CMDIdGPDBCtas::m_mdid_invalid_key(0);
 //
 //---------------------------------------------------------------------------
 CMDIdGPDBCtas::CMDIdGPDBCtas(OID oid)
-	: CMDIdGPDB(CSystemId(IMDId::EmdidGeneral, GPMD_GPDB_CTAS_SYSID), oid)
+	: CMDIdGPDB(CSystemId(IMDId::EmdidGPDB, GPMD_GPDB_CTAS_SYSID), oid)
 {
 	Serialize();
 }
@@ -64,7 +64,7 @@ CMDIdGPDBCtas::CMDIdGPDBCtas(const CMDIdGPDBCtas &mdid_source)
 BOOL
 CMDIdGPDBCtas::Equals(const IMDId *mdid) const
 {
-	if (nullptr == mdid || EmdidGPDBCtas != mdid->MdidType())
+	if (NULL == mdid || EmdidGPDBCtas != mdid->MdidType())
 	{
 		return false;
 	}

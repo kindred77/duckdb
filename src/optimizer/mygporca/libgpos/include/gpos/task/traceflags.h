@@ -21,6 +21,18 @@ enum ETraceFlag
 	// test flag
 	EtraceTest = 0,
 
+	// enable OOM simulation
+	EtraceSimulateOOM = 1,
+
+	// enable Abort simulation
+	EtraceSimulateAbort = 2,
+
+	// enable I/O error simulation
+	EtraceSimulateIOError = 3,
+
+	// enable I/O error simulation
+	EtraceSimulateNetError = 4,
+
 	// disable printing memory leaks
 	EtraceDisablePrintMemoryLeak = 100,
 

@@ -1,5 +1,5 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 
 #ifndef GPOPT_CDistributionSpecHashedNoOp_H
@@ -14,19 +14,20 @@ class CDistributionSpecHashedNoOp : public CDistributionSpecHashed
 public:
 	CDistributionSpecHashedNoOp(CExpressionArray *pdrgpexr);
 
-	EDistributionType Edt() const override;
+	virtual EDistributionType Edt() const;
 
-	BOOL Matches(const CDistributionSpec *pds) const override;
+	virtual BOOL Matches(const CDistributionSpec *pds) const;
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "HASHED NO-OP";
 	}
 
-	void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdPropPlan *prpp, CExpressionArray *pdrgpexpr,
-						 CExpression *pexpr) override;
+	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CReqdPropPlan *prpp,
+								 CExpressionArray *pdrgpexpr,
+								 CExpression *pexpr);
 };
 }  // namespace gpopt
 

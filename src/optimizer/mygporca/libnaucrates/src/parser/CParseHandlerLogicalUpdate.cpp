@@ -36,8 +36,10 @@ CParseHandlerLogicalUpdate::CParseHandlerLogicalUpdate(
 	: CParseHandlerLogicalOp(mp, parse_handler_mgr, parse_handler_root),
 	  m_ctid_colid(0),
 	  m_segid_colid(0),
-	  m_deletion_colid_array(nullptr),
-	  m_insert_colid_array(nullptr)
+	  m_deletion_colid_array(NULL),
+	  m_insert_colid_array(NULL),
+	  m_preserve_oids(false),
+	  m_tuple_oid_col_oid(0)
 {
 }
 
@@ -83,6 +85,23 @@ CParseHandlerLogicalUpdate::StartElement(const XMLCh *const,  // element_uri,
 	m_insert_colid_array = CDXLOperatorFactory::ExtractIntsToUlongArray(
 		m_parse_handler_mgr->GetDXLMemoryManager(), insert_colids_xml,
 		EdxltokenInsertCols, EdxltokenLogicalUpdate);
+
+	const XMLCh *preserve_oids_xml =
+		attrs.getValue(CDXLTokens::XmlstrToken(EdxltokenUpdatePreservesOids));
+	if (NULL != preserve_oids_xml)
+	{
+		m_preserve_oids = CDXLOperatorFactory::ConvertAttrValueToBool(
+			m_parse_handler_mgr->GetDXLMemoryManager(), preserve_oids_xml,
+			EdxltokenUpdatePreservesOids, EdxltokenLogicalUpdate);
+	}
+
+	if (m_preserve_oids)
+	{
+		m_tuple_oid_col_oid =
+			CDXLOperatorFactory::ExtractConvertAttrValueToUlong(
+				m_parse_handler_mgr->GetDXLMemoryManager(), attrs,
+				EdxltokenTupleOidColId, EdxltokenLogicalUpdate);
+	}
 
 	// parse handler for logical operator
 	CParseHandlerBase *child_parse_handler =
@@ -134,8 +153,8 @@ CParseHandlerLogicalUpdate::EndElement(const XMLCh *const,	// element_uri,
 	CParseHandlerLogicalOp *child_parse_handler =
 		dynamic_cast<CParseHandlerLogicalOp *>((*this)[1]);
 
-	GPOS_ASSERT(nullptr != table_descr_parse_handler->GetDXLTableDescr());
-	GPOS_ASSERT(nullptr != child_parse_handler->CreateDXLNode());
+	GPOS_ASSERT(NULL != table_descr_parse_handler->GetDXLTableDescr());
+	GPOS_ASSERT(NULL != child_parse_handler->CreateDXLNode());
 
 	CDXLTableDescr *table_descr = table_descr_parse_handler->GetDXLTableDescr();
 	table_descr->AddRef();
@@ -143,7 +162,8 @@ CParseHandlerLogicalUpdate::EndElement(const XMLCh *const,	// element_uri,
 	m_dxl_node = GPOS_NEW(m_mp)
 		CDXLNode(m_mp, GPOS_NEW(m_mp) CDXLLogicalUpdate(
 						   m_mp, table_descr, m_ctid_colid, m_segid_colid,
-						   m_deletion_colid_array, m_insert_colid_array));
+						   m_deletion_colid_array, m_insert_colid_array,
+						   m_preserve_oids, m_tuple_oid_col_oid));
 
 	AddChildFromParseHandler(child_parse_handler);
 

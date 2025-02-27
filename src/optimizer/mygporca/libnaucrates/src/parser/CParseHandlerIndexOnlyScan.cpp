@@ -68,8 +68,7 @@ CParseHandlerIndexOnlyScan::EndElement(const XMLCh *const,	// element_uri,
 									   const XMLCh *const  // element_qname
 )
 {
-	EndElementHelper(element_local_name, EdxltokenPhysicalIndexOnlyScan,
-					 nullptr);
+	EndElementHelper(element_local_name, EdxltokenPhysicalIndexOnlyScan);
 }
 
 // EOF

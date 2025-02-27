@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformImplementCTEProducer : public CXformImplementation
 {
 private:
-public:
-	CXformImplementCTEProducer(const CXformImplementCTEProducer &) = delete;
+	// private copy ctor
+	CXformImplementCTEProducer(const CXformImplementCTEProducer &);
 
+public:
 	// ctor
 	explicit CXformImplementCTEProducer(CMemoryPool *mp);
 
 	// dtor
-	~CXformImplementCTEProducer() override = default;
+	virtual ~CXformImplementCTEProducer()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementCTEProducer;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementCTEProducer";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformImplementCTEProducer
 }  // namespace gpopt

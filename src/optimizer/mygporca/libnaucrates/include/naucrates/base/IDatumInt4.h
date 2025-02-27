@@ -28,18 +28,19 @@ namespace gpnaucrates
 class IDatumInt4 : public IDatum
 {
 private:
-public:
-	IDatumInt4(const IDatumInt4 &) = delete;
+	// private copy ctor
+	IDatumInt4(const IDatumInt4 &);
 
+public:
 	// ctor
-	IDatumInt4() = default;
+	IDatumInt4(){};
 
 	// dtor
-	~IDatumInt4() override = default;
+	virtual ~IDatumInt4(){};
 
 	// accessor for datum type
-	IMDType::ETypeInfo
-	GetDatumType() override
+	virtual IMDType::ETypeInfo
+	GetDatumType()
 	{
 		return IMDType::EtiInt4;
 	}
@@ -49,67 +50,67 @@ public:
 
 	// can datum be mapped to a double
 	BOOL
-	IsDatumMappableToDouble() const override
+	IsDatumMappableToDouble() const
 	{
 		return true;
 	}
 
 	// map to double for stats computation
 	CDouble
-	GetDoubleMapping() const override
+	GetDoubleMapping() const
 	{
 		return CDouble(Value());
 	}
 
 	// can datum be mapped to LINT
 	BOOL
-	IsDatumMappableToLINT() const override
+	IsDatumMappableToLINT() const
 	{
 		return true;
 	}
 
 	// map to LINT for statistics computation
 	LINT
-	GetLINTMapping() const override
+	GetLINTMapping() const
 	{
 		return LINT(Value());
 	}
 
 	// byte array representation of datum
-	const BYTE *
-	GetByteArrayValue() const override
+	virtual const BYTE *
+	GetByteArrayValue() const
 	{
 		GPOS_ASSERT(!"Invalid invocation of MakeCopyOfValue");
-		return nullptr;
+		return NULL;
 	}
 
 	// does the datum need to be padded before statistical derivation
-	BOOL
-	NeedsPadding() const override
+	virtual BOOL
+	NeedsPadding() const
 	{
 		return false;
 	}
 
 	// return the padded datum
-	IDatum *
+	virtual IDatum *
 	MakePaddedDatum(CMemoryPool *,	// mp,
 					ULONG			// col_len
-	) const override
+	) const
 	{
 		GPOS_ASSERT(!"Invalid invocation of MakePaddedDatum");
-		return nullptr;
+		return NULL;
 	}
 
 	// does datum support like predicate
-	BOOL
-	SupportsLikePredicate() const override
+	virtual BOOL
+	SupportsLikePredicate() const
 	{
 		return false;
 	}
 
 	// return the default scale factor of like predicate
-	CDouble
-	GetLikePredicateScaleFactor() const override
+	virtual CDouble
+	GetLikePredicateScaleFactor() const
 	{
 		GPOS_ASSERT(!"Invalid invocation of DLikeSelectivity");
 		return false;

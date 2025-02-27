@@ -31,25 +31,28 @@ using namespace gpos;
 class CXformSelect2Apply : public CXformSubqueryUnnest
 {
 private:
-public:
-	CXformSelect2Apply(const CXformSelect2Apply &) = delete;
+	// private copy ctor
+	CXformSelect2Apply(const CXformSelect2Apply &);
 
+public:
 	// ctor
 	explicit CXformSelect2Apply(CMemoryPool *mp);
 
 	// dtor
-	~CXformSelect2Apply() override = default;
+	virtual ~CXformSelect2Apply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSelect2Apply;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSelect2Apply";
 	}

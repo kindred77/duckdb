@@ -191,16 +191,16 @@ CScalarCmp::Pstr(CMemoryPool *mp, CMDAccessor *md_accessor, IMDId *mdid)
 
 // get commuted scalar comparision operator
 CScalarCmp *
-CScalarCmp::PopCommutedOp(CMemoryPool *mp)
+CScalarCmp::PopCommutedOp(CMemoryPool *mp, COperator *pop)
 {
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
-	IMDId *mdid = PmdidCommuteOp(md_accessor, this);
-	if (nullptr != mdid && mdid->IsValid())
+	IMDId *mdid = PmdidCommuteOp(md_accessor, pop);
+	if (NULL != mdid && mdid->IsValid())
 	{
 		return GPOS_NEW(mp) CScalarCmp(mp, mdid, Pstr(mp, md_accessor, mdid),
 									   CUtils::ParseCmpType(mdid));
 	}
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------

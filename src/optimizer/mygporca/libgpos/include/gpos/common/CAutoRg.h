@@ -33,16 +33,17 @@ private:
 	// actual element to point to
 	T *m_object_array;
 
-public:
-	CAutoRg(const CAutoRg &) = delete;
+	// hidden copy ctor
+	CAutoRg<T>(const CAutoRg &);
 
+public:
 	// ctor
-	explicit CAutoRg() : m_object_array(nullptr)
+	explicit CAutoRg<T>() : m_object_array(NULL)
 	{
 	}
 
 	// ctor
-	explicit CAutoRg(T *object_array) : m_object_array(object_array)
+	explicit CAutoRg<T>(T *object_array) : m_object_array(object_array)
 	{
 	}
 
@@ -77,7 +78,7 @@ public:
 	RgtReset()
 	{
 		T *object_array = m_object_array;
-		m_object_array = nullptr;
+		m_object_array = NULL;
 		return object_array;
 	}
 

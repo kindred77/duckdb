@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2018 VMware, Inc. or its affiliates.
+//	Copyright 2018 Pivotal, Inc.
 //
 //	@filename:
 //		CGroupByStatsProcessor.cpp
@@ -34,7 +34,7 @@ CGroupByStatsProcessor::CalcGroupByStats(CMemoryPool *mp,
 
 	CColumnFactory *col_factory = COptCtxt::PoctxtFromTLS()->Pcf();
 
-	CStatistics *agg_stats = nullptr;
+	CStatistics *agg_stats = NULL;
 	CDouble agg_rows = CStatistics::MinRows;
 	if (input_stats->IsEmpty())
 	{

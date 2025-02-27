@@ -47,9 +47,10 @@ private:
 	// boolean operator
 	EBoolOperator m_eboolop;
 
-public:
-	CScalarBoolOp(const CScalarBoolOp &) = delete;
+	// private copy ctor
+	CScalarBoolOp(const CScalarBoolOp &);
 
+public:
 	// ctor
 	CScalarBoolOp(CMemoryPool *mp, EBoolOperator eboolop)
 		: CScalar(mp), m_eboolop(eboolop)
@@ -58,19 +59,21 @@ public:
 	}
 
 	// dtor
-	~CScalarBoolOp() override = default;
+	virtual ~CScalarBoolOp()
+	{
+	}
 
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarBoolOp;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarBoolOp";
 	}
@@ -83,24 +86,24 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return !FCommutative(Eboolop());
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -109,23 +112,23 @@ public:
 	static CScalarBoolOp *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarBoolOp == pop->Eopid());
 
-		return dynamic_cast<CScalarBoolOp *>(pop);
+		return reinterpret_cast<CScalarBoolOp *>(pop);
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// decide boolean operator commutativity
 	static BOOL FCommutative(EBoolOperator eboolop);
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 
 };	// class CScalarBoolOp

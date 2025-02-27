@@ -46,28 +46,29 @@ private:
 	// name for the subquery scan node (corresponding to name in GPDB's SubqueryScan)
 	CMDName *m_mdname_alias;
 
-public:
-	CDXLPhysicalSubqueryScan(CDXLPhysicalSubqueryScan &) = delete;
+	// private copy ctor
+	CDXLPhysicalSubqueryScan(CDXLPhysicalSubqueryScan &);
 
+public:
 	// ctor/dtor
 	CDXLPhysicalSubqueryScan(CMemoryPool *mp, CMDName *mdname);
 
-	~CDXLPhysicalSubqueryScan() override;
+	virtual ~CDXLPhysicalSubqueryScan();
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 	const CMDName *MdName();
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalSubqueryScan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalSubqueryScan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalSubqueryScan *>(dxl_op);
@@ -76,7 +77,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

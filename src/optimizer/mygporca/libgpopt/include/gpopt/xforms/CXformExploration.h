@@ -30,18 +30,19 @@ using namespace gpos;
 class CXformExploration : public CXform
 {
 private:
-public:
-	CXformExploration(const CXformExploration &) = delete;
+	// private copy ctor
+	CXformExploration(const CXformExploration &);
 
+public:
 	// ctor
 	explicit CXformExploration(CExpression *pexpr);
 
 	// dtor
-	~CXformExploration() override;
+	virtual ~CXformExploration();
 
 	// type of operator
-	BOOL
-	FExploration() const override
+	virtual BOOL
+	FExploration() const
 	{
 		GPOS_ASSERT(!FSubstitution() && !FImplementation());
 		return true;
@@ -72,7 +73,7 @@ public:
 	static CXformExploration *
 	Pxformexp(CXform *pxform)
 	{
-		GPOS_ASSERT(nullptr != pxform);
+		GPOS_ASSERT(NULL != pxform);
 		GPOS_ASSERT(pxform->FExploration());
 
 		return dynamic_cast<CXformExploration *>(pxform);

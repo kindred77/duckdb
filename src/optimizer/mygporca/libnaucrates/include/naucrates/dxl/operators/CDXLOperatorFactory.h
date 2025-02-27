@@ -41,7 +41,7 @@
 #include "naucrates/md/IMDIndex.h"
 
 // dynamic array of XML strings
-using XMLChArray = CDynamicPtrArray<XMLCh, CleanupNULL>;
+typedef CDynamicPtrArray<XMLCh, CleanupNULL> XMLChArray;
 
 // fwd decl
 namespace gpmd
@@ -65,6 +65,10 @@ XERCES_CPP_NAMESPACE_USE
 class CDXLMemoryManager;
 class CDXLDatum;
 
+// shorthand for functions for translating a DXL datum
+typedef CDXLDatum *(PfPdxldatum)(CDXLMemoryManager *, const Attributes &,
+								 Edxltoken, IMDId *, BOOL);
+
 //---------------------------------------------------------------------------
 //	@class:
 //		CDXLOperatorFactory
@@ -80,7 +84,7 @@ private:
 	// return the LINT value of byte array
 	static LINT Value(CDXLMemoryManager *dxl_memory_manager,
 					  const Attributes &attrs, Edxltoken target_elem,
-					  const BYTE *data);
+					  BYTE *data);
 
 	// parses a byte array representation of the datum
 	static BYTE *GetByteArray(CDXLMemoryManager *dxl_memory_manager,
@@ -88,6 +92,13 @@ private:
 							  ULONG *length);
 
 public:
+	// pair of oid for datums and the factory function
+	struct SDXLDatumFactoryElem
+	{
+		OID oid;
+		PfPdxldatum *pf;
+	};
+
 	static CDXLDatum *GetDatumOid(CDXLMemoryManager *dxl_memory_manager,
 								  const Attributes &attrs,
 								  Edxltoken target_elem, IMDId *mdid,
@@ -432,7 +443,7 @@ public:
 	static CHAR *ExtractConvertAttrValueToSz(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
 		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
-		CHAR *default_value = nullptr);
+		CHAR *default_value = NULL);
 
 	// parse a string value from the value for a given attribute
 	static CHAR *ConvertAttrValueToSz(CDXLMemoryManager *dxl_memory_manager,
@@ -463,7 +474,7 @@ public:
 	static IMDId *ExtractConvertAttrValueToMdId(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
 		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
-		IMDId *default_val = nullptr);
+		IMDId *default_val = NULL);
 
 	// parse an mdid object from an XMLCh
 	static IMDId *MakeMdIdFromStr(CDXLMemoryManager *dxl_memory_manager,
@@ -471,10 +482,9 @@ public:
 								  Edxltoken target_elem);
 
 	// parse a GPDB mdid object from an array of its components
-	static CMDIdGPDB *GetGPDBMdId(
-		CDXLMemoryManager *dxl_memory_manager, XMLChArray *remaining_tokens,
-		Edxltoken target_attr, Edxltoken target_elem,
-		IMDId::EMDIdType mdidType = IMDId::EmdidGeneral);
+	static CMDIdGPDB *GetGPDBMdId(CDXLMemoryManager *dxl_memory_manager,
+								  XMLChArray *remaining_tokens,
+								  Edxltoken target_attr, Edxltoken target_elem);
 
 	// parse a GPDB CTAS mdid object from an array of its components
 	static CMDIdGPDB *GetGPDBCTASMdId(CDXLMemoryManager *dxl_memory_manager,
@@ -523,14 +533,6 @@ public:
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
 		Edxltoken target_attr, Edxltoken target_elem);
 
-	static IntPtrArray *ExtractConvertValuesToIntArray(
-		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem);
-
-	static CBitSet *ExtractConvertValuesToIntBitSet(
-		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem);
-
 	// parse a comma-separated list of integers numbers into a dynamic array
 	// will raise an exception if list is not well-formed
 	template <typename T, void (*CleanupFn)(T *),
@@ -557,33 +559,6 @@ public:
 	{
 		return ExtractIntsToArray<INT, CleanupDelete, ConvertAttrValueToInt>(
 			dxl_memory_manager, xmlszUl, target_attr, target_elem);
-	}
-
-	static CBitSet *
-	ExtractIntsToIntBitSet(CDXLMemoryManager *dxl_memory_manager,
-						   const XMLCh *mdid_list_xml, Edxltoken target_attr,
-						   Edxltoken target_elem)
-	{
-		// get the memory pool from the memory manager
-		CMemoryPool *mp = dxl_memory_manager->Pmp();
-
-		CBitSet *pbs = GPOS_NEW(mp) CBitSet(mp);
-
-		XMLStringTokenizer mdid_components(
-			mdid_list_xml, CDXLTokens::XmlstrToken(EdxltokenComma));
-		const ULONG num_tokens = mdid_components.countTokens();
-
-		for (ULONG ul = 0; ul < num_tokens; ul++)
-		{
-			XMLCh *xmlszNext = mdid_components.nextToken();
-			GPOS_ASSERT(nullptr != xmlszNext);
-
-			INT attno = ConvertAttrValueToInt(dxl_memory_manager, xmlszNext,
-											  target_attr, target_elem);
-			pbs->ExchangeSet(attno);
-		}
-
-		return pbs;
 	}
 
 	// parse a comma-separated list of CHAR partition types into a dynamic array.
@@ -656,7 +631,9 @@ public:
 		const Attributes &attr);
 
 	// parse index type
-	static IMDIndex::EmdindexType ParseIndexType(const Attributes &attrs);
+	static IMDIndex::EmdindexType ParseIndexType(
+		const Attributes &attrs, enum Edxltoken token,
+		IMDIndex::EmdindexType defaultType);
 };
 
 // parse a comma-separated list of integers numbers into a dynamic array
@@ -684,7 +661,7 @@ CDXLOperatorFactory::ExtractIntsToArray(CDXLMemoryManager *dxl_memory_manager,
 	{
 		XMLCh *xmlszNext = mdid_components.nextToken();
 
-		GPOS_ASSERT(nullptr != xmlszNext);
+		GPOS_ASSERT(NULL != xmlszNext);
 
 		T *pt = GPOS_NEW(mp) T(ValueFromXmlstr(dxl_memory_manager, xmlszNext,
 											   target_attr, target_elem));

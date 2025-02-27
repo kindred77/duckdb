@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates..
+//	Copyright (C) 2014 Pivotal Inc..
 //
 //	@filename:
 //		CLogicalMaxOneRow.cpp
@@ -33,7 +33,7 @@ CLogicalMaxOneRow::Esp(CExpressionHandle &exprhdl) const
 	// low promise for stat derivation if logical expression has outer-refs
 	// or is part of an Apply expression
 	if (exprhdl.HasOuterRefs() ||
-		(nullptr != exprhdl.Pgexpr() &&
+		(NULL != exprhdl.Pgexpr() &&
 		 CXformUtils::FGenerateApply(exprhdl.Pgexpr()->ExfidOrigin())))
 	{
 		return EspLow;

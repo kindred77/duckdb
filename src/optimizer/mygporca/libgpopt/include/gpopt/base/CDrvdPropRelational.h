@@ -31,6 +31,7 @@ class CExpressionHandle;
 class CColRefSet;
 class CReqdPropPlan;
 class CKeyCollection;
+class CPartIndexMap;
 class CPropConstraint;
 class CPartInfo;
 
@@ -66,6 +67,7 @@ class CDrvdPropRelational : public CDrvdProp
 		EdptPpc,
 		EdptPfp,
 		EdptJoinDepth,
+		EdptFHasPartialIndexes,
 		EdptTableDescriptor,
 		EdptSentinel
 	};
@@ -109,7 +111,14 @@ private:
 	// function properties
 	CFunctionProp *m_pfp;
 
+	// true if all logical operators in the group are of type CLogicalDynamicGet,
+	// and the dynamic get has partial indexes
+	BOOL m_fHasPartialIndexes;
+
 	CTableDescriptor *m_table_descriptor;
+
+	// private copy ctor
+	CDrvdPropRelational(const CDrvdPropRelational &);
 
 	// helper for getting applicable FDs from child
 	static CFunctionalDependencyArray *DeriveChildFunctionalDependencies(
@@ -167,33 +176,34 @@ protected:
 	// function properties
 	CFunctionProp *DeriveFunctionProperties(CExpressionHandle &);
 
+	// has partial indexes
+	BOOL DeriveHasPartialIndexes(CExpressionHandle &);
+
 	CTableDescriptor *DeriveTableDescriptor(CExpressionHandle &);
 
 public:
-	CDrvdPropRelational(const CDrvdPropRelational &) = delete;
-
 	// ctor
 	CDrvdPropRelational(CMemoryPool *mp);
 
 	// dtor
-	~CDrvdPropRelational() override;
+	virtual ~CDrvdPropRelational();
 
 	// type of properties
-	EPropType
-	Ept() override
+	virtual EPropType
+	Ept()
 	{
 		return EptRelational;
 	}
 
-	BOOL
-	IsComplete() const override
+	virtual BOOL
+	IsComplete() const
 	{
 		return m_is_complete;
 	}
 
 	// derivation function
 	void Derive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				CDrvdPropCtxt *pdpctxt) override;
+				CDrvdPropCtxt *pdpctxt);
 
 	// output columns
 	CColRefSet *GetOutputColumns() const;
@@ -228,16 +238,19 @@ public:
 	// function properties
 	CFunctionProp *GetFunctionProperties() const;
 
+	// has partial indexes
+	BOOL HasPartialIndexes() const;
+
 	CTableDescriptor *GetTableDescriptor() const;
 
 	// shorthand for conversion
 	static CDrvdPropRelational *GetRelationalProperties(CDrvdProp *pdp);
 
 	// check for satisfying required plan properties
-	BOOL FSatisfies(const CReqdPropPlan *prpp) const override;
+	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CDrvdPropRelational
 

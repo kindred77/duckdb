@@ -61,11 +61,11 @@ CXformDynamicIndexGet2DynamicIndexScan::Exfp(CExpressionHandle &exprhdl) const
 //
 //---------------------------------------------------------------------------
 void
-CXformDynamicIndexGet2DynamicIndexScan::Transform(
-	CXformContext *pxfctxt GPOS_ASSERTS_ONLY, CXformResult *pxfres GPOS_UNUSED,
-	CExpression *pexpr GPOS_ASSERTS_ONLY) const
+CXformDynamicIndexGet2DynamicIndexScan::Transform(CXformContext *pxfctxt,
+												  CXformResult *pxfres,
+												  CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
+	GPOS_ASSERT(NULL != pxfctxt);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -75,7 +75,6 @@ CXformDynamicIndexGet2DynamicIndexScan::Transform(
 
 	// create/extract components for alternative
 	CName *pname = GPOS_NEW(mp) CName(mp, popIndexGet->Name());
-	GPOS_ASSERT(pname != nullptr);
 
 	// extract components
 	CExpression *pexprIndexCond = (*pexpr)[0];
@@ -88,27 +87,30 @@ CXformDynamicIndexGet2DynamicIndexScan::Transform(
 	pindexdesc->AddRef();
 
 	CColRefArray *pdrgpcrOutput = popIndexGet->PdrgpcrOutput();
-	GPOS_ASSERT(nullptr != pdrgpcrOutput);
+	GPOS_ASSERT(NULL != pdrgpcrOutput);
 	pdrgpcrOutput->AddRef();
 
 	CColRef2dArray *pdrgpdrgpcrPart = popIndexGet->PdrgpdrgpcrPart();
 	pdrgpdrgpcrPart->AddRef();
 
+	CPartConstraint *ppartcnstr = popIndexGet->Ppartcnstr();
+	ppartcnstr->AddRef();
+
+	CPartConstraint *ppartcnstrRel = popIndexGet->PpartcnstrRel();
+	ppartcnstrRel->AddRef();
+
 	COrderSpec *pos = popIndexGet->Pos();
 	pos->AddRef();
 
-	popIndexGet->GetPartitionMdids()->AddRef();
-	popIndexGet->GetRootColMappingPerPart()->AddRef();
-
 	// create alternative expression
-	CExpression *pexprAlt = GPOS_NEW(mp)
-		CExpression(mp,
-					GPOS_NEW(mp) CPhysicalDynamicIndexScan(
-						mp, pindexdesc, ptabdesc, pexpr->Pop()->UlOpId(), pname,
-						pdrgpcrOutput, popIndexGet->ScanId(), pdrgpdrgpcrPart,
-						pos, popIndexGet->GetPartitionMdids(),
-						popIndexGet->GetRootColMappingPerPart()),
-					pexprIndexCond);
+	CExpression *pexprAlt = GPOS_NEW(mp) CExpression(
+		mp,
+		GPOS_NEW(mp) CPhysicalDynamicIndexScan(
+			mp, popIndexGet->IsPartial(), pindexdesc, ptabdesc,
+			pexpr->Pop()->UlOpId(), pname, pdrgpcrOutput, popIndexGet->ScanId(),
+			pdrgpdrgpcrPart, popIndexGet->UlSecondaryScanId(), ppartcnstr,
+			ppartcnstrRel, pos),
+		pexprIndexCond);
 	// add alternative to transformation result
 	pxfres->Add(pexprAlt);
 }

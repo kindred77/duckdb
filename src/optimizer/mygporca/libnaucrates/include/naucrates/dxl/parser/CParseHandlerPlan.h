@@ -46,30 +46,33 @@ private:
 	// the root of the parsed DXL tree constructed by the parse handler
 	CDXLNode *m_dxl_node;
 
+	// direct dispatch info spec
+	CDXLDirectDispatchInfo *m_direct_dispatch_info;
+
+	// private ctor
+	CParseHandlerPlan(const CParseHandlerPlan &);
+
 	// process the end of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	// private ctor
-	CParseHandlerPlan(const CParseHandlerPlan &) = delete;
-
 	// ctor/dtor
 	CParseHandlerPlan(CMemoryPool *mp, CParseHandlerManager *parse_handler_mgr,
 					  CParseHandlerBase *parse_handler_root);
 
-	~CParseHandlerPlan() override;
+	virtual ~CParseHandlerPlan();
 
 	// returns the root of constructed DXL plan
 	CDXLNode *CreateDXLNode();
@@ -88,7 +91,7 @@ public:
 		return m_plan_space_size;
 	}
 
-	EDxlParseHandlerType GetParseHandlerType() const override;
+	EDxlParseHandlerType GetParseHandlerType() const;
 };
 }  // namespace gpdxl
 

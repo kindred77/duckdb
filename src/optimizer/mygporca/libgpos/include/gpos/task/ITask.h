@@ -33,9 +33,10 @@ class IErrorContext;
 class ITask
 {
 private:
-public:
-	ITask(const ITask &) = delete;
+	// private copy ctor
+	ITask(const ITask &);
 
+public:
 	// task status
 	enum ETaskStatus
 	{
@@ -48,10 +49,14 @@ public:
 	};
 
 	// ctor
-	ITask() = default;
+	ITask()
+	{
+	}
 
 	// dtor
-	virtual ~ITask() = default;
+	virtual ~ITask()
+	{
+	}
 
 	// accessor for memory pool, e.g. used for allocating task parameters in
 	virtual CMemoryPool *Pmp() const = 0;

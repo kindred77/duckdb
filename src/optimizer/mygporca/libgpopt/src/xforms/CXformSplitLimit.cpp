@@ -84,8 +84,8 @@ void
 CXformSplitLimit::Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 							CExpression *pexpr) const
 {
-	GPOS_ASSERT(nullptr != pxfctxt);
-	GPOS_ASSERT(nullptr != pxfres);
+	GPOS_ASSERT(NULL != pxfctxt);
+	GPOS_ASSERT(NULL != pxfres);
 	GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 	GPOS_ASSERT(FCheckPattern(pexpr));
 
@@ -136,7 +136,7 @@ CXformSplitLimit::PexprLimit(CMemoryPool *mp, CExpression *pexprRelational,
 							 CExpression *pexprScalarStart,
 							 CExpression *pexprScalarRows, COrderSpec *pos,
 							 BOOL fGlobal, BOOL fHasCount,
-							 BOOL fTopLimitUnderDML)
+							 BOOL fTopLimitUnderDML) const
 {
 	pexprScalarStart->AddRef();
 	pexprScalarRows->AddRef();

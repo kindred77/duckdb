@@ -14,6 +14,7 @@
 #include "gpos/base.h"
 
 #include "gpopt/base/CDrvdProp.h"
+#include "gpopt/base/COptCtxt.h"
 #include "gpopt/operators/CScalar.h"
 
 namespace gpopt
@@ -34,10 +35,11 @@ private:
 	// column
 	const CColRef *m_pcr;
 
+	// private copy ctor
+	CScalarIdent(const CScalarIdent &);
+
 
 public:
-	CScalarIdent(const CScalarIdent &) = delete;
-
 	// ctor
 	CScalarIdent(CMemoryPool *mp, const CColRef *colref)
 		: CScalar(mp), m_pcr(colref)
@@ -45,18 +47,20 @@ public:
 	}
 
 	// dtor
-	~CScalarIdent() override = default;
+	virtual ~CScalarIdent()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarIdent;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarIdent";
 	}
@@ -69,38 +73,25 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
-
-	static ULONG
-	HashValue(const CScalarIdent *pscalarIdent)
-	{
-		return CColRef::HashValue(pscalarIdent->Pcr());
-	}
-
-	static BOOL
-	Equals(const CScalarIdent *left, const CScalarIdent *right)
-	{
-		return CColRef::Equals(left->Pcr(), right->Pcr());
-	}
+	ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const override;
+	BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 
 	// return locally used columns
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsUsed(CMemoryPool *mp,
 			 CExpressionHandle &  // exprhdl
 
-			 ) override
+	)
 	{
 		CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
 		pcrs->Include(m_pcr);
@@ -112,20 +103,20 @@ public:
 	static CScalarIdent *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarIdent == pop->Eopid());
 
-		return dynamic_cast<CScalarIdent *>(pop);
+		return reinterpret_cast<CScalarIdent *>(pop);
 	}
 
 	// the type of the scalar expression
-	IMDId *MdidType() const override;
+	virtual IMDId *MdidType() const;
 
 	// the type modifier of the scalar expression
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// is the given expression a scalar cast of a scalar identifier
 	static BOOL FCastedScId(CExpression *pexpr);

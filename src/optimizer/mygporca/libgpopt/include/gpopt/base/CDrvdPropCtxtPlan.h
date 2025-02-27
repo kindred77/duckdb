@@ -38,27 +38,41 @@ private:
 	// map of CTE id to producer plan properties
 	UlongToDrvdPropPlanMap *m_phmulpdpCTEs;
 
+	// the number of expected partition selectors
+	ULONG m_ulExpectedPartitionSelectors;
+
 	// if true, a call to AddProps updates the CTE.
 	BOOL m_fUpdateCTEMap;
 
+	// private copy ctor
+	CDrvdPropCtxtPlan(const CDrvdPropCtxtPlan &);
+
 protected:
 	// copy function
-	CDrvdPropCtxt *PdpctxtCopy(CMemoryPool *mp) const override;
+	virtual CDrvdPropCtxt *PdpctxtCopy(CMemoryPool *mp) const;
 
 	// add props to context
-	void AddProps(CDrvdProp *pdp) override;
+	virtual void AddProps(CDrvdProp *pdp);
 
 public:
-	CDrvdPropCtxtPlan(const CDrvdPropCtxtPlan &) = delete;
-
 	// ctor
 	CDrvdPropCtxtPlan(CMemoryPool *mp, BOOL fUpdateCTEMap = true);
 
 	// dtor
-	~CDrvdPropCtxtPlan() override;
+	virtual ~CDrvdPropCtxtPlan();
+
+	ULONG
+	UlExpectedPartitionSelectors() const
+	{
+		return m_ulExpectedPartitionSelectors;
+	}
+
+	// set the number of expected partition selectors based on the given
+	// operator and the given cost context
+	void SetExpectedPartitionSelectors(COperator *pop, CCostContext *pcc);
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// return the plan properties of CTE producer with given id
 	CDrvdPropPlan *PdpplanCTEProducer(ULONG ulCTEId) const;
@@ -69,8 +83,8 @@ public:
 #ifdef GPOS_DEBUG
 
 	// is it a plan property context?
-	BOOL
-	FPlan() const override
+	virtual BOOL
+	FPlan() const
 	{
 		return true;
 	}
@@ -81,9 +95,9 @@ public:
 	static CDrvdPropCtxtPlan *
 	PdpctxtplanConvert(CDrvdPropCtxt *pdpctxt)
 	{
-		GPOS_ASSERT(nullptr != pdpctxt);
+		GPOS_ASSERT(NULL != pdpctxt);
 
-		return dynamic_cast<CDrvdPropCtxtPlan *>(pdpctxt);
+		return reinterpret_cast<CDrvdPropCtxtPlan *>(pdpctxt);
 	}
 
 };	// class CDrvdPropCtxtPlan

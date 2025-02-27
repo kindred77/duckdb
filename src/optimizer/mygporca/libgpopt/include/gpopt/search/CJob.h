@@ -117,26 +117,26 @@ private:
 #endif	// GPOS_DEBUG
 
 	// parent job
-	CJob *m_pjParent{nullptr};
+	CJob *m_pjParent;
 
 	// assigned job queue
-	CJobQueue *m_pjq{nullptr};
+	CJobQueue *m_pjq;
 
 	// reference counter
-	ULONG_PTR m_ulpRefs{0};
+	ULONG_PTR m_ulpRefs;
 
 	// job id - set by job factory
-	ULONG m_id{0};
+	ULONG m_id;
 
 	// job type
 	EJobType m_ejt;
 
 	// flag indicating if job is initialized
-	BOOL m_fInit{false};
+	BOOL m_fInit;
 
 #ifdef GPOS_DEBUG
 	// job state
-	EJobState m_ejs{EjsInit};
+	EJobState m_ejs;
 #endif	// GPOS_DEBUG
 
 	//-------------------------------------------------------------------
@@ -219,6 +219,9 @@ private:
 	}
 #endif	// GPOS_DEBUG
 
+	// private copy ctor
+	CJob(const CJob &);
+
 protected:
 	// id accessor
 	ULONG
@@ -228,7 +231,18 @@ protected:
 	}
 
 	// ctor
-	CJob() = default;
+	CJob()
+		: m_pjParent(NULL),
+		  m_pjq(NULL),
+		  m_ulpRefs(0),
+		  m_id(0),
+		  m_fInit(false)
+#ifdef GPOS_DEBUG
+		  ,
+		  m_ejs(EjsInit)
+#endif	// GPOS_DEBUG
+	{
+	}
 
 	// dtor
 	virtual ~CJob()
@@ -256,8 +270,6 @@ protected:
 	}
 
 public:
-	CJob(const CJob &) = delete;
-
 	// actual job execution given a scheduling context
 	// returns true if job completes, false if it is suspended
 	virtual BOOL FExecute(CSchedulerContext *psc) = 0;
@@ -280,7 +292,7 @@ public:
 	void
 	SetJobQueue(CJobQueue *pjq)
 	{
-		GPOS_ASSERT(nullptr != pjq);
+		GPOS_ASSERT(NULL != pjq);
 		m_pjq = pjq;
 	}
 

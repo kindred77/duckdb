@@ -40,21 +40,22 @@ private:
 	// function name
 	CWStringConst *func_name;
 
-public:
-	CDXLPhysicalTVF(const CDXLPhysicalTVF &) = delete;
+	// private copy ctor
+	CDXLPhysicalTVF(const CDXLPhysicalTVF &);
 
+public:
 	// ctor
 	CDXLPhysicalTVF(CMemoryPool *mp, IMDId *mdid_func, IMDId *mdid_return_type,
 					CWStringConst *str);
 
 	// dtor
-	~CDXLPhysicalTVF() override;
+	virtual ~CDXLPhysicalTVF();
 
 	// get operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// get operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// get function name
 	CWStringConst *
@@ -78,14 +79,14 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalTVF *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalTVF == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalTVF *>(dxl_op);
@@ -94,7 +95,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

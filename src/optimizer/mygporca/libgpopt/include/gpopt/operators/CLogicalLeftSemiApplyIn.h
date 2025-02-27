@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright 2014 VMware, Inc. or its affiliates.
+//	Copyright 2014 Pivotal Inc.
 //
 //	@filename:
 //		CLogicalLeftSemiApplyIn.h
@@ -29,9 +29,10 @@ namespace gpopt
 class CLogicalLeftSemiApplyIn : public CLogicalLeftSemiApply
 {
 private:
-public:
-	CLogicalLeftSemiApplyIn(const CLogicalLeftSemiApplyIn &) = delete;
+	// private copy ctor
+	CLogicalLeftSemiApplyIn(const CLogicalLeftSemiApplyIn &);
 
+public:
 	// ctor
 	explicit CLogicalLeftSemiApplyIn(CMemoryPool *mp)
 		: CLogicalLeftSemiApply(mp)
@@ -46,18 +47,20 @@ public:
 	}
 
 	// dtor
-	~CLogicalLeftSemiApplyIn() override = default;
+	virtual ~CLogicalLeftSemiApplyIn()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftSemiApplyIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftSemiApplyIn";
 	}
@@ -67,22 +70,21 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// candidate set of xforms
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CLogicalLeftSemiApplyIn *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftSemiApplyIn == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftSemiApplyIn *>(pop);

@@ -75,9 +75,10 @@ private:
 	// return top level operator in the given expression
 	static COperator *PopTop(CExpression *pexpr);
 
-public:
-	CQueryContext(const CQueryContext &) = delete;
+	// private copy ctor
+	CQueryContext(const CQueryContext &);
 
+public:
 	// ctor
 	CQueryContext(CMemoryPool *mp, CExpression *pexpr, CReqdPropPlan *prpp,
 				  CColRefArray *colref_array, CMDNameArray *pdrgpmdname,
@@ -138,7 +139,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// debug print
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 #endif	// GPOS_DEBUG
 
 	// walk the expression and add the mapping between computed column

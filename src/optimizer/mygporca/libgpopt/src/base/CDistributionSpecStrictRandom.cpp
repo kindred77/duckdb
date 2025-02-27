@@ -1,11 +1,13 @@
 //	Greenplum Database
-//	Copyright (C) 2016 VMware, Inc. or its affiliates.
+//	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDistributionSpecStrictRandom.h"
 
 using namespace gpopt;
 
-CDistributionSpecStrictRandom::CDistributionSpecStrictRandom() = default;
+CDistributionSpecStrictRandom::CDistributionSpecStrictRandom()
+{
+}
 
 BOOL
 CDistributionSpecStrictRandom::Matches(const CDistributionSpec *pds) const

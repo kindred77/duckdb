@@ -33,10 +33,11 @@ template <class TLogicalApply, class TPhysicalJoin>
 class CXformImplementCorrelatedApply : public CXformImplementation
 {
 private:
-public:
-	CXformImplementCorrelatedApply(const CXformImplementCorrelatedApply &) =
-		delete;
+	// private copy ctor
+	CXformImplementCorrelatedApply(const CXformImplementCorrelatedApply &);
 
+
+public:
 	// ctor
 	explicit CXformImplementCorrelatedApply(CMemoryPool *mp)
 		:  // pattern
@@ -53,10 +54,13 @@ public:
 	}
 
 	// dtor
-	~CXformImplementCorrelatedApply() override = default;
+	virtual ~CXformImplementCorrelatedApply()
+	{
+	}
 
-	EXformPromise
-	Exfp(CExpressionHandle &exprhdl) const override
+	// compute xform promise for a given expression handle
+	virtual EXformPromise
+	Exfp(CExpressionHandle &exprhdl) const
 	{
 		if (exprhdl.DeriveHasSubquery(2))
 		{
@@ -68,9 +72,9 @@ public:
 	// actual transform
 	void
 	Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-			  CExpression *pexpr) const override
+			  CExpression *pexpr) const
 	{
-		GPOS_ASSERT(nullptr != pxfctxt);
+		GPOS_ASSERT(NULL != pxfctxt);
 		GPOS_ASSERT(FPromising(pxfctxt->Pmp(), this, pexpr));
 		GPOS_ASSERT(FCheckPattern(pexpr));
 

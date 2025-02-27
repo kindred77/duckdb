@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CScalarArrayRef.h
@@ -47,26 +47,27 @@ private:
 	// return type id
 	IMDId *m_mdid_type;
 
-public:
-	CScalarArrayRef(const CScalarArrayRef &) = delete;
+	// private copy ctor
+	CScalarArrayRef(const CScalarArrayRef &);
 
+public:
 	// ctor
 	CScalarArrayRef(CMemoryPool *mp, IMDId *elem_type_mdid, INT type_modifier,
 					IMDId *array_type_mdid, IMDId *return_type_mdid);
 
 	// dtor
-	~CScalarArrayRef() override;
+	virtual ~CScalarArrayRef();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarArrayRef;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarArrayRef";
 	}
@@ -79,7 +80,7 @@ public:
 	}
 
 	// element type modifier
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// array type id
 	IMDId *
@@ -89,31 +90,31 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// type of expression's result
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		return m_mdid_type;
 	}
@@ -122,7 +123,7 @@ public:
 	static CScalarArrayRef *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarArrayRef == pop->Eopid());
 
 		return dynamic_cast<CScalarArrayRef *>(pop);

@@ -29,6 +29,9 @@ namespace gpopt
 class CLogicalJoin : public CLogical
 {
 private:
+	// private copy ctor
+	CLogicalJoin(const CLogicalJoin &);
+
 	// xform that join originated from
 	CXform::EXformId m_origin_xform;
 
@@ -38,28 +41,28 @@ protected:
 						  CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CLogicalJoin() override = default;
+	virtual ~CLogicalJoin()
+	{
+	}
 
 public:
-	CLogicalJoin(const CLogicalJoin &) = delete;
-
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 
 	// sensitivity to order of inputs
 	BOOL
-	FInputOrderSensitive() const override
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
@@ -68,7 +71,7 @@ public:
 	static CLogicalJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 
 		return dynamic_cast<CLogicalJoin *>(pop);
 	}
@@ -78,16 +81,15 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive output columns
-	CColRefSet *
-	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl) override
+	virtual CColRefSet *
+	DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl)
 	{
 		return PcrsDeriveOutputCombineLogical(mp, exprhdl);
 	}
 
 	// derive partition consumer info
-	CPartInfo *
-	DerivePartitionInfo(CMemoryPool *mp,
-						CExpressionHandle &exprhdl) const override
+	virtual CPartInfo *
+	DerivePartitionInfo(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpartinfoDeriveCombine(mp, exprhdl);
 	}
@@ -95,16 +97,14 @@ public:
 
 	// derive keys
 	CKeyCollection *
-	DeriveKeyCollection(CMemoryPool *mp,
-						CExpressionHandle &exprhdl) const override
+	DeriveKeyCollection(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PkcCombineKeys(mp, exprhdl);
 	}
 
 	// derive function properties
-	CFunctionProp *
-	DeriveFunctionProperties(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CFunctionProp *
+	DeriveFunctionProperties(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PfpDeriveFromScalar(mp, exprhdl);
 	}
@@ -114,8 +114,8 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// promise level for stat derivation
-	EStatPromise
-	Esp(CExpressionHandle &exprhdl) const override
+	virtual EStatPromise
+	Esp(CExpressionHandle &exprhdl) const
 	{
 		// no stat derivation on Join trees with subqueries
 		if (exprhdl.DeriveHasSubquery(exprhdl.Arity() - 1))
@@ -123,7 +123,7 @@ public:
 			return EspLow;
 		}
 
-		if (nullptr != exprhdl.Pgexpr() &&
+		if (NULL != exprhdl.Pgexpr() &&
 			exprhdl.Pgexpr()->ExfidOrigin() == CXform::ExfExpandNAryJoin)
 		{
 			return EspMedium;
@@ -133,17 +133,18 @@ public:
 	}
 
 	// derive statistics
-	IStatistics *PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  IStatisticsArray *stats_ctxt) const override;
+	virtual IStatistics *PstatsDerive(CMemoryPool *mp,
+									  CExpressionHandle &exprhdl,
+									  IStatisticsArray *stats_ctxt) const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *
+	virtual CColRefSet *
 	PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsInput,
-			 ULONG child_index) const override
+			 ULONG child_index) const
 	{
 		const ULONG arity = exprhdl.Arity();
 
@@ -153,8 +154,8 @@ public:
 	}
 
 	// return true if operator can select a subset of input tuples based on some predicate
-	BOOL
-	FSelectionOp() const override
+	virtual BOOL
+	FSelectionOp() const
 	{
 		return true;
 	}

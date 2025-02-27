@@ -34,52 +34,57 @@
 /* wide character string literate */
 #define GPOS_WSZ_LIT(x) L##x
 
+// failpoint simulation is enabled on debug build
+#ifdef GPOS_DEBUG
+#define GPOS_FPSIMULATOR 1
+#endif	// GPOS_DEBUG
+
 namespace gpos
 {
 // Basic types to be used instead of built-ins
 // Add types as needed;
 
-using BYTE = unsigned char;
-using CHAR = char;
+typedef unsigned char BYTE;
+typedef char CHAR;
 // ignore signed char for the moment
 
 // wide character type
-using WCHAR = wchar_t;
+typedef wchar_t WCHAR;
 
-using BOOL = bool;
+typedef bool BOOL;
 
 // numeric types
 
-using SIZE_T = size_t;
-using SSIZE_T = ssize_t;
-using MODE_T = mode_t;
+typedef size_t SIZE_T;
+typedef ssize_t SSIZE_T;
+typedef mode_t MODE_T;
 
 // define ULONG,ULLONG as types which implement standard's
 // requirements for ULONG_MAX and ULLONG_MAX; eliminate standard's slack
 // by fixed sizes rather than min requirements
 
-using ULONG = uint32_t;
+typedef uint32_t ULONG;
 GPOS_CPL_ASSERT(4 == sizeof(ULONG));
 enum
 {
 	ulong_max = ((::gpos::ULONG) -1)
 };
 
-using ULLONG = uint64_t;
+typedef uint64_t ULLONG;
 GPOS_CPL_ASSERT(8 == sizeof(ULLONG));
 enum
 {
 	ullong_max = ((::gpos::ULLONG) -1)
 };
 
-using ULONG_PTR = uintptr_t;
+typedef uintptr_t ULONG_PTR;
 #define ULONG_PTR_MAX (gpos::ullong_max)
 
-using USINT = uint16_t;
-using SINT = int16_t;
-using INT = int32_t;
-using LINT = int64_t;
-using INT_PTR = intptr_t;
+typedef uint16_t USINT;
+typedef int16_t SINT;
+typedef int32_t INT;
+typedef int64_t LINT;
+typedef intptr_t INT_PTR;
 
 GPOS_CPL_ASSERT(2 == sizeof(USINT));
 GPOS_CPL_ASSERT(2 == sizeof(SINT));
@@ -109,13 +114,13 @@ enum
 	sint_min = (-gpos::sint_max - 1)
 };
 
-using DOUBLE = double;
+typedef double DOUBLE;
 
 // holds for all platforms
 GPOS_CPL_ASSERT(sizeof(ULONG_PTR) == sizeof(void *));
 
 // variadic parameter list type
-using VA_LIST = va_list;
+typedef va_list VA_LIST;
 
 // enum for results on OS level (instead of using a global error variable)
 enum GPOS_RESULT

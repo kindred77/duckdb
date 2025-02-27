@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //      Greenplum Database
-//      Copyright (C) 2014 VMware, Inc. or its affiliates.
+//      Copyright (C) 2014 Pivotal Inc.
 //
 //      @filename:
 //              CUpperBoundNDVs.h
@@ -25,7 +25,7 @@ using namespace gpmd;
 class CUpperBoundNDVs;
 
 // dynamic array of upper bound ndvs
-using CUpperBoundNDVPtrArray = CDynamicPtrArray<CUpperBoundNDVs, CleanupDelete>;
+typedef CDynamicPtrArray<CUpperBoundNDVs, CleanupDelete> CUpperBoundNDVPtrArray;
 
 //---------------------------------------------------------------------------
 //      @class:
@@ -45,14 +45,15 @@ private:
 	// upper bound of ndvs
 	CDouble m_upper_bound_ndv;
 
-public:
-	CUpperBoundNDVs(const CUpperBoundNDVs &) = delete;
+	// private copy constructor
+	CUpperBoundNDVs(const CUpperBoundNDVs &);
 
+public:
 	// ctor
 	CUpperBoundNDVs(CColRefSet *column_refset, CDouble upper_bound_ndv)
 		: m_column_refset(column_refset), m_upper_bound_ndv(upper_bound_ndv)
 	{
-		GPOS_ASSERT(nullptr != m_column_refset);
+		GPOS_ASSERT(NULL != m_column_refset);
 	}
 
 	// dtor

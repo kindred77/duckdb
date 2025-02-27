@@ -33,7 +33,7 @@ CCTEReq::CCTEReqEntry::CCTEReqEntry(ULONG id, CCTEMap::ECteType ect,
 	: m_id(id), m_ect(ect), m_fRequired(fRequired), m_pdpplan(pdpplan)
 {
 	GPOS_ASSERT(CCTEMap::EctSentinel > ect);
-	GPOS_ASSERT_IMP(nullptr == pdpplan, CCTEMap::EctProducer == ect);
+	GPOS_ASSERT_IMP(NULL == pdpplan, CCTEMap::EctProducer == ect);
 }
 
 //---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ CCTEReq::CCTEReqEntry::HashValue() const
 							gpos::HashValue<CCTEMap::ECteType>(&m_ect));
 	ulHash = gpos::CombineHashes(ulHash, gpos::HashValue<BOOL>(&m_fRequired));
 
-	if (nullptr != m_pdpplan)
+	if (NULL != m_pdpplan)
 	{
 		ulHash = gpos::CombineHashes(ulHash, m_pdpplan->HashValue());
 	}
@@ -84,7 +84,7 @@ CCTEReq::CCTEReqEntry::HashValue() const
 BOOL
 CCTEReq::CCTEReqEntry::Equals(CCTEReqEntry *pcre) const
 {
-	GPOS_ASSERT(nullptr != pcre);
+	GPOS_ASSERT(NULL != pcre);
 	if (m_id != pcre->Id() || m_ect != pcre->Ect() ||
 		m_fRequired != pcre->FRequired())
 	{
@@ -92,12 +92,12 @@ CCTEReq::CCTEReqEntry::Equals(CCTEReqEntry *pcre) const
 	}
 
 	CDrvdPropPlan *pdpplan = pcre->PdpplanProducer();
-	if (nullptr == m_pdpplan && nullptr == pdpplan)
+	if (NULL == m_pdpplan && NULL == pdpplan)
 	{
 		return true;
 	}
 
-	if (nullptr != m_pdpplan && nullptr != pdpplan)
+	if (NULL != m_pdpplan && NULL != pdpplan)
 	{
 		return m_pdpplan->Equals(pdpplan);
 	}
@@ -119,7 +119,7 @@ CCTEReq::CCTEReqEntry::OsPrint(IOstream &os) const
 	os << m_id << (CCTEMap::EctProducer == m_ect ? ":p" : ":c")
 	   << (m_fRequired ? " " : "(opt) ");
 
-	if (nullptr != m_pdpplan)
+	if (NULL != m_pdpplan)
 	{
 		os << "Plan Props: " << *m_pdpplan;
 	}
@@ -135,9 +135,9 @@ CCTEReq::CCTEReqEntry::OsPrint(IOstream &os) const
 //
 //---------------------------------------------------------------------------
 CCTEReq::CCTEReq(CMemoryPool *mp)
-	: m_mp(mp), m_phmcter(nullptr), m_pdrgpulRequired(nullptr)
+	: m_mp(mp), m_phmcter(NULL), m_pdrgpulRequired(NULL)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 	m_phmcter = GPOS_NEW(m_mp) UlongToCTEReqEntryMap(m_mp);
 	m_pdrgpulRequired = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
@@ -172,7 +172,9 @@ CCTEReq::Insert(ULONG ulCteId, CCTEMap::ECteType ect, BOOL fRequired,
 	GPOS_ASSERT(CCTEMap::EctSentinel > ect);
 	CCTEReqEntry *pcre =
 		GPOS_NEW(m_mp) CCTEReqEntry(ulCteId, ect, fRequired, pdpplan);
-	BOOL fSuccess GPOS_ASSERTS_ONLY =
+#ifdef GPOS_DEBUG
+	BOOL fSuccess =
+#endif	// GPOS_DEBUG
 		m_phmcter->Insert(GPOS_NEW(m_mp) ULONG(ulCteId), pcre);
 	GPOS_ASSERT(fSuccess);
 	if (fRequired)
@@ -197,7 +199,7 @@ CCTEReq::InsertConsumer(ULONG id, CDrvdPropArray *pdrgpdpCtxt)
 	CDrvdPropPlan *pdpplan = CDrvdPropPlan::Pdpplan((*pdrgpdpCtxt)[0])
 								 ->GetCostModel()
 								 ->PdpplanProducer(&ulProducerId);
-	GPOS_ASSERT(nullptr != pdpplan);
+	GPOS_ASSERT(NULL != pdpplan);
 	GPOS_ASSERT(ulProducerId == id &&
 				"unexpected CTE producer plan properties");
 
@@ -230,7 +232,7 @@ CCTEReq::PcreLookup(ULONG ulCteId) const
 BOOL
 CCTEReq::FSubset(const CCTEReq *pcter) const
 {
-	GPOS_ASSERT(nullptr != pcter);
+	GPOS_ASSERT(NULL != pcter);
 
 	// compare number of entries first
 	if (m_phmcter->Size() > pcter->m_phmcter->Size())
@@ -250,7 +252,7 @@ CCTEReq::FSubset(const CCTEReq *pcter) const
 	{
 		const CCTEReqEntry *pcre = hmcri.Value();
 		CCTEReqEntry *pcreOther = pcter->PcreLookup(pcre->Id());
-		if (nullptr == pcreOther || !pcre->Equals(pcreOther))
+		if (NULL == pcreOther || !pcre->Equals(pcreOther))
 		{
 			return false;
 		}
@@ -271,7 +273,7 @@ BOOL
 CCTEReq::FContainsRequirement(const ULONG id, const CCTEMap::ECteType ect) const
 {
 	CCTEReqEntry *pcre = PcreLookup(id);
-	return (nullptr != pcre && pcre->Ect() == ect);
+	return (NULL != pcre && pcre->Ect() == ect);
 }
 
 //---------------------------------------------------------------------------
@@ -286,7 +288,7 @@ CCTEMap::ECteType
 CCTEReq::Ect(const ULONG id) const
 {
 	CCTEReqEntry *pcre = PcreLookup(id);
-	GPOS_ASSERT(nullptr != pcre);
+	GPOS_ASSERT(NULL != pcre);
 	return pcre->Ect();
 }
 
@@ -329,7 +331,7 @@ CCTEReq::HashValue() const
 CCTEReq *
 CCTEReq::PcterUnresolved(CMemoryPool *mp, CCTEMap *pcm)
 {
-	GPOS_ASSERT(nullptr != pcm);
+	GPOS_ASSERT(NULL != pcm);
 	CCTEReq *pcterUnresolved = GPOS_NEW(mp) CCTEReq(mp);
 
 	UlongToCTEReqEntryMapIter hmcri(m_phmcter);
@@ -342,7 +344,7 @@ CCTEReq::PcterUnresolved(CMemoryPool *mp, CCTEMap *pcm)
 		BOOL fRequired =
 			pcre->FRequired() && CCTEMap::EctSentinel == pcm->Ect(id);
 		CDrvdPropPlan *pdpplan = pcre->PdpplanProducer();
-		if (nullptr != pdpplan)
+		if (NULL != pdpplan)
 		{
 			pdpplan->AddRef();
 		}
@@ -369,7 +371,7 @@ CCTEReq::PcterUnresolvedSequence(
 		pdrgpdpCtxt	 // context contains derived plan properties of producer tree
 )
 {
-	GPOS_ASSERT(nullptr != pcm);
+	GPOS_ASSERT(NULL != pcm);
 	CCTEReq *pcterUnresolved = GPOS_NEW(mp) CCTEReq(mp);
 
 	UlongToCTEReqEntryMapIter hmcri(m_phmcter);
@@ -388,7 +390,7 @@ CCTEReq::PcterUnresolvedSequence(
 			GPOS_ASSERT(CCTEMap::EctConsumer == ectDrvd);
 			// already found, so mark it as optional
 			CDrvdPropPlan *pdpplan = pcre->PdpplanProducer();
-			GPOS_ASSERT(nullptr != pdpplan);
+			GPOS_ASSERT(NULL != pdpplan);
 			pdpplan->AddRef();
 			pcterUnresolved->Insert(id, ect, false /*fReqiored*/, pdpplan);
 		}
@@ -406,8 +408,8 @@ CCTEReq::PcterUnresolvedSequence(
 			// either required and not found yet, or optional
 			// in both cases, pass it down as is
 			CDrvdPropPlan *pdpplan = pcre->PdpplanProducer();
-			GPOS_ASSERT_IMP(nullptr == pdpplan, CCTEMap::EctProducer == ect);
-			if (nullptr != pdpplan)
+			GPOS_ASSERT_IMP(NULL == pdpplan, CCTEMap::EctProducer == ect);
+			if (NULL != pdpplan)
 			{
 				pdpplan->AddRef();
 			}
@@ -447,7 +449,7 @@ CCTEReq::PcterAllOptional(CMemoryPool *mp)
 	{
 		const CCTEReqEntry *pcre = hmcri.Value();
 		CDrvdPropPlan *pdpplan = pcre->PdpplanProducer();
-		if (nullptr != pdpplan)
+		if (NULL != pdpplan)
 		{
 			pdpplan->AddRef();
 		}
@@ -470,12 +472,12 @@ CDrvdPropPlan *
 CCTEReq::Pdpplan(ULONG ulCteId) const
 {
 	const CCTEReqEntry *pcre = PcreLookup(ulCteId);
-	if (nullptr != pcre)
+	if (NULL != pcre)
 	{
 		return pcre->PdpplanProducer();
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 

@@ -37,6 +37,12 @@ using namespace gpmd;
 class CStatsPredLike : public CStatsPred
 {
 private:
+	// private copy ctor
+	CStatsPredLike(const CStatsPredLike &);
+
+	// private assignment operator
+	CStatsPredLike &operator=(CStatsPredLike &);
+
 	// left hand side of the LIKE expression
 	CExpression *m_expr_left;
 
@@ -47,23 +53,19 @@ private:
 	CDouble m_default_scale_factor;
 
 public:
-	CStatsPredLike &operator=(CStatsPredLike &) = delete;
-
-	CStatsPredLike(const CStatsPredLike &) = delete;
-
 	// ctor
 	CStatsPredLike(ULONG colid, CExpression *expr_left, CExpression *expr_right,
 				   CDouble default_scale_factor);
 
 	// dtor
-	~CStatsPredLike() override;
+	virtual ~CStatsPredLike();
 
 	// the column identifier on which the predicates are on
-	ULONG GetColId() const override;
+	virtual ULONG GetColId() const;
 
 	// filter type id
-	EStatsPredType
-	GetPredStatsType() const override
+	virtual EStatsPredType
+	GetPredStatsType() const
 	{
 		return CStatsPred::EsptLike;
 	}
@@ -89,7 +91,7 @@ public:
 	static CStatsPredLike *
 	ConvertPredStats(CStatsPred *pred_stats)
 	{
-		GPOS_ASSERT(nullptr != pred_stats);
+		GPOS_ASSERT(NULL != pred_stats);
 		GPOS_ASSERT(CStatsPred::EsptLike == pred_stats->GetPredStatsType());
 
 		return dynamic_cast<CStatsPredLike *>(pred_stats);

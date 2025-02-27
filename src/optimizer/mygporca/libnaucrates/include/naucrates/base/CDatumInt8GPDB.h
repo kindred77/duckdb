@@ -39,42 +39,43 @@ private:
 	BOOL m_is_null;
 
 
-public:
-	CDatumInt8GPDB(const CDatumInt8GPDB &) = delete;
+	// private copy ctor
+	CDatumInt8GPDB(const CDatumInt8GPDB &);
 
+public:
 	// ctors
 	CDatumInt8GPDB(CSystemId sysid, LINT val, BOOL is_null = false);
 	CDatumInt8GPDB(IMDId *mdid, LINT val, BOOL is_null = false);
 
 	// dtor
-	~CDatumInt8GPDB() override;
+	virtual ~CDatumInt8GPDB();
 
 	// accessor of metadata type id
-	IMDId *MDId() const override;
+	virtual IMDId *MDId() const;
 
 	// accessor of size
-	ULONG Size() const override;
+	virtual ULONG Size() const;
 
 	// accessor of integer value
-	LINT Value() const override;
+	virtual LINT Value() const;
 
 	// accessor of is null
-	BOOL IsNull() const override;
+	virtual BOOL IsNull() const;
 
 	// return string representation
-	const CWStringConst *GetStrRepr(CMemoryPool *mp) const override;
+	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function for datums
-	BOOL Matches(const IDatum *) const override;
+	virtual BOOL Matches(const IDatum *) const;
 
 	// copy datum
-	IDatum *MakeCopy(CMemoryPool *mp) const override;
+	virtual IDatum *MakeCopy(CMemoryPool *mp) const;
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CDatumInt8GPDB
 

@@ -31,44 +31,46 @@ using namespace gpos;
 class CScalarSubqueryAll : public CScalarSubqueryQuantified
 {
 private:
-public:
-	CScalarSubqueryAll(const CScalarSubqueryAll &) = delete;
+	// private copy ctor
+	CScalarSubqueryAll(const CScalarSubqueryAll &);
 
+public:
 	// ctor
 	CScalarSubqueryAll(CMemoryPool *mp, IMDId *scalar_op_mdid,
 					   const CWStringConst *pstrScalarOp,
 					   const CColRef *colref);
 
 	// dtor
-	~CScalarSubqueryAll() override = default;
+	virtual ~CScalarSubqueryAll()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSubqueryAll;
 	}
 
 	// return a string for scalar subquery
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSubqueryAll";
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CScalarSubqueryAll *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarSubqueryAll == pop->Eopid());
 
-		return dynamic_cast<CScalarSubqueryAll *>(pop);
+		return reinterpret_cast<CScalarSubqueryAll *>(pop);
 	}
 
 };	// class CScalarSubqueryAll

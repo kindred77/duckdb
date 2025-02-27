@@ -33,37 +33,38 @@ using namespace gpos;
 class CDistributionSpecUniversal : public CDistributionSpec
 {
 private:
-public:
-	CDistributionSpecUniversal(const CDistributionSpecUniversal &) = delete;
+	// private copy ctor
+	CDistributionSpecUniversal(const CDistributionSpecUniversal &);
 
+public:
 	//ctor
 	CDistributionSpecUniversal();
 
 	// accessor
-	EDistributionType Edt() const override;
+	virtual EDistributionType Edt() const;
 
 	// does current distribution satisfy the given one
-	BOOL FSatisfies(const CDistributionSpec *pds) const override;
+	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// return true if distribution spec can be required
-	BOOL FRequirable() const override;
+	virtual BOOL FRequirable() const;
 
 	// does this distribution match the given one
-	BOOL Matches(const CDistributionSpec *pds) const override;
+	virtual BOOL Matches(const CDistributionSpec *pds) const;
 
 	// append enforcers to dynamic array for the given plan properties
-	void AppendEnforcers(CMemoryPool *,		   //mp,
-						 CExpressionHandle &,  // exprhdl
-						 CReqdPropPlan *,	   //prpp,
-						 CExpressionArray *,   // pdrgpexpr,
-						 CExpression *		   // pexpr
-						 ) override;
+	virtual void AppendEnforcers(CMemoryPool *,		   //mp,
+								 CExpressionHandle &,  // exprhdl
+								 CReqdPropPlan *,	   //prpp,
+								 CExpressionArray *,   // pdrgpexpr,
+								 CExpression *		   // pexpr
+	);
 
 	// print
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// return distribution partitioning type
-	EDistributionPartitioningType Edpt() const override;
+	virtual EDistributionPartitioningType Edpt() const;
 
 	// conversion function
 	static CDistributionSpecUniversal *PdsConvert(CDistributionSpec *pds);

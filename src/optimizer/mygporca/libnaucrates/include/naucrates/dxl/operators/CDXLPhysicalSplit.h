@@ -48,22 +48,30 @@ private:
 	// segmentid column id
 	ULONG m_segid_colid;
 
-public:
-	CDXLPhysicalSplit(const CDXLPhysicalSplit &) = delete;
+	// should update preserve tuple oids
+	BOOL m_preserve_oids;
 
+	// tuple oid column id
+	ULONG m_tuple_oid;
+
+	// private copy ctor
+	CDXLPhysicalSplit(const CDXLPhysicalSplit &);
+
+public:
 	// ctor
 	CDXLPhysicalSplit(CMemoryPool *mp, ULongPtrArray *delete_colid_array,
 					  ULongPtrArray *insert_colid_array, ULONG action_colid,
-					  ULONG ctid_colid, ULONG segid_colid);
+					  ULONG ctid_colid, ULONG segid_colid, BOOL preserve_oids,
+					  ULONG tuple_oid);
 
 	// dtor
-	~CDXLPhysicalSplit() override;
+	virtual ~CDXLPhysicalSplit();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// deletion column ids
 	ULongPtrArray *
@@ -100,22 +108,35 @@ public:
 		return m_segid_colid;
 	}
 
+	// does update preserve oids
+	BOOL
+	IsOidsPreserved() const
+	{
+		return m_preserve_oids;
+	}
+
+	// tuple oid column id
+	ULONG
+	GetTupleOid() const
+	{
+		return m_tuple_oid;
+	}
+
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalSplit *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalSplit == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalSplit *>(dxl_op);

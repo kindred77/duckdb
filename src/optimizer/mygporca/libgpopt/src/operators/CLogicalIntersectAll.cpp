@@ -57,7 +57,9 @@ CLogicalIntersectAll::CLogicalIntersectAll(CMemoryPool *mp,
 //		Dtor
 //
 //---------------------------------------------------------------------------
-CLogicalIntersectAll::~CLogicalIntersectAll() = default;
+CLogicalIntersectAll::~CLogicalIntersectAll()
+{
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -123,7 +125,7 @@ CLogicalIntersectAll::DeriveKeyCollection(CMemoryPool *,	   //mp,
 ) const
 {
 	// TODO: Add the keys from outer and inner child
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------

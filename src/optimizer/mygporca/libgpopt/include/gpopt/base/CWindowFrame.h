@@ -22,7 +22,7 @@ namespace gpopt
 {
 // type definition of corresponding dynamic pointer array
 class CWindowFrame;
-using CWindowFrameArray = CDynamicPtrArray<CWindowFrame, CleanupRelease>;
+typedef CDynamicPtrArray<CWindowFrame, CleanupRelease> CWindowFrameArray;
 
 using namespace gpos;
 
@@ -40,9 +40,8 @@ public:
 	// specification method
 	enum EFrameSpec
 	{
-		EfsRows,	// frame is specified using Rows construct
-		EfsRange,	// frame is specified using Range construct
-		EfsGroups,	// frame is specified using Groups construct
+		EfsRows,   // frame is specified using Rows construct
+		EfsRange,  // frame is specified using Range construct
 
 		EfsSentinel
 	};
@@ -75,60 +74,43 @@ public:
 
 private:
 	// specification method
-	const EFrameSpec m_efs{EfsRange};
+	const EFrameSpec m_efs;
 
 	// type of leading edge
-	const EFrameBoundary m_efbLeading{EfbUnboundedPreceding};
+	const EFrameBoundary m_efbLeading;
 
 	// type of trailing edge
-	const EFrameBoundary m_efbTrailing{EfbCurrentRow};
+	const EFrameBoundary m_efbTrailing;
 
 	// scalar value of leading edge, memory owned by this class
-	CExpression *m_pexprLeading{nullptr};
+	CExpression *m_pexprLeading;
 
 	// scalar value of trailing edge, memory owned by this class
-	CExpression *m_pexprTrailing{nullptr};
+	CExpression *m_pexprTrailing;
 
 	// exclusion strategy
-	const EFrameExclusionStrategy m_efes{EfesNone};
+	const EFrameExclusionStrategy m_efes;
 
 	// columns used by frame edges
-	CColRefSet *m_pcrsUsed{nullptr};
+	CColRefSet *m_pcrsUsed;
 
 	// singelton empty frame -- used with any unspecified window function frame
 	static const CWindowFrame m_wfEmpty;
 
-	// in_range function for startOffset
-	OID m_start_in_range_func;
-
-	// in_range function for endOffset
-	OID m_end_in_range_func;
-
-	// collation for in_range tests
-	OID m_in_range_coll;
-
-	// use ASC sort order for in_range tests
-	BOOL m_in_range_asc;
-
-	// nulls sort first for in_range tests
-	BOOL m_in_range_nulls_first;
+	// private copy ctor
+	CWindowFrame(const CWindowFrame &);
 
 	// private dummy ctor used to create empty frame
 	CWindowFrame();
 
 public:
-	CWindowFrame(const CWindowFrame &) = delete;
-
 	// ctor
 	CWindowFrame(CMemoryPool *mp, EFrameSpec efs, EFrameBoundary efbLeading,
 				 EFrameBoundary efbTrailing, CExpression *pexprLeading,
-				 CExpression *pexprTrailing, EFrameExclusionStrategy efes,
-				 OID start_in_range_func, OID end_in_range_func,
-				 OID in_range_coll, bool in_range_asc,
-				 bool in_range_nulls_first);
+				 CExpression *pexprTrailing, EFrameExclusionStrategy efes);
 
 	// dtor
-	~CWindowFrame() override;
+	virtual ~CWindowFrame();
 
 	// specification
 	EFrameSpec
@@ -190,7 +172,7 @@ public:
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// matching function over frame arrays
 	static BOOL Equals(const CWindowFrameArray *pdrgpwfFirst,
@@ -215,36 +197,6 @@ public:
 	PwfEmpty()
 	{
 		return &m_wfEmpty;
-	}
-
-	OID
-	StartInRangeFunc() const
-	{
-		return m_start_in_range_func;
-	}
-
-	OID
-	EndInRangeFunc() const
-	{
-		return m_end_in_range_func;
-	}
-
-	OID
-	InRangeColl() const
-	{
-		return m_in_range_coll;
-	}
-
-	BOOL
-	InRangeAsc() const
-	{
-		return m_in_range_asc;
-	}
-
-	BOOL
-	InRangeNullsFirst() const
-	{
-		return m_in_range_nulls_first;
 	}
 
 };	// class CWindowFrame

@@ -30,35 +30,38 @@ using namespace gpos;
 class CXformLeftSemiJoin2InnerJoin : public CXformExploration
 {
 private:
-public:
-	CXformLeftSemiJoin2InnerJoin(const CXformLeftSemiJoin2InnerJoin &) = delete;
+	// private copy ctor
+	CXformLeftSemiJoin2InnerJoin(const CXformLeftSemiJoin2InnerJoin &);
 
+public:
 	// ctor
 	explicit CXformLeftSemiJoin2InnerJoin(CMemoryPool *mp);
 
 	// dtor
-	~CXformLeftSemiJoin2InnerJoin() override = default;
+	virtual ~CXformLeftSemiJoin2InnerJoin()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfLeftSemiJoin2InnerJoin;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformLeftSemiJoin2InnerJoin";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformLeftSemiJoin2InnerJoin
 

@@ -28,33 +28,34 @@ namespace gpopt
 class CPhysicalRightOuterHashJoin : public CPhysicalHashJoin
 {
 private:
+	// private copy ctor
+	CPhysicalRightOuterHashJoin(const CPhysicalRightOuterHashJoin &);
+
 protected:
 	// create optimization requests
-	void CreateOptRequests(CMemoryPool *mp) override;
+	virtual void CreateOptRequests(CMemoryPool *mp);
 
 public:
-	CPhysicalRightOuterHashJoin(const CPhysicalRightOuterHashJoin &) = delete;
-
 	// ctor
 	CPhysicalRightOuterHashJoin(
 		CMemoryPool *mp, CExpressionArray *pdrgpexprOuterKeys,
-		CExpressionArray *pdrgpexprInnerKeys, IMdIdArray *hash_opfamilies,
-		BOOL is_null_aware = true,
+		CExpressionArray *pdrgpexprInnerKeys,
+		IMdIdArray *hash_opfamilies = NULL,
 		CXform::EXformId origin_xform = CXform::ExfSentinel);
 
 	// dtor
-	~CPhysicalRightOuterHashJoin() override;
+	virtual ~CPhysicalRightOuterHashJoin();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalRightOuterHashJoin;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalRightOuterHashJoin";
 	}
@@ -63,28 +64,26 @@ public:
 	static CPhysicalRightOuterHashJoin *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalRightOuterHashJoin == pop->Eopid());
 
 		return dynamic_cast<CPhysicalRightOuterHashJoin *>(pop);
 	}
+
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *PppsRequired(
+		CMemoryPool *mp, CExpressionHandle &exprhdl,
+		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// compute required distribution of the n-th child
-	CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						   CReqdPropPlan *prppInput, ULONG child_index,
-						   CDrvdPropArray *pdrgpdpCtxt,
-						   ULONG ulOptReq) override;
-
-	CPartitionPropagationSpec *PppsRequired(
-		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const override;
-
-	CPartitionPropagationSpec *PppsDerive(
-		CMemoryPool *mp, CExpressionHandle &exprhdl) const override;
+	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 };	// class CPhysicalRightOuterHashJoin
 

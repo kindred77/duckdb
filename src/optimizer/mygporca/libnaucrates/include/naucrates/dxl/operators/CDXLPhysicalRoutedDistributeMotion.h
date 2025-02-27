@@ -44,18 +44,19 @@ private:
 	// segment id column
 	ULONG m_segment_id_col;
 
-public:
+	// private copy ctor
 	CDXLPhysicalRoutedDistributeMotion(
-		const CDXLPhysicalRoutedDistributeMotion &) = delete;
+		const CDXLPhysicalRoutedDistributeMotion &);
 
+public:
 	// ctor
 	CDXLPhysicalRoutedDistributeMotion(CMemoryPool *mp, ULONG segment_id_col);
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// segment id column
 	ULONG
@@ -65,21 +66,21 @@ public:
 	}
 
 	// index of relational child node in the children array
-	ULONG
-	GetRelationChildIdx() const override
+	virtual ULONG
+	GetRelationChildIdx() const
 	{
 		return EdxlroutedmIndexChild;
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalRoutedDistributeMotion *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalMotionRoutedDistribute ==
 					dxl_op->GetDXLOperator());
 
@@ -89,8 +90,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

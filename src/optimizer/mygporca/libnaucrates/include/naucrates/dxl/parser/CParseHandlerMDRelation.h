@@ -49,6 +49,9 @@ protected:
 	// is this a temporary relation
 	BOOL m_is_temp_table;
 
+	// does this relation have oids
+	BOOL m_has_oids;
+
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
 
@@ -67,23 +70,29 @@ protected:
 	// partition types
 	CharPtrArray *m_str_part_types_array;
 
+	// number of partitions
+	ULONG m_num_of_partitions;
+
 	// key sets
 	ULongPtr2dArray *m_key_sets_arrays;
 
 	// part constraint
-	CDXLNode *m_part_constraint;
+	CMDPartConstraintGPDB *m_part_constraint;
 
 	// distribution opfamilies parse handler
 	CParseHandlerBase *m_opfamilies_parse_handler;
 
-	// child partition oids parse handler
-	CParseHandlerBase *m_child_partitions_parse_handler;
+	// distribution opfamilies parse handler
+	CParseHandlerBase *m_external_partitions_parse_handler;
+
+	// levels that include default partitions
+	ULongPtrArray *m_level_with_default_part_array;
 
 	// is part constraint unbounded
 	BOOL m_part_constraint_unbounded;
 
-	// foreign server (if exists)
-	IMDId *m_foreign_server;
+	// is part constraint complete with part constraint expr
+	BOOL m_part_constraint_contains_expr;
 
 	// helper function to parse main relation attributes: name, id,
 	// distribution policy and keys
@@ -94,24 +103,25 @@ protected:
 	void ParseChildNodes();
 
 private:
+	// private copy ctor
+	CParseHandlerMDRelation(const CParseHandlerMDRelation &);
+
 	// process the start of an element
 	void StartElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname,		// element's qname
 		const Attributes &attr					// element's attributes
-		) override;
+	);
 
 	// process the end of an element
 	void EndElement(
 		const XMLCh *const element_uri,			// URI of element's namespace
 		const XMLCh *const element_local_name,	// local part of element's name
 		const XMLCh *const element_qname		// element's qname
-		) override;
+	);
 
 public:
-	CParseHandlerMDRelation(const CParseHandlerMDRelation &) = delete;
-
 	// ctor
 	CParseHandlerMDRelation(CMemoryPool *mp,
 							CParseHandlerManager *parse_handler_mgr,

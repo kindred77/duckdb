@@ -33,14 +33,14 @@ using namespace gpos;
 CJobFactory::CJobFactory(CMemoryPool *mp, ULONG ulJobs)
 	: m_mp(mp),
 	  m_ulJobs(ulJobs),
-	  m_pspjTest(nullptr),
-	  m_pspjGroupOptimization(nullptr),
-	  m_pspjGroupImplementation(nullptr),
-	  m_pspjGroupExploration(nullptr),
-	  m_pspjGroupExpressionOptimization(nullptr),
-	  m_pspjGroupExpressionImplementation(nullptr),
-	  m_pspjGroupExpressionExploration(nullptr),
-	  m_pspjTransformation(nullptr)
+	  m_pspjTest(NULL),
+	  m_pspjGroupOptimization(NULL),
+	  m_pspjGroupImplementation(NULL),
+	  m_pspjGroupExploration(NULL),
+	  m_pspjGroupExpressionOptimization(NULL),
+	  m_pspjGroupExpressionImplementation(NULL),
+	  m_pspjGroupExpressionExploration(NULL),
+	  m_pspjTransformation(NULL)
 {
 	// initialize factories to be used first
 	Release(PjCreate(CJob::EjtGroupExploration));
@@ -59,6 +59,7 @@ CJobFactory::CJobFactory(CMemoryPool *mp, ULONG ulJobs)
 //---------------------------------------------------------------------------
 CJobFactory::~CJobFactory()
 {
+#ifdef GPOS_DEBUG
 	Truncate(CJob::EjtTest);
 	Truncate(CJob::EjtGroupExploration);
 	Truncate(CJob::EjtGroupImplementation);
@@ -67,6 +68,7 @@ CJobFactory::~CJobFactory()
 	Truncate(CJob::EjtGroupExpressionExploration);
 	Truncate(CJob::EjtGroupExpressionOptimization);
 	Truncate(CJob::EjtTransformation);
+#endif	// GPOS_DEBUG
 }
 
 
@@ -81,7 +83,7 @@ CJobFactory::~CJobFactory()
 CJob *
 CJobFactory::PjCreate(CJob::EJobType ejt)
 {
-	CJob *pj = nullptr;
+	CJob *pj = NULL;
 
 	switch (ejt)
 	{
@@ -144,7 +146,7 @@ CJobFactory::PjCreate(CJob::EJobType ejt)
 void
 CJobFactory::Release(CJob *pj)
 {
-	GPOS_ASSERT(nullptr != pj);
+	GPOS_ASSERT(NULL != pj);
 
 	switch (pj->Ejt())
 	{

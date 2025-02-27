@@ -33,6 +33,12 @@ using namespace gpmd;
 class CStatsPredJoin : public CRefCount
 {
 private:
+	// private copy ctor
+	CStatsPredJoin(const CStatsPredJoin &);
+
+	// private assignment operator
+	CStatsPredJoin &operator=(CStatsPredJoin &);
+
 	// column id
 	ULONG m_colidOuter;
 
@@ -43,10 +49,6 @@ private:
 	ULONG m_colidInner;
 
 public:
-	CStatsPredJoin &operator=(CStatsPredJoin &) = delete;
-
-	CStatsPredJoin(const CStatsPredJoin &) = delete;
-
 	// c'tor
 	CStatsPredJoin(ULONG colid1, CStatsPred::EStatsCmpType stats_cmp_type,
 				   ULONG colid2)
@@ -89,12 +91,14 @@ public:
 	}
 
 	// d'tor
-	~CStatsPredJoin() override = default;
+	virtual ~CStatsPredJoin()
+	{
+	}
 
 };	// class CStatsPredJoin
 
 // array of filters
-using CStatsPredJoinArray = CDynamicPtrArray<CStatsPredJoin, CleanupRelease>;
+typedef CDynamicPtrArray<CStatsPredJoin, CleanupRelease> CStatsPredJoinArray;
 }  // namespace gpnaucrates
 
 #endif	// !GPNAUCRATES_CStatsPredJoin_H

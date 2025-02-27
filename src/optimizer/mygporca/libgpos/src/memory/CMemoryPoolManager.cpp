@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (c) 2004-2015 VMware, Inc. or its affiliates.
+//	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
 //	@filename:
 //		CWorkerPoolManager.cpp
@@ -17,6 +17,7 @@
 #include "gpos/common/CAutoP.h"
 #include "gpos/common/clibwrapper.h"
 #include "gpos/error/CAutoTrace.h"
+#include "gpos/error/CFSimulator.h"	 // for GPOS_FPSIMULATOR
 #include "gpos/memory/CMemoryPool.h"
 #include "gpos/memory/CMemoryPoolTracker.h"
 #include "gpos/memory/CMemoryVisitorPrint.h"
@@ -29,16 +30,17 @@ using namespace gpos::clib;
 
 
 // global instance of memory pool manager
-CMemoryPoolManager *CMemoryPoolManager::m_memory_pool_mgr = nullptr;
+CMemoryPoolManager *CMemoryPoolManager::m_memory_pool_mgr = NULL;
 
 // ctor
 CMemoryPoolManager::CMemoryPoolManager(CMemoryPool *internal,
 									   EMemoryPoolType memory_pool_type)
 	: m_internal_memory_pool(internal),
-	  m_ht_all_pools(nullptr),
+	  m_allow_global_new(true),
+	  m_ht_all_pools(NULL),
 	  m_memory_pool_type(memory_pool_type)
 {
-	GPOS_ASSERT(nullptr != internal);
+	GPOS_ASSERT(NULL != internal);
 	GPOS_ASSERT(GPOS_OFFSET(CMemoryPool, m_link) ==
 				GPOS_OFFSET(CMemoryPoolTracker, m_link));
 }
@@ -67,7 +69,7 @@ CMemoryPoolManager::Setup()
 GPOS_RESULT
 CMemoryPoolManager::Init()
 {
-	if (nullptr == CMemoryPoolManager::m_memory_pool_mgr)
+	if (NULL == CMemoryPoolManager::m_memory_pool_mgr)
 	{
 		return SetupGlobalMemoryPoolManager<CMemoryPoolManager,
 											CMemoryPoolTracker>();
@@ -107,7 +109,7 @@ CMemoryPoolManager::NewMemoryPool()
 void
 CMemoryPoolManager::Destroy(CMemoryPool *mp)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 	// accessor scope
 	{
@@ -134,7 +136,7 @@ CMemoryPoolManager::TotalAllocatedSize()
 	{
 		MemoryPoolIterAccessor acc(iter);
 		CMemoryPool *mp = acc.Value();
-		if (nullptr != mp)
+		if (NULL != mp)
 		{
 			total_size = total_size + mp->TotalAllocatedSize();
 		}
@@ -151,7 +153,7 @@ CMemoryPoolManager::DeleteImpl(void *ptr, CMemoryPool::EAllocationType eat)
 }
 
 // get user requested size of allocation
-gpos::ULONG
+ULONG
 CMemoryPoolManager::UserSizeOfAlloc(const void *ptr)
 {
 	return CMemoryPoolTracker::UserSizeOfAlloc(ptr);
@@ -169,13 +171,13 @@ CMemoryPoolManager::OsPrint(IOstream &os)
 	MemoryPoolIter iter(*m_ht_all_pools);
 	while (iter.Advance())
 	{
-		CMemoryPool *mp = nullptr;
+		CMemoryPool *mp = NULL;
 		{
 			MemoryPoolIterAccessor acc(iter);
 			mp = acc.Value();
 		}
 
-		if (nullptr != mp)
+		if (NULL != mp)
 		{
 			os << *mp << std::endl;
 		}
@@ -192,13 +194,18 @@ CMemoryPoolManager::PrintOverSizedPools(
 	ULLONG size_threshold  // size threshold in bytes
 )
 {
+	CAutoTraceFlag Abort(EtraceSimulateAbort, false);
+	CAutoTraceFlag OOM(EtraceSimulateOOM, false);
+	CAutoTraceFlag Net(EtraceSimulateNetError, false);
+	CAutoTraceFlag IO(EtraceSimulateIOError, false);
+
 	MemoryPoolIter iter(*m_ht_all_pools);
 	while (iter.Advance())
 	{
 		MemoryPoolIterAccessor acc(iter);
 		CMemoryPool *mp = acc.Value();
 
-		if (nullptr != mp)
+		if (NULL != mp)
 		{
 			ULLONG size = mp->TotalAllocatedSize();
 			if (size > size_threshold)
@@ -218,7 +225,7 @@ CMemoryPoolManager::PrintOverSizedPools(
 void
 CMemoryPoolManager::DestroyMemoryPoolAtShutdown(CMemoryPool *mp)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 
 #ifdef GPOS_DEBUG
 	gpos::oswcerr << "Leaked " << *mp << std::endl;
@@ -243,7 +250,7 @@ CMemoryPoolManager::Cleanup()
 	}
 #endif	// GPOS_DEBUG
 
-	GPOS_ASSERT(nullptr != m_global_memory_pool);
+	GPOS_ASSERT(NULL != m_global_memory_pool);
 	Destroy(m_global_memory_pool);
 
 	// cleanup left-over memory pools;
@@ -264,7 +271,7 @@ CMemoryPoolManager::Shutdown()
 	CMemoryPool *internal = m_internal_memory_pool;
 
 	::delete CMemoryPoolManager::m_memory_pool_mgr;
-	CMemoryPoolManager::m_memory_pool_mgr = nullptr;
+	CMemoryPoolManager::m_memory_pool_mgr = NULL;
 
 #ifdef GPOS_DEBUG
 	internal->AssertEmpty(oswcerr);

@@ -47,8 +47,8 @@ public:
 		return EtiBool;
 	}
 
-	ETypeInfo
-	GetDatumType() const override
+	virtual ETypeInfo
+	GetDatumType() const
 	{
 		return IMDTypeBool::GetTypeInfo();
 	}

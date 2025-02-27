@@ -46,6 +46,9 @@ enum EdxlSetOpType
 class CDXLLogicalSetOp : public CDXLLogical
 {
 private:
+	// private copy ctor
+	CDXLLogicalSetOp(CDXLLogicalSetOp &);
+
 	// set operation type
 	EdxlSetOpType m_set_operation_dxl_type;
 
@@ -59,21 +62,19 @@ private:
 	BOOL m_cast_across_input_req;
 
 public:
-	CDXLLogicalSetOp(CDXLLogicalSetOp &) = delete;
-
 	// ctor
 	CDXLLogicalSetOp(CMemoryPool *mp, EdxlSetOpType edxlsetoptype,
 					 CDXLColDescrArray *pdrgdxlcd, ULongPtr2dArray *array_2D,
 					 BOOL fCastAcrossInput);
 
 	// dtor
-	~CDXLLogicalSetOp() override;
+	virtual ~CDXLLogicalSetOp();
 
 	// operator id
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// set operator type
 	EdxlSetOpType
@@ -127,17 +128,17 @@ public:
 	}
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// check if given column is defined by operator
-	BOOL IsColDefined(ULONG colid) const override;
+	virtual BOOL IsColDefined(ULONG colid) const;
 
 	// conversion function
 	static CDXLLogicalSetOp *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopLogicalSetOp == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLLogicalSetOp *>(dxl_op);
@@ -146,7 +147,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -32,45 +32,48 @@ using namespace gpos;
 class CXformExpandNAryJoinMinCard : public CXformExploration
 {
 private:
-public:
-	CXformExpandNAryJoinMinCard(const CXformExpandNAryJoinMinCard &) = delete;
+	// private copy ctor
+	CXformExpandNAryJoinMinCard(const CXformExpandNAryJoinMinCard &);
 
+public:
 	// ctor
 	explicit CXformExpandNAryJoinMinCard(CMemoryPool *mp);
 
 	// dtor
-	~CXformExpandNAryJoinMinCard() override = default;
+	virtual ~CXformExpandNAryJoinMinCard()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfExpandNAryJoinMinCard;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformExpandNAryJoinMinCard";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	BOOL
-	FNeedsStats() const override
+	virtual BOOL
+	FNeedsStats() const
 	{
 		return true;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 	BOOL
-	IsApplyOnce() override
+	IsApplyOnce()
 	{
 		return true;
 	}

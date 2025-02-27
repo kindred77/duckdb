@@ -88,11 +88,11 @@ CLogicalCTEAnchor::DerivePartitionInfo(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl) const
 {
 	CPartInfo *ppartinfoChild = exprhdl.DerivePartitionInfo(0);
-	GPOS_ASSERT(nullptr != ppartinfoChild);
+	GPOS_ASSERT(NULL != ppartinfoChild);
 
 	CExpression *pexprProducer =
 		COptCtxt::PoctxtFromTLS()->Pcteinfo()->PexprCTEProducer(m_id);
-	GPOS_ASSERT(nullptr != pexprProducer);
+	GPOS_ASSERT(NULL != pexprProducer);
 	CPartInfo *ppartinfoCTEProducer = pexprProducer->DerivePartitionInfo();
 
 	return CPartInfo::PpartinfoCombine(mp, ppartinfoChild,

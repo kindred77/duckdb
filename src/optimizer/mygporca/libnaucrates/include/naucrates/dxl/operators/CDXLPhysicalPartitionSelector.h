@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CDXLPhysicalPartitionSelector.h
@@ -13,7 +13,6 @@
 #define GPDXL_CDXLPhysicalPartitionSelector_H
 
 #include "gpos/base.h"
-#include "gpos/common/CBitSet.h"
 
 #include "naucrates/dxl/operators/CDXLPhysical.h"
 
@@ -46,30 +45,28 @@ private:
 	// table id
 	IMDId *m_rel_mdid;
 
-	// selector id
-	ULONG m_selector_id;
+	// number of partitioning levels
+	ULONG m_num_of_part_levels;
 
 	// scan id
 	ULONG m_scan_id;
 
-	ULongPtrArray *m_parts;
+	// private copy ctor
+	CDXLPhysicalPartitionSelector(CDXLPhysicalPartitionSelector &);
 
 public:
-	CDXLPhysicalPartitionSelector(CDXLPhysicalPartitionSelector &) = delete;
-
 	// ctor
 	CDXLPhysicalPartitionSelector(CMemoryPool *mp, IMDId *mdid_rel,
-								  ULONG selector_id, ULONG scan_id,
-								  ULongPtrArray *parts);
+								  ULONG num_of_part_levels, ULONG scan_id);
 
 	// dtor
-	~CDXLPhysicalPartitionSelector() override;
+	virtual ~CDXLPhysicalPartitionSelector();
 
 	// operator type
-	Edxlopid GetDXLOperator() const override;
+	virtual Edxlopid GetDXLOperator() const;
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// table id
 	IMDId *
@@ -80,9 +77,9 @@ public:
 
 	// number of partitioning levels
 	ULONG
-	SelectorId() const
+	GetPartitioningLevel() const
 	{
-		return m_selector_id;
+		return m_num_of_part_levels;
 	}
 
 	// scan id
@@ -92,27 +89,21 @@ public:
 		return m_scan_id;
 	}
 
-	ULongPtrArray *
-	Partitions() const
-	{
-		return m_parts;
-	}
-
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	virtual void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function
 	static CDXLPhysicalPartitionSelector *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalPartitionSelector ==
 					dxl_op->GetDXLOperator());
 

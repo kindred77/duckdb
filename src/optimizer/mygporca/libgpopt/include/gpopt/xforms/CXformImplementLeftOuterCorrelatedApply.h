@@ -36,10 +36,11 @@ class CXformImplementLeftOuterCorrelatedApply
 											CPhysicalCorrelatedLeftOuterNLJoin>
 {
 private:
-public:
+	// private copy ctor
 	CXformImplementLeftOuterCorrelatedApply(
-		const CXformImplementLeftOuterCorrelatedApply &) = delete;
+		const CXformImplementLeftOuterCorrelatedApply &);
 
+public:
 	// ctor
 	explicit CXformImplementLeftOuterCorrelatedApply(CMemoryPool *mp)
 		: CXformImplementCorrelatedApply<CLogicalLeftOuterCorrelatedApply,
@@ -48,17 +49,19 @@ public:
 	}
 
 	// dtor
-	~CXformImplementLeftOuterCorrelatedApply() override = default;
+	virtual ~CXformImplementLeftOuterCorrelatedApply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementLeftOuterCorrelatedApply;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementLeftOuterCorrelatedApply";
 	}

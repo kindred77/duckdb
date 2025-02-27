@@ -38,9 +38,10 @@ private:
 	// output columns
 	CColRefArray *m_pdrgpcrOutput;
 
-public:
-	CPhysicalConstTableGet(const CPhysicalConstTableGet &) = delete;
+	// private copy ctor
+	CPhysicalConstTableGet(const CPhysicalConstTableGet &);
 
+public:
 	// ctor
 	CPhysicalConstTableGet(CMemoryPool *mp,
 						   CColumnDescriptorArray *pdrgpcoldesc,
@@ -48,17 +49,17 @@ public:
 						   CColRefArray *pdrgpcrOutput);
 
 	// dtor
-	~CPhysicalConstTableGet() override;
+	virtual ~CPhysicalConstTableGet();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopPhysicalConstTableGet;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CPhysicalConstTableGet";
 	}
@@ -86,11 +87,11 @@ public:
 
 
 	// match function
-	BOOL Matches(COperator *) const override;
+	virtual BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		GPOS_ASSERT(!"Unexpected function call of FInputOrderSensitive");
 		return false;
@@ -101,79 +102,124 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required output columns of the n-th child
-	CColRefSet *PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							 CColRefSet *pcrsRequired, ULONG child_index,
-							 CDrvdPropArray *pdrgpdpCtxt,
-							 ULONG ulOptReq) override;
+	virtual CColRefSet *PcrsRequired(
+		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
+		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
 
 	// compute required ctes of the n-th child
-	CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						  CCTEReq *pcter, ULONG child_index,
-						  CDrvdPropArray *pdrgpdpCtxt,
-						  ULONG ulOptReq) const override;
+	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								  CCTEReq *pcter, ULONG child_index,
+								  CDrvdPropArray *pdrgpdpCtxt,
+								  ULONG ulOptReq) const;
 
 	// compute required sort order of the n-th child
-	COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							COrderSpec *posRequired, ULONG child_index,
-							CDrvdPropArray *pdrgpdpCtxt,
-							ULONG ulOptReq) const override;
+	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
+									COrderSpec *posRequired, ULONG child_index,
+									CDrvdPropArray *pdrgpdpCtxt,
+									ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
-	CDistributionSpec *PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CDistributionSpec *pdsRequired,
-								   ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulOptReq) const override;
+	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
+										   CExpressionHandle &exprhdl,
+										   CDistributionSpec *pdsRequired,
+										   ULONG child_index,
+										   CDrvdPropArray *pdrgpdpCtxt,
+										   ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
-	CRewindabilitySpec *PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									CRewindabilitySpec *prsRequired,
-									ULONG child_index,
-									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const override;
+	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
+											CExpressionHandle &exprhdl,
+											CRewindabilitySpec *prsRequired,
+											ULONG child_index,
+											CDrvdPropArray *pdrgpdpCtxt,
+											ULONG ulOptReq) const;
+
+	// compute required partition propagation of the n-th child
+	virtual CPartitionPropagationSpec *
+	PppsRequired(CMemoryPool *,				   //mp,
+				 CExpressionHandle &,		   //exprhdl,
+				 CPartitionPropagationSpec *,  //pppsRequired,
+				 ULONG,						   //child_index,
+				 CDrvdPropArray *,			   //pdrgpdpCtxt,
+				 ULONG						   //ulOptReq
+	)
+	{
+		GPOS_ASSERT(!"CPhysicalConstTableGet has no relational children");
+		return NULL;
+	}
 
 	// check if required columns are included in output columns
-	BOOL FProvidesReqdCols(CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-						   ULONG ulOptReq) const override;
+	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+								   CColRefSet *pcrsRequired,
+								   ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
 	//-------------------------------------------------------------------------------------
 
 	// derive sort order
-	COrderSpec *PosDerive(CMemoryPool *mp,
-						  CExpressionHandle &exprhdl) const override;
+	virtual COrderSpec *PosDerive(CMemoryPool *mp,
+								  CExpressionHandle &exprhdl) const;
 
 	// derive distribution
-	CDistributionSpec *PdsDerive(CMemoryPool *mp,
-								 CExpressionHandle &exprhdl) const override;
+	virtual CDistributionSpec *PdsDerive(CMemoryPool *mp,
+										 CExpressionHandle &exprhdl) const;
 
 	// derive rewindability
-	CRewindabilitySpec *PrsDerive(CMemoryPool *mp,
-								  CExpressionHandle &exprhdl) const override;
+	virtual CRewindabilitySpec *PrsDerive(CMemoryPool *mp,
+										  CExpressionHandle &exprhdl) const;
 
 	// derive cte map
-	CCTEMap *PcmDerive(CMemoryPool *mp,
-					   CExpressionHandle &exprhdl) const override;
+	virtual CCTEMap *PcmDerive(CMemoryPool *mp,
+							   CExpressionHandle &exprhdl) const;
+
+	// derive partition index map
+	virtual CPartIndexMap *
+	PpimDerive(CMemoryPool *mp,
+			   CExpressionHandle &,	 //exprhdl
+			   CDrvdPropCtxt *		 //pdpctxt
+	) const
+	{
+		return GPOS_NEW(mp) CPartIndexMap(mp);
+	}
+
+	// derive partition filter map
+	virtual CPartFilterMap *
+	PpfmDerive(CMemoryPool *mp,
+			   CExpressionHandle &	// exprhdl
+	) const
+	{
+		// return empty part filter map
+		return GPOS_NEW(mp) CPartFilterMap(mp);
+	}
 
 	//-------------------------------------------------------------------------------------
 	// Enforced Properties
 	//-------------------------------------------------------------------------------------
 
 	// return order property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetOrder(
-		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const override;
+	virtual CEnfdProp::EPropEnforcingType EpetOrder(
+		CExpressionHandle &exprhdl, const CEnfdOrder *peo) const;
 
 	// return rewindability property enforcing type for this operator
-	CEnfdProp::EPropEnforcingType EpetRewindability(
+	virtual CEnfdProp::EPropEnforcingType EpetRewindability(
 		CExpressionHandle &,		// exprhdl
 		const CEnfdRewindability *	// per
-	) const override;
+	) const;
+
+	// return partition propagation property enforcing type for this operator
+	virtual CEnfdProp::EPropEnforcingType
+	EpetPartitionPropagation(CExpressionHandle &,				// exprhdl,
+							 const CEnfdPartitionPropagation *	// pepp
+	) const
+	{
+		return CEnfdProp::EpetRequired;
+	}
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	BOOL
-	FPassThruStats() const override
+	virtual BOOL
+	FPassThruStats() const
 	{
 		return false;
 	}
@@ -186,14 +232,14 @@ public:
 	static CPhysicalConstTableGet *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopPhysicalConstTableGet == pop->Eopid());
 
 		return dynamic_cast<CPhysicalConstTableGet *>(pop);
 	}
 
 	// debug print
-	IOstream &OsPrint(IOstream &) const override;
+	virtual IOstream &OsPrint(IOstream &) const;
 
 };	// class CPhysicalConstTableGet
 

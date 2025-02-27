@@ -11,7 +11,6 @@
 #ifndef GPOS_CStringStatic_H
 #define GPOS_CStringStatic_H
 
-#include "gpos/attributes.h"
 #include "gpos/base.h"
 #include "gpos/common/clibwrapper.h"
 
@@ -57,9 +56,10 @@ private:
 	bool IsValid() const;
 #endif	// GPOS_DEBUG
 
-public:
-	CStringStatic(const CStringStatic &) = delete;
+	// private copy ctor
+	CStringStatic(const CStringStatic &);
 
+public:
 	// ctor
 	CStringStatic(CHAR buffer[], ULONG capacity);
 
@@ -67,7 +67,9 @@ public:
 	CStringStatic(CHAR buffer[], ULONG capacity, const CHAR init_str[]);
 
 	// dtor - owner is responsible for releasing the buffer
-	~CStringStatic() = default;
+	~CStringStatic()
+	{
+	}
 
 	// returns the wide character buffer storing the string
 	const CHAR *
@@ -100,11 +102,10 @@ public:
 	void AppendBuffer(const CHAR *buf);
 
 	// appends a formatted string
-	void AppendFormat(const CHAR *format, ...) GPOS_ATTRIBUTE_PRINTF(2, 3);
+	void AppendFormat(const CHAR *format, ...);
 
 	// appends a formatted string based on passed va list
-	void AppendFormatVA(const CHAR *format, VA_LIST va_args)
-		GPOS_ATTRIBUTE_PRINTF(2, 0);
+	void AppendFormatVA(const CHAR *format, VA_LIST va_args);
 
 	// appends wide character string
 	void AppendConvert(const WCHAR *wc_str);

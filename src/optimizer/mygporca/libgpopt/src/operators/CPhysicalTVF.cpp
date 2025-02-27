@@ -43,19 +43,15 @@ CPhysicalTVF::CPhysicalTVF(CMemoryPool *mp, IMDId *mdid_func,
 	  m_pcrsOutput(pcrsOutput)
 {
 	GPOS_ASSERT(m_return_type_mdid->IsValid());
-	GPOS_ASSERT(nullptr != m_pstr);
-	GPOS_ASSERT(nullptr != m_pdrgpcoldesc);
-	GPOS_ASSERT(nullptr != m_pcrsOutput);
+	GPOS_ASSERT(NULL != m_pstr);
+	GPOS_ASSERT(NULL != m_pdrgpcoldesc);
+	GPOS_ASSERT(NULL != m_pcrsOutput);
 
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 	if (m_func_mdid->IsValid())
-	{
 		m_pmdfunc = md_accessor->RetrieveFunc(m_func_mdid);
-	}
 	else
-	{
-		m_pmdfunc = nullptr;
-	}
+		m_pmdfunc = NULL;
 }
 
 
@@ -133,7 +129,7 @@ CPhysicalTVF::PcrsRequired(CMemoryPool *,		 // mp,
 )
 {
 	GPOS_ASSERT(!"CPhysicalTVF has no relational children");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -154,7 +150,7 @@ CPhysicalTVF::PosRequired(CMemoryPool *,		// mp,
 ) const
 {
 	GPOS_ASSERT(!"CPhysicalTVF has no relational children");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -175,7 +171,7 @@ CPhysicalTVF::PdsRequired(CMemoryPool *,		// mp,
 ) const
 {
 	GPOS_ASSERT(!"CPhysicalTVF has no relational children");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -196,7 +192,7 @@ CPhysicalTVF::PrsRequired(CMemoryPool *,		 // mp,
 ) const
 {
 	GPOS_ASSERT(!"CPhysicalTVF has no relational children");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -217,7 +213,7 @@ CPhysicalTVF::PcteRequired(CMemoryPool *,		 //mp,
 ) const
 {
 	GPOS_ASSERT(!"CPhysicalTVF has no relational children");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -234,7 +230,7 @@ CPhysicalTVF::FProvidesReqdCols(CExpressionHandle &,  // exprhdl,
 								ULONG  // ulOptReq
 ) const
 {
-	GPOS_ASSERT(nullptr != pcrsRequired);
+	GPOS_ASSERT(NULL != pcrsRequired);
 
 	return m_pcrsOutput->ContainsAll(pcrsRequired);
 }
@@ -300,13 +296,6 @@ CPhysicalTVF::PrsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 										   CRewindabilitySpec::EmhtNoMotion);
 }
 
-// derive partition propagation
-CPartitionPropagationSpec *
-CPhysicalTVF::PppsDerive(CMemoryPool *mp, CExpressionHandle &) const
-{
-	return GPOS_NEW(mp) CPartitionPropagationSpec(mp);
-}
-
 //---------------------------------------------------------------------------
 //	@function:
 //		CPhysicalTVF::PcmDerive
@@ -339,7 +328,7 @@ CPhysicalTVF::EpetOrder(CExpressionHandle &,  // exprhdl
 #endif	// GPOS_DEBUG
 ) const
 {
-	GPOS_ASSERT(nullptr != peo);
+	GPOS_ASSERT(NULL != peo);
 	GPOS_ASSERT(!peo->PosRequired()->IsEmpty());
 
 	return CEnfdProp::EpetRequired;

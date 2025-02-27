@@ -43,12 +43,14 @@ CRandom::CRandom(ULONG seed) : m_seed(seed)
 //
 //---------------------------------------------------------------------------
 
-gpos::ULONG
+ULONG
 CRandom::Next()
 {
 	return clib::Rand(&m_seed);
 }
 
-CRandom::~CRandom() = default;
+CRandom::~CRandom()
+{
+}
 
 // EOF

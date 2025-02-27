@@ -34,18 +34,17 @@ using namespace gpdxl;
 CDXLScalarAggref::CDXLScalarAggref(CMemoryPool *mp, IMDId *agg_func_mdid,
 								   IMDId *resolved_rettype_mdid,
 								   BOOL is_distinct, EdxlAggrefStage agg_stage,
-								   EdxlAggrefKind aggkind,
-								   ULongPtrArray *argtypes)
+								   EdxlAggrefKind agg_kind, IMDId *gp_agg_mdid)
 	: CDXLScalar(mp),
 	  m_agg_func_mdid(agg_func_mdid),
 	  m_resolved_rettype_mdid(resolved_rettype_mdid),
 	  m_is_distinct(is_distinct),
 	  m_agg_stage(agg_stage),
-	  m_aggkind(aggkind),
-	  m_argtypes(argtypes)
+	  m_agg_kind(agg_kind),
+	  m_gp_agg_mdid(gp_agg_mdid)
 {
-	GPOS_ASSERT(nullptr != agg_func_mdid);
-	GPOS_ASSERT_IMP(nullptr != resolved_rettype_mdid,
+	GPOS_ASSERT(NULL != agg_func_mdid);
+	GPOS_ASSERT_IMP(NULL != resolved_rettype_mdid,
 					resolved_rettype_mdid->IsValid());
 	GPOS_ASSERT(m_agg_func_mdid->IsValid());
 }
@@ -62,7 +61,7 @@ CDXLScalarAggref::~CDXLScalarAggref()
 {
 	m_agg_func_mdid->Release();
 	CRefCount::SafeRelease(m_resolved_rettype_mdid);
-	CRefCount::SafeRelease(m_argtypes);
+	CRefCount::SafeRelease(m_gp_agg_mdid);
 }
 
 
@@ -116,14 +115,14 @@ CDXLScalarAggref::GetDXLStrAggStage() const
 			return CDXLTokens::GetDXLTokenStr(EdxltokenAggrefStageFinal);
 		default:
 			GPOS_ASSERT(!"Unrecognized aggregate stage");
-			return nullptr;
+			return NULL;
 	}
 }
 
 const CWStringConst *
 CDXLScalarAggref::GetDXLStrAggKind() const
 {
-	switch (m_aggkind)
+	switch (m_agg_kind)
 	{
 		case EdxlaggkindNormal:
 			return CDXLTokens::GetDXLTokenStr(EdxltokenAggrefKindNormal);
@@ -133,7 +132,7 @@ CDXLScalarAggref::GetDXLStrAggKind() const
 			return CDXLTokens::GetDXLTokenStr(EdxltokenAggrefKindHypothetical);
 		default:
 			GPOS_ASSERT(!"Unrecognized aggregate kind");
-			return nullptr;
+			return NULL;
 	}
 }
 
@@ -237,18 +236,18 @@ CDXLScalarAggref::SerializeToDXL(CXMLSerializer *xml_serializer,
 		CDXLTokens::GetDXLTokenStr(EdxltokenAggrefDistinct), m_is_distinct);
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenAggrefStage), GetDXLStrAggStage());
-	if (nullptr != m_resolved_rettype_mdid)
+	if (NULL != m_resolved_rettype_mdid)
 	{
 		m_resolved_rettype_mdid->Serialize(
 			xml_serializer, CDXLTokens::GetDXLTokenStr(EdxltokenTypeId));
 	}
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenAggrefKind), GetDXLStrAggKind());
-
-	CWStringDynamic *argtypes = CDXLUtils::Serialize(m_mp, m_argtypes);
-	xml_serializer->AddAttribute(
-		CDXLTokens::GetDXLTokenStr(EdxltokenAggrefArgTypes), argtypes);
-	GPOS_DELETE(argtypes);
+	if (NULL != m_gp_agg_mdid)
+	{
+		m_gp_agg_mdid->Serialize(xml_serializer, CDXLTokens::GetDXLTokenStr(
+													 EdxltokenAggrefGpAggOid));
+	}
 
 	SerializeValuesListChildToDXL(xml_serializer, dxlnode, 0, "aggargs");
 	SerializeValuesListChildToDXL(xml_serializer, dxlnode, 1, "aggdirectargs");

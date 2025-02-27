@@ -15,7 +15,6 @@
 
 #include "gpopt/base/CColRefSet.h"
 #include "gpopt/base/CDrvdPropScalar.h"
-#include "gpopt/base/COptCtxt.h"
 #include "gpopt/mdcache/CMDAccessorUtils.h"
 #include "gpopt/operators/CExpressionHandle.h"
 #include "gpopt/operators/CPredicateUtils.h"
@@ -190,7 +189,7 @@ CScalarArrayCmp::OsPrint(IOstream &os) const
 CExpression *
 CScalarArrayCmp::PexprExpand(CMemoryPool *mp, CExpression *pexprArrayCmp)
 {
-	GPOS_ASSERT(nullptr != pexprArrayCmp);
+	GPOS_ASSERT(NULL != pexprArrayCmp);
 	GPOS_ASSERT(EopScalarArrayCmp == pexprArrayCmp->Pop()->Eopid());
 
 	COptimizerConfig *optimizer_config =

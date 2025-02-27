@@ -1,12 +1,12 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2011 EMC Corp.
+//	Copyright (C) 2022 VMware, Inc. or its affiliates.
 //
 //	@filename:
 //		CScalarSortGroupClause.cpp
 //
 //	@doc:
-//		Implementation of scalar constant operator
+//		Implementation of scalar sort group clause operator
 //---------------------------------------------------------------------------
 
 #include "gpopt/operators/CScalarSortGroupClause.h"

@@ -42,16 +42,16 @@ public:
 					  CExpressionArray *pdrgpexprConjuncts);
 
 	// dtor
-	~CJoinOrderMinCard() override;
+	virtual ~CJoinOrderMinCard();
 
 	// main handler
 	virtual CExpression *PexprExpand();
 
 	// print function
-	IOstream &OsPrint(IOstream &) const;
+	virtual IOstream &OsPrint(IOstream &) const;
 
-	CXform::EXformId
-	EOriginXForm() const override
+	virtual CXform::EXformId
+	EOriginXForm() const
 	{
 		return CXform::ExfExpandNAryJoinMinCard;
 	}

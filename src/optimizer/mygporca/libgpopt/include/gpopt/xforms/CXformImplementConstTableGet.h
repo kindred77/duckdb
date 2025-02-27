@@ -30,40 +30,43 @@ using namespace gpos;
 class CXformImplementConstTableGet : public CXformImplementation
 {
 private:
-public:
-	CXformImplementConstTableGet(const CXformImplementConstTableGet &) = delete;
+	// private copy ctor
+	CXformImplementConstTableGet(const CXformImplementConstTableGet &);
 
+public:
 	// ctor
 	explicit CXformImplementConstTableGet(CMemoryPool *);
 
 	// dtor
-	~CXformImplementConstTableGet() override = default;
+	virtual ~CXformImplementConstTableGet()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfImplementConstTableGet;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformImplementConstTableGet";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise
+	virtual EXformPromise
 	Exfp(CExpressionHandle &  // exprhdl
-	) const override
+	) const
 	{
 		return CXform::ExfpHigh;
 	}
 
 	// actual transform
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr) const override;
+				   CExpression *pexpr) const;
 
 };	// class CXformImplementConstTableGet
 

@@ -43,25 +43,26 @@ enum Edxlhj
 class CDXLPhysicalHashJoin : public CDXLPhysicalJoin
 {
 private:
-public:
-	CDXLPhysicalHashJoin(const CDXLPhysicalHashJoin &) = delete;
+	// private copy ctor
+	CDXLPhysicalHashJoin(const CDXLPhysicalHashJoin &);
 
+public:
 	// ctor/dtor
 	CDXLPhysicalHashJoin(CMemoryPool *mp, EdxlJoinType join_type);
 
 	// accessors
-	Edxlopid GetDXLOperator() const override;
-	const CWStringConst *GetOpNameStr() const override;
+	Edxlopid GetDXLOperator() const;
+	const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalHashJoin *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalHashJoin == dxl_op->GetDXLOperator());
 		return dynamic_cast<CDXLPhysicalHashJoin *>(dxl_op);
 	}
@@ -69,7 +70,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

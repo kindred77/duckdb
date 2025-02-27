@@ -30,7 +30,7 @@ class CXMLSerializer;
 enum Edxlopid
 {
 	EdxlopLogicalGet,
-	EdxlopLogicalForeignGet,
+	EdxlopLogicalExternalGet,
 	EdxlopLogicalProject,
 	EdxlopLogicalSelect,
 	EdxlopLogicalJoin,
@@ -116,6 +116,13 @@ enum Edxlopid
 
 	EdxlopScalarDMLAction,
 	EdxlopScalarOpList,
+	EdxlopScalarPartOid,
+	EdxlopScalarPartDefault,
+	EdxlopScalarPartBound,
+	EdxlopScalarPartBoundInclusion,
+	EdxlopScalarPartBoundOpen,
+	EdxlopScalarPartListValues,
+	EdxlopScalarPartListNullTest,
 	EdxlopScalarValuesList,
 	EdxlopScalarSortGroupClause,
 
@@ -125,7 +132,8 @@ enum Edxlopid
 	EdxlopPhysicalTableScan,
 	EdxlopPhysicalBitmapTableScan,
 	EdxlopPhysicalDynamicBitmapTableScan,
-	EdxlopPhysicalForeignScan,
+	EdxlopPhysicalExternalScan,
+	EdxlopPhysicalMultiExternalScan,
 	EdxlopPhysicalIndexScan,
 	EdxlopPhysicalIndexOnlyScan,
 	EdxlopScalarBitmapIndexProbe,
@@ -144,7 +152,6 @@ enum Edxlopid
 	EdxlopPhysicalSort,
 	EdxlopPhysicalAppend,
 	EdxlopPhysicalMaterialize,
-	EdxlopPhysicalDynamicForeignScan,
 	EdxlopPhysicalSequence,
 	EdxlopPhysicalDynamicTableScan,
 	EdxlopPhysicalDynamicIndexScan,
@@ -157,6 +164,7 @@ enum Edxlopid
 
 	EdxlopPhysicalDML,
 	EdxlopPhysicalSplit,
+	EdxlopPhysicalRowTrigger,
 
 	EdxlopPhysicalAssert,
 
@@ -213,17 +221,18 @@ enum EdxlCoercionForm
 class CDXLOperator : public CRefCount
 {
 private:
+	// private copy constructor
+	CDXLOperator(const CDXLOperator &);
+
 protected:
 	// memory pool
 	CMemoryPool *m_mp;
 
 public:
-	CDXLOperator(const CDXLOperator &) = delete;
-
 	// ctor/dtor
 	explicit CDXLOperator(CMemoryPool *);
 
-	~CDXLOperator() override;
+	virtual ~CDXLOperator();
 
 	// ident accessors
 	virtual Edxlopid GetDXLOperator() const = 0;

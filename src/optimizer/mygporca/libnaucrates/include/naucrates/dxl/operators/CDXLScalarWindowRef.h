@@ -63,9 +63,10 @@ private:
 	// position the window specification in a parent window operator
 	ULONG m_win_spec_pos;
 
-public:
-	CDXLScalarWindowRef(const CDXLScalarWindowRef &) = delete;
+	// private copy ctor
+	CDXLScalarWindowRef(const CDXLScalarWindowRef &);
 
+public:
 	// ctor
 	CDXLScalarWindowRef(CMemoryPool *mp, IMDId *pmdidWinfunc,
 						IMDId *mdid_return_type, BOOL is_distinct,
@@ -73,13 +74,13 @@ public:
 						EdxlWinStage dxl_win_stage, ULONG ulWinspecPosition);
 
 	//dtor
-	~CDXLScalarWindowRef() override;
+	virtual ~CDXLScalarWindowRef();
 
 	// ident accessors
-	Edxlopid GetDXLOperator() const override;
+	Edxlopid GetDXLOperator() const;
 
 	// name of the DXL operator
-	const CWStringConst *GetOpNameStr() const override;
+	const CWStringConst *GetOpNameStr() const;
 
 	// catalog id of the function
 	IMDId *
@@ -139,27 +140,26 @@ public:
 	const CWStringConst *GetWindStageStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLScalarWindowRef *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopScalarWindowRef == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLScalarWindowRef *>(dxl_op);
 	}
 
 	// does the operator return a boolean result
-	BOOL HasBoolResult(CMDAccessor *md_accessor) const override;
+	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode,
-					 BOOL validate_children) const override;
+	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

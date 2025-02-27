@@ -33,7 +33,7 @@ CLogicalLeftAntiSemiJoin::CLogicalLeftAntiSemiJoin(
 	CMemoryPool *mp, CXform::EXformId origin_xform)
 	: CLogicalJoin(mp, origin_xform)
 {
-	GPOS_ASSERT(nullptr != mp);
+	GPOS_ASSERT(NULL != mp);
 }
 
 

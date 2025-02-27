@@ -30,34 +30,36 @@ using namespace gpos;
 class CXformSelect2Filter : public CXformImplementation
 {
 private:
-public:
-	CXformSelect2Filter(const CXformSelect2Filter &) = delete;
+	// private copy ctor
+	CXformSelect2Filter(const CXformSelect2Filter &);
 
+public:
 	// ctor
 	explicit CXformSelect2Filter(CMemoryPool *mp);
 
 	// dtor
-	~CXformSelect2Filter() override = default;
+	virtual ~CXformSelect2Filter()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSelect2Filter;
 	}
 
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSelect2Filter";
 	}
 
 	// compute xform promise for a given expression handle
-	EXformPromise Exfp(CExpressionHandle &exprhdl) const override;
+	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// actual transform
-	void Transform(CXformContext *, CXformResult *,
-				   CExpression *) const override;
+	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 };	// class CXformSelect2Filter
 

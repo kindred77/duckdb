@@ -32,25 +32,28 @@ using namespace gpos;
 class CXformSequenceProject2Apply : public CXformSubqueryUnnest
 {
 private:
-public:
-	CXformSequenceProject2Apply(const CXformSequenceProject2Apply &) = delete;
+	// private copy ctor
+	CXformSequenceProject2Apply(const CXformSequenceProject2Apply &);
 
+public:
 	// ctor
 	explicit CXformSequenceProject2Apply(CMemoryPool *mp);
 
 	// dtor
-	~CXformSequenceProject2Apply() override = default;
+	virtual ~CXformSequenceProject2Apply()
+	{
+	}
 
 	// ident accessors
-	EXformId
-	Exfid() const override
+	virtual EXformId
+	Exfid() const
 	{
 		return ExfSequenceProject2Apply;
 	}
 
 	// return a string for xform name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CXformSequenceProject2Apply";
 	}

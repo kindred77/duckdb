@@ -77,7 +77,8 @@ CDXLScalarWindowFrameEdge::GetOpNameStr() const
 //
 //---------------------------------------------------------------------------
 const CWStringConst *
-CDXLScalarWindowFrameEdge::GetFrameBoundaryStr(EdxlFrameBoundary frame_boundary)
+CDXLScalarWindowFrameEdge::GetFrameBoundaryStr(
+	EdxlFrameBoundary frame_boundary) const
 {
 	GPOS_ASSERT(EdxlfbSentinel > frame_boundary);
 
@@ -104,7 +105,7 @@ CDXLScalarWindowFrameEdge::GetFrameBoundaryStr(EdxlFrameBoundary frame_boundary)
 	}
 
 	GPOS_ASSERT(!"Unrecognized window frame boundary");
-	return nullptr;
+	return NULL;
 }
 
 //---------------------------------------------------------------------------

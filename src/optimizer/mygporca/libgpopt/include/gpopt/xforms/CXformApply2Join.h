@@ -45,7 +45,7 @@ private:
 	static BOOL
 	FCanCreateCorrelatedApply(CMemoryPool *, CExpression *pexprApply)
 	{
-		GPOS_ASSERT(nullptr != pexprApply);
+		GPOS_ASSERT(NULL != pexprApply);
 
 		COperator::EOperatorId op_id = pexprApply->Pop()->Eopid();
 
@@ -75,11 +75,11 @@ private:
 		pexprOuter->AddRef();
 		pexprInner->AddRef();
 		pexprScalar->AddRef();
-		CExpression *pexprResult = nullptr;
+		CExpression *pexprResult = NULL;
 
 		TApply *popApply = TApply::PopConvert(pexprApply->Pop());
 		CColRefArray *colref_array = popApply->PdrgPcrInner();
-		GPOS_ASSERT(nullptr != colref_array);
+		GPOS_ASSERT(NULL != colref_array);
 		GPOS_ASSERT(1 == colref_array->Size());
 
 		colref_array->AddRef();
@@ -130,15 +130,18 @@ private:
 		pxfres->Add(pexprResult);
 	}
 
+	// private copy ctor
+	CXformApply2Join(const CXformApply2Join &);
+
 protected:
 	// helper function to attempt decorrelating Apply's inner child
 	static BOOL
 	FDecorrelate(CMemoryPool *mp, CExpression *pexprApply,
 				 CExpression **ppexprInner, CExpressionArray **ppdrgpexpr)
 	{
-		GPOS_ASSERT(nullptr != pexprApply);
-		GPOS_ASSERT(nullptr != ppexprInner);
-		GPOS_ASSERT(nullptr != ppdrgpexpr);
+		GPOS_ASSERT(NULL != pexprApply);
+		GPOS_ASSERT(NULL != ppexprInner);
+		GPOS_ASSERT(NULL != ppdrgpexpr);
 
 		*ppdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
@@ -193,8 +196,8 @@ protected:
 		}
 
 		CMemoryPool *mp = pxfctxt->Pmp();
-		CExpressionArray *pdrgpexpr = nullptr;
-		CExpression *pexprInner = nullptr;
+		CExpressionArray *pdrgpexpr = NULL;
+		CExpression *pexprInner = NULL;
 		if (!FDecorrelate(mp, pexprApply, &pexprInner, &pdrgpexpr))
 		{
 			// decorrelation failed, create correlated apply expression if possible
@@ -204,7 +207,7 @@ protected:
 		}
 
 		// build substitute
-		GPOS_ASSERT(nullptr != pexprInner);
+		GPOS_ASSERT(NULL != pexprInner);
 		(*pexprApply)[0]->AddRef();
 		CExpression *pexprOuter = (*pexprApply)[0];
 		CExpression *pexprPredicate =
@@ -254,10 +257,8 @@ protected:
 	}
 
 public:
-	CXformApply2Join(const CXformApply2Join &) = delete;
-
 	// ctor for deep pattern
-	explicit CXformApply2Join(CMemoryPool *mp, BOOL)
+	explicit CXformApply2Join<TApply, TJoin>(CMemoryPool *mp, BOOL)
 		:  // pattern
 		  CXformExploration(GPOS_NEW(mp) CExpression(
 			  mp, GPOS_NEW(mp) TApply(mp),
@@ -272,7 +273,7 @@ public:
 	}
 
 	// ctor for shallow pattern
-	explicit CXformApply2Join(CMemoryPool *mp)
+	explicit CXformApply2Join<TApply, TJoin>(CMemoryPool *mp)
 		:  // pattern
 		  CXformExploration(GPOS_NEW(mp) CExpression(
 			  mp, GPOS_NEW(mp) TApply(mp),
@@ -287,17 +288,20 @@ public:
 	}
 
 	// ctor for passed pattern
-	CXformApply2Join(CMemoryPool * /* mp */, CExpression *pexprPattern)
+	CXformApply2Join<TApply, TJoin>(CMemoryPool *,	// mp
+									CExpression *pexprPattern)
 		: CXformExploration(pexprPattern)
 	{
 	}
 
 	// dtor
-	~CXformApply2Join() override = default;
+	virtual ~CXformApply2Join<TApply, TJoin>()
+	{
+	}
 
 	// is transformation an Apply decorrelation (Apply To Join) xform?
-	BOOL
-	FApplyDecorrelating() const override
+	virtual BOOL
+	FApplyDecorrelating() const
 	{
 		return true;
 	}

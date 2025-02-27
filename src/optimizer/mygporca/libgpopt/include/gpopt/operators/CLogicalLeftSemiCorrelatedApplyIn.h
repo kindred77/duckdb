@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal Inc.
 //
 //	@filename:
 //		CLogicalLeftSemiCorrelatedApplyIn.h
@@ -30,10 +30,11 @@ namespace gpopt
 class CLogicalLeftSemiCorrelatedApplyIn : public CLogicalLeftSemiApplyIn
 {
 private:
-public:
+	// private copy ctor
 	CLogicalLeftSemiCorrelatedApplyIn(
-		const CLogicalLeftSemiCorrelatedApplyIn &) = delete;
+		const CLogicalLeftSemiCorrelatedApplyIn &);
 
+public:
 	// ctor for patterns
 	explicit CLogicalLeftSemiCorrelatedApplyIn(CMemoryPool *mp);
 
@@ -43,42 +44,43 @@ public:
 									  EOperatorId eopidOriginSubq);
 
 	// dtor
-	~CLogicalLeftSemiCorrelatedApplyIn() override = default;
+	virtual ~CLogicalLeftSemiCorrelatedApplyIn()
+	{
+	}
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopLogicalLeftSemiCorrelatedApplyIn;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CLogicalLeftSemiCorrelatedApplyIn";
 	}
 
 	// applicable transformations
-	CXformSet *PxfsCandidates(CMemoryPool *mp) const override;
+	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// return true if operator is a correlated apply
-	BOOL
-	FCorrelated() const override
+	virtual BOOL
+	FCorrelated() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *PopCopyWithRemappedColumns(CMemoryPool *mp,
-										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) override;
+	virtual COperator *PopCopyWithRemappedColumns(
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
 
 	// conversion function
 	static CLogicalLeftSemiCorrelatedApplyIn *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopLogicalLeftSemiCorrelatedApplyIn == pop->Eopid());
 
 		return dynamic_cast<CLogicalLeftSemiCorrelatedApplyIn *>(pop);

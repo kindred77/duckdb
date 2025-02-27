@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2013 VMware, Inc. or its affiliates.
+//	Copyright (C) 2013 Pivotal Inc.
 //
 //	@filename:
 //		ICostModel.h
@@ -36,8 +36,8 @@ using namespace gpmd;
 using namespace gpnaucrates;
 
 // dynamic array of cost model params
-using ICostModelParamsArray =
-	CDynamicPtrArray<ICostModelParams::SCostParam, CleanupDelete>;
+typedef CDynamicPtrArray<ICostModelParams::SCostParam, CleanupDelete>
+	ICostModelParamsArray;
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -76,11 +76,11 @@ public:
 		// ctor
 		CCostingStats(IStatistics *stats) : m_pstats(stats)
 		{
-			GPOS_ASSERT(nullptr != stats);
+			GPOS_ASSERT(NULL != stats);
 		}
 
 		// dtor
-		~CCostingStats() override
+		~CCostingStats()
 		{
 			m_pstats->Release();
 		}
@@ -97,13 +97,6 @@ public:
 		GetNDVs(const CColRef *colref)
 		{
 			return m_pstats->GetNDVs(colref);
-		}
-
-		// root stats getter
-		IStatistics *
-		Pstats()
-		{
-			return m_pstats;
 		}
 	};	// class CCostingStats
 
@@ -156,13 +149,13 @@ public:
 			  m_rows(0),
 			  m_width(0),
 			  m_num_rebinds(GPOPT_DEFAULT_REBINDS),
-			  m_pdRowsChildren(nullptr),
-			  m_pdWidthChildren(nullptr),
-			  m_pdRebindsChildren(nullptr),
-			  m_pdCostChildren(nullptr),
-			  m_pdrgstatsChildren(nullptr)
+			  m_pdRowsChildren(NULL),
+			  m_pdWidthChildren(NULL),
+			  m_pdRebindsChildren(NULL),
+			  m_pdCostChildren(NULL),
+			  m_pdrgstatsChildren(NULL)
 		{
-			GPOS_ASSERT(nullptr != pcstats);
+			GPOS_ASSERT(NULL != pcstats);
 			if (0 < ulChildren)
 			{
 				m_pdRowsChildren = GPOS_NEW_ARRAY(mp, DOUBLE, ulChildren);
@@ -174,7 +167,7 @@ public:
 
 				for (ULONG ul = 0; ul < m_ulChildren; ul++)
 				{
-					m_pdrgstatsChildren[ul] = nullptr;
+					m_pdrgstatsChildren[ul] = NULL;
 				}
 			}
 		}
@@ -359,7 +352,7 @@ public:
 	virtual ECostModelType Ecmt() const = 0;
 
 	// set cost model params
-	void SetParams(ICostModelParamsArray *pdrgpcp) const;
+	void SetParams(ICostModelParamsArray *pdrgpcp);
 
 	// create a default cost model instance
 	static ICostModel *PcmDefault(CMemoryPool *mp);

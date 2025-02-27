@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2011 EMC Corp.
+//	Copyright (C) 2022 VMware, Inc. or its affiliates.
 //
 //	@filename:
 //		CScalarSortGroupClause.h
@@ -30,7 +30,8 @@ using namespace gpnaucrates;
 //		A wrapper operator for sort group clause
 //
 //---------------------------------------------------------------------------
-class CScalarSortGroupClause : public CScalar
+class CScalarSortGroupClause : public CScalar,
+							   DbgPrintMixin<CScalarSortGroupClause>
 {
 private:
 	INT m_tle_sort_group_ref;
@@ -39,15 +40,17 @@ private:
 	BOOL m_nulls_first;
 	BOOL m_hashable;
 
-public:
 	// private copy ctor
-	CScalarSortGroupClause(const CScalarSortGroupClause &) = delete;
+	CScalarSortGroupClause(const CScalarSortGroupClause &);
 
+public:
 	// ctor
 	CScalarSortGroupClause(CMemoryPool *mp, INT tle_sort_group_ref, INT eqop,
 						   INT sortop, BOOL nulls_first, BOOL hashable);
 
-	~CScalarSortGroupClause() override = default;
+	virtual ~CScalarSortGroupClause()
+	{
+	}
 
 	INT
 	Index() const
@@ -76,61 +79,61 @@ public:
 	}
 
 	// identity accessor
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarSortGroupClause;
 	}
 
 	// return a string for operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarSortGroupClause";
 	}
 
 	// match function
-	BOOL Matches(COperator *op) const override;
+	virtual BOOL Matches(COperator *op) const;
 
 	// conversion function
 	static CScalarSortGroupClause *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
-		GPOS_ASSERT_FIXME(EopScalarSortGroupClause == pop->Eopid());
+		GPOS_ASSERT(NULL != pop);
+		GPOS_ASSERT(EopScalarSortGroupClause == pop->Eopid());
 
 		return dynamic_cast<CScalarSortGroupClause *>(pop);
 	}
 
 	// the type of the scalar expression
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
-		return nullptr;
+		return NULL;
 	}
 
-	INT TypeModifier() const override;
+	virtual INT TypeModifier() const;
 
 	// boolean expression evaluation
-	EBoolEvalResult Eber(ULongPtrArray *) const override;
+	virtual EBoolEvalResult Eber(ULongPtrArray *) const;
 
 	COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return false;
 	}
 
 	// print
-	IOstream &OsPrint(IOstream &io) const override;
+	virtual IOstream &OsPrint(IOstream &io) const;
 
 };	// class CScalarSortGroupClause
 

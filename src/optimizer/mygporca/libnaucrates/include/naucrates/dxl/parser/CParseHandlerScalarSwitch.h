@@ -44,20 +44,20 @@ private:
 	// was the default value seen
 	BOOL m_default_val_processed;
 
+	// private copy ctor
+	CParseHandlerScalarSwitch(const CParseHandlerScalarSwitch &);
+
 	// process the start of an element
 	void StartElement(const XMLCh *const element_uri,
 					  const XMLCh *const element_local_name,
-					  const XMLCh *const element_qname,
-					  const Attributes &attr) override;
+					  const XMLCh *const element_qname, const Attributes &attr);
 
 	// process the end of an element
 	void EndElement(const XMLCh *const element_uri,
 					const XMLCh *const element_local_name,
-					const XMLCh *const element_qname) override;
+					const XMLCh *const element_qname);
 
 public:
-	CParseHandlerScalarSwitch(const CParseHandlerScalarSwitch &) = delete;
-
 	// ctor
 	CParseHandlerScalarSwitch(CMemoryPool *mp,
 							  CParseHandlerManager *parse_handler_mgr,

@@ -46,27 +46,27 @@ protected:
 public:
 	using IOstream::operator<<;
 
-	COstream(COstream &) = delete;
-
 	// virtual dtor
-	~COstream() override = default;
+	virtual ~COstream()
+	{
+	}
 
 	// default implementations for the following interfaces available
-	IOstream &operator<<(const CHAR *) override;
-	IOstream &operator<<(const WCHAR) override;
-	IOstream &operator<<(const CHAR) override;
-	IOstream &operator<<(ULONG) override;
-	IOstream &operator<<(ULLONG) override;
-	IOstream &operator<<(INT) override;
-	IOstream &operator<<(LINT) override;
-	IOstream &operator<<(DOUBLE) override;
-	IOstream &operator<<(const void *) override;
+	virtual IOstream &operator<<(const CHAR *);
+	virtual IOstream &operator<<(const WCHAR);
+	virtual IOstream &operator<<(const CHAR);
+	virtual IOstream &operator<<(ULONG);
+	virtual IOstream &operator<<(ULLONG);
+	virtual IOstream &operator<<(INT);
+	virtual IOstream &operator<<(LINT);
+	virtual IOstream &operator<<(DOUBLE);
+	virtual IOstream &operator<<(const void *);
 
 	// to support std:endl only
-	IOstream &operator<<(WOSTREAM &(*) (WOSTREAM &) ) override;
+	virtual IOstream &operator<<(WOSTREAM &(*) (WOSTREAM &) );
 
 	// set the stream modifier
-	IOstream &operator<<(EStreamManipulator) override;
+	virtual IOstream &operator<<(EStreamManipulator);
 
 private:
 	// formatting buffer
@@ -76,13 +76,16 @@ private:
 	CWStringStatic m_static_string_buffer;
 
 	// current mode
-	EStreamManipulator m_stream_manipulator{EsmDec};
+	EStreamManipulator m_stream_manipulator;
 
 	// append formatted string
 	IOstream &AppendFormat(const WCHAR *format, ...);
 
 	// what is the stream modifier?
 	EStreamManipulator GetStreamManipulator() const;
+
+	// no copy constructor
+	COstream(COstream &);
 };
 
 }  // namespace gpos

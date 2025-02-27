@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2018 VMware, Inc. or its affiliates.
+//	Copyright (C) 2018 Pivotal Software Inc.
 //
 //	@filename:
 //		CJoinOrderGreedy.h
@@ -43,7 +43,7 @@ public:
 					 CExpressionArray *pdrgpexprConjuncts);
 
 	// dtor
-	~CJoinOrderGreedy() override;
+	virtual ~CJoinOrderGreedy();
 
 	// main handler
 	virtual CExpression *PexprExpand();
@@ -53,8 +53,8 @@ public:
 
 	CBitSet *GetAdjacentComponentsToJoinCandidate();
 
-	CXform::EXformId
-	EOriginXForm() const override
+	virtual CXform::EXformId
+	EOriginXForm() const
 	{
 		return CXform::ExfExpandNAryJoinGreedy;
 	}

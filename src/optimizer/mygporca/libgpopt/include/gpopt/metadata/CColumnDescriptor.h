@@ -6,7 +6,7 @@
 //		CColumnDescriptor.h
 //
 //	@doc:
-//		Abstraction of columns in tables, functions, foreign tables etc.
+//		Abstraction of columns in tables, functions, external tables etc.
 //---------------------------------------------------------------------------
 #ifndef GPOPT_CColumnDescriptor_H
 #define GPOPT_CColumnDescriptor_H
@@ -63,7 +63,7 @@ public:
 					  BOOL is_nullable, ULONG ulWidth = gpos::ulong_max);
 
 	// dtor
-	~CColumnDescriptor() override;
+	virtual ~CColumnDescriptor();
 
 	// return column name
 	const CName &
@@ -128,7 +128,7 @@ public:
 		m_is_dist_col = true;
 	}
 
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CColumnDescriptor
 }  // namespace gpopt

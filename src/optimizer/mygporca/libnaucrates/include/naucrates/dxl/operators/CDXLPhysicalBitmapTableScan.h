@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 //	Greenplum Database
-//	Copyright (C) 2014 VMware, Inc. or its affiliates.
+//	Copyright (C) 2014 Pivotal, Inc.
 //
 //	@filename:
 //		CDXLPhysicalBitmapTableScan.h
@@ -35,9 +35,10 @@ class CXMLSerializer;
 class CDXLPhysicalBitmapTableScan : public CDXLPhysicalAbstractBitmapScan
 {
 private:
-public:
-	CDXLPhysicalBitmapTableScan(const CDXLPhysicalBitmapTableScan &) = delete;
+	// private copy ctor
+	CDXLPhysicalBitmapTableScan(const CDXLPhysicalBitmapTableScan &);
 
+public:
 	// ctors
 	CDXLPhysicalBitmapTableScan(CMemoryPool *mp, CDXLTableDescr *table_descr)
 		: CDXLPhysicalAbstractBitmapScan(mp, table_descr)
@@ -45,27 +46,29 @@ public:
 	}
 
 	// dtor
-	~CDXLPhysicalBitmapTableScan() override = default;
+	virtual ~CDXLPhysicalBitmapTableScan()
+	{
+	}
 
 	// operator type
-	Edxlopid
-	GetDXLOperator() const override
+	virtual Edxlopid
+	GetDXLOperator() const
 	{
 		return EdxlopPhysicalBitmapTableScan;
 	}
 
 	// operator name
-	const CWStringConst *GetOpNameStr() const override;
+	virtual const CWStringConst *GetOpNameStr() const;
 
 	// serialize operator in DXL format
-	void SerializeToDXL(CXMLSerializer *xml_serializer,
-						const CDXLNode *dxlnode) const override;
+	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
+								const CDXLNode *dxlnode) const;
 
 	// conversion function
 	static CDXLPhysicalBitmapTableScan *
 	Cast(CDXLOperator *dxl_op)
 	{
-		GPOS_ASSERT(nullptr != dxl_op);
+		GPOS_ASSERT(NULL != dxl_op);
 		GPOS_ASSERT(EdxlopPhysicalBitmapTableScan == dxl_op->GetDXLOperator());
 
 		return dynamic_cast<CDXLPhysicalBitmapTableScan *>(dxl_op);

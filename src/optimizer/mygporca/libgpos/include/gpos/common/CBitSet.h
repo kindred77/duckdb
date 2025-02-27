@@ -45,6 +45,9 @@ protected:
 	class CBitSetLink
 	{
 	private:
+		// private copy ctor
+		CBitSetLink(const CBitSetLink &);
+
 		// offset
 		ULONG m_offset;
 
@@ -52,8 +55,6 @@ protected:
 		CBitVector *m_vec;
 
 	public:
-		CBitSetLink(const CBitSetLink &) = delete;
-
 		// ctor
 		explicit CBitSetLink(CMemoryPool *, ULONG offset, ULONG vector_size);
 
@@ -97,7 +98,7 @@ protected:
 	CBitSet(const CBitSet &);
 
 	// find link with offset less or equal to given value
-	CBitSetLink *FindLinkByOffset(ULONG, CBitSetLink * = nullptr) const;
+	CBitSetLink *FindLinkByOffset(ULONG, CBitSetLink * = NULL) const;
 
 	// reset set
 	void Clear();
@@ -114,7 +115,7 @@ public:
 	CBitSet(CMemoryPool *mp, const CBitSet &);
 
 	// dtor
-	~CBitSet() override;
+	virtual ~CBitSet();
 
 	// determine if bit is set
 	BOOL Get(ULONG pos) const;
@@ -154,7 +155,7 @@ public:
 	}
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 };	// class CBitSet
 

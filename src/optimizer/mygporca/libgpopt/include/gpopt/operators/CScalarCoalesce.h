@@ -37,62 +37,63 @@ private:
 	// is operator return type BOOL?
 	BOOL m_fBoolReturnType;
 
-public:
-	CScalarCoalesce(const CScalarCoalesce &) = delete;
+	// private copy ctor
+	CScalarCoalesce(const CScalarCoalesce &);
 
+public:
 	// ctor
 	CScalarCoalesce(CMemoryPool *mp, IMDId *mdid_type);
 
 	// dtor
-	~CScalarCoalesce() override;
+	virtual ~CScalarCoalesce();
 
 	// ident accessors
-	EOperatorId
-	Eopid() const override
+	virtual EOperatorId
+	Eopid() const
 	{
 		return EopScalarCoalesce;
 	}
 
 	// operator name
-	const CHAR *
-	SzId() const override
+	virtual const CHAR *
+	SzId() const
 	{
 		return "CScalarCoalesce";
 	}
 
 	// return type
-	IMDId *
-	MdidType() const override
+	virtual IMDId *
+	MdidType() const
 	{
 		return m_mdid_type;
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const override;
+	virtual ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// boolean expression evaluation
-	EBoolEvalResult
-	Eber(ULongPtrArray *pdrgpulChildren) const override
+	virtual EBoolEvalResult
+	Eber(ULongPtrArray *pdrgpulChildren) const
 	{
 		// Coalesce returns the first not-null child,
 		// if all children are Null, then Coalesce must return Null
@@ -103,7 +104,7 @@ public:
 	static CScalarCoalesce *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(EopScalarCoalesce == pop->Eopid());
 
 		return dynamic_cast<CScalarCoalesce *>(pop);

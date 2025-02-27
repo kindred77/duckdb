@@ -30,6 +30,9 @@ namespace gpopt
 class CLogicalApply : public CLogical
 {
 private:
+	// private copy ctor
+	CLogicalApply(const CLogicalApply &);
+
 protected:
 	// columns used from Apply's inner child
 	CColRefArray *m_pdrgpcrInner;
@@ -45,17 +48,15 @@ protected:
 				  EOperatorId eopidOriginSubq);
 
 	// dtor
-	~CLogicalApply() override;
+	virtual ~CLogicalApply();
 
 public:
-	CLogicalApply(const CLogicalApply &) = delete;
-
 	// match function
-	BOOL Matches(COperator *pop) const override;
+	virtual BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
-	FInputOrderSensitive() const override
+	virtual BOOL
+	FInputOrderSensitive() const
 	{
 		return true;
 	}
@@ -68,35 +69,32 @@ public:
 	}
 
 	// return a copy of the operator with remapped columns
-	COperator *
+	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
 							   BOOL					//must_exist
-							   ) override
+	)
 	{
 		return PopCopyDefault();
 	}
 
 	// derive partition consumer info
-	CPartInfo *
-	DerivePartitionInfo(CMemoryPool *mp,
-						CExpressionHandle &exprhdl) const override
+	virtual CPartInfo *
+	DerivePartitionInfo(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PpartinfoDeriveCombine(mp, exprhdl);
 	}
 
 	// derive keys
 	CKeyCollection *
-	DeriveKeyCollection(CMemoryPool *mp,
-						CExpressionHandle &exprhdl) const override
+	DeriveKeyCollection(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PkcCombineKeys(mp, exprhdl);
 	}
 
 	// derive function properties
-	CFunctionProp *
-	DeriveFunctionProperties(CMemoryPool *mp,
-							 CExpressionHandle &exprhdl) const override
+	virtual CFunctionProp *
+	DeriveFunctionProperties(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 	{
 		return PfpDeriveFromScalar(mp, exprhdl);
 	}
@@ -106,19 +104,19 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// derive statistics
-	IStatistics *
+	virtual IStatistics *
 	PstatsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl,
 				 IStatisticsArray *	 // stats_ctxt
-	) const override
+	) const
 	{
 		// we should use stats from the corresponding Join tree if decorrelation succeeds
 		return PstatsDeriveDummy(mp, exprhdl, CStatistics::DefaultRelationRows);
 	}
 
 	// promise level for stat derivation
-	EStatPromise
+	virtual EStatPromise
 	Esp(CExpressionHandle &	 // exprhdl
-	) const override
+	) const
 	{
 		// whenever we can decorrelate an Apply tree, we should use the corresponding Join tree
 		return EspLow;
@@ -129,9 +127,9 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// compute required stat columns of the n-th child
-	CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CColRefSet *pcrsInput,
-						 ULONG child_index) const override;
+	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
+								 CColRefSet *pcrsInput,
+								 ULONG child_index) const;
 
 	// return true if operator is a correlated apply
 	virtual BOOL
@@ -155,8 +153,8 @@ public:
 	}
 
 	// return true if operator can select a subset of input tuples based on some predicate
-	BOOL
-	FSelectionOp() const override
+	virtual BOOL
+	FSelectionOp() const
 	{
 		return true;
 	}
@@ -169,13 +167,13 @@ public:
 	}
 
 	// print function
-	IOstream &OsPrint(IOstream &os) const override;
+	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// conversion function
 	static CLogicalApply *
 	PopConvert(COperator *pop)
 	{
-		GPOS_ASSERT(nullptr != pop);
+		GPOS_ASSERT(NULL != pop);
 		GPOS_ASSERT(CUtils::FApply(pop));
 
 		return dynamic_cast<CLogicalApply *>(pop);
