@@ -20,6 +20,8 @@ FORCE_32_BIT_FLAG ?=
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJ_DIR := $(dir $(MKFILE_PATH))
 
+PYTHON ?= python3
+
 ifeq ($(GEN),ninja)
 	GENERATOR=-G "Ninja"
 	FORCE_COLOR=-DFORCE_COLORED_OUTPUT=1
@@ -67,6 +69,13 @@ ifdef OVERRIDE_GIT_DESCRIBE
 else
         COMMON_CMAKE_VARS:=${COMMON_CMAKE_VARS} -DOVERRIDE_GIT_DESCRIBE=""
 endif
+
+ifdef DUCKDB_EXPLICIT_VERSION
+        COMMON_CMAKE_VARS:=${COMMON_CMAKE_VARS} -DDUCKDB_EXPLICIT_VERSION="${DUCKDB_EXPLICIT_VERSION}"
+else
+        COMMON_CMAKE_VARS:=${COMMON_CMAKE_VARS} -DDUCKDB_EXPLICIT_VERSION=""
+endif
+
 ifneq (${CXX_STANDARD}, )
         CMAKE_VARS:=${CMAKE_VARS} -DCMAKE_CXX_STANDARD="${CXX_STANDARD}"
 endif
@@ -94,10 +103,10 @@ endif
 ifeq (${GENERATE_EXTENSION_ENTRIES}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DGENERATE_EXTENSION_ENTRIES=1
 endif
-ifneq (${ENABLE_EXTENSION_AUTOLOADING}, "")
+ifneq ("${ENABLE_EXTENSION_AUTOLOADING}", "")
 	CMAKE_VARS:=${CMAKE_VARS} -DENABLE_EXTENSION_AUTOLOADING=${ENABLE_EXTENSION_AUTOLOADING}
 endif
-ifneq (${ENABLE_EXTENSION_AUTOINSTALL}, "")
+ifneq ("${ENABLE_EXTENSION_AUTOINSTALL}", "")
 	CMAKE_VARS:=${CMAKE_VARS} -DENABLE_EXTENSION_AUTOINSTALL=${ENABLE_EXTENSION_AUTOINSTALL}
 endif
 ifneq (${UNSAFE_NUMERIC_CAST}, )
@@ -156,6 +165,9 @@ endif
 ifeq (${PYTHON_EDITABLE_BUILD}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DPYTHON_EDITABLE_BUILD=1
 endif
+ifeq (${PYTHON_DEV}, 1)
+	CMAKE_VARS:=${CMAKE_VARS} -DPYTHON_DEV=1
+endif
 ifeq (${CONFIGURE_R}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DCONFIGURE_R=1
 endif
@@ -176,6 +188,9 @@ ifneq ($(BUILD_EXTENSIONS),)
 endif
 ifneq ($(CORE_EXTENSIONS),)
 	CMAKE_VARS:=${CMAKE_VARS} -DCORE_EXTENSIONS="$(CORE_EXTENSIONS)"
+endif
+ifeq ($(SHADOW_FORBIDDEN_FUNCTIONS),1)
+	CMAKE_VARS:=${CMAKE_VARS} -DSHADOW_FORBIDDEN_FUNCTIONS=1
 endif
 ifneq ($(SKIP_EXTENSIONS),)
 	CMAKE_VARS:=${CMAKE_VARS} -DSKIP_EXTENSIONS="$(SKIP_EXTENSIONS)"
@@ -228,8 +243,8 @@ endif
 ifeq (${BLOCK_VERIFICATION}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DBLOCK_VERIFICATION=1
 endif
-ifneq (${VERIFY_VECTOR}, )
-	CMAKE_VARS:=${CMAKE_VARS} -DVERIFY_VECTOR=${VERIFY_VECTOR}
+ifneq (${DISABLE_CPP_UNITTESTS}, )
+	CMAKE_VARS:=${CMAKE_VARS} -DENABLE_UNITTEST_CPP_TESTS=0
 endif
 ifeq (${DEBUG_MOVE}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DDEBUG_MOVE=1
@@ -268,7 +283,15 @@ endif
 ifeq (${NATIVE_ARCH}, 1)
 	CMAKE_VARS:=${CMAKE_VARS} -DNATIVE_ARCH=1
 endif
-
+ifeq (${OVERRIDE_NEW_DELETE}, 1)
+	CMAKE_VARS:=${CMAKE_VARS} -DOVERRIDE_NEW_DELETE=1
+endif
+ifeq (${MAIN_BRANCH_VERSIONING}, 0)
+        CMAKE_VARS:=${CMAKE_VARS} -DMAIN_BRANCH_VERSIONING=0
+endif
+ifeq (${MAIN_BRANCH_VERSIONING}, 1)
+        CMAKE_VARS:=${CMAKE_VARS} -DMAIN_BRANCH_VERSIONING=1
+endif
 
 # Optional overrides
 ifneq (${STANDARD_VECTOR_SIZE}, )
@@ -372,7 +395,7 @@ unittest_release: release
 	build/release/tools/sqlite3_api_wrapper/test_sqlite3_api_wrapper
 
 unittestci:
-	python3 scripts/run_tests_one_by_one.py build/debug/test/unittest --time_execution
+	$(PYTHON) scripts/run_tests_one_by_one.py build/debug/test/unittest --time_execution
 	build/debug/tools/sqlite3_api_wrapper/test_sqlite3_api_wrapper
 
 unittestarrow:
@@ -409,7 +432,7 @@ benchmark:
 
 amaldebug:
 	mkdir -p ./build/amaldebug && \
-	python3 scripts/amalgamation.py && \
+	$(PYTHON) scripts/amalgamation.py && \
 	cd build/amaldebug && \
 	cmake $(GENERATOR) $(FORCE_COLOR) ${STATIC_LIBCPP} ${CMAKE_VARS} ${FORCE_32_BIT_FLAG} -DAMALGAMATION_BUILD=1 -DCMAKE_BUILD_TYPE=Debug ../.. && \
 	cmake --build . --config Debug
@@ -418,45 +441,45 @@ tidy-check:
 	mkdir -p ./build/tidy && \
 	cd build/tidy && \
 	cmake -DCLANG_TIDY=1 -DDISABLE_UNITY=1 -DBUILD_EXTENSIONS=parquet -DBUILD_PYTHON_PKG=TRUE -DBUILD_SHELL=0 ../.. && \
-	python3 ../../scripts/run-clang-tidy.py -quiet ${TIDY_THREAD_PARAMETER} ${TIDY_BINARY_PARAMETER} ${TIDY_PERFORM_CHECKS}
+	$(PYTHON) ../../scripts/run-clang-tidy.py -quiet ${TIDY_THREAD_PARAMETER} ${TIDY_BINARY_PARAMETER} ${TIDY_PERFORM_CHECKS}
 
 tidy-check-diff:
 	mkdir -p ./build/tidy && \
 	cd build/tidy && \
 	cmake -DCLANG_TIDY=1 -DDISABLE_UNITY=1 -DBUILD_EXTENSIONS=parquet -DBUILD_PYTHON_PKG=TRUE -DBUILD_SHELL=0 ../.. && \
 	cd ../../ && \
-	git diff origin/main . ':(exclude)tools' ':(exclude)extension' ':(exclude)test' ':(exclude)benchmark' ':(exclude)third_party' ':(exclude)src/common/adbc' ':(exclude)src/main/capi' | python3 scripts/clang-tidy-diff.py -path build/tidy -quiet ${TIDY_THREAD_PARAMETER} ${TIDY_BINARY_PARAMETER} ${TIDY_PERFORM_CHECKS} -p1
+	git diff origin/main . ':(exclude)tools' ':(exclude)extension' ':(exclude)test' ':(exclude)benchmark' ':(exclude)third_party' ':(exclude)src/common/adbc' ':(exclude)src/main/capi' | $(PYTHON) scripts/clang-tidy-diff.py -path build/tidy -quiet ${TIDY_THREAD_PARAMETER} ${TIDY_BINARY_PARAMETER} ${TIDY_PERFORM_CHECKS} -p1
 
 tidy-fix:
 	mkdir -p ./build/tidy && \
 	cd build/tidy && \
 	cmake -DCLANG_TIDY=1 -DDISABLE_UNITY=1 -DBUILD_EXTENSIONS=parquet -DBUILD_SHELL=0 ../.. && \
-	python3 ../../scripts/run-clang-tidy.py -fix
+	$(PYTHON) ../../scripts/run-clang-tidy.py -fix
 
 test_compile: # test compilation of individual cpp files
-	python3 scripts/amalgamation.py --compile
+	$(PYTHON) scripts/amalgamation.py --compile
 
 format-check:
-	python3 scripts/format.py --all --check
+	$(PYTHON) scripts/format.py --all --check
 
 format-check-silent:
-	python3 scripts/format.py --all --check --silent
+	$(PYTHON) scripts/format.py --all --check --silent
 
 format-fix:
 	rm -rf src/amalgamation/*
-	python3 scripts/format.py --all --fix --noconfirm
+	$(PYTHON) scripts/format.py --all --fix --noconfirm
 
 format-head:
-	python3 scripts/format.py HEAD --fix --noconfirm
+	$(PYTHON) scripts/format.py HEAD --fix --noconfirm
 
 format-changes:
-	python3 scripts/format.py HEAD --fix --noconfirm
+	$(PYTHON) scripts/format.py HEAD --fix --noconfirm
 
 format-main:
-	python3 scripts/format.py main --fix --noconfirm
+	$(PYTHON) scripts/format.py main --fix --noconfirm
 
 format-feature:
-	python3 scripts/format.py feature --fix --noconfirm
+	$(PYTHON) scripts/format.py feature --fix --noconfirm
 
 third_party/sqllogictest:
 	git clone --depth=1 --branch hawkfish-statistical-rounding https://github.com/duckdb/sqllogictest.git third_party/sqllogictest
@@ -486,15 +509,19 @@ clangd:
 coverage-check:
 	./scripts/coverage_check.sh
 
+generate-files-deps:
+	pip install cxxheaderparser pcpp
+
 generate-files:
-	python3 scripts/generate_c_api.py
-	python3 scripts/generate_functions.py
-	python3 scripts/generate_settings.py
-	python3 scripts/generate_serialization.py
-	python3 scripts/generate_storage_info.py
-	python3 scripts/generate_enum_util.py
-	python3 scripts/generate_metric_enums.py
-	-@python3 tools/pythonpkg/scripts/generate_connection_code.py || echo "Warning: generate_connection_code.py failed, cxxheaderparser & pcpp are required to perform this step"
+	$(PYTHON) scripts/generate_c_api.py
+	$(PYTHON) scripts/generate_functions.py
+	$(PYTHON) scripts/generate_settings.py
+	$(PYTHON) scripts/generate_serialization.py
+	$(PYTHON) scripts/generate_storage_info.py
+	$(PYTHON) scripts/generate_enum_util.py
+	$(PYTHON) scripts/generate_metric_enums.py
+	$(PYTHON) scripts/generate_builtin_types.py
+	-@$(PYTHON) tools/pythonpkg/scripts/generate_connection_code.py || echo "Warning: generate_connection_code.py failed, cxxheaderparser & pcpp are required to perform this step"
 # Run the formatter again after (re)generating the files
 	$(MAKE) format-main
 
@@ -505,6 +532,7 @@ bundle-setup:
 	cp src/libduckdb_static.a bundle/. && \
 	cp third_party/*/libduckdb_*.a bundle/. && \
 	cp extension/*/lib*_extension.a bundle/. && \
+	find vcpkg_installed -name '*.a' -exec cp {} bundle/. \; && \
 	cd bundle && \
 	find . -name '*.a' -exec mkdir -p {}.objects \; -exec mv {} {}.objects \; && \
 	find . -name '*.a' -execdir ${AR} -x {} \;
@@ -519,3 +547,11 @@ bundle-library-obj: bundle-setup
 
 bundle-library: release
 	make bundle-library-o
+
+gather-libs: release
+	cd build/release && \
+	rm -rf libs && \
+	mkdir -p libs && \
+	cp src/libduckdb_static.a libs/. && \
+	cp third_party/*/libduckdb_*.a libs/. && \
+	cp extension/*/lib*_extension.a libs/.

@@ -16,7 +16,6 @@ on:
         type: string
       skip_tests:
         type: string
-  repository_dispatch:
   push:
     branches-ignore:
       - 'main'
@@ -25,6 +24,10 @@ on:
     paths-ignore:
       - '**'
       - '!.github/workflows/Wasm.yml'
+
+concurrency:
+  group: wasm-${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref || '' }}-${{ github.base_ref || '' }}-${{ github.ref != 'refs/heads/main' || github.sha }}-${{ inputs.override_git_describe }}
+  cancel-in-progress: true
 
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -60,7 +63,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11.1
         with:
-          vcpkgGitCommitId: '5e5d0e1cd7785623065e77eff011afdeec1a3574'
+          vcpkgGitCommitId: 'ce613c41372b23b1f51333815feb3edd87ef8a8b'
           vcpkgGitURL: 'https://github.com/microsoft/vcpkg.git'
 
       - name: Setup Ccache

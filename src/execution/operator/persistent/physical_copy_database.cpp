@@ -16,9 +16,9 @@
 
 namespace duckdb {
 
-PhysicalCopyDatabase::PhysicalCopyDatabase(vector<LogicalType> types, idx_t estimated_cardinality,
-                                           unique_ptr<CopyDatabaseInfo> info_p)
-    : PhysicalOperator(PhysicalOperatorType::COPY_DATABASE, std::move(types), estimated_cardinality),
+PhysicalCopyDatabase::PhysicalCopyDatabase(PhysicalPlan &physical_plan, vector<LogicalType> types,
+                                           idx_t estimated_cardinality, unique_ptr<CopyDatabaseInfo> info_p)
+    : PhysicalOperator(physical_plan, PhysicalOperatorType::COPY_DATABASE, std::move(types), estimated_cardinality),
       info(std::move(info_p)) {
 }
 
@@ -73,9 +73,8 @@ SourceResultType PhysicalCopyDatabase::GetData(ExecutionContext &context, DataCh
 		catalog.CreateIndex(context.client, create_info->Cast<CreateIndexInfo>());
 
 		auto &create_index_info = create_info->Cast<CreateIndexInfo>();
-		auto &catalog_table = catalog.GetEntry(context.client, CatalogType::TABLE_ENTRY, create_index_info.schema,
-		                                       create_index_info.table);
-		auto &table_entry = catalog_table.Cast<TableCatalogEntry>();
+		auto &table_entry =
+		    catalog.GetEntry<TableCatalogEntry>(context.client, create_index_info.schema, create_index_info.table);
 		auto &data_table = table_entry.GetStorage();
 
 		IndexStorageInfo storage_info(create_index_info.index_name);

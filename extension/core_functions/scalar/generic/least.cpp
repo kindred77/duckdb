@@ -2,9 +2,11 @@
 #include "core_functions/scalar/generic_functions.hpp"
 #include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/planner/expression/bound_function_expression.hpp"
+#include "duckdb/planner/expression_binder.hpp"
 
 namespace duckdb {
 
+namespace {
 struct LeastOp {
 	using OP = LessThan;
 
@@ -107,7 +109,7 @@ struct SortKeyLeastGreatest {
 };
 
 template <class T, class OP, class BASE_OP = StandardLeastGreatest<false>>
-static void LeastGreatestFunction(DataChunk &args, ExpressionState &state, Vector &result) {
+void LeastGreatestFunction(DataChunk &args, ExpressionState &state, Vector &result) {
 	if (args.ColumnCount() == 1) {
 		// single input: nop
 		result.Reference(args.data[0]);
@@ -242,11 +244,13 @@ ScalarFunction GetLeastGreatestFunction() {
 }
 
 template <class OP>
-static ScalarFunctionSet GetLeastGreatestFunctions() {
+ScalarFunctionSet GetLeastGreatestFunctions() {
 	ScalarFunctionSet fun_set;
 	fun_set.AddFunction(GetLeastGreatestFunction<OP>());
 	return fun_set;
 }
+
+} // namespace
 
 ScalarFunctionSet LeastFun::GetFunctions() {
 	return GetLeastGreatestFunctions<LeastOp>();

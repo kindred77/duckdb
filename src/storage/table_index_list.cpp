@@ -83,7 +83,7 @@ void TableIndexList::InitializeIndexes(ClientContext &context, DataTableInfo &ta
 	auto &catalog = table_info.GetDB().GetCatalog();
 	auto schema = table_info.GetSchemaName();
 	auto table_name = table_info.GetTableName();
-	auto &table_entry = catalog.GetEntry(context, CatalogType::TABLE_ENTRY, schema, table_name);
+	auto &table_entry = catalog.GetEntry<TableCatalogEntry>(context, schema, table_name);
 	auto &table = table_entry.Cast<DuckTableEntry>();
 
 	vector<LogicalType> column_types;
@@ -164,7 +164,7 @@ optional_ptr<Index> TableIndexList::FindForeignKeyIndex(const vector<PhysicalInd
 
 void TableIndexList::VerifyForeignKey(optional_ptr<LocalTableStorage> storage, const vector<PhysicalIndex> &fk_keys,
                                       DataChunk &chunk, ConflictManager &conflict_manager) {
-	auto fk_type = conflict_manager.LookupType() == VerifyExistenceType::APPEND_FK
+	auto fk_type = conflict_manager.GetVerifyExistenceType() == VerifyExistenceType::APPEND_FK
 	                   ? ForeignKeyType::FK_TYPE_PRIMARY_KEY_TABLE
 	                   : ForeignKeyType::FK_TYPE_FOREIGN_KEY_TABLE;
 
@@ -192,11 +192,12 @@ unordered_set<column_t> TableIndexList::GetRequiredColumns() {
 	return column_ids;
 }
 
-vector<IndexStorageInfo> TableIndexList::GetStorageInfos(const case_insensitive_map_t<Value> &options) {
+vector<IndexStorageInfo> TableIndexList::SerializeToDisk(QueryContext context,
+                                                         const case_insensitive_map_t<Value> &options) {
 	vector<IndexStorageInfo> infos;
 	for (auto &index : indexes) {
 		if (index->IsBound()) {
-			auto info = index->Cast<BoundIndex>().GetStorageInfo(options, false);
+			auto info = index->Cast<BoundIndex>().SerializeToDisk(context, options);
 			D_ASSERT(info.IsValid() && !info.name.empty());
 			infos.push_back(info);
 			continue;

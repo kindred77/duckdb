@@ -1,6 +1,5 @@
 #include "duckdb/function/window/window_index_tree.hpp"
 
-#include <thread>
 #include <utility>
 
 namespace duckdb {
@@ -41,22 +40,32 @@ void WindowIndexTreeLocalState::BuildLeaves() {
 		auto &indices = payload_chunk.data[0];
 		if (index_tree.mst32) {
 			auto &sorted = index_tree.mst32->LowestLevel();
-			auto data = FlatVector::GetData<uint32_t>(indices);
+			auto data = FlatVector::GetDataUnsafe<uint32_t>(indices);
 			std::copy(data, data + count, sorted.data() + row_idx);
 		} else {
 			auto &sorted = index_tree.mst64->LowestLevel();
-			auto data = FlatVector::GetData<uint64_t>(indices);
+			auto data = FlatVector::GetDataUnsafe<uint64_t>(indices);
 			std::copy(data, data + count, sorted.data() + row_idx);
 		}
 		row_idx += count;
 	}
 }
 
-idx_t WindowIndexTree::SelectNth(const SubFrames &frames, idx_t n) const {
+pair<idx_t, idx_t> WindowIndexTree::SelectNth(const SubFrames &frames, idx_t n) const {
 	if (mst32) {
-		return mst32->NthElement(mst32->SelectNth(frames, n));
+		const auto nth = mst32->SelectNth(frames, n);
+		if (nth.second) {
+			return nth;
+		} else {
+			return {mst32->NthElement(nth.first), 0};
+		}
 	} else {
-		return mst64->NthElement(mst64->SelectNth(frames, n));
+		const auto nth = mst64->SelectNth(frames, n);
+		if (nth.second) {
+			return nth;
+		} else {
+			return {mst64->NthElement(nth.first), 0};
+		}
 	}
 }
 

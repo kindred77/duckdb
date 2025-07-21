@@ -166,7 +166,8 @@ void ColumnData::BeginScanVectorInternal(ColumnScanState &state) {
 	D_ASSERT(state.current->type == type);
 }
 
-idx_t ColumnData::ScanVector(ColumnScanState &state, Vector &result, idx_t remaining, ScanVectorType scan_type) {
+idx_t ColumnData::ScanVector(ColumnScanState &state, Vector &result, idx_t remaining, ScanVectorType scan_type,
+                             idx_t base_result_offset) {
 	if (scan_type == ScanVectorType::SCAN_FLAT_VECTOR && result.GetVectorType() != VectorType::FLAT_VECTOR) {
 		throw InternalException("ScanVector called with SCAN_FLAT_VECTOR but result is not a flat vector");
 	}
@@ -176,7 +177,7 @@ idx_t ColumnData::ScanVector(ColumnScanState &state, Vector &result, idx_t remai
 		D_ASSERT(state.row_index >= state.current->start &&
 		         state.row_index <= state.current->start + state.current->count);
 		idx_t scan_count = MinValue<idx_t>(remaining, state.current->start + state.current->count - state.row_index);
-		idx_t result_offset = initial_remaining - remaining;
+		idx_t result_offset = base_result_offset + initial_remaining - remaining;
 		if (scan_count > 0) {
 			if (state.scan_options && state.scan_options->force_fetch_row) {
 				for (idx_t i = 0; i < scan_count; i++) {
@@ -229,12 +230,12 @@ void ColumnData::SelectVector(ColumnScanState &state, Vector &result, idx_t targ
 }
 
 void ColumnData::FilterVector(ColumnScanState &state, Vector &result, idx_t target_count, SelectionVector &sel,
-                              idx_t &sel_count, const TableFilter &filter) {
+                              idx_t &sel_count, const TableFilter &filter, TableFilterState &filter_state) {
 	BeginScanVectorInternal(state);
 	if (state.current->start + state.current->count - state.row_index < target_count) {
 		throw InternalException("ColumnData::Filter should be able to fetch everything from one segment");
 	}
-	state.current->Filter(state, target_count, result, sel, sel_count, filter);
+	state.current->Filter(state, target_count, result, sel, sel_count, filter, filter_state);
 	state.row_index += target_count;
 	state.internal_index = state.row_index;
 }
@@ -335,22 +336,23 @@ void ColumnData::ScanCommittedRange(idx_t row_group_start, idx_t offset_in_row_g
 	}
 }
 
-idx_t ColumnData::ScanCount(ColumnScanState &state, Vector &result, idx_t scan_count) {
+idx_t ColumnData::ScanCount(ColumnScanState &state, Vector &result, idx_t scan_count, idx_t result_offset) {
 	if (scan_count == 0) {
 		return 0;
 	}
 	// ScanCount can only be used if there are no updates
 	D_ASSERT(!HasUpdates());
-	return ScanVector(state, result, scan_count, ScanVectorType::SCAN_FLAT_VECTOR);
+	return ScanVector(state, result, scan_count, ScanVectorType::SCAN_FLAT_VECTOR, result_offset);
 }
 
 void ColumnData::Filter(TransactionData transaction, idx_t vector_index, ColumnScanState &state, Vector &result,
-                        SelectionVector &sel, idx_t &s_count, const TableFilter &filter) {
+                        SelectionVector &sel, idx_t &s_count, const TableFilter &filter,
+                        TableFilterState &filter_state) {
 	idx_t scan_count = Scan(transaction, vector_index, state, result);
 
 	UnifiedVectorFormat vdata;
 	result.ToUnifiedFormat(scan_count, vdata);
-	ColumnSegment::FilterSelection(sel, result, vdata, filter, scan_count, s_count);
+	ColumnSegment::FilterSelection(sel, result, vdata, filter, filter_state, scan_count, s_count);
 }
 
 void ColumnData::Select(TransactionData transaction, idx_t vector_index, ColumnScanState &state, Vector &result,
@@ -390,7 +392,8 @@ FilterPropagateResult ColumnData::CheckZonemap(ColumnScanState &state, TableFilt
 	if (!state.current) {
 		return FilterPropagateResult::NO_PRUNING_POSSIBLE;
 	}
-	state.segment_checked = true;
+	// for dynamic filters we never consider the segment being "checked" as it can always change
+	state.segment_checked = filter.filter_type != TableFilterType::DYNAMIC_FILTER;
 	FilterPropagateResult prune_result;
 	{
 		lock_guard<mutex> l(stats_lock);
@@ -495,6 +498,9 @@ void ColumnData::RevertAppend(row_t start_row) {
 	auto l = data.Lock();
 	// check if this row is in the segment tree at all
 	auto last_segment = data.GetLastSegment(l);
+	if (!last_segment) {
+		return;
+	}
 	if (NumericCast<idx_t>(start_row) >= last_segment->start + last_segment->count) {
 		// the start row is equal to the final portion of the column data: nothing was ever appended here
 		D_ASSERT(NumericCast<idx_t>(start_row) == last_segment->start + last_segment->count);
@@ -575,7 +581,8 @@ void ColumnData::AppendTransientSegment(SegmentLock &l, idx_t start_row) {
 	auto &config = DBConfig::GetConfig(db);
 	auto function = config.GetCompressionFunction(CompressionType::COMPRESSION_UNCOMPRESSED, type.InternalType());
 
-	auto new_segment = ColumnSegment::CreateTransientSegment(db, *function, type, start_row, segment_size, block_size);
+	auto new_segment =
+	    ColumnSegment::CreateTransientSegment(db, *function, type, start_row, segment_size, block_manager);
 	AppendSegment(l, std::move(new_segment));
 }
 
@@ -641,7 +648,7 @@ unique_ptr<ColumnCheckpointState> ColumnData::Checkpoint(RowGroup &row_group, Co
 	}
 
 	vector<reference<ColumnCheckpointState>> states {*checkpoint_state};
-	ColumnDataCheckpointer checkpointer(states, GetDatabase(), row_group, checkpoint_info);
+	ColumnDataCheckpointer checkpointer(states, GetStorageManager(), row_group, checkpoint_info);
 	checkpointer.Checkpoint();
 	checkpointer.FinalizeCheckpoint();
 	return checkpoint_state;
@@ -839,7 +846,7 @@ shared_ptr<ColumnData> ColumnData::Deserialize(BlockManager &block_manager, Data
 	BinaryDeserializer deserializer(source);
 	deserializer.Begin();
 	deserializer.Set<DatabaseInstance &>(info.GetDB().GetDatabase());
-	CompressionInfo compression_info(block_manager.GetBlockSize());
+	CompressionInfo compression_info(block_manager);
 	deserializer.Set<const CompressionInfo &>(compression_info);
 	deserializer.Set<const LogicalType &>(type);
 	auto persistent_column_data = PersistentColumnData::Deserialize(deserializer);
