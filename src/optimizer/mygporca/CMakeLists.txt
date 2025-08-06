@@ -1,10 +1,10 @@
 # Copyright (c) 2015, Pivotal Software, Inc.
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(gpopt_6X LANGUAGES CXX C)
+project(mygporca LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_STANDARD "11" CACHE STRING "C++ standard to enforce")
+#set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD "11" CACHE STRING "C++ standard to enforce")
 
 # Default to shared libraries.
 option(BUILD_SHARED_LIBS "build shared libraries" ON)
@@ -101,19 +101,13 @@ add_compile_options(-DUSE_CMAKE)
 set(GPOS_${CMAKE_SYSTEM_NAME} 1)
 set(GPOS_${CMAKE_SYSTEM_PROCESSOR} 1)
 
-# Library dependencies for optimizer.
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# Xerces.
-find_package(Xerces REQUIRED)
-include_directories(${XERCES_INCLUDE_DIRS})
-
 # GPOS.
 include_directories(libgpos/include)
+
+include_directories(${PROJECT_SOURCE_DIR}/src/include)
 
 enable_testing()
 
 # Sub-libraries.
 add_subdirectory(libgpos)
-add_subdirectory(libnaucrates)
-add_subdirectory(libgpopt)
+#add_subdirectory(libgpopt)

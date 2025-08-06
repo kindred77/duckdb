@@ -1,7 +1,6 @@
 include_directories(include)
 
 include_directories(${PROJECT_SOURCE_DIR}/libgpopt/include/)
-include_directories(${PROJECT_SOURCE_DIR}/libnaucrates/include/)
 
 file(GLOB_RECURSE hdrs ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)

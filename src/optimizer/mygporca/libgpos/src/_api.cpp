@@ -26,7 +26,6 @@
 #include "gpos/task/CWorkerPoolManager.h"
 
 #include "gpopt/exception.h"
-#include "naucrates/exception.h"
 
 using namespace gpos;
 
