@@ -1,6 +1,7 @@
 # Copyright (c) 2015, Pivotal Software, Inc. All Rights Reserved.
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libnaucrates/include)
 
 # Generate version-number header.
 # for the generated config.h file.
@@ -15,5 +16,8 @@ list(APPEND srcs ${hdrs})
 add_library(gpopt STATIC ${srcs})
 
 target_link_libraries(gpopt
+                      #gpdbcost
+                      naucrates
                       ${CMAKE_DL_LIBS}
-                      gpos)
+                      gpos
+                      ${XERCES_LIBRARIES})

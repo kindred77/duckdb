@@ -1,13 +1,13 @@
 # Copyright (c) 2015, Pivotal Software, Inc.
 
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(mygporca LANGUAGES CXX C)
+#cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+#project(my_gporca LANGUAGES CXX C)
 
-#set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD "11" CACHE STRING "C++ standard to enforce")
+set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD "11" CACHE STRING "C++ standard to enforce")
 
 # Default to shared libraries.
-option(BUILD_SHARED_LIBS "build shared libraries" ON)
+#option(BUILD_SHARED_LIBS "build shared libraries" ON)
 
 # Configure CCache if available
 find_program(CCACHE_FOUND ccache)
@@ -87,6 +87,21 @@ if (COMPILER_HAS_WNO_UNUSED_VARIABLE)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 endif()
 
+check_cxx_compiler_flag("-Wno-template-id-cdtor" COMPILER_HAS_WNO_TEMPLATE_ID_CDTOR)
+if (COMPILER_HAS_WNO_TEMPLATE_ID_CDTOR)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-template-id-cdtor")
+endif()
+
+check_cxx_compiler_flag("-Wno-deprecated-copy" COMPILER_HAS_WNO_DEPRECATED_COPY)
+if (COMPILER_HAS_WNO_DEPRECATED_COPY)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
+endif()
+
+check_cxx_compiler_flag("-Wno-vla" COMPILER_HAS_WNO_VLA)
+if (COMPILER_HAS_WNO_VLA)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-vla")
+endif()
+
 # Turn on GPOS_DEBUG define for DEBUG builds.
 cmake_policy(SET CMP0043 NEW)
 
@@ -101,13 +116,45 @@ add_compile_options(-DUSE_CMAKE)
 set(GPOS_${CMAKE_SYSTEM_NAME} 1)
 set(GPOS_${CMAKE_SYSTEM_PROCESSOR} 1)
 
-# GPOS.
-include_directories(libgpos/include)
+# Library dependencies for optimizer.
+#set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-include_directories(${PROJECT_SOURCE_DIR}/src/include)
+# Xerces.
+#find_package(Xerces REQUIRED)
+include_directories(${XERCES_INCLUDE_DIRS})
 
-enable_testing()
+# duckdb.
+#include_directories(duckdb/src/include)
+
+#enable_testing()
 
 # Sub-libraries.
-add_subdirectory(libgpos)
+#add_subdirectory(libnaucrates)
 #add_subdirectory(libgpopt)
+
+# Tests.
+# add_subdirectory(server)
+
+include_directories("${PROJECT_SOURCE_DIR}/src/include/duckdb/optimizer/mygporca")
+
+#file(GLOB_RECURSE hdrs ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+file(GLOB_RECURSE srcs
+        ${CMAKE_CURRENT_SOURCE_DIR}/libgpopt/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libnaucrates/src/*.cpp)
+
+# Add headers to make them visible in some IDEs (Clion, VS, Xcode)
+#list(APPEND srcs ${hdrs})
+
+add_library(duckdb_mygporca STATIC ${srcs})
+
+target_link_libraries(duckdb_mygporca
+        duckdb_libgpos
+        duckdb_static
+        ${XERCES_LIBRARIES}
+)
+
+add_executable(TestMain TestMain.cpp)
+
+target_link_libraries(TestMain
+        duckdb_mygporca
+)

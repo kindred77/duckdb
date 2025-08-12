@@ -315,6 +315,10 @@ COptimizer::PdxlnOptimize(
 			GPOS_CHECK_ABORT;
 			// optimize logical expression tree into physical expression tree.
 			CExpression *pexprPlan = PexprOptimize(mp, pqc, search_stage_array);
+			//CWStringDynamic plan_str(mp);
+			//COstreamString oss2(&plan_str);
+			//pexprPlan->OsPrint(oss2);
+			//std::wcout << plan_str.GetBuffer() << std::endl;
 			GPOS_CHECK_ABORT;
 
 			// translate plan into DXL
