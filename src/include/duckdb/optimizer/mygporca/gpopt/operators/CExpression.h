@@ -26,6 +26,7 @@
 #include "gpopt/base/CReqdPropRelational.h"
 #include "gpopt/cost/CCost.h"
 #include "gpopt/operators/COperator.h"
+#include "gpopt/operators/CDuckDBOperator.h"
 #include "naucrates/statistics/IStatistics.h"
 
 namespace gpopt
@@ -64,6 +65,7 @@ private:
 
 	// operator class
 	COperator *m_pop;
+	CDuckDBOperator *m_pDop;
 
 	// array of children
 	CExpressionArray *m_pdrgpexpr;
@@ -173,6 +175,12 @@ public:
 	{
 		GPOS_ASSERT(NULL != m_pop);
 		return m_pop;
+	}
+	CDuckDBOperator *
+	PDop() const
+	{
+		GPOS_ASSERT(NULL != m_pDop);
+		return m_pDop;
 	}
 
 	// accessor of children array

@@ -17,6 +17,7 @@
 #include "gpopt/base/CCostContext.h"
 #include "gpopt/engine/CPartialPlan.h"
 #include "gpopt/operators/COperator.h"
+#include "gpopt/operators/CDuckDBOperator.h"
 #include "gpopt/search/CGroup.h"
 #include "gpopt/xforms/CXform.h"
 
@@ -102,6 +103,7 @@ private:
 
 	// operator class
 	COperator *m_pop;
+	CDuckDBOperator *m_pDop;
 
 	// array of child groups
 	CGroupArray *m_pdrgpgroup;
@@ -182,6 +184,7 @@ private:
 	CGroupExpression()
 		: m_id(GPOPT_INVALID_GEXPR_ID),
 		  m_pop(NULL),
+	      m_pDop(NULL),
 		  m_pdrgpgroup(NULL),
 		  m_pdrgpgroupSorted(NULL),
 		  m_pgroup(NULL),
@@ -284,6 +287,11 @@ public:
 	Pop() const
 	{
 		return m_pop;
+	}
+	CDuckDBOperator *
+	PDop() const
+	{
+		return m_pDop;
 	}
 
 	// accessor for id
