@@ -29,6 +29,8 @@
 #include "gpopt/operators/CDuckDBOperator.h"
 #include "naucrates/statistics/IStatistics.h"
 
+#include "duckdb/planner/logical_operator.hpp"
+
 namespace gpopt
 {
 // cleanup function for arrays
@@ -131,20 +133,28 @@ public:
 	// ctor for leaf nodes
 	CExpression(CMemoryPool *mp, COperator *pop,
 				CGroupExpression *pgexpr = NULL);
+	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
+	            CGroupExpression *pgexpr = NULL);
 
 	// ctor for unary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexpr);
+	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexpr);
 
 	// ctor for binary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexprChildFirst,
 				CExpression *pexprChildSecond);
+	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexprChildFirst,
+	            CExpression *pexprChildSecond);
 
 	// ctor for ternary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexprChildFirst,
 				CExpression *pexprChildSecond, CExpression *pexprChildThird);
+	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexprChildFirst,
+	            CExpression *pexprChildSecond, CExpression *pexprChildThird);
 
 	// ctor n-ary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpressionArray *pdrgpexpr);
+	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpressionArray *pdrgpexpr);
 
 	// ctor for n-ary expression with origin group expression
 	CExpression(CMemoryPool *mp, COperator *pop, CGroupExpression *pgexpr,

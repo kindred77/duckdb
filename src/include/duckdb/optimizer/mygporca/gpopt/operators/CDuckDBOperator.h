@@ -24,16 +24,20 @@ protected:
 	// memory pool
 	CMemoryPool *m_mp;
 
-	unique_ptr<LogicalOperator> m_logical_opt;
+	LogicalOperator *m_logical_opt;
+	BOOL fLogical = false;
 
-	unique_ptr<PhysicalOperator> m_physical_opt;
+	PhysicalOperator *m_physical_opt;
+	BOOL fPhysical = false;
+
+	BOOL fFScalar =  false;
 
 public:
 	enum EDOperatorId {
 		//logical
 		EDopLogicalGet,
 		EDopLogicalProject,
-		EDopLogicalSelect,
+		EDopLogicalFilter,
 		EDopLogicalJoin,
 		EDopLogicalCTEProducer,
 		EDopLogicalCTEConsumer,
@@ -172,6 +176,18 @@ public:
 	// ctor
 	explicit CDuckDBOperator(CMemoryPool *mp);
 
+	explicit CDuckDBOperator(CMemoryPool *mp, LogicalOperator *logical_opt)
+	    : m_logical_opt(logical_opt), fLogical(true)
+	{
+
+	}
+
+	explicit CDuckDBOperator(CMemoryPool *mp, PhysicalOperator *physical_opt)
+	    : m_physical_opt(physical_opt), fPhysical(true)
+	{
+
+	}
+
 	// dtor
 	virtual ~CDuckDBOperator()
 	{
@@ -181,21 +197,21 @@ public:
 	virtual BOOL
 	FLogical() const
 	{
-		return false;
+		return fLogical;
 	}
 
 	// is operator physical?
 	virtual BOOL
 	FPhysical() const
 	{
-		return false;
+		return fPhysical;
 	}
 
 	// is operator scalar?
 	virtual BOOL
 	FScalar() const
 	{
-		return false;
+		return fFScalar;
 	}
 };
 

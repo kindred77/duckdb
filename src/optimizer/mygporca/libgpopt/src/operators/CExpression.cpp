@@ -81,6 +81,13 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	}
 }
 
+CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop,
+                         CGroupExpression *pgexpr)
+    : CExpression(mp, (COperator *)NULL, pgexpr)
+{
+	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+}
+
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -114,6 +121,12 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexpr)
 	m_pdrgpexpr->Append(pexpr);
 
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 1);
+}
+
+CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexpr)
+    : CExpression(mp, (COperator *)NULL, pexpr)
+{
+	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
 }
 
 
@@ -154,6 +167,14 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	m_pdrgpexpr->Append(pexprChildSecond);
 
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 2);
+}
+
+CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
+            CExpression *pexprChildFirst,
+            CExpression *pexprChildSecond)
+	: CExpression(mp, (COperator *)NULL, pexprChildFirst, pexprChildSecond)
+{
+	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
 }
 
 
@@ -199,6 +220,14 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 3);
 }
 
+CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
+            CExpression *pexprChildFirst,
+            CExpression *pexprChildSecond,
+            CExpression *pexprChildThird)
+	: CExpression(mp, (COperator *)NULL, pexprChildFirst, pexprChildSecond, pexprChildThird)
+{
+	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+}
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -231,6 +260,13 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
 }
 
+CExpression::CExpression(CMemoryPool *mp,
+	duckdb::LogicalOperator *pop,
+	CExpressionArray *pdrgpexpr)
+	: CExpression(mp, (COperator *)NULL, pdrgpexpr)
+{
+	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+}
 
 //---------------------------------------------------------------------------
 //	@function:

@@ -9,16 +9,24 @@
 
 #include "gpopt/operators/CExpression.h"
 #include "gpopt/operators/CDuckDBOperator.h"
-#include "duckdb/planner/operator/logical_order.hpp"
+#include "gpopt/base/CColRef.h"
+#include "duckdb/planner/logical_operator.hpp"
+#include "duckdb/planner/operator/logical_get.hpp"
+#include "duckdb/planner/expression.hpp"
+#include "duckdb/common/enums/expression_type.hpp"
+
 
 namespace gpopt
 {
+const int INVALID_TYPE_MODIFIER = 0;
 
 class CTranslatorDuckDBOperatorToExpr
 {
 	// shorthand for functions for translating DXL operator nodes into expression trees
 	typedef gpopt::CExpression *(CTranslatorDuckDBOperatorToExpr::*PfPexpr)(
-	    const duckdb::LogicalOperator *duckOpt);
+	    duckdb::LogicalOperator *duckOpt);
+	typedef gpopt::CExpression *(CTranslatorDuckDBOperatorToExpr::*PfPExpexpr)(
+	    duckdb::Expression *duckExp);
 
 	// pair of DXL operator type and the corresponding translator
 	struct STranslatorMapping
@@ -29,37 +37,58 @@ class CTranslatorDuckDBOperatorToExpr
 		// translator function pointer
 		PfPexpr pf;
 	};
+	struct SExpTranslatorMapping
+	{
+		// type
+		duckdb::ExpressionClass expClass;
+
+		// translator function pointer
+		PfPExpexpr pf;
+	};
 private:
 	// memory pool
 	gpos::CMemoryPool *m_mp;
+	UlongToColRefMap *m_phmulcr;
+	CColumnFactory *m_pcf;
 	// DXL operator translators indexed by the operator id
 	PfPexpr m_rgpfTranslators[CDuckDBOperator::EDOperatorId::EDopSentinel];
+	PfPExpexpr m_rgpfExpTranslators[duckdb::ExpressionClass::BOUND_EXPANDED + 1];
 	void InitTranslators();
 	gpopt::CExpression *Pexpr(duckdb::LogicalOperator *op);
+	gpopt::CExpression *PexprScalar(duckdb::Expression *expression);
 
-	gpopt::CExpression *PexprLogicalGet(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprLogicalSelect(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprLogicalProject(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprLogicalGroupBy(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprLogicalLimit(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprLogicalJoin(const duckdb::LogicalOperator *duckOpt);
+	gpopt::CExpression *PexprLogicalGet(duckdb::LogicalOperator *duckOpt);
+	gpopt::CExpression *PexprLogicalFilter(duckdb::LogicalOperator *duckOpt);
 
-	gpopt::CExpression *PexprScalarIdent(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarCmp(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarOp(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarIsDistinctFrom(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarConst(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarBoolOp(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarFunc(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprAggFunc(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarNullTest(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarNullIf(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarBooleanTest(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarIf(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarCaseTest(const duckdb::LogicalOperator *duckOpt);
-	gpopt::CExpression *PexprScalarCast(const duckdb::LogicalOperator *duckOpt);
+	gpopt::CExpression *PexprScalarProjElem(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarProjList(vector<unique_ptr<duckdb::Expression>> &expressions);
+	gpopt::CExpression *PexprLogicalProject(duckdb::LogicalOperator *duckOpt);
+
+	gpopt::CExpression *PexprLogicalGroupBy(duckdb::LogicalOperator *duckOpt);
+	gpopt::CExpression *PexprLogicalLimit(duckdb::LogicalOperator *duckOpt);
+	gpopt::CExpression *PexprLogicalJoin(duckdb::LogicalOperator *duckOpt);
+
+	gpopt::CExpression *PexprScalarIdent(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarCmp(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarOp(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarIsDistinctFrom(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarConst(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarBoolOp(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarFunc(duckdb::Expression *expression);
+	gpopt::CExpression *PexprAggFunc(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarNullTest(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarNullIf(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarBooleanTest(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarIf(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarCaseTest(duckdb::Expression *expression);
+	gpopt::CExpression *PexprScalarCast(duckdb::Expression *expression);
 public:
 	gpopt::CExpression *PexprTranslateQuery(duckdb::LogicalOperator *op);
+	// ctor
+	CTranslatorDuckDBOperatorToExpr(CMemoryPool *mp);
+
+	// dtor
+	~CTranslatorDuckDBOperatorToExpr();
 };
 
 }
