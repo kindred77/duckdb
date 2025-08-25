@@ -52,7 +52,7 @@ private:
 	CColumnFactory *m_pcf;
 	// DXL operator translators indexed by the operator id
 	PfPexpr m_rgpfTranslators[CDuckDBOperator::EDOperatorId::EDopSentinel];
-	PfPExpexpr m_rgpfExpTranslators[duckdb::ExpressionClass::BOUND_EXPANDED + 1];
+	PfPExpexpr m_rgpfExpTranslators[static_cast<uint8_t>(duckdb::ExpressionClass::BOUND_EXPANDED) + 1];
 	void InitTranslators();
 	gpopt::CExpression *Pexpr(duckdb::LogicalOperator *op);
 	gpopt::CExpression *PexprScalar(duckdb::Expression *expression);

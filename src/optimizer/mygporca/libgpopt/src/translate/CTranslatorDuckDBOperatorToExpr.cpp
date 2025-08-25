@@ -100,7 +100,7 @@ void CTranslatorDuckDBOperatorToExpr::InitTranslators()
 	for (ULONG ul = 0; ul < exp_translators_mapping_len; ul++)
 	{
 		SExpTranslatorMapping elem = exp_translators_mapping[ul];
-		m_rgpfExpTranslators[elem.expClass] = elem.pf;
+		m_rgpfExpTranslators[static_cast<uint8_t>(elem.expClass)] = elem.pf;
 	}
 }
 
