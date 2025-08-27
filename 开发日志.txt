@@ -1,0 +1,1 @@
+nm -C -g libduckdb_static.a | grep "duckdb::CSVOption<duckdb::StrpTimeFormat>::Seriali"
