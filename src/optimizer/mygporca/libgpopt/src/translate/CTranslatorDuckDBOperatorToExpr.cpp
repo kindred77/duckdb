@@ -236,6 +236,12 @@ CTranslatorDuckDBOperatorToExpr::PexprLogicalGroupBy(LogicalOperator *duckOpt)
 }
 
 CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprLogicalLimit(LogicalOperator *duckOpt)
+{
+	return nullptr;
+}
+
+CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprLogicalJoin(LogicalOperator *duckOpt)
 {
 	LogicalJoin &logical_join = duckOpt->Cast<LogicalJoin>();
@@ -283,9 +289,87 @@ CTranslatorDuckDBOperatorToExpr::Pexpr(LogicalOperator *op)
 }
 
 CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarIdent(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarCmp(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarOp(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarIsDistinctFrom(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarConst(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprScalarBoolOp(Expression *expression)
 {
+	return nullptr;
+}
 
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarFunc(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprAggFunc(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarNullTest(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarNullIf(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarBooleanTest(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarIf(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarCaseTest(Expression *expression)
+{
+	return nullptr;
+}
+
+CExpression *
+CTranslatorDuckDBOperatorToExpr::PexprScalarCast(Expression *expression)
+{
+	return nullptr;
 }
 
 CExpression *
@@ -318,7 +402,7 @@ CTranslatorDuckDBOperatorToExpr::PexprScalar(Expression *expression)
 CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprTranslateQuery(duckdb::LogicalOperator *op)
 {
-
+	return Pexpr(op);
 }
 
 // dtor

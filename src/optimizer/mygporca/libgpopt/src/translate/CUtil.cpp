@@ -31,7 +31,7 @@ CUtil::CreateNameFromCharArray(CMemoryPool *mp,
 }
 
 const IMDType *
-GetMdType(gpos::CMemoryPool *mp, const LogicalType &type)
+CUtil::GetMdType(CMemoryPool *mp, const LogicalType &type)
 {
 	switch(type.id())
 	{
