@@ -2,7 +2,7 @@
 
 #include <gpos/memory/CMemoryPool.h>
 
-namespace DB
+namespace gpopt
 {
 
 enum ExMajor

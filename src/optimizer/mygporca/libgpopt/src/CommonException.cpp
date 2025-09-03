@@ -4,7 +4,7 @@
 
 using namespace gpos;
 
-namespace DB
+namespace gpopt
 {
 
 bool CommonException::is_init = false;

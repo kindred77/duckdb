@@ -139,19 +139,31 @@ include_directories("${PROJECT_SOURCE_DIR}/src/include/duckdb/optimizer/mygporca
 
 #file(GLOB_RECURSE hdrs ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 file(GLOB_RECURSE srcs
-        ${CMAKE_CURRENT_SOURCE_DIR}/libgpopt/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/libnaucrates/src/*.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/libgpos/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libnaucrates/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/libgpopt/src/*.cpp)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows"
+#        AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang$"
+)
+  list(APPEND srcs ${CMAKE_CURRENT_SOURCE_DIR}/libgpos/src/dlfcn_win32.c)
+endif()
 
 # Add headers to make them visible in some IDEs (Clion, VS, Xcode)
 #list(APPEND srcs ${hdrs})
 
 add_library(duckdb_mygporca STATIC ${srcs})
 
-target_link_libraries(duckdb_mygporca
-        duckdb_libgpos
+target_link_libraries(duckdb_mygporca PUBLIC
         duckdb_static
         ${XERCES_LIBRARIES}
 )
+
+if(CMAKE_DL_LIBS)
+  target_link_libraries(duckdb_mygporca ${CMAKE_DL_LIBS})
+else()
+  #    target_link_libraries(duckdb_mygporca -ldl)
+endif()
 
 add_executable(TestMain TestMain.cpp)
 

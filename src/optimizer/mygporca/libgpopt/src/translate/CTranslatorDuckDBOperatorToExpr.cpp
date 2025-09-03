@@ -108,7 +108,10 @@ CTranslatorDuckDBOperatorToExpr::CTranslatorDuckDBOperatorToExpr(CMemoryPool *mp
 	: m_mp(mp)
 {
 	m_phmulcr = GPOS_NEW(m_mp) UlongToColRefMap(m_mp);
-	m_pcf = COptCtxt::PoctxtFromTLS()->Pcf();
+	std::cout << "kindred---000----" << std::endl;
+	m_pcf = GPOS_NEW(mp) CColumnFactory;
+	m_pcf->Initialize();
+	std::cout << "kindred---111----" << std::endl;
 }
 
 CExpression *

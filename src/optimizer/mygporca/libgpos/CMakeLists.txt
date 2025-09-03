@@ -8,6 +8,9 @@ include_directories(${PROJECT_SOURCE_DIR}/libgpopt/include/)
 
 file(GLOB_RECURSE hdrs ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/src/dlfcn_win32.c)
+endif()
 
 cmake_policy(SET CMP0043 NEW)
 
@@ -30,7 +33,7 @@ add_library(duckdb_libgpos STATIC ${srcs})
 if(CMAKE_DL_LIBS)
     target_link_libraries(duckdb_libgpos ${CMAKE_DL_LIBS})
 else()
-    target_link_libraries(duckdb_libgpos -ldl)
+#    target_link_libraries(duckdb_libgpos -ldl)
 endif()
 
 target_include_directories(

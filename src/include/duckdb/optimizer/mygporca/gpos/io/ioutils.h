@@ -13,7 +13,12 @@
 #ifndef GPOS_ioutils_H
 #define GPOS_ioutils_H
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+//#include <windows.h>
+#include "gpos/dlfcn_win32.h"
+#else
 #include <dlfcn.h>
+#endif
 #include <unistd.h>
 
 #include "gpos/io/iotypes.h"
