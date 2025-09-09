@@ -121,7 +121,7 @@ set(GPOS_${CMAKE_SYSTEM_PROCESSOR} 1)
 
 # Xerces.
 #find_package(Xerces REQUIRED)
-include_directories(${XERCES_INCLUDE_DIRS})
+#include_directories(${XERCES_INCLUDE_DIRS})
 
 # duckdb.
 #include_directories(duckdb/src/include)
@@ -153,6 +153,10 @@ endif()
 #list(APPEND srcs ${hdrs})
 
 add_library(duckdb_mygporca STATIC ${srcs})
+
+target_include_directories(duckdb_mygporca SYSTEM PRIVATE ${XERCES_INCLUDE_DIRS})
+#include_directories(${XERCES_INCLUDE_DIRS})
+message(STATUS "Include xerces directories: ${XERCES_INCLUDE_DIRS}")
 
 target_link_libraries(duckdb_mygporca PUBLIC
         duckdb_static

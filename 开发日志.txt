@@ -1,6 +1,10 @@
+
 nm -C -g libduckdb_static.a | grep "duckdb::CSVOption<duckdb::StrpTimeFormat>::Seriali"
 
 nm -u -C src/libduckdb_static.a > undef.log
 
-
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=C:/software/msys64/ucrt64/bin/clang.exe -DCMAKE_CXX_COMPILER=C:/software/msys64/ucrt64/bin/clang++.exe -DDISABLE_UNITY=TRUE -DENABLE_SANITIZER=FALSE -DENABLE_UBSAN=FALSE -DXERCES_INCLUDE_DIRS=C:\mywork\projects\cpp\gp-xerces\kindred\gp-xerces-archive\build_install\include -DXERCES_LIBRARIES=C:\mywork\projects\cpp\gp-xerces\kindred\gp-xerces-archive\build_install\lib\libxerces-c.a ..
+
+CExpression添加CDuckDBOperator *m_pDop
+
+

@@ -108,10 +108,8 @@ CTranslatorDuckDBOperatorToExpr::CTranslatorDuckDBOperatorToExpr(CMemoryPool *mp
 	: m_mp(mp)
 {
 	m_phmulcr = GPOS_NEW(m_mp) UlongToColRefMap(m_mp);
-	std::cout << "kindred---000----" << std::endl;
 	m_pcf = GPOS_NEW(mp) CColumnFactory;
 	m_pcf->Initialize();
-	std::cout << "kindred---111----" << std::endl;
 }
 
 CExpression *
@@ -200,7 +198,8 @@ CTranslatorDuckDBOperatorToExpr::PexprScalarProjList(vector<unique_ptr<Expressio
 	{
 		CExpressionArray *pdrgpexprProjElems =
 		    GPOS_NEW(m_mp) CExpressionArray(m_mp);
-		for (ULONG ul = 0; ul < expressions.size(); ul++)
+		const auto size = expressions.size();
+		for (ULONG ul = 0; ul < size; ul++)
 		{
 			CExpression *pexprProjElem = PexprScalarProjElem(expressions[ul].get());
 			pdrgpexprProjElems->Append(pexprProjElem);
@@ -336,7 +335,11 @@ CTranslatorDuckDBOperatorToExpr::PexprScalarFunc(Expression *expression)
 CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprAggFunc(Expression *expression)
 {
-	return nullptr;
+//	CScalarAggFunc *popScAggFunc = GPOS_NEW(mp)
+//	    CScalarAggFunc(mp, pmdidAggFunc, pmdidResolvedReturnType, pstrAggFunc,
+//	                   is_distinct, eaggfuncstage, fSplit, aggkind);
+//	return GPOS_NEW(m_mp) CExpression(m_mp, popScAggFunc, pdrgpexprArgs);
+        return nullptr;
 }
 
 CExpression *

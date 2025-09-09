@@ -70,36 +70,56 @@ void execute(void *(*func)(void *), void *func_arg)
 void *optimize(void *ptr)
 {
 	LogicalOperator *opt = (LogicalOperator *) ptr;
-	std::cout << "111----" << std::endl;
+	std::cout << "optimize----111----" << std::endl;
 
 	AUTO_MEM_POOL(amp);
-	std::cout << "222----" << std::endl;
+	std::cout << "optimize----222----" << std::endl;
 	CMemoryPool *mp = amp.Pmp();
 	gpopt::CommonException::Init(mp);
 	//(void) gpopt::EresExceptionInit(mp);
-	std::cout << "333----" << std::endl;
+	std::cout << "optimize----333----" << std::endl;
 	CTranslatorDuckDBOperatorToExpr *translator = GPOS_NEW(mp) CTranslatorDuckDBOperatorToExpr(mp);
-	std::cout << "444----" << std::endl;
+	std::cout << "optimize----444----" << std::endl;
 	CExpression *expr = translator->PexprTranslateQuery(opt);
-	std::cout << "555----" << std::endl;
+	std::cout << "optimize----555----" << std::endl;
+}
+
+void testBit(uint64_t value_in)
+{
+	uint64_t value = value_in;
+
+	constexpr uint64_t index64lsb[] = {63, 0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,
+	                                   61, 51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4,
+	                                   62, 57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21,
+	                                   56, 45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5};
+	constexpr uint64_t debruijn64lsb = 0x07EDD5E59A4E28C2ULL;
+	auto result = index64lsb[((value & -value) * debruijn64lsb) >> 58];
+
+	std::cout << "----" << result << "------" << static_cast<uint64_t>(__builtin_ctzl(value_in)) << std::endl;
 }
 
 int
 main(int iArgs, const char **rgszArgs)
 {
-
-	std::cout << "000----" << std::endl;
+//	testBit(12345678919837);
+	std::cout << "main----000----" << std::endl;
 	DuckDB db(nullptr);
 	duckdb::Connection con(db);
-	//con.Query("PREPARE test AS SELECT version();");
-	const auto query_plan = con.ExtractPlan("SELECT version()");
-
+	con.Query("create table t(id int)");
+	con.Query("insert into t select * from generate_series(10000)");
+	std::cout << "main----111----" << std::endl;
+	const auto &result = con.Query("SELECT sum(id) from t where id%2=0");
+	std::cout << "main----222----" << std::endl;
+	std::cout << result->ToString() << std::endl;
+	std::cout << "main----333----" << std::endl;
+	const auto query_plan = con.ExtractPlan("SELECT count(*) from t");
+	std::cout << "main----444----" << std::endl;
 	//optimize(query_plan.get());
 
 	execute(&optimize, query_plan.get());
 
 
-	std::cout << "555----" << query_plan->types.size() << std::endl;
+	std::cout << "main----555----" << query_plan->types.size() << std::endl;
 	//REQUIRE((query_plan->type == LogicalOperatorType::LOGICAL_EXECUTE));
 	//REQUIRE((query_plan->types.size() == 1));
 	//REQUIRE((query_plan->types[0].id() == LogicalTypeId::INTEGER));
@@ -107,14 +127,14 @@ main(int iArgs, const char **rgszArgs)
 	duckdb::DuckDB duckdb;
 	duckdb::ClientContext context(duckdb.instance);
 	//auto binder = duckdb::Binder::CreateBinder(context);
-	std::cout << "444" << std::endl;
+	std::cout << "main----666" << std::endl;
 	duckdb::Parser parser;
-	std::cout << "555" << std::endl;
+	std::cout << "main----777" << std::endl;
 	parser.ParseQuery("select version()");
 	for (const auto & stmt : parser.statements) {
 		std::cout << stmt->ToString() << std::endl;
-		std::cout << "666" << std::endl;
+		std::cout << "main----888" << std::endl;
 		//auto plan = context.ExtractPlan(stmt->ToString());
 	}
-	std::cout << "777" << std::endl;
+	std::cout << "main----999" << std::endl;
 }

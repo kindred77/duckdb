@@ -83,9 +83,27 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 
 CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop,
                          CGroupExpression *pgexpr)
-    : CExpression(mp, (COperator *)NULL, pgexpr)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(pgexpr),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+	  m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
 {
-	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+
+	if (NULL != pgexpr)
+	{
+		CopyGroupPropsAndStats(NULL /*input_stats*/);
+	}
 }
 
 
