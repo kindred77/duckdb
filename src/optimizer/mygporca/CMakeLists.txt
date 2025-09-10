@@ -163,7 +163,7 @@ target_link_libraries(duckdb_mygporca PUBLIC
         ${XERCES_LIBRARIES}
 )
 
-if(CMAKE_DL_LIBS)
+if(CMAKE_DL_LIBS AND ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   target_link_libraries(duckdb_mygporca ${CMAKE_DL_LIBS})
 else()
   #    target_link_libraries(duckdb_mygporca -ldl)
