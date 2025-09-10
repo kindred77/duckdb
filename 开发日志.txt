@@ -7,4 +7,6 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=C:/software/msys64/
 
 CExpression添加CDuckDBOperator *m_pDop
 
-
+ubuntu下编译gpxerces:
+export CXXFLAGS="-fPIC"
+../configure --prefix=/home/kindred/mywork/projects/cpp/gp-xerces-kindred/install --enable-netaccessor-curl=false --enable-transcoder-icu=false --disable-dependency-tracking
