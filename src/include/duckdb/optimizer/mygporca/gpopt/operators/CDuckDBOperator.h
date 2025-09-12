@@ -6,6 +6,7 @@
 #include "gpos/common/DbgPrintMixin.h"
 
 #include "duckdb/planner/logical_operator.hpp"
+#include "duckdb/planner/expression.hpp"
 #include "duckdb/execution/physical_operator.hpp"
 #include "duckdb/common/unique_ptr.hpp"
 
@@ -30,6 +31,7 @@ protected:
 	PhysicalOperator *m_physical_opt;
 	BOOL fPhysical = false;
 
+	Expression *m_expression;
 	BOOL fFScalar =  false;
 
 public:
@@ -184,6 +186,12 @@ public:
 
 	explicit CDuckDBOperator(CMemoryPool *mp, PhysicalOperator *physical_opt)
 	    : m_physical_opt(physical_opt), fPhysical(true)
+	{
+
+	}
+
+	explicit CDuckDBOperator(CMemoryPool *mp, Expression *expression)
+	    : m_expression(expression), fPhysical(true)
 	{
 
 	}

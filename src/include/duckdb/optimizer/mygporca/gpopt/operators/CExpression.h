@@ -30,6 +30,7 @@
 #include "naucrates/statistics/IStatistics.h"
 
 #include "duckdb/planner/logical_operator.hpp"
+#include "duckdb/planner/expression.hpp"
 
 namespace gpopt
 {
@@ -135,15 +136,20 @@ public:
 				CGroupExpression *pgexpr = NULL);
 	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
 	            CGroupExpression *pgexpr = NULL);
+	CExpression(CMemoryPool *mp, duckdb::Expression *pop,
+	            CGroupExpression *pgexpr = NULL);
 
 	// ctor for unary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexpr);
 	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexpr);
+	CExpression(CMemoryPool *mp, duckdb::Expression *pop, CExpression *pexpr);
 
 	// ctor for binary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexprChildFirst,
 				CExpression *pexprChildSecond);
 	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexprChildFirst,
+	            CExpression *pexprChildSecond);
+	CExpression(CMemoryPool *mp, duckdb::Expression *pop, CExpression *pexprChildFirst,
 	            CExpression *pexprChildSecond);
 
 	// ctor for ternary expressions
@@ -151,10 +157,13 @@ public:
 				CExpression *pexprChildSecond, CExpression *pexprChildThird);
 	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexprChildFirst,
 	            CExpression *pexprChildSecond, CExpression *pexprChildThird);
+	CExpression(CMemoryPool *mp, duckdb::Expression *pop, CExpression *pexprChildFirst,
+	            CExpression *pexprChildSecond, CExpression *pexprChildThird);
 
 	// ctor n-ary expressions
 	CExpression(CMemoryPool *mp, COperator *pop, CExpressionArray *pdrgpexpr);
 	CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpressionArray *pdrgpexpr);
+	CExpression(CMemoryPool *mp, duckdb::Expression *pop, CExpressionArray *pdrgpexpr);
 
 	// ctor for n-ary expression with origin group expression
 	CExpression(CMemoryPool *mp, COperator *pop, CGroupExpression *pgexpr,

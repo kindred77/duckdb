@@ -106,6 +106,31 @@ CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop,
 	}
 }
 
+CExpression::CExpression(CMemoryPool *mp, Expression *pop,
+                         CGroupExpression *pgexpr)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(pgexpr),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
+{
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+
+	if (NULL != pgexpr)
+	{
+		CopyGroupPropsAndStats(NULL /*input_stats*/);
+	}
+}
+
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -141,10 +166,58 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop, CExpression *pexpr)
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 1);
 }
 
-CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop, CExpression *pexpr)
-    : CExpression(mp, (COperator *)NULL, pexpr)
+CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop, CExpression *pexpr)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
 {
-	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+	GPOS_ASSERT(NULL != pexpr);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 1);
+	m_pdrgpexpr->Append(pexpr);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 1);
+}
+
+CExpression::CExpression(CMemoryPool *mp, Expression *pop, CExpression *pexpr)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
+{
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+	GPOS_ASSERT(NULL != pexpr);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 1);
+	m_pdrgpexpr->Append(pexpr);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 1);
 }
 
 
@@ -187,12 +260,68 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 2);
 }
 
-CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
+CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop,
             CExpression *pexprChildFirst,
             CExpression *pexprChildSecond)
-	: CExpression(mp, (COperator *)NULL, pexprChildFirst, pexprChildSecond)
+	: m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
 {
-	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+
+	GPOS_ASSERT(NULL != pexprChildFirst);
+	GPOS_ASSERT(NULL != pexprChildSecond);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 2);
+	m_pdrgpexpr->Append(pexprChildFirst);
+	m_pdrgpexpr->Append(pexprChildSecond);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 2);
+}
+
+CExpression::CExpression(CMemoryPool *mp, Expression *pop,
+                         CExpression *pexprChildFirst,
+                         CExpression *pexprChildSecond)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
+{
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+
+	GPOS_ASSERT(NULL != pexprChildFirst);
+	GPOS_ASSERT(NULL != pexprChildSecond);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 2);
+	m_pdrgpexpr->Append(pexprChildFirst);
+	m_pdrgpexpr->Append(pexprChildSecond);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 2);
 }
 
 
@@ -238,13 +367,74 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 	GPOS_ASSERT(m_pdrgpexpr->Size() == 3);
 }
 
-CExpression::CExpression(CMemoryPool *mp, duckdb::LogicalOperator *pop,
+CExpression::CExpression(CMemoryPool *mp, LogicalOperator *pop,
             CExpression *pexprChildFirst,
             CExpression *pexprChildSecond,
             CExpression *pexprChildThird)
-	: CExpression(mp, (COperator *)NULL, pexprChildFirst, pexprChildSecond, pexprChildThird)
+	: m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
 {
-	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+
+	GPOS_ASSERT(NULL != pexprChildFirst);
+	GPOS_ASSERT(NULL != pexprChildSecond);
+	GPOS_ASSERT(NULL != pexprChildThird);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 3);
+	m_pdrgpexpr->Append(pexprChildFirst);
+	m_pdrgpexpr->Append(pexprChildSecond);
+	m_pdrgpexpr->Append(pexprChildThird);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 3);
+}
+
+CExpression::CExpression(CMemoryPool *mp, Expression *pop,
+                         CExpression *pexprChildFirst,
+                         CExpression *pexprChildSecond,
+                         CExpression *pexprChildThird)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(NULL),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
+{
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+
+	GPOS_ASSERT(NULL != pexprChildFirst);
+	GPOS_ASSERT(NULL != pexprChildSecond);
+	GPOS_ASSERT(NULL != pexprChildThird);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+	m_pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp, 3);
+	m_pdrgpexpr->Append(pexprChildFirst);
+	m_pdrgpexpr->Append(pexprChildSecond);
+	m_pdrgpexpr->Append(pexprChildThird);
+
+	GPOS_ASSERT(m_pdrgpexpr->Size() == 3);
 }
 
 //---------------------------------------------------------------------------
@@ -279,11 +469,53 @@ CExpression::CExpression(CMemoryPool *mp, COperator *pop,
 }
 
 CExpression::CExpression(CMemoryPool *mp,
-	duckdb::LogicalOperator *pop,
+	LogicalOperator *pop,
 	CExpressionArray *pdrgpexpr)
-	: CExpression(mp, (COperator *)NULL, pdrgpexpr)
+	: m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(pdrgpexpr),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
 {
-	m_pDop = GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop);
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
+}
+
+CExpression::CExpression(CMemoryPool *mp,
+                         Expression *pop,
+                         CExpressionArray *pdrgpexpr)
+    : m_mp(mp),
+      m_pop(NULL),
+      m_pdrgpexpr(pdrgpexpr),
+      m_pdprel(NULL),
+      m_pstats(NULL),
+      m_prpp(NULL),
+      m_pdpplan(NULL),
+      m_pdpscalar(NULL),
+      m_pgexpr(NULL),
+      m_cost(GPOPT_INVALID_COST),
+      m_ulOriginGrpId(gpos::ulong_max),
+      m_ulOriginGrpExprId(gpos::ulong_max),
+      m_pDop(GPOS_NEW(m_mp) CDuckDBOperator(m_mp, pop))
+{
+	GPOS_ASSERT(NULL != mp);
+	GPOS_ASSERT(NULL != pop);
+	GPOS_ASSERT(NULL != pdrgpexpr);
+
+	m_pdprel = GPOS_NEW(m_mp) CDrvdPropRelational(m_mp);
+	m_pdpscalar = GPOS_NEW(m_mp) CDrvdPropScalar(m_mp);
 }
 
 //---------------------------------------------------------------------------

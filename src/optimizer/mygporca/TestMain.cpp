@@ -42,7 +42,7 @@ void execute(void *(*func)(void *), void *func_arg)
 	CHAR *err_buf = (CHAR *) malloc(GPOPT_ERROR_BUFFER_SIZE);
 	err_buf[0] = '\0';
 	// initialize DXL support
-	//InitDXL();
+	InitDXL();
 	bool abort_flag = false;
 
 	CAutoMemoryPool amp(CAutoMemoryPool::ElcNone);
@@ -58,6 +58,7 @@ void execute(void *(*func)(void *), void *func_arg)
 	GPOS_TRY
 	{
 		(void) gpos_exec(&params_exe);
+		std::cout << "---execute-----" << std::endl;
 	}
 	GPOS_CATCH_EX(ex)
 	{
@@ -82,6 +83,7 @@ void *optimize(void *ptr)
 	std::cout << "optimize----444----" << std::endl;
 	CExpression *expr = translator->PexprTranslateQuery(opt);
 	std::cout << "optimize----555----" << std::endl;
+	return NULL;
 }
 
 void testBit(uint64_t value_in)
@@ -112,7 +114,7 @@ main(int iArgs, const char **rgszArgs)
 	std::cout << "main----222----" << std::endl;
 	std::cout << result->ToString() << std::endl;
 	std::cout << "main----333----" << std::endl;
-	const auto query_plan = con.ExtractPlan("SELECT count(*) from t");
+	const auto query_plan = con.ExtractPlan("SELECT sum(id) from t");
 	std::cout << "main----444----" << std::endl;
 	//optimize(query_plan.get());
 

@@ -14,6 +14,7 @@
 #include "duckdb/planner/operator/logical_aggregate.hpp"
 #include "duckdb/planner/operator/logical_join.hpp"
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
+#include "duckdb/planner/expression/bound_aggregate_expression.hpp"
 #include "duckdb/common/helper.hpp"
 
 using namespace gpopt;
@@ -253,7 +254,7 @@ CTranslatorDuckDBOperatorToExpr::PexprLogicalJoin(LogicalOperator *duckOpt)
 		return GPOS_NEW(m_mp) CExpression(
 		    m_mp, duckOpt,
 		    Pexpr(logical_join.children[0].get()),
-		    Pexpr(logical_join.children[1].get()));\
+		    Pexpr(logical_join.children[1].get()));
 	default:
 		GPOS_RAISE(gpopt::ExmaGPOPT, gpopt::ExmiUnsupportedOp,
 		           logical_join.join_type);
@@ -290,10 +291,29 @@ CTranslatorDuckDBOperatorToExpr::Pexpr(LogicalOperator *op)
 	return pexpr;
 }
 
+CExpressionArray *
+CTranslatorDuckDBOperatorToExpr::PdrgpexprChildren(vector<unique_ptr<Expression>> &children)
+{
+	CExpressionArray *pdrgpexpr = GPOS_NEW(m_mp) CExpressionArray(m_mp);
+
+	const auto size = children.size();
+	for (size_t ul = 0; ul < size; ul++)
+	{
+		// get next child and translate it
+		auto *child = children[ul].get();
+
+		CExpression *pexprChild = PexprScalar(child);
+		pdrgpexpr->Append(pexprChild);
+	}
+
+	return pdrgpexpr;
+}
+
 CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprScalarIdent(Expression *expression)
 {
-	return nullptr;
+	return GPOS_NEW(m_mp)
+	    CExpression(m_mp, expression);
 }
 
 CExpression *
@@ -335,11 +355,9 @@ CTranslatorDuckDBOperatorToExpr::PexprScalarFunc(Expression *expression)
 CExpression *
 CTranslatorDuckDBOperatorToExpr::PexprAggFunc(Expression *expression)
 {
-//	CScalarAggFunc *popScAggFunc = GPOS_NEW(mp)
-//	    CScalarAggFunc(mp, pmdidAggFunc, pmdidResolvedReturnType, pstrAggFunc,
-//	                   is_distinct, eaggfuncstage, fSplit, aggkind);
-//	return GPOS_NEW(m_mp) CExpression(m_mp, popScAggFunc, pdrgpexprArgs);
-        return nullptr;
+	auto &agg_func = expression->Cast<BoundAggregateExpression>();
+	auto *arr = PdrgpexprChildren(agg_func.children);
+	return GPOS_NEW(m_mp) CExpression(m_mp, expression, arr);
 }
 
 CExpression *
@@ -391,7 +409,8 @@ CTranslatorDuckDBOperatorToExpr::PexprScalar(Expression *expression)
 	case ExpressionClass::BOUND_AGGREGATE:
 		pexpr = PexprAggFunc(expression);
 		break;
-	case ExpressionClass::BOUND_COLUMN_REF:
+	case ExpressionClass::BOUND_REF:
+	//case ExpressionClass::BOUND_COLUMN_REF:
 		pexpr = PexprScalarIdent(expression);
 		break;
 	case ExpressionClass::BOUND_CONJUNCTION:

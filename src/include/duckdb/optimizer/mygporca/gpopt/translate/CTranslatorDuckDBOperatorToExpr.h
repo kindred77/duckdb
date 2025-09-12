@@ -68,6 +68,9 @@ private:
 	gpopt::CExpression *PexprLogicalLimit(duckdb::LogicalOperator *duckOpt);
 	gpopt::CExpression *PexprLogicalJoin(duckdb::LogicalOperator *duckOpt);
 
+	// translate children of a expression
+	gpopt::CExpressionArray *PdrgpexprChildren(vector<unique_ptr<duckdb::Expression>> &children);
+
 	gpopt::CExpression *PexprScalarIdent(duckdb::Expression *expression);
 	gpopt::CExpression *PexprScalarCmp(duckdb::Expression *expression);
 	gpopt::CExpression *PexprScalarOp(duckdb::Expression *expression);

@@ -40,6 +40,7 @@ CUtil::GetMdType(CMemoryPool *mp, const LogicalType &type)
 	case LogicalTypeId::INTEGER:
 		return GPOS_NEW(mp) CMDTypeInt4GPDB(mp);
 	case LogicalTypeId::BIGINT:
+	case LogicalTypeId::HUGEINT:
 		return GPOS_NEW(mp) CMDTypeInt8GPDB(mp);
 	case LogicalTypeId::DATE:
 		return GPOS_NEW(mp) CMDTypeInt8GPDB(mp);
