@@ -11,12 +11,13 @@
 #include "gpos/io/COstreamFile.h"
 
 #include "gpopt/init.h"
+//#include "gpopt/exception.h"
 #include "gpopt/CommonException.h"
 #include "gpopt/translate/CTranslatorDuckDBOperatorToExpr.h"
 
 #include "naucrates/init.h"
 
-#define AUTO_MEM_POOL(amp) CAutoMemoryPool amp(CAutoMemoryPool::ElcExc)
+#define AUTO_MEM_POOL(amp) CAutoMemoryPool amp(CAutoMemoryPool::ELeakCheck::ElcExc)
 
 using namespace duckdb;
 using namespace gpos;
@@ -70,7 +71,7 @@ void execute(void *(*func)(void *), void *func_arg)
 
 void *optimize(void *ptr)
 {
-	LogicalOperator *opt = (LogicalOperator *) ptr;
+	LogicalOperator *opt = reinterpret_cast<LogicalOperator *>(ptr);
 	std::cout << "optimize----111----" << std::endl;
 
 	AUTO_MEM_POOL(amp);
@@ -83,6 +84,24 @@ void *optimize(void *ptr)
 	std::cout << "optimize----444----" << std::endl;
 	CExpression *expr = translator->PexprTranslateQuery(opt);
 	std::cout << "optimize----555----" << std::endl;
+
+	gpdxl::ULongPtrArray *pdrgpul = translator->PdrgpulOutputColRefs();
+	gpmd::CMDNameArray *pdrgpmdname = translator->Pdrgpmdname();
+
+	CQueryContext * pqc = CQueryContext::PqcGenerate(
+	    mp, expr,
+	    pdrgpul,
+	    pdrgpmdname, true);
+
+	CEngine eng(mp);
+	eng.Init(pqc, NULL);
+	eng.Optimize();
+
+	GPOS_CHECK_ABORT;
+
+	CExpression *pexprPlan = eng.PexprExtractPlan();
+	(void) pexprPlan->PrppCompute(mp, pqc->Prpp());
+
 	return NULL;
 }
 
@@ -114,7 +133,7 @@ main(int iArgs, const char **rgszArgs)
 	std::cout << "main----222----" << std::endl;
 	std::cout << result->ToString() << std::endl;
 	std::cout << "main----333----" << std::endl;
-	const auto query_plan = con.ExtractPlan("SELECT sum(id) from t");
+	const auto query_plan = con.ExtractPlan("SELECT sum(id) sm from t");
 	std::cout << "main----444----" << std::endl;
 	//optimize(query_plan.get());
 

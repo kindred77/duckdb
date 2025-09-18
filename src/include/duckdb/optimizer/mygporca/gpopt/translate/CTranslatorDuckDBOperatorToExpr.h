@@ -50,13 +50,22 @@ private:
 	gpos::CMemoryPool *m_mp;
 	UlongToColRefMap *m_phmulcr;
 	CColumnFactory *m_pcf;
+
+	// array of output ColRefId
+	ULongPtrArray *m_pdrgpulOutputColRefs;
+
+	// array of output column names
+	CMDNameArray *m_pdrgpmdname;
+
 	// DXL operator translators indexed by the operator id
 	PfPexpr m_rgpfTranslators[CDuckDBOperator::EDOperatorId::EDopSentinel];
 	PfPExpexpr m_rgpfExpTranslators[static_cast<uint8_t>(duckdb::ExpressionClass::BOUND_EXPANDED) + 1];
 	void InitTranslators();
+
 	gpopt::CExpression *Pexpr(duckdb::LogicalOperator *op);
 	gpopt::CExpression *PexprScalar(duckdb::Expression *expression);
 
+	gpopt::CTableDescriptor *Ptabdesc(duckdb::LogicalGet *get);
 	gpopt::CExpression *PexprLogicalGet(duckdb::LogicalOperator *duckOpt);
 	gpopt::CExpression *PexprLogicalFilter(duckdb::LogicalOperator *duckOpt);
 
@@ -86,7 +95,22 @@ private:
 	gpopt::CExpression *PexprScalarCaseTest(duckdb::Expression *expression);
 	gpopt::CExpression *PexprScalarCast(duckdb::Expression *expression);
 public:
-	gpopt::CExpression *PexprTranslateQuery(duckdb::LogicalOperator *op);
+	ULongPtrArray *PdrgpulOutputColRefs()
+	{
+		GPOS_ASSERT(NULL != m_pdrgpulOutputColRefs);
+		return m_pdrgpulOutputColRefs;
+	}
+
+	CMDNameArray *Pdrgpmdname()
+	{
+		GPOS_ASSERT(NULL != m_pdrgpmdname);
+		return m_pdrgpmdname;
+	}
+
+	gpopt::CExpression *PexprTranslateQuery(
+	    duckdb::LogicalOperator *op,
+	    duckdb::vector<duckdb::Expression *> query_output_dxlnode_array,
+	    duckdb::vector<duckdb::LogicalCTERef *> cte_refs);
 	// ctor
 	CTranslatorDuckDBOperatorToExpr(CMemoryPool *mp);
 

@@ -106,11 +106,26 @@ void CTranslatorDuckDBOperatorToExpr::InitTranslators()
 }
 
 CTranslatorDuckDBOperatorToExpr::CTranslatorDuckDBOperatorToExpr(CMemoryPool *mp)
-	: m_mp(mp)
+	: m_mp(mp),
+      m_pdrgpulOutputColRefs(NULL),
+      m_pdrgpmdname(NULL)
 {
 	m_phmulcr = GPOS_NEW(m_mp) UlongToColRefMap(m_mp);
 	m_pcf = GPOS_NEW(mp) CColumnFactory;
 	m_pcf->Initialize();
+}
+
+// dtor
+CTranslatorDuckDBOperatorToExpr::~CTranslatorDuckDBOperatorToExpr()
+{
+	CRefCount::SafeRelease(m_pdrgpulOutputColRefs);
+	CRefCount::SafeRelease(m_pdrgpmdname);
+}
+
+CTableDescriptor *
+CTranslatorDuckDBOperatorToExpr::Ptabdesc(LogicalGet *get)
+{
+
 }
 
 CExpression *
@@ -118,6 +133,8 @@ CTranslatorDuckDBOperatorToExpr::PexprLogicalGet(LogicalOperator *duckOpt)
 {
 	//according to duckdb, LogicalGet has only one child.
 	CExpression *pexpr = GPOS_NEW(m_mp) CExpression(m_mp, duckOpt);
+	LogicalGet &logical_get = duckOpt->Cast<LogicalGet>();
+	CTableDescriptor *ptabdesc = Ptabdesc(&logical_get);
 	return pexpr;
 }
 
@@ -179,7 +196,7 @@ CTranslatorDuckDBOperatorToExpr::PexprScalarProjElem(Expression *expression)
 	CColRef *colref =
 	    m_pcf->PcrCreate(CUtil::GetMdType(m_mp, expression->return_type), INVALID_TYPE_MODIFIER, *name);
 
-	//m_phmulcr->Insert(GPOS_NEW(m_mp) ULONG(pdxlopPrEl->Id()), colref);
+	m_phmulcr->Insert(GPOS_NEW(m_mp) ULONG(pdxlopPrEl->Id()), colref);
 
 	CExpression *pexprProjElem = GPOS_NEW(m_mp) CExpression(
 	    m_mp, GPOS_NEW(m_mp) CScalarProjectElement(m_mp, colref), pexprChild);
@@ -425,13 +442,51 @@ CTranslatorDuckDBOperatorToExpr::PexprScalar(Expression *expression)
 }
 
 CExpression *
-CTranslatorDuckDBOperatorToExpr::PexprTranslateQuery(duckdb::LogicalOperator *op)
+CTranslatorDuckDBOperatorToExpr::PexprTranslateQuery(
+    LogicalOperator *op,
+    vector<Expression *> query_output_dxlnode_array,
+    vector<LogicalCTERef *> cte_refs)
 {
-	return Pexpr(op);
-}
+	// translate main DXL tree
+	CExpression *pexpr = Pexpr(op);
+	GPOS_ASSERT(NULL != pexpr);
 
-// dtor
-CTranslatorDuckDBOperatorToExpr::~CTranslatorDuckDBOperatorToExpr()
-{
+	// generate the array of output column reference ids and column names
+	m_pdrgpulOutputColRefs = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
+	m_pdrgpmdname = GPOS_NEW(m_mp) CMDNameArray(m_mp);
 
+	const ULONG length = query_output_dxlnode_array.size();
+	for (ULONG ul = 0; ul < length; ul++)
+	{
+		auto *expression = query_output_dxlnode_array[ul];
+
+		// get dxl scalar identifier
+		CDXLScalarIdent *pdxlopIdent =
+		    CDXLScalarIdent::Cast(pdxlnIdent->GetOperator());
+
+		// get the dxl column reference
+		const CDXLColRef *dxl_colref = pdxlopIdent->GetDXLColRef();
+		GPOS_ASSERT(NULL != dxl_colref);
+		const ULONG colid = dxl_colref->Id();
+
+		// get its column reference from the hash map
+		CColRef *colref = m_phmulcr->Find(&colid);
+		if (NULL == colref)
+		{
+			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiDXL2ExprAttributeNotFound, colid);
+		}
+		colref->MarkAsUsed();
+
+		const ULONG ulColRefId = colref->Id();
+		ULONG *pulCopy = GPOS_NEW(m_mp) ULONG(ulColRefId);
+		// add to the array of output column reference ids
+		m_pdrgpulOutputColRefs->Append(pulCopy);
+
+		// get the column names and add it to the array of output column names
+		CMDName *mdname =
+		    GPOS_NEW(m_mp) CMDName(m_mp, dxl_colref->MdName()->GetMDName());
+		m_pdrgpmdname->Append(mdname);
+	}
+
+	return pexpr;
 }
