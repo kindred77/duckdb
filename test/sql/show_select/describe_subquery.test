@@ -2,9 +2,6 @@
 # description: Test describe in subquery
 # group: [show_select]
 
-statement ok
-PRAGMA enable_verification
-
 query I
 SELECT column_name FROM (DESCRIBE SELECT 42 AS a)
 ----
@@ -38,3 +35,6 @@ null
 key
 default
 extra
+
+statement ok
+(DESCRIBE (values(42))) UNION ALL (DESCRIBE (values(42)));

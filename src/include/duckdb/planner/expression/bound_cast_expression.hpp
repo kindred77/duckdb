@@ -29,9 +29,18 @@ public:
 	BoundCastInfo bound_cast;
 
 public:
-	LogicalType source_type() {
-		D_ASSERT(child->return_type.IsValid());
-		return child->return_type;
+	const LogicalType &TargetType() const {
+		return return_type;
+	}
+	const Expression &Child() const {
+		return *child;
+	}
+	bool IsTryCast() const {
+		return try_cast;
+	}
+	LogicalType source_type() const { // NOLINT: allow casing for legacy reasons
+		D_ASSERT(child->GetReturnType().IsValid());
+		return child->GetReturnType();
 	}
 
 	//! Cast an expression to the specified SQL type, using only the built-in SQL casts
@@ -52,7 +61,9 @@ public:
 
 	bool Equals(const BaseExpression &other) const override;
 
-	unique_ptr<Expression> Copy() override;
+	unique_ptr<Expression> Copy() const override;
+
+	bool CanThrow() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<Expression> Deserialize(Deserializer &deserializer);

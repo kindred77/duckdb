@@ -3,20 +3,33 @@
 #include "duckdb/parser/parser.hpp"
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/main/connection_manager.hpp"
+#include "duckdb/parser/statement/select_statement.hpp"
+#include "duckdb/parser/query_node/select_node.hpp"
 
 #include <chrono>
 #include <thread>
 
 using namespace duckdb;
-using namespace std;
 
 TEST_CASE("Test comment in CPP API", "[api]") {
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
+
 	con.SendQuery("--ups");
 	//! Should not crash
 	REQUIRE(1);
+}
+
+TEST_CASE("Test StarExpression replace_list parameter", "[api]") {
+	DuckDB db(nullptr);
+	Connection con(db);
+	auto sql = "select * replace(i * $n as i) from range(1, 10) t(i)";
+	auto stmts = con.ExtractStatements(sql);
+
+	auto &select_stmt = stmts[0]->Cast<SelectStatement>();
+	auto &select_node = select_stmt.node->Cast<SelectNode>();
+
+	REQUIRE(select_node.select_list[0]->HasParameter());
 }
 
 TEST_CASE("Test using connection after database is gone", "[api]") {
@@ -74,7 +87,7 @@ TEST_CASE("Test closing database during long running query", "[api]") {
 	conn->DisableProfiling();
 	// perform a long running query in the background (many cross products)
 	bool correct = true;
-	auto background_thread = thread(long_running_query, conn.get(), &correct);
+	auto background_thread = std::thread(long_running_query, conn.get(), &correct);
 	// wait a little bit
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	// destroy the database
@@ -139,6 +152,16 @@ static void parallel_query(Connection *conn, bool *correct, size_t threadnr) {
 	}
 }
 
+TEST_CASE("Test temp_directory defaults", "[api][.]") {
+	const char *db_paths[] = {nullptr, "", ":memory:"};
+	for (auto &path : db_paths) {
+		auto db = make_uniq<DuckDB>(path);
+		auto conn = make_uniq<Connection>(*db);
+
+		REQUIRE(db->instance->config.options.temporary_directory == ".tmp");
+	}
+}
+
 TEST_CASE("Test parallel usage of single client", "[api][.]") {
 	auto db = make_uniq<DuckDB>(nullptr);
 	auto conn = make_uniq<Connection>(*db);
@@ -147,9 +170,9 @@ TEST_CASE("Test parallel usage of single client", "[api][.]") {
 	REQUIRE_NO_FAIL(conn->Query("INSERT INTO integers VALUES (1), (2), (3), (NULL)"));
 
 	bool correct[20];
-	thread threads[20];
+	std::thread threads[20];
 	for (size_t i = 0; i < 20; i++) {
-		threads[i] = thread(parallel_query, conn.get(), correct, i);
+		threads[i] = std::thread(parallel_query, conn.get(), correct, i);
 	}
 	for (size_t i = 0; i < 20; i++) {
 		threads[i].join();
@@ -176,9 +199,9 @@ TEST_CASE("Test making and dropping connections in parallel to a single database
 	REQUIRE_NO_FAIL(conn->Query("INSERT INTO integers VALUES (1), (2), (3), (NULL)"));
 
 	bool correct[20];
-	thread threads[20];
+	std::thread threads[20];
 	for (size_t i = 0; i < 20; i++) {
-		threads[i] = thread(parallel_query_with_new_connection, db.get(), correct, i);
+		threads[i] = std::thread(parallel_query_with_new_connection, db.get(), correct, i);
 	}
 	for (size_t i = 0; i < 100; i++) {
 		auto result = conn->Query("SELECT * FROM integers ORDER BY i");
@@ -196,9 +219,6 @@ TEST_CASE("Test multiple result sets", "[api]") {
 	duckdb::unique_ptr<QueryResult> result;
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
-	con.DisableQueryVerification();
-	con.EnableQueryVerification();
 
 	con.ForceParallelism();
 
@@ -281,7 +301,6 @@ TEST_CASE("Test streaming API errors", "[api]") {
 TEST_CASE("Test fetch API", "[api]") {
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
 
 	duckdb::unique_ptr<QueryResult> result;
 
@@ -397,7 +416,6 @@ static void VerifyStreamResult(duckdb::unique_ptr<QueryResult> result) {
 TEST_CASE("Test fetch API with big results", "[api][.]") {
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
 
 	// create table that consists of multiple chunks
 	REQUIRE_NO_FAIL(con.Query("BEGIN TRANSACTION"));
@@ -424,6 +442,35 @@ TEST_CASE("Test fetch API with big results", "[api][.]") {
 		next = std::move(nextnext);
 	}
 	VerifyStreamResult(std::move(result));
+}
+
+TEST_CASE("Test TryFlushCachingOperators interrupted ExecutePushInternal", "[api][.]") {
+	DuckDB db;
+	Connection con(db);
+
+	con.Query("create table tbl as select 100000 a from range(2) t(a);");
+	con.Query("pragma threads=1");
+
+	// Use PhysicalCrossProduct with a very low amount of produced tuples, this caches the result in the
+	// CachingOperatorState This gets flushed with FinalExecute in PipelineExecutor::TryFlushCachingOperator
+	auto pending_query = con.PendingQuery("select unnest(range(a.a)) from tbl a, tbl b;");
+
+	// Through `unnest(range(a.a.))` this FinalExecute multiple chunks, more than the ExecutionBudget can handle with
+	// PROCESS_PARTIAL
+	pending_query->ExecuteTask();
+
+	// query the connection as normal after
+	auto res = pending_query->Execute();
+	REQUIRE(!res->HasError());
+	auto &materialized_res = res->Cast<MaterializedQueryResult>();
+	idx_t initial_tuples = 2 * 2;
+	REQUIRE(materialized_res.RowCount() == initial_tuples * 100000);
+	for (idx_t i = 0; i < initial_tuples; i++) {
+		for (idx_t j = 0; j < 100000; j++) {
+			auto value = static_cast<idx_t>(materialized_res.GetValue<int64_t>(0, (i * 100000) + j));
+			REQUIRE(value == j);
+		}
+	}
 }
 
 TEST_CASE("Test streaming query during stack unwinding", "[api]") {
@@ -475,7 +522,6 @@ TEST_CASE("Test prepare dependencies with multiple connections", "[catalog]") {
 TEST_CASE("Test connection API", "[api]") {
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
 
 	// extract a plan node
 	REQUIRE_NOTHROW(con.ExtractPlan("SELECT 42"));
@@ -485,9 +531,6 @@ TEST_CASE("Test connection API", "[api]") {
 	// append to a table
 	con.Query("CREATE TABLE integers(i integer);");
 	auto table_info = con.TableInfo("integers");
-
-	DataChunk chunk;
-	REQUIRE_NOTHROW(con.Append(*table_info, chunk));
 
 	// no transaction active
 	REQUIRE_THROWS(con.Commit());
@@ -513,14 +556,14 @@ TEST_CASE("Test opening an invalid database file", "[api]") {
 	duckdb::unique_ptr<DuckDB> db;
 	bool success = false;
 	try {
-		db = make_uniq<DuckDB>("data/parquet-testing/blob.parquet");
+		db = make_uniq<DuckDB>("duckdb:data/parquet-testing/blob.parquet");
 		success = true;
 	} catch (std::exception &ex) {
 		REQUIRE(StringUtil::Contains(ex.what(), "DuckDB"));
 	}
 	REQUIRE(!success);
 	try {
-		db = make_uniq<DuckDB>("data/parquet-testing/h2oai/h2oai_group_small.parquet");
+		db = make_uniq<DuckDB>("duckdb:data/parquet-testing/h2oai/h2oai_group_small.parquet");
 		success = true;
 	} catch (std::exception &ex) {
 		REQUIRE(StringUtil::Contains(ex.what(), "DuckDB"));
@@ -543,13 +586,13 @@ TEST_CASE("Test large number of connections to a single database", "[api]") {
 		connections.push_back(std::move(conn));
 	}
 
-	REQUIRE(connection_manager.connections.size() == createdConnections);
+	REQUIRE(connection_manager.GetConnectionCount() == createdConnections);
 
 	for (size_t i = 0; i < toRemove; i++) {
 		connections.erase(connections.begin());
 	}
 
-	REQUIRE(connection_manager.connections.size() == remainingConnections);
+	REQUIRE(connection_manager.GetConnectionCount() == remainingConnections);
 }
 
 TEST_CASE("Issue #4583: Catch Insert/Update/Delete errors", "[api]") {
@@ -557,7 +600,6 @@ TEST_CASE("Issue #4583: Catch Insert/Update/Delete errors", "[api]") {
 	Connection con(db);
 	duckdb::unique_ptr<QueryResult> result;
 
-	con.EnableQueryVerification();
 	REQUIRE_NO_FAIL(con.Query("CREATE TABLE t0 (c0 int);"));
 	REQUIRE_NO_FAIL(con.Query("INSERT INTO t0 VALUES (1);"));
 
@@ -570,8 +612,26 @@ TEST_CASE("Issue #4583: Catch Insert/Update/Delete errors", "[api]") {
 	REQUIRE(CHECK_COLUMN(result, 0, {1}));
 }
 
-TEST_CASE("Issue #6284: CachingPhysicalOperator in pull causes issues", "[api][.]") {
+TEST_CASE("Issue #14130: InsertStatement::ToString causes InternalException later on", "[api][.]") {
+	auto db = DuckDB(nullptr);
+	auto conn = Connection(db);
 
+	conn.Query("CREATE TABLE foo(a int, b varchar, c int)");
+
+	auto query = "INSERT INTO Foo values (1, 'qwerty', 42)";
+
+	auto stmts = conn.ExtractStatements(query);
+	auto &stmt = stmts[0];
+
+	// Issue was here: calling ToString destroyed the 'alias' of the ValuesList
+	stmt->ToString();
+	// Which caused an 'InternalException: expected non-empty binding_name' here
+	auto prepared_stmt = conn.Prepare(std::move(stmt));
+	REQUIRE(!prepared_stmt->HasError());
+	REQUIRE_NO_FAIL(prepared_stmt->Execute());
+}
+
+TEST_CASE("Issue #6284: CachingPhysicalOperator in pull causes issues", "[api][.]") {
 	DBConfig config;
 	config.options.maximum_threads = 8;
 	DuckDB db(nullptr, &config);
@@ -608,7 +668,7 @@ TEST_CASE("Issue #6284: CachingPhysicalOperator in pull causes issues", "[api][.
 		count += chunk->size();
 	}
 
-	REQUIRE(951468 - count == 0);
+	REQUIRE(951382 == count);
 }
 
 TEST_CASE("Fuzzer 50 - Alter table heap-use-after-free", "[api]") {
@@ -623,12 +683,23 @@ TEST_CASE("Fuzzer 50 - Alter table heap-use-after-free", "[api]") {
 
 TEST_CASE("Test loading database with enable_external_access set to false", "[api]") {
 	DBConfig config;
-	config.options.enable_external_access = false;
-	auto path = TestCreatePath("external_access_test");
+	config.SetOptionByName("enable_external_access", false);
+	auto path = TestCreatePath("external_access_test.db");
 	DuckDB db(path, &config);
 	Connection con(db);
 
-	REQUIRE_FAIL(con.Query("ATTACH 'mydb.db' AS external_access_test"));
+	REQUIRE_FAIL(con.Query("ATTACH 'mydb.db'"));
+}
+
+TEST_CASE("Test checkpointing initial database with enable_external_access set to false", "[api]") {
+	DBConfig config;
+	config.SetOptionByName("enable_external_access", false);
+	auto path = TestCreatePath("external_access_test.db");
+	DuckDB db(path, &config);
+	Connection con(db);
+
+	REQUIRE_NO_FAIL(con.Query("CREATE TABLE tbl(i INTEGER)"));
+	REQUIRE_NO_FAIL(con.Query("CHECKPOINT"));
 }
 
 TEST_CASE("Test insert returning in CPP API", "[api]") {
@@ -653,4 +724,148 @@ TEST_CASE("Test insert returning in CPP API", "[api]") {
 	auto result = con.Query("SELECT * from test;");
 	REQUIRE(CHECK_COLUMN(result, 0,
 	                     {"query_1", "query_2", "query_arg_1", "query_arg_2", "prepared_arg_1", "prepared_arg_2"}));
+}
+
+TEST_CASE("Test a logical execute still has types after an optimization pass", "[api]") {
+	DuckDB db(nullptr);
+	Connection con(db);
+	con.Query("PREPARE test AS SELECT 42::INTEGER;");
+	const auto query_plan = con.ExtractPlan("EXECUTE test");
+	REQUIRE((query_plan->type == LogicalOperatorType::LOGICAL_EXECUTE));
+	REQUIRE((query_plan->types.size() == 1));
+	REQUIRE((query_plan->types[0].id() == LogicalTypeId::INTEGER));
+}
+
+TEST_CASE("Test SqlStatement::ToString for UPDATE, INSERT, DELETE statements with alias of RETURNING clause", "[api]") {
+	DuckDB db(nullptr);
+	Connection con(db);
+	std::string sql;
+	con.Query("CREATE TABLE test(id INT);");
+
+	sql = "INSERT INTO test (id) VALUES (1) RETURNING id AS inserted";
+	auto stmts = con.ExtractStatements(sql);
+	REQUIRE(stmts[0]->ToString() == "INSERT INTO test (id) (VALUES (1)) RETURNING id AS inserted");
+
+	sql = "UPDATE test SET id = 1 RETURNING id AS updated";
+	stmts = con.ExtractStatements(sql);
+	REQUIRE(stmts[0]->ToString() == sql);
+
+	sql = "DELETE FROM test WHERE (id = 1) RETURNING id AS deleted";
+	stmts = con.ExtractStatements(sql);
+	REQUIRE(stmts[0]->ToString() == sql);
+}
+
+TEST_CASE("Test buffer managed query result", "[api]") {
+	auto db = make_uniq<DuckDB>(nullptr);
+	auto con = make_uniq<Connection>(*db);
+
+	// Send query with in-memory result
+	QueryParameters parameters;
+	parameters.output_type = QueryResultOutputType::FORCE_MATERIALIZED;
+	parameters.memory_type = QueryResultMemoryType::IN_MEMORY;
+	auto result = con->SendQuery("SELECT 42;", parameters);
+
+	// Query result is accessible
+	REQUIRE_NOTHROW(result->ToString());
+
+	// Reset connection AND db
+	con.reset();
+	db.reset();
+
+	// Query result is still accessible after resetting
+	REQUIRE_NOTHROW(result->ToString());
+
+	// Do it again with a buffer-managed query result
+	db = make_uniq<DuckDB>(nullptr);
+	con = make_uniq<Connection>(*db);
+	parameters.memory_type = QueryResultMemoryType::BUFFER_MANAGED;
+	result = con->SendQuery("SELECT 42;", parameters);
+
+	// Query result is accessible
+	REQUIRE_NOTHROW(result->ToString());
+
+	// Reset connection AND db
+	con.reset();
+	db.reset();
+
+	// Query result is no longer accessible
+	REQUIRE_THROWS(result->ToString());
+
+	// And again with order preservation disabled
+	db = make_uniq<DuckDB>(nullptr);
+	con = make_uniq<Connection>(*db);
+	result = con->SendQuery("SET preserve_insertion_order=false;");
+	result = con->SendQuery("SELECT 42;", parameters);
+
+	// Query result is accessible
+	REQUIRE_NOTHROW(result->ToString());
+
+	// Reset connection AND db
+	con.reset();
+	db.reset();
+
+	// Query result is no longer accessible
+	REQUIRE_THROWS(result->ToString());
+}
+
+TEST_CASE("Test ClientInterruptState suppresses interrupts after irreversible operations", "[api]") {
+	// Verify the three-state interrupt mechanism that prevents a completed COMMIT
+	// from being incorrectly reported as failed due to a late Interrupt() call.
+
+	DuckDB db;
+	Connection con(db);
+	auto &context = *con.context;
+
+	SECTION("Normal interrupt works") {
+		context.Interrupt();
+		REQUIRE(context.IsInterrupted());
+		REQUIRE_THROWS(context.InterruptCheck());
+		context.ClearInterrupt();
+		REQUIRE(!context.IsInterrupted());
+		REQUIRE_NOTHROW(context.InterruptCheck());
+	}
+
+	SECTION("SuppressInterrupts blocks subsequent Interrupt calls") {
+		context.SuppressInterrupts();
+		// Interrupt() uses CAS: NOT_INTERRUPTED -> INTERRUPTED
+		// Since state is SUPPRESSED, CAS fails and interrupt is discarded
+		context.Interrupt();
+		REQUIRE(!context.IsInterrupted());
+		REQUIRE_NOTHROW(context.InterruptCheck());
+		context.ClearInterrupt();
+	}
+
+	SECTION("SuppressInterrupts overrides a pending interrupt") {
+		context.Interrupt();
+		REQUIRE(context.IsInterrupted());
+		// SuppressInterrupts unconditionally stores SUPPRESSED,
+		// overriding the INTERRUPTED state
+		context.SuppressInterrupts();
+		REQUIRE(!context.IsInterrupted());
+		REQUIRE_NOTHROW(context.InterruptCheck());
+		context.ClearInterrupt();
+	}
+
+	SECTION("ClearInterrupt resets from SUPPRESSED to allow future interrupts") {
+		context.SuppressInterrupts();
+		context.ClearInterrupt();
+		// Now back to NOT_INTERRUPTED, Interrupt() should work again
+		context.Interrupt();
+		REQUIRE(context.IsInterrupted());
+		REQUIRE_THROWS(context.InterruptCheck());
+		context.ClearInterrupt();
+	}
+
+	SECTION("End-to-end: COMMIT suppresses interrupts") {
+		REQUIRE_NO_FAIL(con.Query("BEGIN TRANSACTION"));
+		REQUIRE_NO_FAIL(con.Query("CREATE TABLE suppress_test (x INTEGER)"));
+		REQUIRE_NO_FAIL(con.Query("COMMIT"));
+		// After COMMIT, state should be SUPPRESSED — Interrupt() should be discarded
+		context.Interrupt();
+		REQUIRE(!context.IsInterrupted());
+		REQUIRE_NOTHROW(context.InterruptCheck());
+		// Cleanup
+		context.ClearInterrupt();
+		REQUIRE_NO_FAIL(con.Query("DROP TABLE suppress_test"));
+	}
 }

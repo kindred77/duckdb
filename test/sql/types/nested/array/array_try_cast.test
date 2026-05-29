@@ -1,10 +1,6 @@
 # name: test/sql/types/nested/array/array_try_cast.test
 # group: [array]
 
-statement ok
-PRAGMA enable_verification
-
-
 query I
 SELECT TRY_CAST(array_value(1,2) as INTEGER[3]);
 ----
@@ -53,7 +49,7 @@ NULL
 statement error
 SELECT CAST('[1,2]' as INTEGER[3]);
 ----
-Conversion Error: Type VARCHAR with value '[1,2]' can't be cast to the destination type ARRAY[3], the size of the array must match the destination type
+Conversion Error: Type VARCHAR with value '[1,2]' can't be cast to the destination type INTEGER[3], the size of the array must match the destination type
 
 query I
 SELECT CAST('[NULL, [1], [NULL]]' as INTEGER[1][3]);
@@ -78,7 +74,7 @@ SELECT CAST('[NULL, [1,NULL,3], [1,2,3]]' as INTEGER[3][3]);
 statement error
 SELECT CAST('[NULL, [1,NULL,3], [1,2]]' as INTEGER[3][3]);
 ----
-Conversion Error: Type VARCHAR with value '[1,2]' can't be cast to the destination type ARRAY[3], the size of the array must match the destination type
+Conversion Error: Type VARCHAR with value '[1,2]' can't be cast to the destination type INTEGER[3], the size of the array must match the destination type
 
 query I
 SELECT TRY_CAST('[NULL, [1,NULL,3], [1,2]]' as INTEGER[3][3]);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "duckdb/common/common.hpp"
+#include "duckdb/common/optional_ptr.hpp"
 
 namespace duckdb {
 class ClientContext;
@@ -22,7 +23,7 @@ enum class TaskExecutionMode : uint8_t { PROCESS_ALL, PROCESS_PARTIAL };
 enum class TaskExecutionResult : uint8_t { TASK_FINISHED, TASK_NOT_FINISHED, TASK_ERROR, TASK_BLOCKED };
 
 //! Generic parallel task
-class Task : public std::enable_shared_from_this<Task> {
+class Task : public enable_shared_from_this<Task> {
 public:
 	virtual ~Task() {
 	}
@@ -50,6 +51,13 @@ public:
 	virtual bool TaskBlockedOnResult() const {
 		return false;
 	}
+
+	virtual string TaskType() const {
+		return "UnnamedTask";
+	}
+
+public:
+	optional_ptr<ProducerToken> token;
 };
 
 } // namespace duckdb

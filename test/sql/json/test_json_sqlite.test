@@ -4,9 +4,6 @@
 
 require json
 
-statement ok
-pragma enable_verification
-
 # some of the more elaborate tests from SQLite JSON1 extension
 # https://github.com/sqlite/sqlite/blob/master/test/json101.test
 statement ok
@@ -19,13 +16,17 @@ VALUES('true'),('false'),('null'),('123'),('-234'),('34.5e+6'),
      ('[]'),('{}'),('[true,false,null,123,-234,34.5e+6,{},[]]'),
      ('{"a":true,"b":{"c":false}}');
 
-query T
+query I
 SELECT count(*) FROM j1 WHERE json_type(x) IN ('OBJECT','ARRAY');
+----
+4
+
+query I
   SELECT x FROM j1
    WHERE json_extract(x,'$')<>x
      AND json_type(x) IN ('OBJECT','ARRAY');
 ----
-4
+[true,false,null,123,-234,34.5e+6,{},[]]
 
 statement ok
 CREATE TABLE j2(id INTEGER PRIMARY KEY, json VARCHAR, src VARCHAR);

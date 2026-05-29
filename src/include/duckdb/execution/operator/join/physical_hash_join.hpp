@@ -8,52 +8,71 @@
 
 #pragma once
 
-#include "duckdb/common/value_operations/value_operations.hpp"
-#include "duckdb/execution/join_hashtable.hpp"
-#include "duckdb/execution/operator/join/perfect_hash_join_executor.hpp"
 #include "duckdb/execution/operator/join/physical_comparison_join.hpp"
 #include "duckdb/execution/physical_operator.hpp"
-#include "duckdb/planner/operator/logical_join.hpp"
 
 namespace duckdb {
+class JoinHashTable;
+
+//! Residual predicate information for hash joins
+struct ResidualPredicateInfo {
+	unordered_map<idx_t, idx_t> build_input_to_layout_map;
+	unordered_map<idx_t, idx_t> probe_input_to_probe_map;
+	vector<LogicalType> probe_types;
+
+	ResidualPredicateInfo() = default;
+	unique_ptr<ResidualPredicateInfo> Copy() const {
+		auto result = make_uniq<ResidualPredicateInfo>();
+		result->build_input_to_layout_map = build_input_to_layout_map;
+		result->probe_input_to_probe_map = probe_input_to_probe_map;
+		result->probe_types = probe_types;
+		return result;
+	}
+};
 
 //! PhysicalHashJoin represents a hash loop join between two tables
 class PhysicalHashJoin : public PhysicalComparisonJoin {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::HASH_JOIN;
 
+	struct JoinProjectionColumns {
+		vector<idx_t> col_idxs;
+		vector<LogicalType> col_types;
+	};
+
 public:
-	PhysicalHashJoin(LogicalOperator &op, unique_ptr<PhysicalOperator> left, unique_ptr<PhysicalOperator> right,
-	                 vector<JoinCondition> cond, JoinType join_type, const vector<idx_t> &left_projection_map,
-	                 const vector<idx_t> &right_projection_map, vector<LogicalType> delim_types,
-	                 idx_t estimated_cardinality, PerfectHashJoinStats perfect_join_stats);
-	PhysicalHashJoin(LogicalOperator &op, unique_ptr<PhysicalOperator> left, unique_ptr<PhysicalOperator> right,
-	                 vector<JoinCondition> cond, JoinType join_type, idx_t estimated_cardinality,
-	                 PerfectHashJoinStats join_state);
+	PhysicalHashJoin(PhysicalPlan &physical_plan, LogicalOperator &op, PhysicalOperator &left, PhysicalOperator &right,
+	                 vector<JoinCondition> conds, JoinType join_type,
+	                 const vector<ProjectionIndex> &left_projection_map,
+	                 const vector<ProjectionIndex> &right_projection_map, vector<LogicalType> delim_types,
+	                 idx_t estimated_cardinality, unique_ptr<JoinFilterPushdownInfo> pushdown_info);
+	PhysicalHashJoin(PhysicalPlan &physical_plan, LogicalOperator &op, PhysicalOperator &left, PhysicalOperator &right,
+	                 vector<JoinCondition> cond, JoinType join_type, idx_t estimated_cardinality);
 
 	//! Initialize HT for this operator
-	unique_ptr<JoinHashTable> InitializeHashTable(ClientContext &context) const;
+	unique_ptr<JoinHashTable> InitializeHashTable(ClientContext &context, idx_t initial_radix_bits) const;
 
 	//! The types of the join keys
 	vector<LogicalType> condition_types;
 
-	//! The indices for getting the payload columns
-	vector<idx_t> payload_column_idxs;
-	//! The types of the payload columns
-	vector<LogicalType> payload_types;
-
-	//! Positions of the RHS columns that need to output
-	vector<idx_t> rhs_output_columns;
-	//! The types of the output
-	vector<LogicalType> rhs_output_types;
+	//! The indices/types of the payload columns
+	JoinProjectionColumns payload_columns;
+	//! The indices/types of the lhs columns that need to be output
+	JoinProjectionColumns lhs_output_columns;
+	//! The indices/types of the rhs columns that need to be output
+	JoinProjectionColumns rhs_output_columns;
 
 	//! Duplicate eliminated types; only used for delim_joins (i.e. correlated subqueries)
 	vector<LogicalType> delim_types;
-	//! Used in perfect hash join
-	PerfectHashJoinStats perfect_join_statistics;
+
+	unique_ptr<ResidualPredicateInfo> residual_info;
+	//! For probe phase (includes predicate columns)
+	JoinProjectionColumns lhs_probe_columns;
+	//! Mapping from lhs_output_columns positions to lhs_probe_columns positions
+	vector<idx_t> lhs_output_in_probe;
 
 public:
-	string ParamsToString() const override;
+	InsertionOrderPreservingMap<string> ParamsToString() const override;
 
 public:
 	// Operator Interface
@@ -72,9 +91,10 @@ protected:
 	unique_ptr<GlobalSourceState> GetGlobalSourceState(ClientContext &context) const override;
 	unique_ptr<LocalSourceState> GetLocalSourceState(ExecutionContext &context,
 	                                                 GlobalSourceState &gstate) const override;
-	SourceResultType GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const override;
+	SourceResultType GetDataInternal(ExecutionContext &context, DataChunk &chunk,
+	                                 OperatorSourceInput &input) const override;
 
-	double GetProgress(ClientContext &context, GlobalSourceState &gstate) const override;
+	ProgressData GetProgress(ClientContext &context, GlobalSourceState &gstate) const override;
 
 	//! Becomes a source when it is an external join
 	bool IsSource() const override {
@@ -90,8 +110,11 @@ public:
 	unique_ptr<GlobalSinkState> GetGlobalSinkState(ClientContext &context) const override;
 
 	unique_ptr<LocalSinkState> GetLocalSinkState(ExecutionContext &context) const override;
+	void SetPreserveBuildForRecursiveReuse(bool preserve) const;
+	bool CanPreserveBuildForRecursiveReuse() const;
 	SinkResultType Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const override;
 	SinkCombineResultType Combine(ExecutionContext &context, OperatorSinkCombineInput &input) const override;
+	void PrepareFinalize(ClientContext &context, GlobalSinkState &global_state) const override;
 	SinkFinalizeType Finalize(Pipeline &pipeline, Event &event, ClientContext &context,
 	                          OperatorSinkFinalizeInput &input) const override;
 
@@ -101,6 +124,19 @@ public:
 	bool ParallelSink() const override {
 		return true;
 	}
+
+private:
+	static void ExtractResidualPredicateColumns(unique_ptr<Expression> &predicate, idx_t probe_column_count,
+	                                            vector<idx_t> &probe_column_ids, vector<idx_t> &build_column_ids);
+
+	void InitializeResidualPredicate(const vector<LogicalType> &lhs_input_types, const vector<idx_t> &probe_cols);
+
+	void InitializeBuildSide(const vector<LogicalType> &lhs_input_types, const vector<LogicalType> &rhs_input_types,
+	                         const vector<ProjectionIndex> &right_projection_map, const vector<idx_t> &build_cols);
+	void MapResidualBuildColumns(const vector<LogicalType> &lhs_input_types, const vector<LogicalType> &rhs_input_types,
+	                             const vector<idx_t> &build_cols,
+	                             const unordered_map<idx_t, idx_t> &build_columns_in_conditions,
+	                             unordered_map<idx_t, idx_t> &build_input_to_layout);
 };
 
 } // namespace duckdb

@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/main/winapi.hpp
+// duckdb/common/winapi.hpp
 //
 //
 //===----------------------------------------------------------------------===//
@@ -10,10 +10,14 @@
 
 #ifndef DUCKDB_API
 #if defined(_WIN32) && !defined(__MINGW32__)
+#ifdef DUCKDB_STATIC_BUILD
+#define DUCKDB_API
+#else
 #if defined(DUCKDB_BUILD_LIBRARY) && !defined(DUCKDB_BUILD_LOADABLE_EXTENSION)
 #define DUCKDB_API __declspec(dllexport)
 #else
 #define DUCKDB_API __declspec(dllimport)
+#endif
 #endif
 #else
 #define DUCKDB_API
@@ -22,10 +26,10 @@
 
 #ifndef DUCKDB_EXTENSION_API
 #ifdef _WIN32
-#ifdef DUCKDB_BUILD_LOADABLE_EXTENSION
-#define DUCKDB_EXTENSION_API __declspec(dllexport)
-#else
+#ifdef DUCKDB_STATIC_BUILD
 #define DUCKDB_EXTENSION_API
+#else
+#define DUCKDB_EXTENSION_API __declspec(dllexport)
 #endif
 #else
 #define DUCKDB_EXTENSION_API __attribute__((visibility("default")))

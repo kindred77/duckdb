@@ -75,6 +75,12 @@
         "id": 102,
         "name": "allocator_infos",
         "type": "vector<FixedSizeAllocatorInfo>"
+      },
+      {
+        "id": 103,
+        "name": "options",
+        "type": "case_insensitive_map_t<Value>",
+        "default": "case_insensitive_map_t<Value>()"
       }
     ],
     "pointer_type": "none"
@@ -104,7 +110,9 @@
       {
         "id": 100,
         "name": "row_start",
-        "type": "uint64_t"
+        "type": "uint64_t",
+        "status": "deleted",
+        "version": "v1.5.0"
       },
       {
         "id": 101,

@@ -1,3 +1,4 @@
+#include "duckdb/common/vector/constant_vector.hpp"
 #include "duckdb/execution/operator/helper/physical_verify_vector.hpp"
 #include "duckdb/common/types/vector.hpp"
 #include "duckdb/common/types/hugeint.hpp"
@@ -5,9 +6,12 @@
 
 namespace duckdb {
 
-PhysicalVerifyVector::PhysicalVerifyVector(unique_ptr<PhysicalOperator> child)
-    : PhysicalOperator(PhysicalOperatorType::VERIFY_VECTOR, child->types, child->estimated_cardinality) {
-	children.push_back(std::move(child));
+PhysicalVerifyVector::PhysicalVerifyVector(PhysicalPlan &physical_plan, PhysicalOperator &child,
+                                           DebugVectorVerification verification)
+    : PhysicalOperator(physical_plan, PhysicalOperatorType::VERIFY_VECTOR, child.GetTypes(),
+                       child.estimated_cardinality),
+      verification(verification) {
+	children.push_back(child);
 }
 
 class VerifyVectorState : public OperatorState {
@@ -18,27 +22,32 @@ public:
 	idx_t const_idx;
 };
 
-OperatorResultType VerifyEmitConstantVectors(DataChunk &input, DataChunk &chunk, OperatorState &state_p) {
+OperatorResultType VerifyEmitConstantVectors(const DataChunk &input, DataChunk &chunk, OperatorState &state_p) {
 	auto &state = state_p.Cast<VerifyVectorState>();
 	D_ASSERT(state.const_idx < input.size());
 
+	// Ensure that we don't alter the input data while another thread is still using it.
+	DataChunk copied_input;
+	copied_input.Initialize(Allocator::DefaultAllocator(), input.GetTypes());
+	input.Copy(copied_input);
+
 	// emit constant vectors at the current index
 	for (idx_t c = 0; c < chunk.ColumnCount(); c++) {
-		ConstantVector::Reference(chunk.data[c], input.data[c], state.const_idx, 1);
+		ConstantVector::Reference(chunk.data[c], count_t(1), copied_input.data[c], state.const_idx, 1);
 	}
 	chunk.SetCardinality(1);
 	state.const_idx++;
-	if (state.const_idx >= input.size()) {
+	if (state.const_idx >= copied_input.size()) {
 		state.const_idx = 0;
 		return OperatorResultType::NEED_MORE_INPUT;
 	}
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
-OperatorResultType VerifyEmitDictionaryVectors(DataChunk &input, DataChunk &chunk, OperatorState &state) {
-	chunk.Reference(input);
+OperatorResultType VerifyEmitDictionaryVectors(const DataChunk &input, DataChunk &chunk, OperatorState &state) {
+	input.Copy(chunk);
 	for (idx_t c = 0; c < chunk.ColumnCount(); c++) {
-		Vector::DebugTransformToDictionary(chunk.data[c], chunk.size());
+		Vector::DebugTransformToDictionary(chunk.data[c]);
 	}
 	return OperatorResultType::NEED_MORE_INPUT;
 }
@@ -48,9 +57,14 @@ struct ConstantOrSequenceInfo {
 	bool is_constant = true;
 };
 
-OperatorResultType VerifyEmitSequenceVector(DataChunk &input, DataChunk &chunk, OperatorState &state_p) {
+OperatorResultType VerifyEmitSequenceVector(const DataChunk &input_p, DataChunk &chunk, OperatorState &state_p) {
 	auto &state = state_p.Cast<VerifyVectorState>();
-	D_ASSERT(state.const_idx < input.size());
+	D_ASSERT(state.const_idx < input_p.size());
+
+	// FIXME: work-around for variant bug...
+	DataChunk input;
+	input.Initialize(Allocator::DefaultAllocator(), input_p.GetTypes());
+	input_p.Copy(input);
 
 	// find the longest length sequence or constant vector to emit
 	vector<ConstantOrSequenceInfo> infos;
@@ -69,6 +83,14 @@ OperatorResultType VerifyEmitSequenceVector(DataChunk &input, DataChunk &chunk, 
 			break;
 		}
 		}
+		bool can_be_constant = true;
+		switch (chunk.data[c].GetType().id()) {
+		case LogicalTypeId::INTERVAL:
+			can_be_constant = false;
+			break;
+		default:
+			break;
+		}
 		ConstantOrSequenceInfo info;
 		info.is_constant = true;
 		for (idx_t k = state.const_idx; k < input.size(); k++) {
@@ -76,7 +98,7 @@ OperatorResultType VerifyEmitSequenceVector(DataChunk &input, DataChunk &chunk, 
 			if (info.values.empty()) {
 				info.values.push_back(std::move(val));
 			} else if (info.is_constant) {
-				if (!ValueOperations::DistinctFrom(val, info.values[0])) {
+				if (!ValueOperations::DistinctFrom(val, info.values[0]) && can_be_constant) {
 					// found the same value! continue
 					info.values.push_back(std::move(val));
 					continue;
@@ -172,7 +194,7 @@ OperatorResultType VerifyEmitSequenceVector(DataChunk &input, DataChunk &chunk, 
 			chunk.data[c].Slice(input.data[c], sel, max_length);
 		} else if (info.is_constant) {
 			// constant vector
-			chunk.data[c].Reference(info.values[0]);
+			chunk.data[c].Reference(info.values[0], count_t(max_length));
 		} else {
 			// sequence vector
 			int64_t start = info.values[0].GetValue<int64_t>();
@@ -189,10 +211,10 @@ OperatorResultType VerifyEmitSequenceVector(DataChunk &input, DataChunk &chunk, 
 	return OperatorResultType::HAVE_MORE_OUTPUT;
 }
 
-OperatorResultType VerifyEmitNestedShuffleVector(DataChunk &input, DataChunk &chunk, OperatorState &state) {
-	chunk.Reference(input);
+OperatorResultType VerifyEmitNestedShuffleVector(const DataChunk &input, DataChunk &chunk, OperatorState &state) {
+	input.Copy(chunk);
 	for (idx_t c = 0; c < chunk.ColumnCount(); c++) {
-		Vector::DebugShuffleNestedVector(chunk.data[c], chunk.size());
+		Vector::DebugShuffleNestedVector(chunk.data[c]);
 	}
 	return OperatorResultType::NEED_MORE_INPUT;
 }
@@ -203,19 +225,18 @@ unique_ptr<OperatorState> PhysicalVerifyVector::GetOperatorState(ExecutionContex
 
 OperatorResultType PhysicalVerifyVector::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
                                                  GlobalOperatorState &gstate, OperatorState &state) const {
-#ifdef DUCKDB_VERIFY_CONSTANT_OPERATOR
-	return VerifyEmitConstantVectors(input, chunk, state);
-#endif
-#ifdef DUCKDB_VERIFY_DICTIONARY_OPERATOR
-	return VerifyEmitDictionaryVectors(input, chunk, state);
-#endif
-#ifdef DUCKDB_VERIFY_SEQUENCE_OPERATOR
-	return VerifyEmitSequenceVector(input, chunk, state);
-#endif
-#ifdef DUCKDB_VERIFY_NESTED_SHUFFLE
-	return VerifyEmitNestedShuffleVector(input, chunk, state);
-#endif
-	throw InternalException("PhysicalVerifyVector created but no verification code present");
+	switch (verification) {
+	case DebugVectorVerification::DICTIONARY_OPERATOR:
+		return VerifyEmitDictionaryVectors(input, chunk, state);
+	case DebugVectorVerification::CONSTANT_OPERATOR:
+		return VerifyEmitConstantVectors(input, chunk, state);
+	case DebugVectorVerification::SEQUENCE_OPERATOR:
+		return VerifyEmitSequenceVector(input, chunk, state);
+	case DebugVectorVerification::NESTED_SHUFFLE:
+		return VerifyEmitNestedShuffleVector(input, chunk, state);
+	default:
+		throw InternalException("PhysicalVerifyVector created but no verification code present");
+	}
 }
 
 } // namespace duckdb

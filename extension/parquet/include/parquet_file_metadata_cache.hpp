@@ -7,38 +7,58 @@
 //===----------------------------------------------------------------------===//
 #pragma once
 
+#include <string>
+
 #include "duckdb.hpp"
-#ifndef DUCKDB_AMALGAMATION
 #include "duckdb/storage/object_cache.hpp"
-#endif
+#include "parquet_geometry.hpp"
 #include "parquet_types.h"
+#include "duckdb/common/open_file_info.hpp"
+#include "duckdb/common/optional_idx.hpp"
+#include "duckdb/common/string.hpp"
+#include "duckdb/common/typedefs.hpp"
+#include "duckdb/common/types/timestamp.hpp"
+#include "duckdb/common/unique_ptr.hpp"
 
 namespace duckdb {
+struct CachingFileHandle;
+class ClientContext;
 
-//! ParquetFileMetadataCache
+using duckdb_parquet::FileCryptoMetaData;
+
+enum class ParquetCacheValidity { VALID, INVALID, UNKNOWN };
+
 class ParquetFileMetadataCache : public ObjectCacheEntry {
 public:
-	ParquetFileMetadataCache() : metadata(nullptr) {
-	}
-	ParquetFileMetadataCache(unique_ptr<duckdb_parquet::format::FileMetaData> file_metadata, time_t r_time)
-	    : metadata(std::move(file_metadata)), read_time(r_time) {
-	}
-
+	ParquetFileMetadataCache(unique_ptr<duckdb_parquet::FileMetaData> file_metadata, CachingFileHandle &handle,
+	                         unique_ptr<GeoParquetFileMetadata> geo_metadata,
+	                         unique_ptr<FileCryptoMetaData> crypto_metadata, idx_t footer_size);
 	~ParquetFileMetadataCache() override = default;
 
 	//! Parquet file metadata
-	unique_ptr<const duckdb_parquet::format::FileMetaData> metadata;
+	unique_ptr<const duckdb_parquet::FileMetaData> metadata;
 
-	//! read time
-	time_t read_time;
+	//! GeoParquet metadata
+	unique_ptr<GeoParquetFileMetadata> geo_metadata;
+
+	//! Crypto metadata
+	unique_ptr<FileCryptoMetaData> crypto_metadata;
+
+	//! Parquet footer size
+	idx_t footer_size;
 
 public:
-	static string ObjectType() {
-		return "parquet_metadata";
-	}
+	static string ObjectType();
+	string GetObjectType() override;
+	optional_idx GetEstimatedCacheMemory() const override;
 
-	string GetObjectType() override {
-		return ObjectType();
-	}
+	bool IsValid(CachingFileHandle &new_handle) const;
+	//! Return if a cache entry is valid.
+	ParquetCacheValidity IsValid(const OpenFileInfo &info, ClientContext &context) const;
+
+private:
+	timestamp_t last_modified;
+	string version_tag;
 };
+
 } // namespace duckdb

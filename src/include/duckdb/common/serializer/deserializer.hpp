@@ -9,20 +9,22 @@
 #pragma once
 
 #include "duckdb/common/enum_util.hpp"
+#include "duckdb/common/serializer/serialization_data.hpp"
 #include "duckdb/common/serializer/serialization_traits.hpp"
-#include "duckdb/common/serializer/deserialization_data.hpp"
 #include "duckdb/common/types/string_type.hpp"
+#include "duckdb/common/uhugeint.hpp"
 #include "duckdb/common/unordered_map.hpp"
 #include "duckdb/common/unordered_set.hpp"
-#include "duckdb/common/uhugeint.hpp"
-#include "duckdb/execution/operator/csv_scanner/csv_reader_options.hpp"
+#include "duckdb/common/exception/parser_exception.hpp"
+#include "duckdb/execution/operator/csv_scanner/csv_option.hpp"
+#include "duckdb/storage/table/per_column_metadata_blocks.hpp"
 
 namespace duckdb {
 
 class Deserializer {
 protected:
 	bool deserialize_enum_from_string = false;
-	DeserializationData data;
+	SerializationData data;
 
 public:
 	virtual ~Deserializer() {
@@ -51,6 +53,8 @@ public:
 	};
 
 public:
+	virtual bool CanDeserializeProperty(const field_id_t field_id, const char *tag) = 0;
+
 	// Read into an existing value
 	template <typename T>
 	inline void ReadProperty(const field_id_t field_id, const char *tag, T &ret) {
@@ -81,7 +85,7 @@ public:
 	}
 
 	template <typename T>
-	inline T ReadPropertyWithDefault(const field_id_t field_id, const char *tag, T &&default_value) {
+	inline T ReadPropertyWithExplicitDefault(const field_id_t field_id, const char *tag, T default_value) {
 		if (!OnOptionalPropertyBegin(field_id, tag)) {
 			OnOptionalPropertyEnd(false);
 			return std::forward<T>(default_value);
@@ -104,7 +108,19 @@ public:
 	}
 
 	template <typename T>
-	inline void ReadPropertyWithDefault(const field_id_t field_id, const char *tag, T &ret, T &&default_value) {
+	inline void ReadPropertyWithExplicitDefault(const field_id_t field_id, const char *tag, T &ret, T default_value) {
+		if (!OnOptionalPropertyBegin(field_id, tag)) {
+			ret = std::forward<T>(default_value);
+			OnOptionalPropertyEnd(false);
+			return;
+		}
+		ret = Read<T>();
+		OnOptionalPropertyEnd(true);
+	}
+
+	template <typename T>
+	inline void ReadPropertyWithExplicitDefault(const field_id_t field_id, const char *tag, CSVOption<T> &ret,
+	                                            T default_value) {
 		if (!OnOptionalPropertyBegin(field_id, tag)) {
 			ret = std::forward<T>(default_value);
 			OnOptionalPropertyEnd(false);
@@ -120,6 +136,16 @@ public:
 		OnPropertyBegin(field_id, tag);
 		ReadDataPtr(ret, count);
 		OnPropertyEnd();
+	}
+
+	inline bool ReadOptionalProperty(const field_id_t field_id, const char *tag, data_ptr_t ret, idx_t count) {
+		if (!OnOptionalPropertyBegin(field_id, tag)) {
+			OnOptionalPropertyEnd(false);
+			return false;
+		}
+		ReadDataPtr(ret, count);
+		OnOptionalPropertyEnd(true);
+		return true;
 	}
 
 	// Try to read a property, if it is not present, continue, otherwise read and discard the value
@@ -147,22 +173,50 @@ public:
 		return data.Get<T>();
 	}
 
+	template <class T>
+	optional_ptr<T> TryGet() {
+		return data.TryGet<T>();
+	}
+
 	//! Unset a serialization property
 	template <class T>
 	void Unset() {
 		return data.Unset<T>();
 	}
 
+	SerializationData &GetSerializationData() {
+		return data;
+	}
+
+	void SetSerializationData(const SerializationData &other) {
+		data = other;
+	}
+
 	template <class FUNC>
-	void ReadList(const field_id_t field_id, const char *tag, FUNC func) {
-		OnPropertyBegin(field_id, tag);
+	void ReadListInternal(FUNC func) {
 		auto size = OnListBegin();
 		List list {*this};
 		for (idx_t i = 0; i < size; i++) {
 			func(list, i);
 		}
 		OnListEnd();
+	}
+
+	template <class FUNC>
+	void ReadList(const field_id_t field_id, const char *tag, FUNC func) {
+		OnPropertyBegin(field_id, tag);
+		ReadListInternal(func);
 		OnPropertyEnd();
+	}
+
+	template <class FUNC>
+	void ReadOptionalList(const field_id_t field_id, const char *tag, FUNC func) {
+		if (!OnOptionalPropertyBegin(field_id, tag)) {
+			OnOptionalPropertyEnd(false);
+			return;
+		}
+		ReadListInternal(func);
+		OnOptionalPropertyEnd(true);
 	}
 
 	template <class FUNC>
@@ -182,6 +236,12 @@ private:
 		auto val = T::Deserialize(*this);
 		OnObjectEnd();
 		return val;
+	}
+
+	// Deserialize a optionally_owned_ptr
+	template <class T, typename ELEMENT_TYPE = typename is_optionally_owned_ptr<T>::ELEMENT_TYPE>
+	inline typename std::enable_if<is_optionally_owned_ptr<T>::value, T>::type Read() {
+		return optionally_owned_ptr<ELEMENT_TYPE>(Read<unique_ptr<ELEMENT_TYPE>>());
 	}
 
 	// Deserialize unique_ptr if the element type has a Deserialize method
@@ -225,6 +285,18 @@ private:
 		}
 		OnNullableEnd();
 		return ptr;
+	}
+
+	// Deserialize a duckdb_optional
+	template <class T, typename ELEMENT_TYPE = typename is_duckdb_optional<T>::ELEMENT_TYPE>
+	inline typename std::enable_if<is_duckdb_optional<T>::value, T>::type Read() {
+		auto is_present = OnNullableBegin();
+		T result;
+		if (is_present) {
+			result = Read<ELEMENT_TYPE>();
+		}
+		OnNullableEnd();
+		return result;
 	}
 
 	// Deserialize a vector
@@ -290,6 +362,23 @@ private:
 		return map;
 	}
 
+	template <typename T = void>
+	inline typename std::enable_if<is_insertion_preserving_map<T>::value, T>::type Read() {
+		using VALUE_TYPE = typename is_insertion_preserving_map<T>::VALUE_TYPE;
+
+		T map;
+		auto size = OnListBegin();
+		for (idx_t i = 0; i < size; i++) {
+			OnObjectBegin();
+			auto key = ReadProperty<string>(0, "key");
+			auto value = ReadProperty<VALUE_TYPE>(1, "value");
+			OnObjectEnd();
+			map[key] = std::move(value);
+		}
+		OnListEnd();
+		return map;
+	}
+
 	// Deserialize an unordered set
 	template <typename T = void>
 	inline typename std::enable_if<is_unordered_set<T>::value, T>::type Read() {
@@ -326,6 +415,19 @@ private:
 		auto second = ReadProperty<SECOND_TYPE>(1, "second");
 		OnObjectEnd();
 		return std::make_pair(first, second);
+	}
+
+	// Deserialize a priority_queue
+	template <typename T = void>
+	inline typename std::enable_if<is_queue<T>::value, T>::type Read() {
+		using ELEMENT_TYPE = typename is_queue<T>::ELEMENT_TYPE;
+		T queue;
+		auto size = OnListBegin();
+		for (idx_t i = 0; i < size; i++) {
+			queue.emplace(Read<ELEMENT_TYPE>());
+		}
+		OnListEnd();
+		return queue;
 	}
 
 	// Primitive types
@@ -442,11 +544,29 @@ private:
 		return PhysicalIndex(ReadUnsignedInt64());
 	}
 
+	// Deserialize a TableIndex
+	template <typename T = void>
+	inline typename std::enable_if<std::is_same<T, TableIndex>::value, T>::type Read() {
+		return TableIndex(ReadUnsignedInt64());
+	}
+
+	// Deserialize a ProjectionIndex
+	template <typename T = void>
+	inline typename std::enable_if<std::is_same<T, ProjectionIndex>::value, T>::type Read() {
+		return ProjectionIndex(ReadUnsignedInt64());
+	}
+
 	// Deserialize an optional_idx
 	template <typename T = void>
 	inline typename std::enable_if<std::is_same<T, optional_idx>::value, T>::type Read() {
 		auto idx = ReadUnsignedInt64();
 		return idx == DConstants::INVALID_INDEX ? optional_idx() : optional_idx(idx);
+	}
+
+	// Deserialize a ProjectionIndex
+	template <typename T = void>
+	inline typename std::enable_if<std::is_same<T, PerColumnMetadataBlock>::value, T>::type Read() {
+		return PerColumnMetadataBlock::Unpack(ReadUnsignedInt64());
 	}
 
 protected:

@@ -9,12 +9,6 @@
 #pragma once
 
 #include "duckdb/storage/compression/chimp/algorithm/chimp128.hpp"
-#include "duckdb/common/assert.hpp"
-#include "duckdb/common/exception.hpp"
-#include "duckdb/common/helper.hpp"
-#include "duckdb/common/limits.hpp"
-#include "duckdb/common/types/validity_mask.hpp"
-#include "duckdb/function/compression_function.hpp"
 
 namespace duckdb {
 
@@ -25,12 +19,12 @@ struct ChimpType {};
 
 template <>
 struct ChimpType<double> {
-	typedef uint64_t type;
+	using TYPE = uint64_t;
 };
 
 template <>
 struct ChimpType<float> {
-	typedef uint32_t type;
+	using TYPE = uint32_t;
 };
 
 class ChimpPrimitives {
@@ -46,7 +40,7 @@ public:
 template <class T, bool EMPTY>
 struct ChimpState {
 public:
-	using CHIMP_TYPE = typename ChimpType<T>::type;
+	using CHIMP_TYPE = typename ChimpType<T>::TYPE;
 
 	ChimpState() : chimp() {
 	}

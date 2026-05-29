@@ -45,7 +45,7 @@ void AssertExpectedResult(ArrowSchema *schema, ArrowArrayWrapper &array, T expec
 		}
 		REQUIRE(chunk->ColumnCount() == 1);
 		REQUIRE(chunk->size() == STANDARD_VECTOR_SIZE);
-		auto vec = chunk->data[0];
+		auto &vec = chunk->data[0];
 		for (idx_t i = 0; i < STANDARD_VECTOR_SIZE; i++) {
 			auto value = vec.GetValue(i);
 			auto expected = Value(expected_value);
@@ -106,8 +106,8 @@ TEST_CASE("Test move children", "[arrow]") {
 	auto res_properties = initial_result->client_properties;
 
 	// Create a test factory and produce a stream from it
-	auto factory =
-	    ArrowTestFactory(std::move(types), std::move(names), std::move(initial_result), false, client_properties);
+	auto factory = ArrowTestFactory(std::move(types), std::move(names), std::move(initial_result), false,
+	                                client_properties, *conn.context);
 	auto stream = ArrowTestFactory::CreateStream((uintptr_t)&factory, parameters);
 
 	// For every array, extract the children and scan them

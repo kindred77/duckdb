@@ -57,13 +57,12 @@ unique_ptr<GlobalTableFunctionState> DuckDBDependenciesInit(ClientContext &conte
 
 	// scan all the schemas and collect them
 	auto &catalog = Catalog::GetCatalog(context, INVALID_CATALOG);
-	if (catalog.IsDuckCatalog()) {
-		auto &duck_catalog = catalog.Cast<DuckCatalog>();
-		auto &dependency_manager = duck_catalog.GetDependencyManager();
-		dependency_manager.Scan(context,
-		                        [&](CatalogEntry &obj, CatalogEntry &dependent, const DependencyDependentFlags &flags) {
-			                        result->entries.emplace_back(obj, dependent, flags);
-		                        });
+	auto dependency_manager = catalog.GetDependencyManager();
+	if (dependency_manager) {
+		dependency_manager->Scan(
+		    context, [&](CatalogEntry &obj, CatalogEntry &dependent, const DependencyDependentFlags &flags) {
+			    result->entries.emplace_back(obj, dependent, flags);
+		    });
 	}
 
 	return std::move(result);
@@ -78,30 +77,38 @@ void DuckDBDependenciesFunction(ClientContext &context, TableFunctionInput &data
 	// start returning values
 	// either fill up the chunk or return all the remaining columns
 	idx_t count = 0;
+
+	// classid, LogicalType::BIGINT
+	auto &classid = output.data[0];
+	// objid, LogicalType::BIGINT
+	auto &objid = output.data[1];
+	// objsubid, LogicalType::INTEGER
+	auto &objsubid = output.data[2];
+	// refclassid, LogicalType::BIGINT
+	auto &refclassid = output.data[3];
+	// refobjid, LogicalType::BIGINT
+	auto &refobjid = output.data[4];
+	// refobjsubid, LogicalType::INTEGER
+	auto &refobjsubid = output.data[5];
+	// deptype, LogicalType::VARCHAR
+	auto &deptype = output.data[6];
+
 	while (data.offset < data.entries.size() && count < STANDARD_VECTOR_SIZE) {
 		auto &entry = data.entries[data.offset];
 
-		// return values:
-		// classid, LogicalType::BIGINT
-		output.SetValue(0, count, Value::BIGINT(0));
-		// objid, LogicalType::BIGINT
-		output.SetValue(1, count, Value::BIGINT(entry.object.oid));
-		// objsubid, LogicalType::INTEGER
-		output.SetValue(2, count, Value::INTEGER(0));
-		// refclassid, LogicalType::BIGINT
-		output.SetValue(3, count, Value::BIGINT(0));
-		// refobjid, LogicalType::BIGINT
-		output.SetValue(4, count, Value::BIGINT(entry.dependent.oid));
-		// refobjsubid, LogicalType::INTEGER
-		output.SetValue(5, count, Value::INTEGER(0));
-		// deptype, LogicalType::VARCHAR
+		classid.Append(Value::BIGINT(0));
+		objid.Append(Value::BIGINT(NumericCast<int64_t>(entry.object.oid)));
+		objsubid.Append(Value::INTEGER(0));
+		refclassid.Append(Value::BIGINT(0));
+		refobjid.Append(Value::BIGINT(NumericCast<int64_t>(entry.dependent.oid)));
+		refobjsubid.Append(Value::INTEGER(0));
 		string dependency_type_str;
 		if (entry.flags.IsBlocking()) {
 			dependency_type_str = "n";
 		} else {
 			dependency_type_str = "a";
 		}
-		output.SetValue(6, count, Value(dependency_type_str));
+		deptype.Append(Value(dependency_type_str));
 
 		data.offset++;
 		count++;

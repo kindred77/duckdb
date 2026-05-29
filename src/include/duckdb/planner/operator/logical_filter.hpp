@@ -21,10 +21,14 @@ public:
 	explicit LogicalFilter(unique_ptr<Expression> expression);
 	LogicalFilter();
 
-	vector<idx_t> projection_map;
+	vector<ProjectionIndex> projection_map;
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
+
+	bool HasProjectionMap() const override {
+		return !projection_map.empty();
+	}
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<LogicalOperator> Deserialize(Deserializer &deserializer);

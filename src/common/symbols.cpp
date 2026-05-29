@@ -27,6 +27,9 @@
 #include "duckdb/parser/query_node.hpp"
 #include "duckdb/parser/query_node/select_node.hpp"
 #include "duckdb/parser/query_node/set_operation_node.hpp"
+#include "duckdb/parser/query_node/update_query_node.hpp"
+#include "duckdb/parser/query_node/delete_query_node.hpp"
+#include "duckdb/parser/query_node/insert_query_node.hpp"
 #include "duckdb/parser/statement/list.hpp"
 #include "duckdb/parser/tableref/list.hpp"
 #include "duckdb/planner/expression/list.hpp"
@@ -39,7 +42,6 @@
 #include "duckdb/storage/statistics/base_statistics.hpp"
 #include "duckdb/storage/write_ahead_log.hpp"
 #include "duckdb/transaction/transaction.hpp"
-#include "duckdb/common/types/row/row_data_collection.hpp"
 
 using namespace duckdb;
 
@@ -61,6 +63,9 @@ template class unique_ptr<VacuumStatement>;
 template class unique_ptr<QueryNode>;
 template class unique_ptr<SelectNode>;
 template class unique_ptr<SetOperationNode>;
+template class unique_ptr<UpdateQueryNode>;
+template class unique_ptr<DeleteQueryNode>;
+template class unique_ptr<InsertQueryNode>;
 template class unique_ptr<ParsedExpression>;
 template class unique_ptr<CaseExpression>;
 template class unique_ptr<CastExpression>;
@@ -87,8 +92,6 @@ template class unique_ptr<SubqueryRef>;
 template class unique_ptr<TableFunctionRef>;
 template class unique_ptr<Pipeline>;
 template class unique_ptr<RowGroup>;
-template class unique_ptr<RowDataBlock>;
-template class unique_ptr<RowDataCollection>;
 template class unique_ptr<ColumnDataCollection>;
 template class unique_ptr<PartitionedColumnData>;
 template class unique_ptr<VacuumInfo>;
@@ -101,7 +104,6 @@ template class unique_ptr<BoundAggregateExpression>;
 template class unique_ptr<BoundCaseExpression>;
 template class unique_ptr<BoundCastExpression>;
 template class unique_ptr<BoundColumnRefExpression>;
-template class unique_ptr<BoundComparisonExpression>;
 template class unique_ptr<BoundConjunctionExpression>;
 template class unique_ptr<BoundConstantExpression>;
 template class unique_ptr<BoundDefaultExpression>;
@@ -111,7 +113,6 @@ template class unique_ptr<BoundParameterExpression>;
 template class unique_ptr<BoundReferenceExpression>;
 template class unique_ptr<BoundSubqueryExpression>;
 template class unique_ptr<BoundWindowExpression>;
-template class unique_ptr<BoundBaseTableRef>;
 
 template class unique_ptr<CatalogEntry>;
 template class unique_ptr<BindContext>;
@@ -140,12 +141,20 @@ template class unique_ptr<LogicalFilter>;
 template class unique_ptr<LogicalJoin>;
 template class unique_ptr<LogicalComparisonJoin>;
 template class unique_ptr<FilterInfo>;
-template class unique_ptr<JoinNode>;
 template class unique_ptr<SingleJoinRelation>;
 template class unique_ptr<CatalogSet>;
 template class unique_ptr<Binder>;
 template class unique_ptr<PrivateAllocatorData>;
 template class unique_ptr<BaseStatistics>;
+
+template class shared_ptr<Relation>;
+template class shared_ptr<Event>;
+template class shared_ptr<Pipeline>;
+template class shared_ptr<MetaPipeline>;
+template class shared_ptr<RowGroupCollection>;
+template class shared_ptr<ColumnDataAllocator>;
+template class shared_ptr<PreparedStatementData>;
+template class weak_ptr<Pipeline>;
 
 } // namespace duckdb
 
@@ -160,15 +169,6 @@ template class unique_ptr<BaseStatistics>;
 	template std::VECTOR_DEFINITION::const_reference std::VECTOR_DEFINITION::front() const;                            \
 	template std::VECTOR_DEFINITION::reference std::VECTOR_DEFINITION::front();
 
-template class duckdb::vector<ExpressionType>;
-template class duckdb::vector<uint64_t>;
-template class duckdb::vector<string>;
-template class duckdb::vector<PhysicalType>;
-template class duckdb::vector<Value>;
-template class duckdb::vector<int>;
-template class duckdb::vector<duckdb::vector<Expression *>>;
-template class duckdb::vector<LogicalType>;
-
 INSTANTIATE_VECTOR(vector<ColumnDefinition>)
 INSTANTIATE_VECTOR(vector<JoinCondition>)
 INSTANTIATE_VECTOR(vector<OrderByNode>)
@@ -180,33 +180,31 @@ INSTANTIATE_VECTOR(vector<unique_ptr<SQLStatement>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<PhysicalOperator>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<LogicalOperator>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<Transaction>>)
-INSTANTIATE_VECTOR(vector<unique_ptr<JoinNode>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<Rule>>)
-INSTANTIATE_VECTOR(vector<std::shared_ptr<Event>>)
+INSTANTIATE_VECTOR(vector<shared_ptr<Event>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<Pipeline>>)
-INSTANTIATE_VECTOR(vector<std::shared_ptr<Pipeline>>)
-INSTANTIATE_VECTOR(vector<std::weak_ptr<Pipeline>>)
-INSTANTIATE_VECTOR(vector<std::shared_ptr<MetaPipeline>>)
+INSTANTIATE_VECTOR(vector<shared_ptr<Pipeline>>)
+INSTANTIATE_VECTOR(vector<weak_ptr<Pipeline>>)
+INSTANTIATE_VECTOR(vector<shared_ptr<MetaPipeline>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<JoinHashTable>>)
 INSTANTIATE_VECTOR(vector<unique_ptr<ColumnDataCollection>>)
-INSTANTIATE_VECTOR(vector<std::shared_ptr<ColumnDataAllocator>>)
-INSTANTIATE_VECTOR(vector<unique_ptr<RowDataBlock>>)
+INSTANTIATE_VECTOR(vector<shared_ptr<ColumnDataAllocator>>)
 
-template class std::shared_ptr<Relation>;
-template class std::shared_ptr<Event>;
-template class std::shared_ptr<Pipeline>;
-template class std::shared_ptr<MetaPipeline>;
-template class std::shared_ptr<RowGroupCollection>;
-template class std::shared_ptr<ColumnDataAllocator>;
-template class std::shared_ptr<PreparedStatementData>;
-template class std::weak_ptr<Pipeline>;
+template class duckdb::vector<ExpressionType>;
+template class duckdb::vector<uint64_t>;
+template class duckdb::vector<string>;
+template class duckdb::vector<PhysicalType>;
+template class duckdb::vector<Value>;
+template class duckdb::vector<int>;
+template class duckdb::vector<duckdb::vector<Expression *>>;
+template class duckdb::vector<LogicalType>;
 
 #if !defined(__clang__)
 template struct std::atomic<uint64_t>;
 #endif
 
 template class std::bitset<STANDARD_VECTOR_SIZE>;
-template class std::unordered_map<PhysicalOperator *, QueryProfiler::TreeNode *>;
+template class std::unordered_map<PhysicalOperator *, ProfilingNode *>;
 template class std::stack<PhysicalOperator *>;
 
 /* -pedantic does not like this

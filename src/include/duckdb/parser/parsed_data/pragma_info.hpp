@@ -10,7 +10,6 @@
 
 #include "duckdb/parser/parsed_data/parse_info.hpp"
 #include "duckdb/common/types/value.hpp"
-#include "duckdb/common/named_parameter_map.hpp"
 #include "duckdb/parser/parsed_expression.hpp"
 
 namespace duckdb {
@@ -33,17 +32,8 @@ public:
 	case_insensitive_map_t<unique_ptr<ParsedExpression>> named_parameters;
 
 public:
-	unique_ptr<PragmaInfo> Copy() const {
-		auto result = make_uniq<PragmaInfo>();
-		result->name = name;
-		for (auto &param : parameters) {
-			result->parameters.push_back(param->Copy());
-		}
-		for (auto &entry : named_parameters) {
-			result->named_parameters.insert(make_pair(entry.first, entry.second->Copy()));
-		}
-		return result;
-	}
+	unique_ptr<PragmaInfo> Copy() const;
+	string ToString() const;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<ParseInfo> Deserialize(Deserializer &deserializer);

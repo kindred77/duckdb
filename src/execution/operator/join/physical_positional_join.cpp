@@ -1,15 +1,17 @@
 #include "duckdb/execution/operator/join/physical_positional_join.hpp"
 
+#include "duckdb/common/vector/flat_vector.hpp"
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 #include "duckdb/execution/operator/join/physical_join.hpp"
 
 namespace duckdb {
 
-PhysicalPositionalJoin::PhysicalPositionalJoin(vector<LogicalType> types, unique_ptr<PhysicalOperator> left,
-                                               unique_ptr<PhysicalOperator> right, idx_t estimated_cardinality)
-    : PhysicalOperator(PhysicalOperatorType::POSITIONAL_JOIN, std::move(types), estimated_cardinality) {
-	children.push_back(std::move(left));
-	children.push_back(std::move(right));
+PhysicalPositionalJoin::PhysicalPositionalJoin(PhysicalPlan &physical_plan, vector<LogicalType> types,
+                                               PhysicalOperator &left, PhysicalOperator &right,
+                                               idx_t estimated_cardinality)
+    : PhysicalOperator(physical_plan, PhysicalOperatorType::POSITIONAL_JOIN, std::move(types), estimated_cardinality) {
+	children.push_back(left);
+	children.push_back(right);
 }
 
 //===--------------------------------------------------------------------===//
@@ -18,7 +20,7 @@ PhysicalPositionalJoin::PhysicalPositionalJoin(vector<LogicalType> types, unique
 class PositionalJoinGlobalState : public GlobalSinkState {
 public:
 	explicit PositionalJoinGlobalState(ClientContext &context, const PhysicalPositionalJoin &op)
-	    : rhs(context, op.children[1]->GetTypes()), initialized(false), source_offset(0), exhausted(false) {
+	    : rhs(context, op.children[1].get().GetTypes()), initialized(false), source_offset(0), exhausted(false) {
 		rhs.InitializeAppend(append_state);
 	}
 
@@ -78,8 +80,7 @@ idx_t PositionalJoinGlobalState::Refill() {
 			source.Reset();
 			for (idx_t i = 0; i < source.ColumnCount(); ++i) {
 				auto &vec = source.data[i];
-				vec.SetVectorType(VectorType::CONSTANT_VECTOR);
-				ConstantVector::SetNull(vec, true);
+				ConstantVector::SetNull(vec, count_t(STANDARD_VECTOR_SIZE));
 			}
 			exhausted = true;
 		}
@@ -130,7 +131,7 @@ void PositionalJoinGlobalState::Execute(DataChunk &input, DataChunk &output) {
 	Refill();
 	CopyData(output, count, col_offset);
 
-	output.SetCardinality(count);
+	output.SetChildCardinality(count);
 }
 
 OperatorResultType PhysicalPositionalJoin::Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
@@ -158,20 +159,19 @@ void PositionalJoinGlobalState::GetData(DataChunk &output) {
 
 	//	LHS is all NULL
 	const auto col_offset = output.ColumnCount() - source.ColumnCount();
+	const auto count = MinValue<idx_t>(STANDARD_VECTOR_SIZE, source.size() - source_offset);
 	for (idx_t i = 0; i < col_offset; ++i) {
 		auto &vec = output.data[i];
-		vec.SetVectorType(VectorType::CONSTANT_VECTOR);
-		ConstantVector::SetNull(vec, true);
+		ConstantVector::SetNull(vec, count_t(count));
 	}
 
 	//	RHS still has data, so copy it
-	const auto count = MinValue<idx_t>(STANDARD_VECTOR_SIZE, source.size() - source_offset);
 	CopyData(output, count, col_offset);
-	output.SetCardinality(count);
+	output.SetChildCardinality(count);
 }
 
-SourceResultType PhysicalPositionalJoin::GetData(ExecutionContext &context, DataChunk &result,
-                                                 OperatorSourceInput &input) const {
+SourceResultType PhysicalPositionalJoin::GetDataInternal(ExecutionContext &context, DataChunk &result,
+                                                         OperatorSourceInput &input) const {
 	auto &sink = sink_state->Cast<PositionalJoinGlobalState>();
 	sink.GetData(result);
 
@@ -186,7 +186,7 @@ void PhysicalPositionalJoin::BuildPipelines(Pipeline &current, MetaPipeline &met
 }
 
 vector<const_reference<PhysicalOperator>> PhysicalPositionalJoin::GetSources() const {
-	auto result = children[0]->GetSources();
+	auto result = children[0].get().GetSources();
 	if (IsSource()) {
 		result.push_back(*this);
 	}

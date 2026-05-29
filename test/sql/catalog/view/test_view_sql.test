@@ -3,7 +3,7 @@
 # group: [view]
 
 statement ok
-PRAGMA enable_verification
+set storage_compatibility_version='v0.10.2'
 
 statement ok
 create schema my_schema;

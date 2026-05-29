@@ -15,12 +15,14 @@
 #include "duckdb/common/winapi.hpp"
 
 namespace duckdb {
+struct DBConfig;
 class Allocator;
 class ClientContext;
 class ExecutionContext;
 class VectorCache;
 class Serializer;
 class Deserializer;
+enum class DebugVerificationMode : uint8_t;
 
 //!  A Data Chunk represents a set of vectors.
 /*!
@@ -56,22 +58,22 @@ public:
 	inline idx_t ColumnCount() const {
 		return data.size();
 	}
-	inline void SetCardinality(idx_t count_p) {
-		D_ASSERT(count_p <= capacity);
-		this->count = count_p;
-	}
+	void SetCardinality(idx_t count_p);
 	inline void SetCardinality(const DataChunk &other) {
 		SetCardinality(other.size());
 	}
-	inline void SetCapacity(idx_t capacity_p) {
-		this->capacity = capacity_p;
-	}
-	inline void SetCapacity(const DataChunk &other) {
-		SetCapacity(other.capacity);
-	}
+	//! Sets the cardinality of all child vectors of this chunk
+	void SetChildCardinality(idx_t count_p);
 
 	DUCKDB_API Value GetValue(idx_t col_idx, idx_t index) const;
-	DUCKDB_API void SetValue(idx_t col_idx, idx_t index, const Value &val);
+	[[deprecated("Use Vector::Append on data[col_idx] instead (or Vector::SetValue for write-at-index "
+	             "semantics)")]] DUCKDB_API void
+	SetValue(idx_t col_idx, idx_t index, const Value &val);
+
+	//! Returns the uncompressed size of the data elements stored in this data chunk
+	idx_t GetDataSize() const;
+	//! Returns the size of the allocated data by this data chunk
+	idx_t GetAllocationSize() const;
 
 	//! Returns true if all vectors in the DataChunk are constant
 	DUCKDB_API bool AllConstant() const;
@@ -81,33 +83,31 @@ public:
 	//! Set the DataChunk to own the data of data chunk, destroying the other chunk in the process
 	DUCKDB_API void Move(DataChunk &chunk);
 
-	//! Initializes the DataChunk with the specified types to an empty DataChunk
-	//! This will create one vector of the specified type for each LogicalType in the
-	//! types list. The vector will be referencing vector to the data owned by
-	//! the DataChunk.
-	DUCKDB_API void Initialize(Allocator &allocator, const vector<LogicalType> &types,
-	                           idx_t capacity = STANDARD_VECTOR_SIZE);
-	DUCKDB_API void Initialize(ClientContext &context, const vector<LogicalType> &types,
-	                           idx_t capacity = STANDARD_VECTOR_SIZE);
-	//! Initializes an empty DataChunk with the given types. The vectors will *not* have any data allocated for them.
+	//! Initializes a DataChunk with the given types and without any vector data allocation.
 	DUCKDB_API void InitializeEmpty(const vector<LogicalType> &types);
 
-	DUCKDB_API void InitializeEmpty(vector<LogicalType>::const_iterator begin, vector<LogicalType>::const_iterator end);
-	DUCKDB_API void Initialize(Allocator &allocator, vector<LogicalType>::const_iterator begin,
-	                           vector<LogicalType>::const_iterator end, idx_t capacity = STANDARD_VECTOR_SIZE);
-	DUCKDB_API void Initialize(ClientContext &context, vector<LogicalType>::const_iterator begin,
-	                           vector<LogicalType>::const_iterator end, idx_t capacity = STANDARD_VECTOR_SIZE);
+	//! Initializes a DataChunk with the given types. Then, if the corresponding boolean in the initialize-vector is
+	//! true, it initializes the vector for that data type.
+	DUCKDB_API void Initialize(ClientContext &context, const vector<LogicalType> &types,
+	                           idx_t capacity = STANDARD_VECTOR_SIZE);
+	DUCKDB_API void Initialize(Allocator &allocator, const vector<LogicalType> &types,
+	                           idx_t capacity = STANDARD_VECTOR_SIZE);
+	DUCKDB_API void Initialize(ClientContext &context, const vector<LogicalType> &types, const vector<bool> &initialize,
+	                           idx_t capacity = STANDARD_VECTOR_SIZE);
+	DUCKDB_API void Initialize(Allocator &allocator, const vector<LogicalType> &types, const vector<bool> &initialize,
+	                           idx_t capacity = STANDARD_VECTOR_SIZE);
 
 	//! Append the other DataChunk to this one. The column count and types of
 	//! the two DataChunks have to match exactly. Throws an exception if there
 	//! is not enough space in the chunk and resize is not allowed.
-	DUCKDB_API void Append(const DataChunk &other, bool resize = false, SelectionVector *sel = nullptr,
-	                       idx_t count = 0);
+	DUCKDB_API void Append(const DataChunk &other, VectorAppendMode append_mode = VectorAppendMode::ERROR_ON_NO_SPACE);
+	DUCKDB_API void Append(const DataChunk &other, const SelectionVector &sel, idx_t sel_count,
+	                       VectorAppendMode append_mode = VectorAppendMode::ERROR_ON_NO_SPACE);
 
 	//! Destroy all data and columns owned by this DataChunk
 	DUCKDB_API void Destroy();
 
-	//! Copies the data from this vector to another vector.
+	//! Copies the data from this chunk to another chunk.
 	DUCKDB_API void Copy(DataChunk &other, idx_t offset = 0) const;
 	DUCKDB_API void Copy(DataChunk &other, const SelectionVector &sel, const idx_t source_count,
 	                     const idx_t offset = 0) const;
@@ -131,17 +131,19 @@ public:
 
 	//! Slice all Vectors from other.data[i] to data[i + 'col_offset']
 	//! Turning all Vectors into Dictionary Vectors, using 'sel'
-	DUCKDB_API void Slice(DataChunk &other, const SelectionVector &sel, idx_t count, idx_t col_offset = 0);
+	DUCKDB_API void Slice(const DataChunk &other, const SelectionVector &sel, idx_t count, idx_t col_offset = 0);
+	//! Slice all vectors from other.data from "offset..end"
+	DUCKDB_API void Slice(const DataChunk &other, idx_t offset, idx_t end);
 
 	//! Slice a DataChunk from "offset" to "offset + count"
 	DUCKDB_API void Slice(idx_t offset, idx_t count);
 
 	//! Resets the DataChunk to its state right after the DataChunk::Initialize
-	//! function was called. This sets the count to 0, and resets each member
+	//! function was called. This sets the count to 0, the capacity to initial_capacity and resets each member
 	//! Vector to point back to the data owned by this DataChunk.
 	DUCKDB_API void Reset();
 
-	DUCKDB_API void Serialize(Serializer &serializer) const;
+	DUCKDB_API void Serialize(Serializer &serializer, bool compressed_serialization = true) const;
 	DUCKDB_API void Deserialize(Deserializer &source);
 
 	//! Hashes the DataChunk to the target vector
@@ -150,7 +152,7 @@ public:
 	DUCKDB_API void Hash(vector<idx_t> &column_ids, Vector &result);
 
 	//! Returns a list of types of the vectors of this data chunk
-	DUCKDB_API vector<LogicalType> GetTypes();
+	DUCKDB_API vector<LogicalType> GetTypes() const;
 
 	//! Converts this DataChunk to a printable string representation
 	DUCKDB_API string ToString() const;
@@ -160,14 +162,19 @@ public:
 
 	//! Verify that the DataChunk is in a consistent, not corrupt state. DEBUG
 	//! FUNCTION ONLY!
+	DUCKDB_API void Verify(DatabaseInstance &db);
+	DUCKDB_API void Verify(shared_ptr<DatabaseInstance> &db);
+	DUCKDB_API void Verify(ClientContext &context);
+	DUCKDB_API void Verify(optional_ptr<ClientContext> context);
 	DUCKDB_API void Verify();
 
 private:
 	//! The amount of tuples stored in the data chunk
 	idx_t count;
-	//! The amount of tuples that can be stored in the data chunk
-	idx_t capacity;
 	//! Vector caches, used to store data when ::Initialize is called
 	vector<VectorCache> vector_caches;
+
+private:
+	void VerifyInternal(DebugVerificationMode mode, optional_ptr<DatabaseInstance> db);
 };
 } // namespace duckdb

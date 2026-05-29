@@ -9,7 +9,6 @@
 #pragma once
 
 #include "duckdb/function/function_set.hpp"
-#include "duckdb/function/table_function.hpp"
 #include "duckdb/parser/parsed_data/alter_info.hpp"
 
 namespace duckdb {
@@ -21,7 +20,7 @@ enum class AlterTableFunctionType : uint8_t { INVALID = 0, ADD_FUNCTION_OVERLOAD
 
 struct AlterTableFunctionInfo : public AlterInfo {
 	AlterTableFunctionInfo(AlterTableFunctionType type, AlterEntryData data);
-	virtual ~AlterTableFunctionInfo() override;
+	~AlterTableFunctionInfo() override;
 
 	AlterTableFunctionType alter_table_function_type;
 
@@ -40,6 +39,7 @@ struct AddTableFunctionOverloadInfo : public AlterTableFunctionInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 };
 
 } // namespace duckdb

@@ -18,9 +18,11 @@ class SQLStatement;
 class AlterStatement;
 class AttachStatement;
 class CallStatement;
+class ConnectStatement;
 class CopyStatement;
 class CreateStatement;
 class DetachStatement;
+class DisconnectStatement;
 class DeleteStatement;
 class DropStatement;
 class ExtensionStatement;
@@ -28,6 +30,7 @@ class InsertStatement;
 class SelectStatement;
 class TransactionStatement;
 class UpdateStatement;
+class UpdateExtensionsStatement;
 class PrepareStatement;
 class ExecuteStatement;
 class PragmaStatement;
@@ -42,6 +45,7 @@ class LoadStatement;
 class LogicalPlanStatement;
 class MultiStatement;
 class CopyDatabaseStatement;
+class MergeIntoStatement;
 
 //===--------------------------------------------------------------------===//
 // Query Node
@@ -51,6 +55,10 @@ class SelectNode;
 class SetOperationNode;
 class RecursiveCTENode;
 class CTENode;
+class StatementNode;
+class UpdateQueryNode;
+class DeleteQueryNode;
+class InsertQueryNode;
 
 //===--------------------------------------------------------------------===//
 // Expressions
@@ -73,6 +81,7 @@ class ParameterExpression;
 class PositionalReferenceExpression;
 class StarExpression;
 class SubqueryExpression;
+class TypeExpression;
 class WindowExpression;
 
 //===--------------------------------------------------------------------===//
@@ -91,17 +100,20 @@ class ForeignKeyConstraint;
 class TableRef;
 
 class BaseTableRef;
+class BoundRefWrapper;
 class JoinRef;
 class SubqueryRef;
 class TableFunctionRef;
 class EmptyTableRef;
 class ExpressionListRef;
+class ColumnDataRef;
 class PivotRef;
 class ShowRef;
 
 //===--------------------------------------------------------------------===//
 // Other
 //===--------------------------------------------------------------------===//
-struct SampleOptions;
+class SampleOptions;
+class MergeIntoAction;
 
 } // namespace duckdb

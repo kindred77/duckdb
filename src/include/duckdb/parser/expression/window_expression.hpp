@@ -22,7 +22,10 @@ enum class WindowBoundary : uint8_t {
 	EXPR_PRECEDING_ROWS = 5,
 	EXPR_FOLLOWING_ROWS = 6,
 	EXPR_PRECEDING_RANGE = 7,
-	EXPR_FOLLOWING_RANGE = 8
+	EXPR_FOLLOWING_RANGE = 8,
+	CURRENT_ROW_GROUPS = 9,
+	EXPR_PRECEDING_GROUPS = 10,
+	EXPR_FOLLOWING_GROUPS = 11
 };
 
 //! Represents the window exclusion mode
@@ -30,44 +33,13 @@ enum class WindowExcludeMode : uint8_t { NO_OTHER = 0, CURRENT_ROW = 1, GROUP = 
 
 const char *ToString(WindowBoundary value);
 
-//! The WindowExpression represents a window function in the query. They are a special case of aggregates which is why
-//! they inherit from them.
+//! The WindowExpression represents a window function in the query.
 class WindowExpression : public ParsedExpression {
 public:
 	static constexpr const ExpressionClass TYPE = ExpressionClass::WINDOW;
 
 public:
-	WindowExpression(ExpressionType type, string catalog_name, string schema_name, const string &function_name);
-
-	//! Catalog of the aggregate function
-	string catalog;
-	//! Schema of the aggregate function
-	string schema;
-	//! Name of the aggregate function
-	string function_name;
-	//! The child expression of the main window function
-	vector<unique_ptr<ParsedExpression>> children;
-	//! The set of expressions to partition by
-	vector<unique_ptr<ParsedExpression>> partitions;
-	//! The set of ordering clauses
-	vector<OrderByNode> orders;
-	//! Expression representing a filter, only used for aggregates
-	unique_ptr<ParsedExpression> filter_expr;
-	//! True to ignore NULL values
-	bool ignore_nulls;
-	//! Whether or not the aggregate function is distinct, only used for aggregates
-	bool distinct;
-	//! The window boundaries
-	WindowBoundary start = WindowBoundary::INVALID;
-	WindowBoundary end = WindowBoundary::INVALID;
-	//! The EXCLUDE clause
-	WindowExcludeMode exclude_clause = WindowExcludeMode::NO_OTHER;
-
-	unique_ptr<ParsedExpression> start_expr;
-	unique_ptr<ParsedExpression> end_expr;
-	//! Offset and default expressions for WINDOW_LEAD and WINDOW_LAG functions
-	unique_ptr<ParsedExpression> offset_expr;
-	unique_ptr<ParsedExpression> default_expr;
+	WindowExpression(const string &catalog_name, const string &schema, const string &function_name);
 
 public:
 	bool IsWindow() const override {
@@ -77,16 +49,130 @@ public:
 	//! Convert the Expression to a String
 	string ToString() const override;
 
-	static bool Equal(const WindowExpression &a, const WindowExpression &b);
+	bool Equals(const ParsedExpression &other) const override;
+	hash_t Hash() const override;
+
+	bool HasBoundedParts();
 
 	unique_ptr<ParsedExpression> Copy() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<ParsedExpression> Deserialize(Deserializer &deserializer);
 
-	static ExpressionType WindowToExpressionType(string &fun_name);
+	static string ExpressionTypeToWindow(ExpressionType expression_type);
+	void SetFunctionName(const string &function_name);
+
+	static ExpressionType WindowToExpressionType(const string &fun_name);
 
 public:
+	const string &Catalog() const {
+		return catalog;
+	}
+	string &CatalogMutable() {
+		return catalog;
+	}
+	const string &Schema() const {
+		return schema;
+	}
+	string &SchemaMutable() {
+		return schema;
+	}
+	const string &FunctionName() const {
+		return function_name;
+	}
+	string &FunctionNameMutable() {
+		return function_name;
+	}
+	const vector<unique_ptr<ParsedExpression>> &GetChildren() const {
+		return children;
+	}
+	vector<unique_ptr<ParsedExpression>> &GetChildrenMutable() {
+		return children;
+	}
+	const vector<unique_ptr<ParsedExpression>> &Partitions() const {
+		return partitions;
+	}
+	vector<unique_ptr<ParsedExpression>> &PartitionsMutable() {
+		return partitions;
+	}
+	const vector<OrderByNode> &OrderBy() const {
+		return orders;
+	}
+	vector<OrderByNode> &OrderByMutable() {
+		return orders;
+	}
+	const unique_ptr<ParsedExpression> &Filter() const {
+		return filter_expr;
+	}
+	unique_ptr<ParsedExpression> &FilterMutable() {
+		return filter_expr;
+	}
+	bool HasIgnoreNulls() const {
+		return has_ignore_nulls;
+	}
+	bool &HasIgnoreNullsMutable() {
+		return has_ignore_nulls;
+	}
+	bool IgnoreNulls() const {
+		return ignore_nulls;
+	}
+	bool &IgnoreNullsMutable() {
+		return ignore_nulls;
+	}
+	bool Distinct() const {
+		return distinct;
+	}
+	bool &DistinctMutable() {
+		return distinct;
+	}
+	WindowBoundary WindowStart() const {
+		return start;
+	}
+	WindowBoundary &WindowStartMutable() {
+		return start;
+	}
+	WindowBoundary WindowEnd() const {
+		return end;
+	}
+	WindowBoundary &WindowEndMutable() {
+		return end;
+	}
+	WindowExcludeMode WindowExclude() const {
+		return exclude_clause;
+	}
+	WindowExcludeMode &WindowExcludeMutable() {
+		return exclude_clause;
+	}
+	const unique_ptr<ParsedExpression> &StartExpr() const {
+		return start_expr;
+	}
+	unique_ptr<ParsedExpression> &StartExprMutable() {
+		return start_expr;
+	}
+	const unique_ptr<ParsedExpression> &EndExpr() const {
+		return end_expr;
+	}
+	unique_ptr<ParsedExpression> &EndExprMutable() {
+		return end_expr;
+	}
+	const vector<OrderByNode> &ArgOrders() const {
+		return arg_orders;
+	}
+	vector<OrderByNode> &ArgOrdersMutable() {
+		return arg_orders;
+	}
+
+	static inline string ToUnits(const WindowBoundary boundary, const WindowBoundary rows, const WindowBoundary range,
+	                             const WindowBoundary groups) {
+		if (boundary == rows) {
+			return "ROWS";
+		} else if (boundary == range) {
+			return "RANGE";
+		} else {
+			return "GROUPS";
+		}
+	}
+
 	template <class T, class BASE, class ORDER_NODE>
 	static string ToString(const T &entry, const string &schema, const string &function_name) {
 		// Start with function call
@@ -99,15 +185,13 @@ public:
 				return (distincts++ ? "" : "DISTINCT ") + child->ToString();
 			});
 		}
-		// Lead/Lag extra arguments
-		if (entry.offset_expr.get()) {
-			result += ", ";
-			result += entry.offset_expr->ToString();
+		// ORDER BY arguments
+		if (!entry.arg_orders.empty()) {
+			result += " ORDER BY ";
+			result += StringUtil::Join(entry.arg_orders, entry.arg_orders.size(), ", ",
+			                           [](const ORDER_NODE &order) { return order.ToString(); });
 		}
-		if (entry.default_expr.get()) {
-			result += ", ";
-			result += entry.default_expr->ToString();
-		}
+
 		// IGNORE NULLS
 		if (entry.ignore_nulls) {
 			result += " IGNORE NULLS";
@@ -144,8 +228,10 @@ public:
 		switch (entry.start) {
 		case WindowBoundary::CURRENT_ROW_RANGE:
 		case WindowBoundary::CURRENT_ROW_ROWS:
+		case WindowBoundary::CURRENT_ROW_GROUPS:
 			from = "CURRENT ROW";
-			units = (entry.start == WindowBoundary::CURRENT_ROW_RANGE) ? "RANGE" : "ROWS";
+			units = ToUnits(entry.start, WindowBoundary::CURRENT_ROW_ROWS, WindowBoundary::CURRENT_ROW_RANGE,
+			                WindowBoundary::CURRENT_ROW_GROUPS);
 			break;
 		case WindowBoundary::UNBOUNDED_PRECEDING:
 			if (entry.end != WindowBoundary::CURRENT_ROW_RANGE) {
@@ -154,15 +240,20 @@ public:
 			break;
 		case WindowBoundary::EXPR_PRECEDING_ROWS:
 		case WindowBoundary::EXPR_PRECEDING_RANGE:
+		case WindowBoundary::EXPR_PRECEDING_GROUPS:
 			from = entry.start_expr->ToString() + " PRECEDING";
-			units = (entry.start == WindowBoundary::EXPR_PRECEDING_RANGE) ? "RANGE" : "ROWS";
+			units = ToUnits(entry.start, WindowBoundary::EXPR_PRECEDING_ROWS, WindowBoundary::EXPR_PRECEDING_RANGE,
+			                WindowBoundary::EXPR_PRECEDING_GROUPS);
 			break;
 		case WindowBoundary::EXPR_FOLLOWING_ROWS:
 		case WindowBoundary::EXPR_FOLLOWING_RANGE:
+		case WindowBoundary::EXPR_FOLLOWING_GROUPS:
 			from = entry.start_expr->ToString() + " FOLLOWING";
-			units = (entry.start == WindowBoundary::EXPR_FOLLOWING_RANGE) ? "RANGE" : "ROWS";
+			units = ToUnits(entry.start, WindowBoundary::EXPR_FOLLOWING_ROWS, WindowBoundary::EXPR_FOLLOWING_RANGE,
+			                WindowBoundary::EXPR_FOLLOWING_GROUPS);
 			break;
-		default:
+		case WindowBoundary::UNBOUNDED_FOLLOWING:
+		case WindowBoundary::INVALID:
 			throw InternalException("Unrecognized FROM in WindowExpression");
 		}
 
@@ -175,8 +266,10 @@ public:
 			}
 			break;
 		case WindowBoundary::CURRENT_ROW_ROWS:
+		case WindowBoundary::CURRENT_ROW_GROUPS:
 			to = "CURRENT ROW";
-			units = "ROWS";
+			units = ToUnits(entry.end, WindowBoundary::CURRENT_ROW_ROWS, WindowBoundary::CURRENT_ROW_RANGE,
+			                WindowBoundary::CURRENT_ROW_GROUPS);
 			break;
 		case WindowBoundary::UNBOUNDED_PRECEDING:
 			to = "UNBOUNDED PRECEDING";
@@ -186,15 +279,19 @@ public:
 			break;
 		case WindowBoundary::EXPR_PRECEDING_ROWS:
 		case WindowBoundary::EXPR_PRECEDING_RANGE:
+		case WindowBoundary::EXPR_PRECEDING_GROUPS:
 			to = entry.end_expr->ToString() + " PRECEDING";
-			units = (entry.end == WindowBoundary::EXPR_PRECEDING_RANGE) ? "RANGE" : "ROWS";
+			units = ToUnits(entry.end, WindowBoundary::EXPR_PRECEDING_ROWS, WindowBoundary::EXPR_PRECEDING_RANGE,
+			                WindowBoundary::EXPR_PRECEDING_GROUPS);
 			break;
 		case WindowBoundary::EXPR_FOLLOWING_ROWS:
 		case WindowBoundary::EXPR_FOLLOWING_RANGE:
+		case WindowBoundary::EXPR_FOLLOWING_GROUPS:
 			to = entry.end_expr->ToString() + " FOLLOWING";
-			units = (entry.end == WindowBoundary::EXPR_FOLLOWING_RANGE) ? "RANGE" : "ROWS";
+			units = ToUnits(entry.end, WindowBoundary::EXPR_FOLLOWING_ROWS, WindowBoundary::EXPR_FOLLOWING_RANGE,
+			                WindowBoundary::EXPR_FOLLOWING_GROUPS);
 			break;
-		default:
+		case WindowBoundary::INVALID:
 			throw InternalException("Unrecognized TO in WindowExpression");
 		}
 		if (entry.exclude_clause != WindowExcludeMode::NO_OTHER) {
@@ -247,7 +344,50 @@ public:
 	}
 
 private:
-	explicit WindowExpression(ExpressionType type);
+	//! Catalog of the aggregate function
+	string catalog;
+	//! Schema of the aggregate function
+	string schema;
+	//! Name of the aggregate function
+	string function_name;
+	//! The child expression of the main window function
+	vector<unique_ptr<ParsedExpression>> children;
+	//! The set of expressions to partition by
+	vector<unique_ptr<ParsedExpression>> partitions;
+	//! The set of ordering clauses
+	vector<OrderByNode> orders;
+	//! Expression representing a filter, only used for aggregates
+	unique_ptr<ParsedExpression> filter_expr;
+	//! True if we parsed IGNORE/RESPECT NULLS
+	bool has_ignore_nulls = false;
+	//! True to ignore NULL values
+	bool ignore_nulls = false;
+	//! Whether or not the aggregate function is distinct, only used for aggregates
+	bool distinct = false;
+	//! The window boundaries
+	WindowBoundary start = WindowBoundary::INVALID;
+	WindowBoundary end = WindowBoundary::INVALID;
+	//! The EXCLUDE clause
+	WindowExcludeMode exclude_clause = WindowExcludeMode::NO_OTHER;
+
+	unique_ptr<ParsedExpression> start_expr;
+	unique_ptr<ParsedExpression> end_expr;
+
+	//! The set of argument ordering clauses
+	//! These are distinct from the frame ordering clauses e.g., the "x" in
+	//! FIRST_VALUE(a ORDER BY x) OVER (PARTITION BY p ORDER BY s)
+	vector<OrderByNode> arg_orders;
+
+private:
+	WindowExpression();
+	//	Backwards-compatible serialization interface
+	WindowExpression(ExpressionType type, vector<unique_ptr<ParsedExpression>> children,
+	                 unique_ptr<ParsedExpression> offset_expr, unique_ptr<ParsedExpression> default_expr);
+
+	//	Remove LEAD/LAG offset/default
+	vector<unique_ptr<ParsedExpression>> SerializedChildren(Serializer &serializer) const;
+	unique_ptr<ParsedExpression> SerializedOffset(Serializer &serializer) const;
+	unique_ptr<ParsedExpression> SerializedDefault(Serializer &serializer) const;
 };
 
 } // namespace duckdb

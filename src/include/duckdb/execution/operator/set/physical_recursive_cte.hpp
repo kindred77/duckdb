@@ -8,33 +8,63 @@
 
 #pragma once
 
+#include "duckdb/common/reference_map.hpp"
 #include "duckdb/common/types/column/column_data_collection.hpp"
 #include "duckdb/execution/physical_operator.hpp"
+#include "duckdb/planner/expression/bound_aggregate_expression.hpp"
 
 namespace duckdb {
 
 class RecursiveCTEState;
+struct RecursiveExecutorPool;
+class PhysicalColumnDataScan;
+class Pipeline;
+class PipelineExecutor;
 
 class PhysicalRecursiveCTE : public PhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::RECURSIVE_CTE;
+	using executor_cache_t = reference_map_t<Pipeline, vector<unique_ptr<PipelineExecutor>>>;
+	friend class RecursiveCTEState;
 
 public:
-	PhysicalRecursiveCTE(string ctename, idx_t table_index, vector<LogicalType> types, bool union_all,
-	                     unique_ptr<PhysicalOperator> top, unique_ptr<PhysicalOperator> bottom,
-	                     idx_t estimated_cardinality);
+	PhysicalRecursiveCTE(PhysicalPlan &physical_plan, string ctename, TableIndex table_index, vector<LogicalType> types,
+	                     bool union_all, PhysicalOperator &top, PhysicalOperator &bottom, idx_t estimated_cardinality);
 	~PhysicalRecursiveCTE() override;
 
 	string ctename;
-	idx_t table_index;
-
+	TableIndex table_index;
+	// Flag if recurring table is referenced, if not we do not copy ht into ColumnDataCollection
+	bool ref_recurring;
 	bool union_all;
-	std::shared_ptr<ColumnDataCollection> working_table;
+	shared_ptr<ColumnDataCollection> working_table;
 	shared_ptr<MetaPipeline> recursive_meta_pipeline;
+
+	//===--------------------------------------------------------------------===//
+	// Additionally required for using-key recursive CTE to normal CTE.
+	//===--------------------------------------------------------------------===//
+	bool using_key = false;
+	// Contains the result of the key variant
+	shared_ptr<ColumnDataCollection> recurring_table;
+	// Contains the types of the payload and key columns.
+	vector<LogicalType> payload_types, distinct_types, internal_types;
+	// Contains the payload and key indices
+	vector<idx_t> payload_idx, distinct_idx;
+	// Contains the aggregates for the payload
+	vector<unique_ptr<Expression>> payload_aggregates;
+	//! Number of recursive table scans inside the recursive member
+	idx_t recursive_reference_count = 0;
+	//! Number of recurring table scans inside the recursive member
+	idx_t recurring_reference_count = 0;
+	//! Recursive table scans rebound to the current iteration input buffer
+	vector<reference<PhysicalColumnDataScan>> recursive_scans;
+	//! Recursive meta-pipelines that are independent of the active recursive scan graph and can be materialized once
+	reference_set_t<const MetaPipeline> invariant_meta_pipelines;
 
 public:
 	// Source interface
-	SourceResultType GetData(ExecutionContext &context, DataChunk &chunk, OperatorSourceInput &input) const override;
+	SourceResultType GetDataInternal(ExecutionContext &context, DataChunk &chunk,
+	                                 OperatorSourceInput &input) const override;
 
 	bool IsSource() const override {
 		return true;
@@ -54,7 +84,7 @@ public:
 		return true;
 	}
 
-	string ParamsToString() const override;
+	InsertionOrderPreservingMap<string> ParamsToString() const override;
 
 public:
 	void BuildPipelines(Pipeline &current, MetaPipeline &meta_pipeline) override;
@@ -66,6 +96,9 @@ private:
 	idx_t ProbeHT(DataChunk &chunk, RecursiveCTEState &state) const;
 
 	void ExecuteRecursivePipelines(ExecutionContext &context) const;
+
+private:
+	mutable shared_ptr<RecursiveExecutorPool> shared_executor_pool;
 };
 
 } // namespace duckdb

@@ -5,7 +5,7 @@
 namespace duckdb {
 
 unique_ptr<NodeStatistics> StatisticsPropagator::PropagateStatistics(LogicalWindow &window,
-                                                                     unique_ptr<LogicalOperator> *node_ptr) {
+                                                                     unique_ptr<LogicalOperator> &node_ptr) {
 	// first propagate to the child
 	node_stats = PropagateStatistics(window.children[0]);
 
@@ -31,16 +31,8 @@ unique_ptr<NodeStatistics> StatisticsPropagator::PropagateStatistics(LogicalWind
 			over_expr.expr_stats.push_back(nullptr);
 		}
 
-		if (over_expr.offset_expr) {
-			over_expr.expr_stats.push_back(PropagateExpression(over_expr.offset_expr));
-		} else {
-			over_expr.expr_stats.push_back(nullptr);
-		}
-
-		if (over_expr.default_expr) {
-			over_expr.expr_stats.push_back(PropagateExpression(over_expr.default_expr));
-		} else {
-			over_expr.expr_stats.push_back(nullptr);
+		for (auto &bound_order : over_expr.arg_orders) {
+			bound_order.stats = PropagateExpression(bound_order.expression);
 		}
 	}
 	return std::move(node_stats);

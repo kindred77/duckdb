@@ -9,26 +9,19 @@ namespace duckdb {
 
 using Filter = FilterPushdown::Filter;
 
-static void ExtractFilterBindings(Expression &expr, vector<ColumnBinding> &bindings) {
-	if (expr.type == ExpressionType::BOUND_COLUMN_REF) {
-		auto &colref = expr.Cast<BoundColumnRefExpression>();
-		bindings.push_back(colref.binding);
-	}
-	ExpressionIterator::EnumerateChildren(expr, [&](Expression &child) { ExtractFilterBindings(child, bindings); });
+static unique_ptr<Expression> ReplaceGroupBindings(LogicalAggregate &aggr, unique_ptr<Expression> root_expr) {
+	ExpressionIterator::VisitExpressionMutable<BoundColumnRefExpression>(
+	    root_expr, [&](BoundColumnRefExpression &colref, unique_ptr<Expression> &expr) {
+		    D_ASSERT(colref.depth == 0);
+		    // replace the binding with a copy to the expression at the referenced index
+		    expr = aggr.GetExpression(colref.binding).Copy();
+	    });
+	return root_expr;
 }
 
-static unique_ptr<Expression> ReplaceGroupBindings(LogicalAggregate &proj, unique_ptr<Expression> expr) {
-	if (expr->type == ExpressionType::BOUND_COLUMN_REF) {
-		auto &colref = expr->Cast<BoundColumnRefExpression>();
-		D_ASSERT(colref.binding.table_index == proj.group_index);
-		D_ASSERT(colref.binding.column_index < proj.groups.size());
-		D_ASSERT(colref.depth == 0);
-		// replace the binding with a copy to the expression at the referenced index
-		return proj.groups[colref.binding.column_index]->Copy();
-	}
-	ExpressionIterator::EnumerateChildren(
-	    *expr, [&](unique_ptr<Expression> &child) { child = ReplaceGroupBindings(proj, std::move(child)); });
-	return expr;
+void FilterPushdown::ExtractFilterBindings(const Expression &expr, vector<ColumnBinding> &bindings) {
+	ExpressionIterator::VisitExpression<BoundColumnRefExpression>(
+	    expr, [&](const BoundColumnRefExpression &colref) { bindings.push_back(colref.binding); });
 }
 
 unique_ptr<LogicalOperator> FilterPushdown::PushdownAggregate(unique_ptr<LogicalOperator> op) {
@@ -37,7 +30,7 @@ unique_ptr<LogicalOperator> FilterPushdown::PushdownAggregate(unique_ptr<Logical
 
 	// pushdown into AGGREGATE and GROUP BY
 	// we cannot push expressions that refer to the aggregate
-	FilterPushdown child_pushdown(optimizer);
+	FilterPushdown child_pushdown(optimizer, convert_mark_joins);
 	for (idx_t i = 0; i < filters.size(); i++) {
 		auto &f = *filters[i];
 		if (f.bindings.find(aggr.aggregate_index) != f.bindings.end()) {
@@ -50,21 +43,21 @@ unique_ptr<LogicalOperator> FilterPushdown::PushdownAggregate(unique_ptr<Logical
 		}
 		// no aggregate! we are filtering on a group
 		// we can only push this down if the filter is in all grouping sets
+		if (aggr.groups.empty()) {
+			// empty group - we cannot pushdown the filter
+			continue;
+		}
+
 		vector<ColumnBinding> bindings;
 		ExtractFilterBindings(*f.filter, bindings);
+		if (bindings.empty()) {
+			// we can never push down empty grouping sets
+			continue;
+		}
 
 		bool can_pushdown_filter = true;
-		if (aggr.grouping_sets.empty()) {
-			// empty grouping set - we cannot pushdown the filter
-			can_pushdown_filter = false;
-		}
 		for (auto &grp : aggr.grouping_sets) {
 			// check for each of the grouping sets if they contain all groups
-			if (bindings.empty()) {
-				// we can never push down empty grouping sets
-				can_pushdown_filter = false;
-				break;
-			}
 			for (auto &binding : bindings) {
 				if (grp.find(binding.column_index) == grp.end()) {
 					can_pushdown_filter = false;
@@ -87,7 +80,7 @@ unique_ptr<LogicalOperator> FilterPushdown::PushdownAggregate(unique_ptr<Logical
 			return make_uniq<LogicalEmptyResult>(std::move(op));
 		}
 		// erase the filter from here
-		filters.erase(filters.begin() + i);
+		filters.erase_at(i);
 		i--;
 	}
 	child_pushdown.GenerateFilters();

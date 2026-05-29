@@ -1,3 +1,4 @@
+
 #include "duckdb/optimizer/rule/constant_folding.hpp"
 
 #include "duckdb/common/exception.hpp"
@@ -12,7 +13,7 @@ class ConstantFoldingExpressionMatcher : public FoldableConstantMatcher {
 public:
 	bool Match(Expression &expr, vector<reference<Expression>> &bindings) override {
 		// we also do not match on ConstantExpressions, because we cannot fold those any further
-		if (expr.type == ExpressionType::VALUE_CONSTANT) {
+		if (expr.GetExpressionType() == ExpressionType::VALUE_CONSTANT) {
 			return false;
 		}
 		return FoldableConstantMatcher::Match(expr, bindings);
@@ -28,14 +29,14 @@ unique_ptr<Expression> ConstantFoldingRule::Apply(LogicalOperator &op, vector<re
                                                   bool &changes_made, bool is_root) {
 	auto &root = bindings[0].get();
 	// the root is a scalar expression that we have to fold
-	D_ASSERT(root.IsFoldable() && root.type != ExpressionType::VALUE_CONSTANT);
+	D_ASSERT(root.IsFoldable() && root.GetExpressionType() != ExpressionType::VALUE_CONSTANT);
 
 	// use an ExpressionExecutor to execute the expression
 	Value result_value;
 	if (!ExpressionExecutor::TryEvaluateScalar(GetContext(), root, result_value)) {
 		return nullptr;
 	}
-	D_ASSERT(result_value.type().InternalType() == root.return_type.InternalType());
+	D_ASSERT(result_value.type().InternalType() == root.GetReturnType().InternalType());
 	// now get the value from the result vector and insert it back into the plan as a constant expression
 	return make_uniq<BoundConstantExpression>(result_value);
 }

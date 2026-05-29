@@ -10,7 +10,6 @@
 
 #include "duckdb/parser/sql_statement.hpp"
 #include "duckdb/parser/parsed_data/pragma_info.hpp"
-#include "duckdb/parser/parsed_expression.hpp"
 
 namespace duckdb {
 
@@ -28,6 +27,7 @@ protected:
 
 public:
 	unique_ptr<SQLStatement> Copy() const override;
+	string ToString() const override;
 };
 
 } // namespace duckdb

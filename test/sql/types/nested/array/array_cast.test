@@ -2,10 +2,7 @@
 # group: [array]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
-PRAGMA verify_external
+SET debug_force_external=true;
 
 # Should be able to cast to varchar
 query I
@@ -25,10 +22,13 @@ SELECT list_extract(array_value(1, 2, 3), 2)
 ----
 2
 
-# Should not be able to implicitly cast to list with unnest
-statement error
+# Should be able to implicitly cast to list with unnest
+query I
 SELECT * FROM UNNEST(array_value(1, 2, 3))
 ----
+1
+2
+3
 
 # Should be able to cast to list with unnest
 query I
@@ -72,6 +72,7 @@ SELECT ['1.0', '2.0', '3.0']::DOUBLE[3]
 statement error
 SELECT [1, 2, 3]::BLOB[3]
 ----
+Unimplemented type for cast (INTEGER -> BLOB)
 
 # Should be able to cast from NULL
 query I
@@ -138,11 +139,13 @@ NULL
 statement error
 SELECT (['2', 'abc', '3']::VARCHAR[3])::INT[]
 ----
+Could not convert string 'abc' to INT32
 
 # Should not be able to cast to unrelated type
 statement error
 SELECT ([1,2,3]::INT[3])::INT;
 ----
+Unimplemented type for cast (INTEGER[3] -> INTEGER)
 
 # Should not be able to cast to list if child types fail
 query I

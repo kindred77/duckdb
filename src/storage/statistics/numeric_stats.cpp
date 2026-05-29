@@ -1,24 +1,13 @@
 #include "duckdb/storage/statistics/numeric_stats.hpp"
-#include "duckdb/storage/statistics/base_statistics.hpp"
-#include "duckdb/common/types/vector.hpp"
-#include "duckdb/common/operator/comparison_operators.hpp"
 
-#include "duckdb/common/serializer/serializer.hpp"
+#include "duckdb/common/operator/comparison_operators.hpp"
 #include "duckdb/common/serializer/deserializer.hpp"
+#include "duckdb/common/serializer/serializer.hpp"
+#include "duckdb/common/types/vector.hpp"
+#include "duckdb/storage/statistics/base_statistics.hpp"
 
 namespace duckdb {
 
-template <>
-void NumericStats::Update<interval_t>(BaseStatistics &stats, interval_t new_value) {
-}
-
-template <>
-void NumericStats::Update<list_entry_t>(BaseStatistics &stats, list_entry_t new_value) {
-}
-
-//===--------------------------------------------------------------------===//
-// NumericStats
-//===--------------------------------------------------------------------===//
 BaseStatistics NumericStats::CreateUnknown(LogicalType type) {
 	BaseStatistics result(std::move(type));
 	result.InitializeUnknown();
@@ -154,13 +143,11 @@ bool ConstantValueInRange(T min, T max, T constant) {
 }
 
 template <class T>
-FilterPropagateResult CheckZonemapTemplated(const BaseStatistics &stats, ExpressionType comparison_type,
-                                            const Value &constant_value) {
-	T min_value = NumericStats::GetMinUnsafe<T>(stats);
-	T max_value = NumericStats::GetMaxUnsafe<T>(stats);
-	T constant = constant_value.GetValueUnsafe<T>();
+FilterPropagateResult CheckZonemapTemplated(const BaseStatistics &stats, ExpressionType comparison_type, T min_value,
+                                            T max_value, T constant) {
 	switch (comparison_type) {
 	case ExpressionType::COMPARE_EQUAL:
+	case ExpressionType::COMPARE_NOT_DISTINCT_FROM:
 		if (ConstantExactRange(min_value, max_value, constant)) {
 			return FilterPropagateResult::FILTER_ALWAYS_TRUE;
 		}
@@ -169,6 +156,7 @@ FilterPropagateResult CheckZonemapTemplated(const BaseStatistics &stats, Express
 		}
 		return FilterPropagateResult::FILTER_ALWAYS_FALSE;
 	case ExpressionType::COMPARE_NOTEQUAL:
+	case ExpressionType::COMPARE_DISTINCT_FROM:
 		if (!ConstantValueInRange(min_value, max_value, constant)) {
 			return FilterPropagateResult::FILTER_ALWAYS_TRUE;
 		} else if (ConstantExactRange(min_value, max_value, constant)) {
@@ -225,40 +213,56 @@ FilterPropagateResult CheckZonemapTemplated(const BaseStatistics &stats, Express
 	}
 }
 
-FilterPropagateResult NumericStats::CheckZonemap(const BaseStatistics &stats, ExpressionType comparison_type,
-                                                 const Value &constant) {
-	D_ASSERT(constant.type() == stats.GetType());
-	if (constant.IsNull()) {
-		return FilterPropagateResult::FILTER_ALWAYS_FALSE;
+template <class T>
+FilterPropagateResult CheckZonemapTemplated(const BaseStatistics &stats, ExpressionType comparison_type,
+                                            array_ptr<const Value> constants) {
+	T min_value = NumericStats::GetMinUnsafe<T>(stats);
+	T max_value = NumericStats::GetMaxUnsafe<T>(stats);
+	for (auto &constant_value : constants) {
+		D_ASSERT(constant_value.type() == stats.GetType());
+		D_ASSERT(!constant_value.IsNull());
+		T constant = constant_value.GetValueUnsafe<T>();
+		auto prune_result = CheckZonemapTemplated(stats, comparison_type, min_value, max_value, constant);
+		if (prune_result == FilterPropagateResult::NO_PRUNING_POSSIBLE) {
+			return FilterPropagateResult::NO_PRUNING_POSSIBLE;
+		} else if (prune_result == FilterPropagateResult::FILTER_ALWAYS_TRUE) {
+			return FilterPropagateResult::FILTER_ALWAYS_TRUE;
+		}
 	}
+	return FilterPropagateResult::FILTER_ALWAYS_FALSE;
+}
+
+FilterPropagateResult NumericStats::CheckZonemap(const BaseStatistics &stats, ExpressionType comparison_type,
+                                                 array_ptr<const Value> constants) {
 	if (!NumericStats::HasMinMax(stats)) {
 		return FilterPropagateResult::NO_PRUNING_POSSIBLE;
 	}
+	D_ASSERT(stats.CanHaveNoNull());
 	switch (stats.GetType().InternalType()) {
 	case PhysicalType::INT8:
-		return CheckZonemapTemplated<int8_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<int8_t>(stats, comparison_type, constants);
 	case PhysicalType::INT16:
-		return CheckZonemapTemplated<int16_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<int16_t>(stats, comparison_type, constants);
 	case PhysicalType::INT32:
-		return CheckZonemapTemplated<int32_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<int32_t>(stats, comparison_type, constants);
 	case PhysicalType::INT64:
-		return CheckZonemapTemplated<int64_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<int64_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT8:
-		return CheckZonemapTemplated<uint8_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<uint8_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT16:
-		return CheckZonemapTemplated<uint16_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<uint16_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT32:
-		return CheckZonemapTemplated<uint32_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<uint32_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT64:
-		return CheckZonemapTemplated<uint64_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<uint64_t>(stats, comparison_type, constants);
 	case PhysicalType::INT128:
-		return CheckZonemapTemplated<hugeint_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<hugeint_t>(stats, comparison_type, constants);
 	case PhysicalType::UINT128:
-		return CheckZonemapTemplated<uhugeint_t>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<uhugeint_t>(stats, comparison_type, constants);
 	case PhysicalType::FLOAT:
-		return CheckZonemapTemplated<float>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<float>(stats, comparison_type, constants);
 	case PhysicalType::DOUBLE:
-		return CheckZonemapTemplated<double>(stats, comparison_type, constant);
+		return CheckZonemapTemplated<double>(stats, comparison_type, constants);
 	default:
 		throw InternalException("Unsupported type for NumericStats::CheckZonemap");
 	}
@@ -372,7 +376,8 @@ Value NumericValueUnionToValue(const LogicalType &type, const NumericValueUnion 
 }
 
 bool NumericStats::HasMinMax(const BaseStatistics &stats) {
-	return NumericStats::HasMin(stats) && NumericStats::HasMax(stats);
+	return NumericStats::HasMin(stats) && NumericStats::HasMax(stats) &&
+	       NumericStats::Min(stats) <= NumericStats::Max(stats);
 }
 
 bool NumericStats::HasMin(const BaseStatistics &stats) {
@@ -523,10 +528,10 @@ static void DeserializeNumericStatsValue(const LogicalType &type, NumericValueUn
 
 void NumericStats::Serialize(const BaseStatistics &stats, Serializer &serializer) {
 	auto &numeric_stats = NumericStats::GetDataUnsafe(stats);
-	serializer.WriteObject(200, "max", [&](Serializer &object) {
+	serializer.WriteObject(200, "min", [&](Serializer &object) {
 		SerializeNumericStatsValue(stats.GetType(), numeric_stats.min, numeric_stats.has_min, object);
 	});
-	serializer.WriteObject(201, "min", [&](Serializer &object) {
+	serializer.WriteObject(201, "max", [&](Serializer &object) {
 		SerializeNumericStatsValue(stats.GetType(), numeric_stats.max, numeric_stats.has_max, object);
 	});
 }
@@ -534,46 +539,48 @@ void NumericStats::Serialize(const BaseStatistics &stats, Serializer &serializer
 void NumericStats::Deserialize(Deserializer &deserializer, BaseStatistics &result) {
 	auto &numeric_stats = NumericStats::GetDataUnsafe(result);
 
-	deserializer.ReadObject(200, "max", [&](Deserializer &object) {
+	deserializer.ReadObject(200, "min", [&](Deserializer &object) {
 		DeserializeNumericStatsValue(result.GetType(), numeric_stats.min, numeric_stats.has_min, object);
 	});
-	deserializer.ReadObject(201, "min", [&](Deserializer &object) {
+	deserializer.ReadObject(201, "max", [&](Deserializer &object) {
 		DeserializeNumericStatsValue(result.GetType(), numeric_stats.max, numeric_stats.has_max, object);
 	});
 }
 
-string NumericStats::ToString(const BaseStatistics &stats) {
-	return StringUtil::Format("[Min: %s, Max: %s]", NumericStats::MinOrNull(stats).ToString(),
-	                          NumericStats::MaxOrNull(stats).ToString());
+child_list_t<Value> NumericStats::ToStruct(const BaseStatistics &stats) {
+	child_list_t<Value> result;
+	if (NumericStats::HasMinMax(stats)) {
+		result.emplace_back("min", NumericStats::MinOrNull(stats));
+		result.emplace_back("max", NumericStats::MaxOrNull(stats));
+	}
+	return result;
 }
 
 template <class T>
-void NumericStats::TemplatedVerify(const BaseStatistics &stats, Vector &vector, const SelectionVector &sel,
+void NumericStats::TemplatedVerify(const BaseStatistics &stats, const Vector &vector, const SelectionVector &sel,
                                    idx_t count) {
-	UnifiedVectorFormat vdata;
-	vector.ToUnifiedFormat(count, vdata);
-
-	auto data = UnifiedVectorFormat::GetData<T>(vdata);
+	auto entries = vector.Values<T>();
 	auto min_value = NumericStats::MinOrNull(stats);
 	auto max_value = NumericStats::MaxOrNull(stats);
 	for (idx_t i = 0; i < count; i++) {
 		auto idx = sel.get_index(i);
-		auto index = vdata.sel->get_index(idx);
-		if (!vdata.validity.RowIsValid(index)) {
+		auto entry = entries[idx];
+		if (!entry.IsValid()) {
 			continue;
 		}
-		if (!min_value.IsNull() && LessThan::Operation(data[index], min_value.GetValueUnsafe<T>())) { // LCOV_EXCL_START
+		if (!min_value.IsNull() &&
+		    LessThan::Operation(entry.GetValue(), min_value.GetValueUnsafe<T>())) { // LCOV_EXCL_START
 			throw InternalException("Statistics mismatch: value is smaller than min.\nStatistics: %s\nVector: %s",
-			                        stats.ToString(), vector.ToString(count));
+			                        stats.ToString(), vector.ToString());
 		} // LCOV_EXCL_STOP
-		if (!max_value.IsNull() && GreaterThan::Operation(data[index], max_value.GetValueUnsafe<T>())) {
+		if (!max_value.IsNull() && GreaterThan::Operation(entry.GetValue(), max_value.GetValueUnsafe<T>())) {
 			throw InternalException("Statistics mismatch: value is bigger than max.\nStatistics: %s\nVector: %s",
-			                        stats.ToString(), vector.ToString(count));
+			                        stats.ToString(), vector.ToString());
 		}
 	}
 }
 
-void NumericStats::Verify(const BaseStatistics &stats, Vector &vector, const SelectionVector &sel, idx_t count) {
+void NumericStats::Verify(const BaseStatistics &stats, const Vector &vector, const SelectionVector &sel, idx_t count) {
 	auto &type = stats.GetType();
 	switch (type.InternalType()) {
 	case PhysicalType::BOOL:
@@ -619,4 +626,6 @@ void NumericStats::Verify(const BaseStatistics &stats, Vector &vector, const Sel
 	}
 }
 
+template uint32_t NumericStats::GetMinUnsafe(const BaseStatistics &stats);
+template uint32_t NumericStats::GetMaxUnsafe(const BaseStatistics &stats);
 } // namespace duckdb

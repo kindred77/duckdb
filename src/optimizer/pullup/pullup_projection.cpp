@@ -18,17 +18,17 @@ static void RevertFilterPullup(LogicalProjection &proj, vector<unique_ptr<Expres
 }
 
 static void ReplaceExpressionBinding(vector<unique_ptr<Expression>> &proj_expressions, Expression &expr,
-                                     idx_t proj_table_idx) {
-	if (expr.type == ExpressionType::BOUND_COLUMN_REF) {
+                                     TableIndex proj_table_idx) {
+	if (expr.GetExpressionType() == ExpressionType::BOUND_COLUMN_REF) {
 		bool found_proj_col = false;
 		BoundColumnRefExpression &colref = expr.Cast<BoundColumnRefExpression>();
 		// find the corresponding column index in the projection expressions
 		for (idx_t proj_idx = 0; proj_idx < proj_expressions.size(); proj_idx++) {
 			auto &proj_expr = *proj_expressions[proj_idx];
-			if (proj_expr.type == ExpressionType::BOUND_COLUMN_REF) {
+			if (proj_expr.GetExpressionType() == ExpressionType::BOUND_COLUMN_REF) {
 				if (colref.Equals(proj_expr)) {
 					colref.binding.table_index = proj_table_idx;
-					colref.binding.column_index = proj_idx;
+					colref.binding.column_index = ProjectionIndex(proj_idx);
 					found_proj_col = true;
 					break;
 				}
@@ -38,8 +38,7 @@ static void ReplaceExpressionBinding(vector<unique_ptr<Expression>> &proj_expres
 			// Project a new column
 			auto new_colref = colref.Copy();
 			colref.binding.table_index = proj_table_idx;
-			colref.binding.column_index = proj_expressions.size();
-			proj_expressions.push_back(std::move(new_colref));
+			colref.binding.column_index = ColumnBinding::PushExpression(proj_expressions, std::move(new_colref));
 		}
 	}
 	ExpressionIterator::EnumerateChildren(

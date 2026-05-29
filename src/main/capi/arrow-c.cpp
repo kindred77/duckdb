@@ -3,9 +3,11 @@
 #include "duckdb/function/table/arrow.hpp"
 #include "duckdb/main/capi/capi_internal.hpp"
 #include "duckdb/main/prepared_statement_data.hpp"
+#include "fmt/format.h"
 
 using duckdb::ArrowConverter;
 using duckdb::ArrowResultWrapper;
+using duckdb::CClientArrowOptionsWrapper;
 using duckdb::Connection;
 using duckdb::DataChunk;
 using duckdb::LogicalType;
@@ -14,12 +16,160 @@ using duckdb::PreparedStatementWrapper;
 using duckdb::QueryResult;
 using duckdb::QueryResultType;
 
+duckdb_error_data duckdb_to_arrow_schema(duckdb_arrow_options arrow_options, duckdb_logical_type *types,
+                                         const char **names, idx_t column_count, struct ArrowSchema *out_schema) {
+	if (!arrow_options || !out_schema) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Invalid argument(s) to duckdb_to_arrow_schema");
+	}
+	// types and names can be nullptr when column_count is 0
+	if (column_count > 0 && (!types || !names)) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Invalid argument(s) to duckdb_to_arrow_schema");
+	}
+
+	duckdb::vector<LogicalType> schema_types;
+	duckdb::vector<std::string> schema_names;
+	for (idx_t i = 0; i < column_count; i++) {
+		schema_names.emplace_back(names[i]);
+		schema_types.emplace_back(*reinterpret_cast<duckdb::LogicalType *>(types[i]));
+	}
+	const auto arrow_options_wrapper = reinterpret_cast<CClientArrowOptionsWrapper *>(arrow_options);
+	try {
+		ArrowConverter::ToArrowSchema(out_schema, schema_types, schema_names, arrow_options_wrapper->properties);
+	} catch (const duckdb::Exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (const std::exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (...) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Unknown error occurred during conversion");
+	}
+	return nullptr;
+}
+
+duckdb_error_data duckdb_data_chunk_to_arrow(duckdb_arrow_options arrow_options, duckdb_data_chunk chunk,
+                                             struct ArrowArray *out_arrow_array) {
+	if (!arrow_options || !chunk || !out_arrow_array) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT,
+		                                "Invalid argument(s) to duckdb_data_chunk_to_arrow");
+	}
+	auto dchunk = reinterpret_cast<duckdb::DataChunk *>(chunk);
+	auto arrow_options_wrapper = reinterpret_cast<CClientArrowOptionsWrapper *>(arrow_options);
+	auto extension_type_cast = duckdb::ArrowTypeExtensionData::GetExtensionTypes(
+	    *arrow_options_wrapper->properties.client_context, dchunk->GetTypes());
+
+	try {
+		ArrowConverter::ToArrowArray(*dchunk, out_arrow_array, arrow_options_wrapper->properties, extension_type_cast);
+	} catch (const duckdb::Exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (const std::exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (...) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Unknown error occurred during conversion");
+	}
+	return nullptr;
+}
+
+duckdb_error_data duckdb_schema_from_arrow(duckdb_connection connection, struct ArrowSchema *schema,
+                                           duckdb_arrow_converted_schema *out_types) {
+	if (!connection || !out_types || !schema) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT,
+		                                "Invalid argument(s) to duckdb_data_chunk_to_arrow");
+	}
+	duckdb::vector<std::string> names;
+	const auto conn = reinterpret_cast<Connection *>(connection);
+	auto arrow_table = duckdb::make_uniq<duckdb::ArrowTableSchema>();
+	try {
+		duckdb::vector<LogicalType> return_types;
+		duckdb::ArrowTableFunction::PopulateArrowTableSchema(*conn->context, *arrow_table, *schema);
+	} catch (const duckdb::Exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (const std::exception &ex) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+	} catch (...) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Unknown error occurred during conversion");
+	}
+	*out_types = reinterpret_cast<duckdb_arrow_converted_schema>(arrow_table.release());
+	return nullptr;
+}
+
+duckdb_error_data duckdb_data_chunk_from_arrow(duckdb_connection connection, struct ArrowArray *arrow_array,
+                                               duckdb_arrow_converted_schema converted_schema,
+                                               duckdb_data_chunk *out_chunk) {
+	if (!connection || !converted_schema || !out_chunk || !arrow_array) {
+		return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT,
+		                                "Invalid argument(s) to duckdb_data_chunk_to_arrow");
+	}
+	auto arrow_table = reinterpret_cast<duckdb::ArrowTableSchema *>(converted_schema);
+	auto conn = reinterpret_cast<Connection *>(connection);
+	auto &types = arrow_table->GetTypes();
+
+	auto dchunk = duckdb::make_uniq<duckdb::DataChunk>();
+	dchunk->Initialize(duckdb::Allocator::DefaultAllocator(), types, duckdb::NumericCast<idx_t>(arrow_array->length));
+
+	auto &arrow_types = arrow_table->GetColumns();
+	dchunk->SetCardinality(duckdb::NumericCast<idx_t>(arrow_array->length));
+	for (idx_t i = 0; i < dchunk->ColumnCount(); i++) {
+		auto &parent_array = *arrow_array;
+		auto &array = parent_array.children[i];
+		auto arrow_type = arrow_types.at(i);
+		auto array_physical_type = arrow_type->GetPhysicalType();
+		auto array_state = duckdb::make_uniq<duckdb::ArrowArrayScanState>(*conn->context);
+		// We need to make sure that our chunk will hold the ownership
+		array_state->owned_data = duckdb::make_shared_ptr<duckdb::ArrowArrayWrapper>();
+		array_state->owned_data->arrow_array = *arrow_array;
+		// We set it to nullptr to effectively transfer the ownership
+		arrow_array->release = nullptr;
+		try {
+			switch (array_physical_type) {
+			case duckdb::ArrowArrayPhysicalType::DICTIONARY_ENCODED:
+				duckdb::ArrowToDuckDBConversion::ColumnArrowToDuckDBDictionary(dchunk->data[i], *array, 0, *array_state,
+				                                                               dchunk->size(), *arrow_type);
+				break;
+			case duckdb::ArrowArrayPhysicalType::RUN_END_ENCODED:
+				duckdb::ArrowToDuckDBConversion::ColumnArrowToDuckDBRunEndEncoded(
+				    dchunk->data[i], *array, 0, *array_state, dchunk->size(), *arrow_type);
+				break;
+			case duckdb::ArrowArrayPhysicalType::DEFAULT:
+				duckdb::ArrowToDuckDBConversion::SetValidityMask(dchunk->data[i], *array, 0, dchunk->size(),
+				                                                 parent_array.offset, -1);
+
+				duckdb::ArrowToDuckDBConversion::ColumnArrowToDuckDB(dchunk->data[i], *array, 0, *array_state,
+				                                                     dchunk->size(), *arrow_type);
+				break;
+			default:
+				return duckdb_create_error_data(DUCKDB_ERROR_NOT_IMPLEMENTED,
+				                                "Only Default Physical Types are currently supported");
+			}
+		} catch (const duckdb::Exception &ex) {
+			return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+		} catch (const std::exception &ex) {
+			return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, ex.what());
+		} catch (...) {
+			return duckdb_create_error_data(DUCKDB_ERROR_INVALID_INPUT, "Unknown error occurred during conversion");
+		}
+	}
+	*out_chunk = reinterpret_cast<duckdb_data_chunk>(dchunk.release());
+	return nullptr;
+}
+
+void duckdb_destroy_arrow_converted_schema(duckdb_arrow_converted_schema *arrow_converted_schema) {
+	if (arrow_converted_schema && *arrow_converted_schema) {
+		auto converted_schema = reinterpret_cast<duckdb::ArrowTableSchema *>(*arrow_converted_schema);
+		delete converted_schema;
+		*arrow_converted_schema = nullptr;
+	}
+}
+
 duckdb_state duckdb_query_arrow(duckdb_connection connection, const char *query, duckdb_arrow *out_result) {
 	Connection *conn = (Connection *)connection;
 	auto wrapper = new ArrowResultWrapper();
-	wrapper->result = conn->Query(query);
-	*out_result = (duckdb_arrow)wrapper;
-	return !wrapper->result->HasError() ? DuckDBSuccess : DuckDBError;
+	try {
+		wrapper->result = conn->Query(query);
+		*out_result = (duckdb_arrow)wrapper;
+		return !wrapper->result->HasError() ? DuckDBSuccess : DuckDBError;
+	} catch (...) {
+		delete wrapper;
+		return DuckDBError;
+	}
 }
 
 duckdb_state duckdb_query_arrow_schema(duckdb_arrow result, duckdb_arrow_schema *out_schema) {
@@ -27,8 +177,12 @@ duckdb_state duckdb_query_arrow_schema(duckdb_arrow result, duckdb_arrow_schema 
 		return DuckDBSuccess;
 	}
 	auto wrapper = reinterpret_cast<ArrowResultWrapper *>(result);
-	ArrowConverter::ToArrowSchema((ArrowSchema *)*out_schema, wrapper->result->types, wrapper->result->names,
-	                              wrapper->result->client_properties);
+	try {
+		ArrowConverter::ToArrowSchema((ArrowSchema *)*out_schema, wrapper->result->types, wrapper->result->names,
+		                              wrapper->result->client_properties);
+	} catch (...) {
+		return DuckDBError;
+	}
 	return DuckDBSuccess;
 }
 
@@ -48,11 +202,11 @@ duckdb_state duckdb_prepared_arrow_schema(duckdb_prepared_statement prepared, du
 	for (idx_t i = 0; i < count; i++) {
 		// Every prepared parameter type is UNKNOWN, which we need to map to NULL according to the spec of
 		// 'AdbcStatementGetParameterSchema'
-		auto type = LogicalType::SQLNULL;
+		const auto type = LogicalType::SQLNULL;
 
 		// FIXME: we don't support named parameters yet, but when we do, this needs to be updated
 		auto name = std::to_string(i);
-		prepared_types.push_back(std::move(type));
+		prepared_types.push_back(type);
 		prepared_names.push_back(name);
 	}
 
@@ -83,8 +237,10 @@ duckdb_state duckdb_query_arrow_array(duckdb_arrow result, duckdb_arrow_array *o
 	if (!wrapper->current_chunk || wrapper->current_chunk->size() == 0) {
 		return DuckDBSuccess;
 	}
+	auto extension_type_cast = duckdb::ArrowTypeExtensionData::GetExtensionTypes(
+	    *wrapper->result->client_properties.client_context, wrapper->result->types);
 	ArrowConverter::ToArrowArray(*wrapper->current_chunk, reinterpret_cast<ArrowArray *>(*out_array),
-	                             wrapper->result->client_properties);
+	                             wrapper->result->client_properties, extension_type_cast);
 	return DuckDBSuccess;
 }
 
@@ -94,8 +250,11 @@ void duckdb_result_arrow_array(duckdb_result result, duckdb_data_chunk chunk, du
 	}
 	auto dchunk = reinterpret_cast<duckdb::DataChunk *>(chunk);
 	auto &result_data = *(reinterpret_cast<duckdb::DuckDBResultData *>(result.internal_data));
+	auto extension_type_cast = duckdb::ArrowTypeExtensionData::GetExtensionTypes(
+	    *result_data.result->client_properties.client_context, result_data.result->types);
+
 	ArrowConverter::ToArrowArray(*dchunk, reinterpret_cast<ArrowArray *>(*out_array),
-	                             result_data.result->client_properties);
+	                             result_data.result->client_properties, extension_type_cast);
 }
 
 idx_t duckdb_arrow_row_count(duckdb_arrow result) {
@@ -123,7 +282,7 @@ idx_t duckdb_arrow_rows_changed(duckdb_arrow result) {
 		auto rows = collection.GetRows();
 		D_ASSERT(row_count == 1);
 		D_ASSERT(rows.size() == 1);
-		rows_changed = rows[0].GetValue(0).GetValue<int64_t>();
+		rows_changed = duckdb::NumericCast<idx_t>(rows[0].GetValue(0).GetValue<int64_t>());
 	}
 	return rows_changed;
 }
@@ -142,7 +301,6 @@ void duckdb_destroy_arrow(duckdb_arrow *result) {
 }
 
 void duckdb_destroy_arrow_stream(duckdb_arrow_stream *stream_p) {
-
 	auto stream = reinterpret_cast<ArrowArrayStream *>(*stream_p);
 	if (!stream) {
 		return;
@@ -162,11 +320,16 @@ duckdb_state duckdb_execute_prepared_arrow(duckdb_prepared_statement prepared_st
 		return DuckDBError;
 	}
 	auto arrow_wrapper = new ArrowResultWrapper();
-	auto result = wrapper->statement->Execute(wrapper->values, false);
-	D_ASSERT(result->type == QueryResultType::MATERIALIZED_RESULT);
-	arrow_wrapper->result = duckdb::unique_ptr_cast<QueryResult, MaterializedQueryResult>(std::move(result));
-	*out_result = reinterpret_cast<duckdb_arrow>(arrow_wrapper);
-	return !arrow_wrapper->result->HasError() ? DuckDBSuccess : DuckDBError;
+	try {
+		auto result = wrapper->statement->Execute(wrapper->values, false);
+		D_ASSERT(result->type == QueryResultType::MATERIALIZED_RESULT);
+		arrow_wrapper->result = duckdb::unique_ptr_cast<QueryResult, MaterializedQueryResult>(std::move(result));
+		*out_result = reinterpret_cast<duckdb_arrow>(arrow_wrapper);
+		return !arrow_wrapper->result->HasError() ? DuckDBSuccess : DuckDBError;
+	} catch (...) {
+		delete arrow_wrapper;
+		return DuckDBError;
+	}
 }
 
 namespace arrow_array_stream_wrapper {
@@ -287,8 +450,8 @@ duckdb_state duckdb_arrow_scan(duckdb_connection connection, const char *table_n
 	}
 
 	typedef void (*release_fn_t)(ArrowSchema *);
-	std::vector<release_fn_t> release_fns(schema.n_children);
-	for (int64_t i = 0; i < schema.n_children; i++) {
+	std::vector<release_fn_t> release_fns(duckdb::NumericCast<idx_t>(schema.n_children));
+	for (idx_t i = 0; i < duckdb::NumericCast<idx_t>(schema.n_children); i++) {
 		auto child = schema.children[i];
 		release_fns[i] = child->release;
 		child->release = arrow_array_stream_wrapper::EmptySchemaRelease;
@@ -297,7 +460,7 @@ duckdb_state duckdb_arrow_scan(duckdb_connection connection, const char *table_n
 	auto ret = arrow_array_stream_wrapper::Ingest(connection, table_name, stream);
 
 	// Restore release functions.
-	for (int64_t i = 0; i < schema.n_children; i++) {
+	for (idx_t i = 0; i < duckdb::NumericCast<idx_t>(schema.n_children); i++) {
 		schema.children[i]->release = release_fns[i];
 	}
 
@@ -312,13 +475,25 @@ duckdb_state duckdb_arrow_array_scan(duckdb_connection connection, const char *t
 	private_data->array = reinterpret_cast<ArrowArray *>(arrow_array);
 	private_data->done = false;
 
-	ArrowArrayStream *stream = new ArrowArrayStream;
-	*out_stream = reinterpret_cast<duckdb_arrow_stream>(stream);
-	stream->get_schema = arrow_array_stream_wrapper::GetSchema;
-	stream->get_next = arrow_array_stream_wrapper::GetNext;
-	stream->get_last_error = arrow_array_stream_wrapper::GetLastError;
-	stream->release = arrow_array_stream_wrapper::Release;
-	stream->private_data = private_data;
+	ArrowArrayStream *stream;
+	try {
+		stream = new ArrowArrayStream;
+	} catch (...) {
+		delete private_data;
+		return DuckDBError;
+	}
+	try {
+		*out_stream = reinterpret_cast<duckdb_arrow_stream>(stream);
+		stream->get_schema = arrow_array_stream_wrapper::GetSchema;
+		stream->get_next = arrow_array_stream_wrapper::GetNext;
+		stream->get_last_error = arrow_array_stream_wrapper::GetLastError;
+		stream->release = arrow_array_stream_wrapper::Release;
+		stream->private_data = private_data;
 
-	return duckdb_arrow_scan(connection, table_name, reinterpret_cast<duckdb_arrow_stream>(stream));
+		return duckdb_arrow_scan(connection, table_name, reinterpret_cast<duckdb_arrow_stream>(stream));
+	} catch (...) {
+		delete private_data;
+		delete stream;
+		return DuckDBError;
+	}
 }

@@ -12,7 +12,7 @@
 #include "duckdb/common/common.hpp"
 #include "duckdb/common/mutex.hpp"
 #include "duckdb/common/vector.hpp"
-
+#include "duckdb/common/error_data.hpp"
 #include "duckdb/common/atomic.hpp"
 
 namespace duckdb {
@@ -53,6 +53,18 @@ public:
 protected:
 	//! The attached database
 	AttachedDatabase &db;
+
+public:
+	template <class TARGET>
+	TARGET &Cast() {
+		DynamicCastCheck<TARGET>(this);
+		return reinterpret_cast<TARGET &>(*this);
+	}
+	template <class TARGET>
+	const TARGET &Cast() const {
+		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		return reinterpret_cast<const TARGET &>(*this);
+	}
 };
 
 } // namespace duckdb

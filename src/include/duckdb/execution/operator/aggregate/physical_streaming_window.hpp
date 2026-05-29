@@ -18,9 +18,11 @@ class PhysicalStreamingWindow : public PhysicalOperator {
 public:
 	static constexpr const PhysicalOperatorType TYPE = PhysicalOperatorType::STREAMING_WINDOW;
 
+	static bool IsStreamingFunction(ClientContext &context, BoundWindowExpression &wexpr);
+
 public:
-	PhysicalStreamingWindow(vector<LogicalType> types, vector<unique_ptr<Expression>> select_list,
-	                        idx_t estimated_cardinality,
+	PhysicalStreamingWindow(PhysicalPlan &physical_plan, vector<LogicalType> types,
+	                        vector<unique_ptr<Expression>> select_list, idx_t estimated_cardinality,
 	                        PhysicalOperatorType type = PhysicalOperatorType::STREAMING_WINDOW);
 
 	//! The projection list of the WINDOW statement
@@ -28,16 +30,32 @@ public:
 
 public:
 	unique_ptr<GlobalOperatorState> GetGlobalOperatorState(ClientContext &context) const override;
-	unique_ptr<OperatorState> GetOperatorState(ExecutionContext &context) const override;
 
 	OperatorResultType Execute(ExecutionContext &context, DataChunk &input, DataChunk &chunk,
 	                           GlobalOperatorState &gstate, OperatorState &state) const override;
+
+	OperatorFinalizeResultType FinalExecute(ExecutionContext &context, DataChunk &chunk, GlobalOperatorState &gstate,
+	                                        OperatorState &state) const final;
+
+	bool RequiresFinalExecute() const final {
+		return true;
+	}
 
 	OrderPreservationType OperatorOrder() const override {
 		return OrderPreservationType::FIXED_ORDER;
 	}
 
-	string ParamsToString() const override;
+	InsertionOrderPreservingMap<string> ParamsToString() const override;
+
+private:
+	void ExecuteFunctions(ExecutionContext &context, DataChunk &chunk, DataChunk &delayed,
+	                      GlobalOperatorState &gstate_p) const;
+	void ExecuteInput(ExecutionContext &context, DataChunk &delayed, DataChunk &input, DataChunk &chunk,
+	                  GlobalOperatorState &gstate) const;
+	void ExecuteDelayed(ExecutionContext &context, DataChunk &delayed, DataChunk &input, DataChunk &chunk,
+	                    GlobalOperatorState &gstate) const;
+	void ExecuteShifted(ExecutionContext &context, DataChunk &delayed, DataChunk &input, DataChunk &chunk,
+	                    GlobalOperatorState &gstate) const;
 };
 
 } // namespace duckdb

@@ -2,12 +2,10 @@
 # description: Test compatibility of ART indexes for different duckdb versions
 # group: [storage]
 
-# data/storage/index_0-9-1.db was written with a 64-bit version of duckdb
+# data/storage/index_0-9-1.db was written with a 64-bit version of duckdb.
 require 64bit
 
-# cannot read a database with a different block size
-require block_size 262144
-
+# The database is written with a vector size of 2048.
 require vector_size 2048
 
 # SQL to create index_0-9-1.db
@@ -72,12 +70,12 @@ SELECT i FROM idx_tbl WHERE i = 11
 # load the data into a new database to make it mutable
 
 statement ok
-EXPORT DATABASE '__TEST_DIR__/export_index_db' (FORMAT CSV)
+EXPORT DATABASE '{TEST_DIR}/export_index_db' (FORMAT CSV)
 
-load __TEST_DIR__/test_art_import.db
+load {TEST_DIR}/test_art_import.db
 
 statement ok
-IMPORT DATABASE '__TEST_DIR__/export_index_db'
+IMPORT DATABASE '{TEST_DIR}/export_index_db'
 
 # first, perform the same checks
 
@@ -121,19 +119,14 @@ SELECT i FROM idx_tbl WHERE i = 11
 
 # now try to break it
 
-query I
-SELECT used_blocks < 10 FROM pragma_database_size();
-----
-1
+statement ok
+INSERT INTO idx_tbl SELECT range, range, range FROM range(300000);
 
 statement ok
-INSERT INTO idx_tbl SELECT range, range, range FROM range(30000);
-
-statement ok
-checkpoint;
+CHECKPOINT;
 
 query I
-SELECT used_blocks > 10 FROM pragma_database_size();
+SELECT used_blocks > 2621440 / get_block_size('test_art_import') FROM pragma_database_size();
 ----
 1
 
@@ -143,7 +136,7 @@ CREATE INDEX ART_index ON idx_tbl(i);
 statement error
 CREATE INDEX idx_1 ON idx_tbl(i);
 ----
-already exists
+<REGEX>:Catalog Error.*Index with name "idx_1" already exists.*
 
 # now try to use it again
 
@@ -226,6 +219,14 @@ statement ok
 CHECKPOINT
 
 query I
-SELECT used_blocks < 2 FROM pragma_database_size();
+SELECT
+	CASE WHEN (
+		CASE WHEN get_block_size('test_art_import') = 16384
+		THEN used_blocks < 3
+		ELSE used_blocks < 2 END
+	)
+	THEN NULL
+	ELSE T END
+FROM pragma_database_size() T;
 ----
-1
+NULL

@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include "duckdb/common/common.hpp"
-#include "duckdb/common/vector.hpp"
-#include "duckdb/common/exception_format_value.hpp"
 #include "duckdb/common/optional_idx.hpp"
 
 namespace duckdb {
+class ParsedExpression;
 
 class QueryErrorContext {
 public:
-	explicit QueryErrorContext(optional_idx query_location_ = optional_idx()) : query_location(query_location_) {
+	QueryErrorContext(const ParsedExpression &expr); // NOLINT: allow implicit conversion from expression
+	explicit QueryErrorContext(optional_idx query_location_p = optional_idx()) : query_location(query_location_p) {
 	}
 
 	//! The location in which the error should be thrown

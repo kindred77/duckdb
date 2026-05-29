@@ -3,10 +3,10 @@
 # group: [vacuum]
 
 statement ok
-CREATE TABLE test (x INT[], y AS (x || 100));
+CREATE TABLE test (x INT[], y AS (x || [100]));
 
 statement ok
-ANALYZE test(y, x);
+ANALYZE test(x);
 
 statement ok
 INSERT INTO test SELECT [range % 5000] FROM range(10000);

@@ -27,11 +27,12 @@ enum class PhysicalOperatorType : uint8_t {
 	UNGROUPED_AGGREGATE,
 	HASH_GROUP_BY,
 	PERFECT_HASH_GROUP_BY,
+	PARTITIONED_AGGREGATE,
+	LIMITED_DISTINCT,
 	FILTER,
 	PROJECTION,
 	COPY_TO_FILE,
 	BATCH_COPY_TO_FILE,
-	FIXED_BATCH_COPY_TO_FILE,
 	RESERVOIR_SAMPLE,
 	STREAMING_SAMPLE,
 	STREAMING_WINDOW,
@@ -46,6 +47,7 @@ enum class PhysicalOperatorType : uint8_t {
 	COLUMN_DATA_SCAN,
 	CHUNK_SCAN,
 	RECURSIVE_CTE_SCAN,
+	RECURSIVE_RECURRING_CTE_SCAN,
 	CTE_SCAN,
 	DELIM_SCAN,
 	EXPRESSION_SCAN,
@@ -68,6 +70,7 @@ enum class PhysicalOperatorType : uint8_t {
 	// -----------------------------
 	UNION,
 	RECURSIVE_CTE,
+	RECURSIVE_KEY_CTE,
 	CTE,
 
 	// -----------------------------
@@ -77,6 +80,7 @@ enum class PhysicalOperatorType : uint8_t {
 	BATCH_INSERT,
 	DELETE_OPERATOR,
 	UPDATE,
+	MERGE_INTO,
 
 	// -----------------------------
 	// Schema
@@ -94,6 +98,7 @@ enum class PhysicalOperatorType : uint8_t {
 	PRAGMA,
 	TRANSACTION,
 	CREATE_TYPE,
+	CREATE_TRIGGER,
 	ATTACH,
 	DETACH,
 
@@ -108,12 +113,16 @@ enum class PhysicalOperatorType : uint8_t {
 	VACUUM,
 	EXPORT,
 	SET,
+	SET_VARIABLE,
 	LOAD,
 	INOUT_FUNCTION,
 	RESULT_COLLECTOR,
 	RESET,
 	EXTENSION,
 	VERIFY_VECTOR,
+	UPDATE_EXTENSIONS,
+	CONNECT,
+	DISCONNECT,
 
 	// -----------------------------
 	// Secret

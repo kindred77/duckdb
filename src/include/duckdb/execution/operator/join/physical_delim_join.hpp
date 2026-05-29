@@ -18,12 +18,16 @@ class PhysicalHashAggregate;
 //! PhysicalColumnDataScan in the other side. Implementations are PhysicalLeftDelimJoin and PhysicalRightDelimJoin
 class PhysicalDelimJoin : public PhysicalOperator {
 public:
-	PhysicalDelimJoin(PhysicalOperatorType type, vector<LogicalType> types, unique_ptr<PhysicalOperator> original_join,
-	                  vector<const_reference<PhysicalOperator>> delim_scans, idx_t estimated_cardinality);
+	PhysicalDelimJoin(PhysicalPlan &physical_plan, PhysicalOperatorType type, vector<LogicalType> types,
+	                  PhysicalOperator &original_join, PhysicalOperator &distinct,
+	                  const vector<const_reference<PhysicalOperator>> &delim_scans, idx_t estimated_cardinality,
+	                  optional_idx delim_idx);
 
-	unique_ptr<PhysicalOperator> join;
-	unique_ptr<PhysicalHashAggregate> distinct;
+	PhysicalOperator &join;
+	PhysicalHashAggregate &distinct;
 	vector<const_reference<PhysicalOperator>> delim_scans;
+
+	optional_idx delim_idx;
 
 public:
 	vector<const_reference<PhysicalOperator>> GetChildren() const override;
@@ -41,7 +45,7 @@ public:
 		return false;
 	}
 
-	string ParamsToString() const override;
+	InsertionOrderPreservingMap<string> ParamsToString() const override;
 };
 
 } // namespace duckdb

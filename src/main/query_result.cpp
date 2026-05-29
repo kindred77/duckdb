@@ -41,7 +41,7 @@ const ExceptionType &BaseQueryResult::GetErrorType() const {
 	return error.Type();
 }
 
-const std::string &BaseQueryResult::GetError() {
+const std::string &BaseQueryResult::GetError() const {
 	D_ASSERT(HasError());
 	return error.Message();
 }
@@ -61,7 +61,8 @@ QueryResult::QueryResult(QueryResultType type, StatementType statement_type, Sta
 }
 
 QueryResult::QueryResult(QueryResultType type, ErrorData error)
-    : BaseQueryResult(type, std::move(error)), client_properties("UTC", ArrowOffsetSize::REGULAR) {
+    : BaseQueryResult(type, std::move(error)),
+      client_properties("UTC", ArrowOffsetSize::REGULAR, false, false, false, ArrowFormatVersion::V1_0, nullptr) {
 }
 
 QueryResult::~QueryResult() {
@@ -96,7 +97,7 @@ const string &QueryResult::ColumnName(idx_t index) const {
 	return names[index];
 }
 
-string QueryResult::ToBox(ClientContext &context, const BoxRendererConfig &config) {
+string QueryResult::ToBox(BoxRendererContext &context, const BoxRendererConfig &config) {
 	return ToString();
 }
 
@@ -107,6 +108,10 @@ unique_ptr<DataChunk> QueryResult::Fetch() {
 	}
 	chunk->Flatten();
 	return chunk;
+}
+
+unique_ptr<DataChunk> QueryResult::FetchRaw() {
+	return FetchInternal();
 }
 
 bool QueryResult::Equals(QueryResult &other) { // LCOV_EXCL_START

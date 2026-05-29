@@ -1,4 +1,5 @@
 #include "duckdb/function/scalar/sequence_functions.hpp"
+#include "duckdb/function/scalar/sequence_utils.hpp"
 
 #include "duckdb/catalog/catalog.hpp"
 #include "duckdb/catalog/dependency_list.hpp"
@@ -11,12 +12,15 @@
 #include "duckdb/common/serializer/deserializer.hpp"
 #include "duckdb/common/serializer/serializer.hpp"
 #include "duckdb/common/vector_operations/unary_executor.hpp"
+#include "duckdb/transaction/meta_transaction.hpp"
 #include "duckdb/planner/binder.hpp"
 
 namespace duckdb {
 
+namespace {
+
 struct CurrentSequenceValueOperator {
-	static int64_t Operation(DuckTransaction &transaction, SequenceCatalogEntry &seq) {
+	static int64_t Operation(DuckTransaction &, SequenceCatalogEntry &seq) {
 		return seq.CurrentValue();
 	}
 };
@@ -27,98 +31,136 @@ struct NextSequenceValueOperator {
 	}
 };
 
-SequenceCatalogEntry &BindSequence(ClientContext &context, const string &name) {
-	auto qname = QualifiedName::Parse(name);
+SequenceCatalogEntry &BindSequence(Binder &binder, string &catalog, string &schema, const string &name) {
 	// fetch the sequence from the catalog
-	Binder::BindSchemaOrCatalog(context, qname.catalog, qname.schema);
-	return Catalog::GetEntry<SequenceCatalogEntry>(context, qname.catalog, qname.schema, qname.name);
+	Binder::BindSchemaOrCatalog(binder.context, catalog, schema);
+	EntryLookupInfo sequence_lookup(CatalogType::SEQUENCE_ENTRY, name);
+	return binder.EntryRetriever().GetEntry(catalog, schema, sequence_lookup)->Cast<SequenceCatalogEntry>();
+}
+
+SequenceCatalogEntry &BindSequenceFromContext(ClientContext &context, string &catalog, string &schema,
+                                              const string &name) {
+	Binder::BindSchemaOrCatalog(context, catalog, schema);
+	return Catalog::GetEntry<SequenceCatalogEntry>(context, catalog, schema, name);
+}
+
+SequenceCatalogEntry &BindSequence(Binder &binder, const string &name) {
+	auto qname = QualifiedName::Parse(name);
+	return BindSequence(binder, qname.catalog, qname.schema, qname.name);
+}
+
+struct NextValLocalState : public FunctionLocalState {
+	explicit NextValLocalState(DuckTransaction &transaction, SequenceCatalogEntry &sequence)
+	    : transaction(transaction), sequence(sequence) {
+	}
+
+	DuckTransaction &transaction;
+	SequenceCatalogEntry &sequence;
+};
+
+unique_ptr<FunctionLocalState> NextValLocalFunction(ExpressionState &state, const BoundFunctionExpression &expr,
+                                                    FunctionData *bind_data) {
+	if (!bind_data) {
+		return nullptr;
+	}
+	auto &context = state.GetContext();
+	auto &info = bind_data->Cast<NextvalBindData>();
+	auto &sequence = info.sequence;
+	auto &transaction = DuckTransaction::Get(context, sequence.catalog);
+	return make_uniq<NextValLocalState>(transaction, sequence);
 }
 
 template <class OP>
-static void NextValFunction(DataChunk &args, ExpressionState &state, Vector &result) {
+void NextValFunction(DataChunk &args, ExpressionState &state, Vector &result) {
 	auto &func_expr = state.expr.Cast<BoundFunctionExpression>();
-	auto &info = func_expr.bind_info->Cast<NextvalBindData>();
-	auto &input = args.data[0];
+	if (!func_expr.bind_info) {
+		// no bind info - return null
+		ConstantVector::SetNull(result, count_t(args.size()));
+		return;
+	}
+	auto &lstate = ExecuteFunctionState::GetFunctionState(state)->Cast<NextValLocalState>();
+	// sequence to use is hard coded
+	// increment the sequence
+	result.SetVectorType(VectorType::FLAT_VECTOR);
 
-	auto &context = state.GetContext();
-	if (info.sequence) {
-		auto &sequence = *info.sequence;
-		auto &transaction = DuckTransaction::Get(context, sequence.catalog);
-		// sequence to use is hard coded
-		// increment the sequence
-		result.SetVectorType(VectorType::FLAT_VECTOR);
-		auto result_data = FlatVector::GetData<int64_t>(result);
-		for (idx_t i = 0; i < args.size(); i++) {
-			// get the next value from the sequence
-			result_data[i] = OP::Operation(transaction, sequence);
-		}
-	} else {
-		// sequence to use comes from the input
-		UnaryExecutor::Execute<string_t, int64_t>(input, result, args.size(), [&](string_t value) {
-			// fetch the sequence from the catalog
-			auto &sequence = BindSequence(context, value.GetString());
-			// finally get the next value from the sequence
-			auto &transaction = DuckTransaction::Get(context, sequence.catalog);
-			return OP::Operation(transaction, sequence);
-		});
+	auto result_data = FlatVector::Writer<int64_t>(result, args.size());
+	for (idx_t i = 0; i < args.size(); i++) {
+		// get the next value from the sequence
+		result_data.WriteValue(OP::Operation(lstate.transaction, lstate.sequence));
 	}
 }
 
-static unique_ptr<FunctionData> NextValBind(ClientContext &context, ScalarFunction &bound_function,
-                                            vector<unique_ptr<Expression>> &arguments) {
-	optional_ptr<SequenceCatalogEntry> sequence;
-	if (arguments[0]->IsFoldable()) {
-		// parameter to nextval function is a foldable constant
-		// evaluate the constant and perform the catalog lookup already
-		auto seqname = ExpressionExecutor::EvaluateScalar(context, *arguments[0]);
-		if (!seqname.IsNull()) {
-			sequence = &BindSequence(context, seqname.ToString());
-		}
+unique_ptr<FunctionData> NextValBind(BindScalarFunctionInput &input) {
+	auto &arguments = input.GetArguments();
+
+	if (arguments[0]->HasParameter() || arguments[0]->GetReturnType().id() == LogicalTypeId::UNKNOWN) {
+		throw ParameterNotResolvedException();
 	}
-	return make_uniq<NextvalBindData>(sequence);
+	if (!arguments[0]->IsFoldable()) {
+		throw NotImplementedException(
+		    "currval/nextval requires a constant sequence - non-constant sequences are no longer supported");
+	}
+	auto &binder = input.GetBinder();
+	// parameter to nextval function is a foldable constant
+	// evaluate the constant and perform the catalog lookup already
+	auto seqname = ExpressionExecutor::EvaluateScalar(binder.context, *arguments[0]);
+	if (seqname.IsNull()) {
+		return nullptr;
+	}
+	auto &seq = BindSequence(binder, seqname.ToString());
+	return make_uniq<NextvalBindData>(seq);
 }
 
-static void NextValDependency(BoundFunctionExpression &expr, DependencyList &dependencies) {
-	auto &info = expr.bind_info->Cast<NextvalBindData>();
-	if (info.sequence) {
-		dependencies.AddDependency(*info.sequence);
-	}
-}
-
-void Serialize(Serializer &serializer, const optional_ptr<FunctionData> bind_data, const ScalarFunction &) {
+void Serialize(Serializer &serializer, const optional_ptr<FunctionData> bind_data, const BoundScalarFunction &) {
 	auto &next_val_bind_data = bind_data->Cast<NextvalBindData>();
 	serializer.WritePropertyWithDefault(100, "sequence_create_info", next_val_bind_data.create_info);
 }
 
-unique_ptr<FunctionData> Deserialize(Deserializer &deserializer, ScalarFunction &) {
-	auto create_info = deserializer.ReadPropertyWithDefault<unique_ptr<CreateInfo>>(100, "sequence_create_info",
-	                                                                                unique_ptr<CreateInfo>());
-	optional_ptr<SequenceCatalogEntry> catalog_entry_ptr;
-	if (create_info) {
-		auto &seq_info = create_info->Cast<CreateSequenceInfo>();
-		auto &context = deserializer.Get<ClientContext &>();
-		catalog_entry_ptr =
-		    &Catalog::GetEntry<SequenceCatalogEntry>(context, seq_info.catalog, seq_info.schema, seq_info.name);
+unique_ptr<FunctionData> Deserialize(Deserializer &deserializer, BoundScalarFunction &) {
+	auto create_info = deserializer.ReadPropertyWithExplicitDefault<unique_ptr<CreateInfo>>(100, "sequence_create_info",
+	                                                                                        unique_ptr<CreateInfo>());
+	if (!create_info) {
+		return nullptr;
 	}
-	return make_uniq<NextvalBindData>(catalog_entry_ptr);
+	auto &seq_info = create_info->Cast<CreateSequenceInfo>();
+	auto &context = deserializer.Get<ClientContext &>();
+	auto &sequence = BindSequenceFromContext(context, seq_info.catalog, seq_info.schema, seq_info.name);
+	return make_uniq<NextvalBindData>(sequence);
 }
 
-void NextvalFun::RegisterFunction(BuiltinFunctions &set) {
+void NextValModifiedDatabases(ClientContext &context, FunctionModifiedDatabasesInput &input) {
+	if (!input.bind_data) {
+		return;
+	}
+	auto &seq = input.bind_data->Cast<NextvalBindData>();
+	input.properties.RegisterDBModify(seq.sequence.ParentCatalog(), context, DatabaseModificationType::SEQUENCE);
+}
+
+} // namespace
+
+ScalarFunction NextvalFun::GetFunction() {
 	ScalarFunction next_val("nextval", {LogicalType::VARCHAR}, LogicalType::BIGINT,
-	                        NextValFunction<NextSequenceValueOperator>, NextValBind, NextValDependency);
-	next_val.stability = FunctionStability::VOLATILE;
-	next_val.serialize = Serialize;
-	next_val.deserialize = Deserialize;
-	set.AddFunction(next_val);
+	                        NextValFunction<NextSequenceValueOperator>, nullptr, nullptr);
+	next_val.SetBindCallback(NextValBind);
+	next_val.SetSerializeCallback(Serialize);
+	next_val.SetDeserializeCallback(Deserialize);
+	next_val.SetModifiedDatabasesCallback(NextValModifiedDatabases);
+	next_val.SetInitStateCallback(NextValLocalFunction);
+	next_val.SetVolatile();
+	next_val.SetFallible();
+	return next_val;
 }
 
-void CurrvalFun::RegisterFunction(BuiltinFunctions &set) {
+ScalarFunction CurrvalFun::GetFunction() {
 	ScalarFunction curr_val("currval", {LogicalType::VARCHAR}, LogicalType::BIGINT,
-	                        NextValFunction<CurrentSequenceValueOperator>, NextValBind, NextValDependency);
-	curr_val.stability = FunctionStability::VOLATILE;
-	curr_val.serialize = Serialize;
-	curr_val.deserialize = Deserialize;
-	set.AddFunction(curr_val);
+	                        NextValFunction<CurrentSequenceValueOperator>, nullptr, nullptr);
+	curr_val.SetBindCallback(NextValBind);
+	curr_val.SetSerializeCallback(Serialize);
+	curr_val.SetDeserializeCallback(Deserialize);
+	curr_val.SetInitStateCallback(NextValLocalFunction);
+	curr_val.SetVolatile();
+	curr_val.SetFallible();
+	return curr_val;
 }
 
 } // namespace duckdb

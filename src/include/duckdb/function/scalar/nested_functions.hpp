@@ -8,12 +8,12 @@
 
 #pragma once
 
+#include "duckdb/common/vector/list_vector.hpp"
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/function/scalar_function.hpp"
 #include "duckdb/common/map.hpp"
 #include "duckdb/common/unordered_map.hpp"
 #include "duckdb/function/built_in_functions.hpp"
-#include "duckdb/function/scalar/list/contains_or_position.hpp"
 #include "duckdb/common/serializer/serializer.hpp"
 #include "duckdb/common/serializer/deserializer.hpp"
 
@@ -27,7 +27,7 @@ struct ListArgFunctor {
 		return ListVector::GetListSize(list);
 	}
 	static Vector &GetEntry(Vector &list) {
-		return ListVector::GetEntry(list);
+		return ListVector::GetChildMutable(list);
 	}
 };
 
@@ -50,7 +50,7 @@ struct PositionFunctor {
 };
 
 struct MapUtil {
-	static void ReinterpretMap(Vector &target, Vector &other, idx_t count);
+	static void ReinterpretMap(Vector &target, const Vector &other);
 };
 
 struct VariableReturnBindData : public FunctionData {
@@ -67,12 +67,12 @@ struct VariableReturnBindData : public FunctionData {
 		return stype == other.stype;
 	}
 	static void Serialize(Serializer &serializer, const optional_ptr<FunctionData> bind_data,
-	                      const ScalarFunction &function) {
+	                      const BoundScalarFunction &function) {
 		auto &info = bind_data->Cast<VariableReturnBindData>();
 		serializer.WriteProperty(100, "variable_return_type", info.stype);
 	}
 
-	static unique_ptr<FunctionData> Deserialize(Deserializer &deserializer, ScalarFunction &bound_function) {
+	static unique_ptr<FunctionData> Deserialize(Deserializer &deserializer, BoundScalarFunction &bound_function) {
 		auto stype = deserializer.ReadProperty<LogicalType>(100, "variable_return_type");
 		return make_uniq<VariableReturnBindData>(std::move(stype));
 	}
@@ -83,49 +83,8 @@ struct HistogramAggState {
 	MAP_TYPE *hist;
 };
 
-struct ListExtractFun {
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListConcatFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListContainsFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListPositionFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListResizeFun {
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListZipFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListSelectFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct ListWhereFun {
-	static ScalarFunction GetFunction();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
-
-struct StructExtractFun {
-	static ScalarFunction KeyExtractFunction();
-	static ScalarFunction IndexExtractFunction();
-	static ScalarFunctionSet GetFunctions();
-	static void RegisterFunction(BuiltinFunctions &set);
-};
+ScalarFunction GetKeyExtractFunction();
+ScalarFunction GetIndexExtractFunction();
+ScalarFunction GetExtractAtFunction();
 
 } // namespace duckdb

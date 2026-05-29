@@ -18,6 +18,8 @@ struct PragmaCollations {
 };
 
 struct PragmaTableInfo {
+	static void GetColumnInfo(TableCatalogEntry &table, const ColumnDefinition &column, DataChunk &output);
+
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
@@ -45,6 +47,14 @@ struct DuckDBSchemasFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBConnectionCountFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBApproxDatabaseCountFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBColumnsFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
@@ -53,7 +63,15 @@ struct DuckDBConstraintsFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBCoordinateSystemsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBSecretsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBWhichSecretFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
@@ -69,11 +87,23 @@ struct DuckDBExtensionsFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBPreparedStatementsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBFunctionsFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
 struct DuckDBKeywordsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBLogFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBLogContextFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
@@ -85,11 +115,31 @@ struct DuckDBMemoryFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBEvictionQueuesFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBExternalFileCacheFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBMetricsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBOptimizersFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBSecretTypesFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBSequencesFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct DuckDBTriggersFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
@@ -101,6 +151,10 @@ struct DuckDBTablesFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBTableSample {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBTemporaryFilesFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
@@ -109,7 +163,19 @@ struct DuckDBTypesFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
+struct DuckDBVariablesFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
 struct DuckDBViewsFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct EnableLoggingFun {
+	static void RegisterFunction(BuiltinFunctions &set);
+};
+
+struct EnableProfilingFun {
 	static void RegisterFunction(BuiltinFunctions &set);
 };
 
@@ -130,7 +196,7 @@ struct TestType {
 
 struct TestAllTypesFun {
 	static void RegisterFunction(BuiltinFunctions &set);
-	static vector<TestType> GetTestTypes(bool large_enum = false);
+	static vector<TestType> GetTestTypes(bool large_enum = false, bool large_bignum = false);
 };
 
 struct TestVectorTypesFun {

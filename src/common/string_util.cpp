@@ -1,37 +1,115 @@
 #include "duckdb/common/string_util.hpp"
 
 #include "duckdb/common/exception.hpp"
+#include "duckdb/common/numeric_utils.hpp"
 #include "duckdb/common/pair.hpp"
+#include "duckdb/common/stack.hpp"
 #include "duckdb/common/to_string.hpp"
 #include "duckdb/common/helper.hpp"
-#include "duckdb/function/scalar/string_functions.hpp"
+#include "duckdb/common/exception/parser_exception.hpp"
+#include "duckdb/common/random_engine.hpp"
+#include "duckdb/original/std/sstream.hpp"
+#include "jaro_winkler.hpp"
+#include "utf8proc_wrapper.hpp"
+#include "duckdb/common/types/string_type.hpp"
+#include "duckdb/common/operator/cast_operators.hpp"
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <iomanip>
 #include <memory>
-#include <sstream>
 #include <stdarg.h>
 #include <string.h>
-#include <random>
+#include <stack>
+
+#include "yyjson.hpp"
+
+using namespace duckdb_yyjson; // NOLINT
 
 namespace duckdb {
 
-string StringUtil::GenerateRandomName(idx_t length) {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> dis(0, 15);
+namespace {
 
-	std::stringstream ss;
-	ss << std::hex;
+static constexpr uint8_t hex_lookup[103] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   255, 255, 255, 255, 255,
+    255, 255, 10,  11,  12,  13,  14,  15,  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 10,  11,  12,  13,  14,  15};
+
+}
+
+string StringUtil::GenerateRandomName(idx_t length) {
+	RandomEngine engine;
+	duckdb::stringstream ss;
 	for (idx_t i = 0; i < length; i++) {
-		ss << dis(gen);
+		ss << "0123456789abcdef"[engine.NextRandomInteger(0, 15)];
 	}
 	return ss.str();
 }
 
+uint8_t StringUtil::GetHexValue(char c) {
+	auto index = static_cast<uint8_t>(c);
+	uint8_t value = index > 102 ? 255 : hex_lookup[index];
+	if (value == 255) {
+		throw InvalidInputException("Invalid input for hex digit: %s", string(1, c));
+	}
+	return value;
+}
+
+bool StringUtil::CharacterIsHex(char c) {
+	auto index = static_cast<uint8_t>(c);
+	return index <= 102 && hex_lookup[index] != 255;
+}
+
+bool StringUtil::Equals(const string_t &s1, const char *s2) {
+	auto s1_data = s1.GetData();
+	for (idx_t i = 0; i < s1.GetSize(); i++) {
+		if (s1_data[i] != s2[i]) {
+			return false;
+		}
+		if (s2[i] == '\0') {
+			return false;
+		}
+	}
+	if (s2[s1.GetSize()] != '\0') {
+		// not equal
+		return false;
+	}
+	return true;
+}
+
+bool StringUtil::Equals(const char *s1, const string_t &s2) {
+	return StringUtil::Equals(s2, s1);
+}
+
 bool StringUtil::Contains(const string &haystack, const string &needle) {
-	return (haystack.find(needle) != string::npos);
+	return Find(haystack, needle).IsValid();
+}
+
+optional_idx StringUtil::Find(const string &haystack, const string &needle) {
+	auto index = haystack.find(needle);
+	if (index == string::npos) {
+		return optional_idx();
+	}
+	return optional_idx(index);
+}
+
+bool StringUtil::Contains(const string &haystack, const char &needle_char) {
+	return (haystack.find(needle_char) != string::npos);
+}
+
+idx_t StringUtil::ToUnsigned(const string &str) {
+	return std::stoull(str);
+}
+
+int64_t StringUtil::ToSigned(const string &str) {
+	return std::stoll(str);
+}
+
+double StringUtil::ToDouble(const string &str) {
+	return std::stod(str);
 }
 
 void StringUtil::LTrim(string &str) {
@@ -60,7 +138,7 @@ void StringUtil::Trim(string &str) {
 	StringUtil::RTrim(str);
 }
 
-bool StringUtil::StartsWith(string str, string prefix) {
+bool StringUtil::StartsWith(const string &str, const string &prefix) {
 	if (prefix.size() > str.size()) {
 		return false;
 	}
@@ -82,20 +160,10 @@ string StringUtil::Repeat(const string &str, idx_t n) {
 	return (os.str());
 }
 
-vector<string> StringUtil::Split(const string &str, char delimiter) {
-	std::stringstream ss(str);
-	vector<string> lines;
-	string temp;
-	while (getline(ss, temp, delimiter)) {
-		lines.push_back(temp);
-	}
-	return (lines);
-}
-
 namespace string_util_internal {
 
 inline void SkipSpaces(const string &str, idx_t &index) {
-	while (index < str.size() && std::isspace(str[index])) {
+	while (index < str.size() && StringUtil::CharacterIsSpace(str[index])) {
 		index++;
 	}
 }
@@ -126,7 +194,9 @@ inline string TakePossiblyQuotedItem(const string &str, idx_t &index, char delim
 		ConsumeLetter(str, index, quote);
 	} else {
 		TakeWhile(
-		    str, index, [delimiter, quote](char c) { return c != delimiter && c != quote && !std::isspace(c); }, entry);
+		    str, index,
+		    [delimiter, quote](char c) { return c != delimiter && c != quote && !StringUtil::CharacterIsSpace(c); },
+		    entry);
 	}
 
 	return entry;
@@ -151,6 +221,43 @@ vector<string> StringUtil::SplitWithQuote(const string &str, char delimiter, cha
 	return entries;
 }
 
+vector<string> StringUtil::SplitWithParentheses(const string &str, char delimiter, char par_open, char par_close) {
+	vector<string> result;
+	string current;
+	stack<char> parentheses;
+
+	for (size_t i = 0; i < str.size(); ++i) {
+		char ch = str[i];
+
+		// stack to keep track if we are within parentheses
+		if (ch == par_open) {
+			parentheses.push(ch);
+		}
+		if (ch == par_close) {
+			if (!parentheses.empty()) {
+				parentheses.pop();
+			} else {
+				throw InvalidInputException("Incongruent parentheses in string: '%s'", str);
+			}
+		}
+		// split if not within parentheses
+		if (parentheses.empty() && ch == delimiter) {
+			result.push_back(current);
+			current.clear();
+		} else {
+			current += ch;
+		}
+	}
+	// Add the last segment
+	if (!current.empty()) {
+		result.push_back(current);
+	}
+	if (!parentheses.empty()) {
+		throw InvalidInputException("Incongruent parentheses in string: '%s'", str);
+	}
+	return result;
+}
+
 string StringUtil::Join(const vector<string> &input, const string &separator) {
 	return StringUtil::Join(input, input.size(), separator, [](const string &s) { return s; });
 }
@@ -173,7 +280,6 @@ string StringUtil::Join(const set<string> &input, const string &separator) {
 
 string StringUtil::BytesToHumanReadableString(idx_t bytes, idx_t multiplier) {
 	D_ASSERT(multiplier == 1000 || multiplier == 1024);
-	string db_size;
 	idx_t array[6] = {};
 	const char *unit[2][6] = {{"bytes", "KiB", "MiB", "GiB", "TiB", "PiB"}, {"bytes", "kB", "MB", "GB", "TB", "PB"}};
 
@@ -196,6 +302,89 @@ string StringUtil::BytesToHumanReadableString(idx_t bytes, idx_t multiplier) {
 	return to_string(array[0]) + (bytes == 1 ? " byte" : " bytes");
 }
 
+string StringUtil::TryParseFormattedBytes(const string &arg, idx_t &result) {
+	// split based on the number/non-number
+	idx_t idx = 0;
+	while (StringUtil::CharacterIsSpace(arg[idx])) {
+		idx++;
+	}
+	idx_t num_start = idx;
+	while ((arg[idx] >= '0' && arg[idx] <= '9') || arg[idx] == '.' || arg[idx] == 'e' || arg[idx] == 'E' ||
+	       arg[idx] == '-') {
+		idx++;
+	}
+	if (idx == num_start) {
+		return "Memory must have a number (e.g. 1GB)";
+	}
+	string number = arg.substr(num_start, idx - num_start);
+
+	// try to parse the number
+	double limit;
+	bool success = TryCast::Operation<string_t, double>(string_t(number), limit);
+	if (!success) {
+		return StringUtil::Format("Invalid memory limit: '%s'", number);
+	}
+
+	// now parse the memory limit unit (e.g. bytes, gb, etc)
+	while (StringUtil::CharacterIsSpace(arg[idx])) {
+		idx++;
+	}
+	idx_t start = idx;
+	while (idx < arg.size() && !StringUtil::CharacterIsSpace(arg[idx])) {
+		idx++;
+	}
+
+	if (limit < 0) {
+		return "Memory cannot be negative";
+	}
+
+	string unit = StringUtil::Lower(arg.substr(start, idx - start));
+	idx_t multiplier;
+	if (unit == "byte" || unit == "bytes" || unit == "b") {
+		multiplier = 1;
+	} else if (unit == "kilobyte" || unit == "kilobytes" || unit == "kb" || unit == "k") {
+		multiplier = 1000LL;
+	} else if (unit == "megabyte" || unit == "megabytes" || unit == "mb" || unit == "m") {
+		multiplier = 1000LL * 1000LL;
+	} else if (unit == "gigabyte" || unit == "gigabytes" || unit == "gb" || unit == "g") {
+		multiplier = 1000LL * 1000LL * 1000LL;
+	} else if (unit == "terabyte" || unit == "terabytes" || unit == "tb" || unit == "t") {
+		multiplier = 1000LL * 1000LL * 1000LL * 1000LL;
+	} else if (unit == "kib") {
+		multiplier = 1024LL;
+	} else if (unit == "mib") {
+		multiplier = 1024LL * 1024LL;
+	} else if (unit == "gib") {
+		multiplier = 1024LL * 1024LL * 1024LL;
+	} else if (unit == "tib") {
+		multiplier = 1024LL * 1024LL * 1024LL * 1024LL;
+	} else {
+		return StringUtil::Format("Unknown unit for memory: '%s' (expected: KB, MB, GB, TB for 1000^i units or KiB, "
+		                          "MiB, GiB, TiB for 1024^i units)",
+		                          unit);
+	}
+
+	// Make sure the result is not greater than `idx_t` max value
+	constexpr double max_value = static_cast<double>(NumericLimits<idx_t>::Maximum());
+	const double double_multiplier = static_cast<double>(multiplier);
+
+	if (limit > (max_value / double_multiplier)) {
+		return "Memory value out of range: value is too large";
+	}
+
+	result = LossyNumericCast<idx_t>(static_cast<double>(multiplier) * limit);
+	return string();
+}
+
+idx_t StringUtil::ParseFormattedBytes(const string &arg) {
+	idx_t result;
+	const string error = TryParseFormattedBytes(arg, result);
+	if (!error.empty()) {
+		throw InvalidInputException(error);
+	}
+	return result;
+}
+
 string StringUtil::Upper(const string &str) {
 	string copy(str);
 	transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) { return std::toupper(c); });
@@ -204,19 +393,48 @@ string StringUtil::Upper(const string &str) {
 
 string StringUtil::Lower(const string &str) {
 	string copy(str);
-	transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) { return StringUtil::CharacterToLower(c); });
+	transform(copy.begin(), copy.end(), copy.begin(),
+	          [](unsigned char c) { return StringUtil::CharacterToLower(static_cast<char>(c)); });
 	return (copy);
+}
+
+string StringUtil::Title(const string &str) {
+	string copy;
+	bool first_character = true;
+	for (auto c : str) {
+		bool is_alpha = StringUtil::CharacterIsAlpha(c);
+		if (is_alpha) {
+			if (first_character) {
+				copy += StringUtil::CharacterToUpper(c);
+				first_character = false;
+			} else {
+				copy += StringUtil::CharacterToLower(c);
+			}
+		} else {
+			first_character = true;
+			copy += c;
+		}
+	}
+	return copy;
 }
 
 bool StringUtil::IsLower(const string &str) {
 	return str == Lower(str);
 }
 
+bool StringUtil::IsUpper(const string &str) {
+	return str == Upper(str);
+}
+
 // Jenkins hash function: https://en.wikipedia.org/wiki/Jenkins_hash_function
 uint64_t StringUtil::CIHash(const string &str) {
+	return StringUtil::CIHash(str.c_str(), str.size());
+}
+
+uint64_t StringUtil::CIHash(const char *str, idx_t size) {
 	uint32_t hash = 0;
-	for (auto c : str) {
-		hash += StringUtil::CharacterToLower(c);
+	for (idx_t i = 0; i < size; i++) {
+		hash += static_cast<uint32_t>(StringUtil::CharacterToLower(static_cast<char>(str[i])));
 		hash += hash << 10;
 		hash ^= hash >> 6;
 	}
@@ -226,12 +444,12 @@ uint64_t StringUtil::CIHash(const string &str) {
 	return hash;
 }
 
-bool StringUtil::CIEquals(const string &l1, const string &l2) {
-	if (l1.size() != l2.size()) {
+bool StringUtil::CIEquals(const char *l1, idx_t l1_size, const char *l2, idx_t l2_size) {
+	if (l1_size != l2_size) {
 		return false;
 	}
-	const auto charmap = LowerFun::ascii_to_lower_map;
-	for (idx_t c = 0; c < l1.size(); c++) {
+	const auto charmap = ASCII_TO_LOWER_MAP;
+	for (idx_t c = 0; c < l1_size; c++) {
 		if (charmap[(uint8_t)l1[c]] != charmap[(uint8_t)l2[c]]) {
 			return false;
 		}
@@ -239,10 +457,21 @@ bool StringUtil::CIEquals(const string &l1, const string &l2) {
 	return true;
 }
 
-bool StringUtil::CILessThan(const string &s1, const string &s2) {
-	const auto charmap = UpperFun::ascii_to_upper_map;
+bool StringUtil::CIEquals(const string &l1, const string &l2) {
+	return CIEquals(l1.c_str(), l1.size(), l2.c_str(), l2.size());
+}
 
-	unsigned char u1, u2;
+bool StringUtil::CIStartsWith(const string &str, const string &prefix) {
+	if (prefix.size() > str.size()) {
+		return false;
+	}
+	return CIEquals(str.c_str(), prefix.size(), prefix.c_str(), prefix.size());
+}
+
+bool StringUtil::CILessThan(const string &s1, const string &s2) {
+	const auto charmap = ASCII_TO_UPPER_MAP;
+
+	unsigned char u1 {}, u2 {};
 
 	idx_t length = MinValue<idx_t>(s1.length(), s2.length());
 	length += s1.length() != s2.length();
@@ -254,6 +483,26 @@ bool StringUtil::CILessThan(const string &s1, const string &s2) {
 		}
 	}
 	return (charmap[u1] - charmap[u2]) < 0;
+}
+
+idx_t StringUtil::CIFind(vector<string> &vector, const string &search_string) {
+	for (idx_t i = 0; i < vector.size(); i++) {
+		const auto &string = vector[i];
+		if (CIEquals(string, search_string)) {
+			return i;
+		}
+	}
+	return DConstants::INVALID_INDEX;
+}
+
+vector<string> StringUtil::Split(const string &str, char delimiter) {
+	duckdb::stringstream ss(str);
+	vector<string> lines;
+	string temp;
+	while (getline(ss, temp, delimiter)) {
+		lines.push_back(temp);
+	}
+	return (lines);
 }
 
 vector<string> StringUtil::Split(const string &input, const string &split) {
@@ -294,22 +543,46 @@ string StringUtil::Replace(string source, const string &from, const string &to) 
 	return source;
 }
 
-vector<string> StringUtil::TopNStrings(vector<pair<string, idx_t>> scores, idx_t n, idx_t threshold) {
+vector<string> StringUtil::TopNStrings(vector<pair<string, double>> scores, idx_t n, double threshold) {
 	if (scores.empty()) {
 		return vector<string>();
 	}
-	sort(scores.begin(), scores.end(), [](const pair<string, idx_t> &a, const pair<string, idx_t> &b) -> bool {
-		return a.second < b.second || (a.second == b.second && a.first.size() < b.first.size());
+	sort(scores.begin(), scores.end(), [](const pair<string, double> &a, const pair<string, double> &b) -> bool {
+		if (a.second != b.second) {
+			return a.second > b.second;
+		}
+		return StringUtil::CILessThan(a.first, b.first);
 	});
 	vector<string> result;
 	result.push_back(scores[0].first);
 	for (idx_t i = 1; i < MinValue<idx_t>(scores.size(), n); i++) {
-		if (scores[i].second > threshold) {
+		if (scores[i].second < threshold) {
 			break;
 		}
 		result.push_back(scores[i].first);
 	}
 	return result;
+}
+
+static double NormalizeScore(idx_t score, idx_t max_score) {
+	return 1.0 - static_cast<double>(score) / static_cast<double>(max_score);
+}
+
+vector<string> StringUtil::TopNStrings(const vector<pair<string, idx_t>> &scores, idx_t n, idx_t threshold) {
+	// obtain the max score to normalize
+	idx_t max_score = threshold;
+	for (auto &score : scores) {
+		if (score.second > max_score) {
+			max_score = score.second;
+		}
+	}
+
+	// normalize
+	vector<pair<string, double>> normalized_scores;
+	for (auto &score : scores) {
+		normalized_scores.push_back(make_pair(score.first, NormalizeScore(score.second, max_score)));
+	}
+	return TopNStrings(std::move(normalized_scores), n, NormalizeScore(threshold, max_score));
 }
 
 struct LevenshteinArray {
@@ -371,6 +644,11 @@ idx_t StringUtil::SimilarityScore(const string &s1, const string &s2) {
 	return LevenshteinDistance(s1, s2, 3);
 }
 
+double StringUtil::SimilarityRating(const string &s1, const string &s2) {
+	return duckdb_jaro_winkler::jaro_winkler_similarity(s1.data(), s1.data() + s1.size(), s2.data(),
+	                                                    s2.data() + s2.size());
+}
+
 vector<string> StringUtil::TopNLevenshtein(const vector<string> &strings, const string &target, idx_t n,
                                            idx_t threshold) {
 	vector<pair<string, idx_t>> scores;
@@ -381,6 +659,16 @@ vector<string> StringUtil::TopNLevenshtein(const vector<string> &strings, const 
 		} else {
 			scores.emplace_back(str, SimilarityScore(str, target));
 		}
+	}
+	return TopNStrings(scores, n, threshold);
+}
+
+vector<string> StringUtil::TopNJaroWinkler(const vector<string> &strings, const string &target, idx_t n,
+                                           double threshold) {
+	vector<pair<string, double>> scores;
+	scores.reserve(strings.size());
+	for (auto &str : strings) {
+		scores.emplace_back(str, SimilarityRating(str, target));
 	}
 	return TopNStrings(scores, n, threshold);
 }
@@ -405,186 +693,202 @@ string StringUtil::CandidatesErrorMessage(const vector<string> &strings, const s
 	return StringUtil::CandidatesMessage(closest_strings, message_prefix);
 }
 
-static void SkipSpaces(const string &message, idx_t &pos) {
-	for (; pos < message.size() && StringUtil::CharacterIsSpace(message[pos]); pos++) {
-	}
-}
-
-static bool MatchCharacter(const string &message, idx_t &pos, char c) {
-	if (pos >= message.size()) {
-		return false;
-	}
-	return message[pos] == c;
-}
-
-static string ParseJSONValue(const string &message, idx_t &pos) {
-	string result;
-	if (!MatchCharacter(message, pos, '"')) {
-		// values need to start with a quote
-		D_ASSERT(0);
+static unique_ptr<ComplexJSON> ParseJSON(const string &json, yyjson_doc *doc, yyjson_val *root, bool ignore_errors) {
+	auto result = make_uniq<ComplexJSON>();
+	switch (yyjson_get_tag(root)) {
+	case YYJSON_TYPE_ARR | YYJSON_SUBTYPE_NONE: {
+		size_t idx, max;
+		yyjson_val *val;
+		yyjson_arr_foreach(root, idx, max, val) {
+			result->AddArrayElement(ParseJSON(json, doc, val, ignore_errors));
+		}
 		return result;
 	}
-	pos++;
-	for (; pos < message.size(); pos++) {
-		if (message[pos] == '\\') {
-			// escape
-			pos++;
-			if (pos >= message.size()) {
-				// escape at end of string!?
-				D_ASSERT(0);
-				return result;
-			}
-			switch (message[pos]) {
-			case 'r':
-				result += '\r';
-				break;
-			case 'n':
-				result += '\n';
-				break;
-			case 't':
-				result += '\t';
-				break;
-			case 'b':
-				result += '\b';
-				break;
-			case 'f':
-				result += '\f';
-				break;
-			case '0':
-				result += '\0';
-				break;
-			case '\\':
-			case '"':
-			case '/':
-				result += message[pos];
-				break;
-			default:
-				// unsupported escape character
-				// NOTE: we do not support unicode escape sequences here
-				D_ASSERT(0);
-				result += message[pos];
-				break;
-			}
-		} else if (message[pos] == '"') {
-			// end of message
-			pos++;
-			return result;
-		} else {
-			result += message[pos];
+	case YYJSON_TYPE_OBJ | YYJSON_SUBTYPE_NONE: {
+		size_t idx, max;
+		yyjson_val *key, *value;
+		yyjson_obj_foreach(root, idx, max, key, value) {
+			const auto key_val = yyjson_get_str(key);
+			const auto key_len = yyjson_get_len(key);
+			result->AddObjectEntry(string(key_val, key_len), ParseJSON(json, doc, value, ignore_errors));
 		}
+		return result;
 	}
-	// no end-of-value found
-	D_ASSERT(0);
-	return result;
+	case YYJSON_TYPE_STR | YYJSON_SUBTYPE_NOESC:
+	case YYJSON_TYPE_STR | YYJSON_SUBTYPE_NONE: {
+		// Since this is a string, we can directly add the value
+		const auto value_val = yyjson_get_str(root);
+		const auto value_len = yyjson_get_len(root);
+		return make_uniq<ComplexJSON>(string(value_val, value_len));
+	}
+	case YYJSON_TYPE_BOOL | YYJSON_SUBTYPE_TRUE:
+	case YYJSON_TYPE_BOOL | YYJSON_SUBTYPE_FALSE: {
+		// boolean values
+		const bool bool_val = yyjson_get_bool(root);
+		return make_uniq<ComplexJSON>(bool_val ? "true" : "false");
+	}
+	case YYJSON_TYPE_NUM | YYJSON_SUBTYPE_UINT:
+		return make_uniq<ComplexJSON>(to_string(unsafe_yyjson_get_uint(root)));
+	case YYJSON_TYPE_NUM | YYJSON_SUBTYPE_SINT:
+		return make_uniq<ComplexJSON>(to_string(unsafe_yyjson_get_sint(root)));
+	case YYJSON_TYPE_NUM | YYJSON_SUBTYPE_REAL:
+	case YYJSON_TYPE_RAW | YYJSON_SUBTYPE_NONE:
+		return make_uniq<ComplexJSON>(to_string(unsafe_yyjson_get_real(root)));
+	case YYJSON_TYPE_NULL | YYJSON_SUBTYPE_NONE:
+		return make_uniq<ComplexJSON>("null");
+	default:
+		yyjson_doc_free(doc);
+		throw SerializationException("Failed to parse JSON string: %s", json);
+	}
 }
 
-unordered_map<string, string> StringUtil::ParseJSONMap(const string &json) {
-	unordered_map<string, string> result;
+unique_ptr<ComplexJSON> StringUtil::ParseJSONMap(const string &json, bool ignore_errors) {
+	auto result = make_uniq<ComplexJSON>(json);
 	if (json.empty()) {
 		return result;
 	}
-	idx_t pos = 0;
-	SkipSpaces(json, pos);
-	if (!MatchCharacter(json, pos, '{')) {
-		D_ASSERT(0);
-		return result;
-	}
-	pos++;
-	while (true) {
-		SkipSpaces(json, pos);
-		if (MatchCharacter(json, pos, '}')) {
-			// end of object
-			break;
-		}
-		if (!result.empty()) {
-			// objects are comma separated
-			if (!MatchCharacter(json, pos, ',')) {
-				D_ASSERT(0);
-				return result;
-			}
-			pos++;
-		}
-		string key = ParseJSONValue(json, pos);
-		SkipSpaces(json, pos);
-		if (!MatchCharacter(json, pos, ':')) {
-			D_ASSERT(0);
+	yyjson_read_flag flags = YYJSON_READ_ALLOW_INVALID_UNICODE;
+	yyjson_doc *doc = yyjson_read(json.c_str(), json.size(), flags);
+	if (!doc) {
+		if (ignore_errors) {
 			return result;
 		}
-		pos++;
-		string value = ParseJSONValue(json, pos);
-		auto entry = result.find(key);
-		if (entry != result.end()) {
-			// entry already exists
-			D_ASSERT(0);
-			continue;
-		}
-		result.insert(make_pair(std::move(key), std::move(value)));
+		throw SerializationException("Failed to parse JSON string: %s", json);
 	}
+	yyjson_val *root = yyjson_doc_get_root(doc);
+	if (!root || yyjson_get_type(root) != YYJSON_TYPE_OBJ) {
+		yyjson_doc_free(doc);
+		if (ignore_errors) {
+			return result;
+		}
+		throw SerializationException("Failed to parse JSON string: %s", json);
+	}
+
+	result = ParseJSON(json, doc, root, ignore_errors);
+	yyjson_doc_free(doc);
 	return result;
 }
 
-static void WriteJSONValue(const string &value, string &result) {
-	result += '"';
-	for (auto c : value) {
-		// check for characters we need to escape
-		switch (c) {
-		case '\0':
-			result += "\\0";
-			break;
-		case '\\':
-			result += "\\\\";
-			break;
-		case '\b':
-			result += "\\b";
-			break;
-		case '\f':
-			result += "\\f";
-			break;
-		case '\t':
-			result += "\\t";
-			break;
-		case '\r':
-			result += "\\r";
-			break;
-		case '\n':
-			result += "\\n";
-			break;
-		case '"':
-			result += "\\\"";
-			break;
-		default:
-			result += c;
-			break;
+string WriteJsonToString(yyjson_mut_doc *doc) {
+	yyjson_write_err err;
+	size_t len;
+	constexpr yyjson_write_flag flags = YYJSON_WRITE_ALLOW_INVALID_UNICODE;
+	char *json = yyjson_mut_write_opts(doc, flags, nullptr, &len, &err);
+	if (!json) {
+		yyjson_mut_doc_free(doc);
+		throw SerializationException("Failed to write JSON string: %s", err.msg);
+	}
+	// Create a string from the JSON
+	string result(json, len);
+
+	// Free the JSON and the document
+	free(json);
+	yyjson_mut_doc_free(doc);
+
+	// Return the result
+	return result;
+}
+
+string ToJsonMapInternal(const unordered_map<string, string> &map, yyjson_mut_doc *doc, yyjson_mut_val *root) {
+	for (auto &entry : map) {
+		auto key = yyjson_mut_strncpy(doc, entry.first.c_str(), entry.first.size());
+		auto value = yyjson_mut_strncpy(doc, entry.second.c_str(), entry.second.size());
+		yyjson_mut_obj_add(root, key, value);
+	}
+	return WriteJsonToString(doc);
+}
+string StringUtil::ToJSONMap(const unordered_map<string, string> &map) {
+	yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
+	yyjson_mut_val *root = yyjson_mut_obj(doc);
+	yyjson_mut_doc_set_root(doc, root);
+
+	return ToJsonMapInternal(map, doc, root);
+}
+
+string ComplexJSON::GetValue(const string &key) const {
+	if (type == ComplexJSONType::OBJECT) {
+		if (obj_value.find(key) != obj_value.end()) {
+			return GetValueRecursive(*obj_value.at(key));
 		}
 	}
-	result += '"';
+	// Object either doesn't exist or this is just a string
+	return "";
 }
 
-static void WriteJSONPair(const string &key, const string &value, string &result) {
-	WriteJSONValue(key, result);
-	result += ":";
-	WriteJSONValue(value, result);
+string ComplexJSON::GetValue(const idx_t &index) const {
+	if (type == ComplexJSONType::ARRAY) {
+		if (index >= arr_value.size()) {
+			return "";
+		}
+		return GetValueRecursive(*arr_value[index]);
+	}
+	return "";
 }
 
-string StringUtil::ToJSONMap(ExceptionType type, const string &message, const unordered_map<string, string> &map) {
+string ComplexJSON::GetValueRecursive(const ComplexJSON &child) {
+	if (child.type == ComplexJSONType::OBJECT) {
+		// We have to construct the nested json
+		yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
+		yyjson_mut_val *root = yyjson_mut_obj(doc);
+		yyjson_mut_doc_set_root(doc, root);
+		for (const auto &object : child.obj_value) {
+			auto key = yyjson_mut_strncpy(doc, object.first.c_str(), object.first.size());
+			auto value_str = GetValueRecursive(*object.second);
+			auto value = yyjson_mut_strncpy(doc, value_str.c_str(), value_str.size());
+			yyjson_mut_obj_add(root, key, value);
+		}
+		return WriteJsonToString(doc);
+	} else if (child.type == ComplexJSONType::ARRAY) {
+		yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
+		yyjson_mut_val *root = yyjson_mut_arr(doc);
+		yyjson_mut_doc_set_root(doc, root);
+		for (const auto &elem : child.arr_value) {
+			auto value_str = GetValueRecursive(*elem);
+			auto value = yyjson_mut_strncpy(doc, value_str.c_str(), value_str.size());
+			yyjson_mut_arr_append(root, value);
+		}
+		return WriteJsonToString(doc);
+	} else {
+		// simple string we can just write
+		return child.str_value;
+	}
+}
+string StringUtil::ToComplexJSONMap(const ComplexJSON &complex_json) {
+	return ComplexJSON::GetValueRecursive(complex_json);
+}
+
+string StringUtil::ValidateJSON(const char *data, const idx_t &len) {
+	// Same flags as in JSON extension
+	static constexpr auto READ_FLAG =
+	    YYJSON_READ_ALLOW_INF_AND_NAN | YYJSON_READ_ALLOW_TRAILING_COMMAS | YYJSON_READ_BIGNUM_AS_RAW;
+	yyjson_read_err error;
+	yyjson_doc *doc = yyjson_read_opts((char *)data, len, READ_FLAG, nullptr, &error); // NOLINT: for yyjson
+	if (error.code != YYJSON_READ_SUCCESS) {
+		return StringUtil::Format("Malformed JSON at byte %lld of input: %s. Input: \"%s\"", error.pos, error.msg,
+		                          string(data, len));
+	}
+
+	yyjson_doc_free(doc);
+	return string();
+}
+
+string StringUtil::ExceptionToJSONMap(ExceptionType type, const string &message,
+                                      const unordered_map<string, string> &map) {
 	D_ASSERT(map.find("exception_type") == map.end());
 	D_ASSERT(map.find("exception_message") == map.end());
-	string result;
-	result += "{";
-	// we always write exception type/message
-	WriteJSONPair("exception_type", Exception::ExceptionTypeToString(type), result);
-	result += ",";
-	WriteJSONPair("exception_message", message, result);
-	for (auto &entry : map) {
-		result += ",";
-		WriteJSONPair(entry.first, entry.second, result);
-	}
-	result += "}";
-	return result;
+
+	yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
+	yyjson_mut_val *root = yyjson_mut_obj(doc);
+	yyjson_mut_doc_set_root(doc, root);
+
+	auto except_str = Exception::ExceptionTypeToString(type);
+	yyjson_mut_obj_add_strncpy(doc, root, "exception_type", except_str.c_str(), except_str.size());
+	yyjson_mut_obj_add_strncpy(doc, root, "exception_message", message.c_str(), message.size());
+
+	return ToJsonMapInternal(map, doc, root);
 }
 
 string StringUtil::GetFileName(const string &file_path) {
-
 	idx_t pos = file_path.find_last_of("/\\");
 	if (pos == string::npos) {
 		return file_path;
@@ -631,7 +935,6 @@ string StringUtil::GetFileStem(const string &file_name) {
 }
 
 string StringUtil::GetFilePath(const string &file_path) {
-
 	// Trim the trailing slashes
 	auto end = file_path.size() - 1;
 	while (end > 0 && (file_path[end] == '/' || file_path[end] == '\\')) {
@@ -649,5 +952,170 @@ string StringUtil::GetFilePath(const string &file_path) {
 
 	return file_path.substr(0, pos + 1);
 }
+
+struct URLEncodeLength {
+	using RESULT_TYPE = idx_t;
+
+	static void ProcessCharacter(idx_t &result, char) {
+		result++;
+	}
+
+	static void ProcessHex(idx_t &result, const char *, idx_t) {
+		result++;
+	}
+};
+
+struct URLEncodeWrite {
+	using RESULT_TYPE = char *;
+
+	static void ProcessCharacter(char *&result, char c) {
+		*result = c;
+		result++;
+	}
+
+	static void ProcessHex(char *&result, const char *input, idx_t idx) {
+		uint32_t hex_first = StringUtil::GetHexValue(input[idx + 1]);
+		uint32_t hex_second = StringUtil::GetHexValue(input[idx + 2]);
+		uint32_t hex_value = (hex_first << 4) + hex_second;
+		ProcessCharacter(result, static_cast<char>(hex_value));
+	}
+};
+
+template <class OP>
+void URLEncodeInternal(const char *input, idx_t input_size, typename OP::RESULT_TYPE &result, bool encode_slash) {
+	// https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
+	static const char *HEX_DIGIT = "0123456789ABCDEF";
+	for (idx_t i = 0; i < input_size; i++) {
+		char ch = input[i];
+		if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
+		    ch == '-' || ch == '~' || ch == '.') {
+			OP::ProcessCharacter(result, ch);
+		} else if (ch == '/' && !encode_slash) {
+			OP::ProcessCharacter(result, ch);
+		} else {
+			OP::ProcessCharacter(result, '%');
+			OP::ProcessCharacter(result, HEX_DIGIT[static_cast<unsigned char>(ch) >> 4]);
+			OP::ProcessCharacter(result, HEX_DIGIT[static_cast<unsigned char>(ch) & 15]);
+		}
+	}
+}
+
+idx_t StringUtil::URLEncodeSize(const char *input, idx_t input_size, bool encode_slash) {
+	idx_t result_length = 0;
+	URLEncodeInternal<URLEncodeLength>(input, input_size, result_length, encode_slash);
+	return result_length;
+}
+
+void StringUtil::URLEncodeBuffer(const char *input, idx_t input_size, char *output, bool encode_slash) {
+	URLEncodeInternal<URLEncodeWrite>(input, input_size, output, encode_slash);
+}
+
+string StringUtil::URLEncode(const string &input, bool encode_slash) {
+	idx_t result_size = URLEncodeSize(input.c_str(), input.size(), encode_slash);
+	auto result_data = make_uniq_array<char>(result_size);
+	URLEncodeBuffer(input.c_str(), input.size(), result_data.get(), encode_slash);
+	return string(result_data.get(), result_size);
+}
+
+template <class OP>
+void URLDecodeInternal(const char *input, idx_t input_size, typename OP::RESULT_TYPE &result, bool plus_to_space) {
+	for (idx_t i = 0; i < input_size; i++) {
+		char ch = input[i];
+		if (plus_to_space && ch == '+') {
+			OP::ProcessCharacter(result, ' ');
+		} else if (ch == '%' && i + 2 < input_size && StringUtil::CharacterIsHex(input[i + 1]) &&
+		           StringUtil::CharacterIsHex(input[i + 2])) {
+			OP::ProcessHex(result, input, i);
+			i += 2;
+		} else {
+			OP::ProcessCharacter(result, ch);
+		}
+	}
+}
+
+idx_t StringUtil::URLDecodeSize(const char *input, idx_t input_size, bool plus_to_space) {
+	idx_t result_length = 0;
+	URLDecodeInternal<URLEncodeLength>(input, input_size, result_length, plus_to_space);
+	return result_length;
+}
+
+void StringUtil::URLDecodeBuffer(const char *input, idx_t input_size, char *output, bool plus_to_space) {
+	char *output_start = output;
+	URLDecodeInternal<URLEncodeWrite>(input, input_size, output, plus_to_space);
+	if (!Utf8Proc::IsValid(output_start, NumericCast<idx_t>(output - output_start))) {
+		throw InvalidInputException("Failed to decode string \"%s\" using URL decoding - decoded value is invalid UTF8",
+		                            string(input, input_size));
+	}
+}
+
+void StringUtil::SkipBOM(const char *buffer_ptr, const idx_t &buffer_size, idx_t &buffer_pos) {
+	if (buffer_size >= 3 && buffer_ptr[0] == '\xEF' && buffer_ptr[1] == '\xBB' && buffer_ptr[2] == '\xBF' &&
+	    buffer_pos == 0) {
+		buffer_pos = 3;
+	}
+}
+
+string StringUtil::URLDecode(const string &input, bool plus_to_space) {
+	idx_t result_size = URLDecodeSize(input.c_str(), input.size(), plus_to_space);
+	auto result_data = make_uniq_array<char>(result_size);
+	URLDecodeBuffer(input.c_str(), input.size(), result_data.get(), plus_to_space);
+	return string(result_data.get(), result_size);
+}
+
+uint32_t StringUtil::StringToEnum(const EnumStringLiteral enum_list[], idx_t enum_count, const char *enum_name,
+                                  const char *str_value) {
+	for (idx_t i = 0; i < enum_count; i++) {
+		if (CIEquals(enum_list[i].string, str_value)) {
+			return enum_list[i].number;
+		}
+	}
+	// string to enum conversion failed - generate candidates
+	vector<string> candidates;
+	for (idx_t i = 0; i < enum_count; i++) {
+		candidates.push_back(enum_list[i].string);
+	}
+	auto closest_values = TopNJaroWinkler(candidates, str_value);
+	auto message = CandidatesMessage(closest_values, "Candidates");
+	throw NotImplementedException("Enum value: unrecognized value \"%s\" for enum \"%s\"\n%s", str_value, enum_name,
+	                              message);
+}
+
+const char *StringUtil::EnumToString(const EnumStringLiteral enum_list[], idx_t enum_count, const char *enum_name,
+                                     uint32_t enum_value) {
+	for (idx_t i = 0; i < enum_count; i++) {
+		if (enum_list[i].number == enum_value) {
+			return enum_list[i].string;
+		}
+	}
+	throw NotImplementedException("Enum value: unrecognized enum value \"%d\" for enum \"%s\"", enum_value, enum_name);
+}
+
+const uint8_t StringUtil::ASCII_TO_UPPER_MAP[] = {
+    0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,
+    22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,
+    44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+    66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,
+    88,  89,  90,  91,  92,  93,  94,  95,  96,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,
+    78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+    176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241,
+    242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
+
+const uint8_t StringUtil::ASCII_TO_LOWER_MAP[] = {
+    0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,
+    22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,
+    44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  97,
+    98,  99,  100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
+    120, 121, 122, 91,  92,  93,  94,  95,  96,  97,  98,  99,  100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+    110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+    176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241,
+    242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
 
 } // namespace duckdb

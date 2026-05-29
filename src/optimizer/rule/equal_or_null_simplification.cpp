@@ -1,6 +1,7 @@
 #include "duckdb/optimizer/rule/equal_or_null_simplification.hpp"
 
 #include "duckdb/planner/expression/bound_comparison_expression.hpp"
+#include "duckdb/planner/expression/bound_function_expression.hpp"
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/planner/expression/bound_operator_expression.hpp"
 
@@ -18,7 +19,7 @@ EqualOrNullSimplification::EqualOrNullSimplification(ExpressionRewriter &rewrite
 	equal_child->policy = SetMatcher::Policy::SOME;
 	op->matchers.push_back(std::move(equal_child));
 
-	// AND conjuction on the other
+	// AND conjunction on the other
 	auto and_child = make_uniq<ConjunctionExpressionMatcher>();
 	and_child->expr_type = make_uniq<SpecificExpressionTypeMatcher>(ExpressionType::CONJUNCTION_AND);
 	and_child->policy = SetMatcher::Policy::SOME;
@@ -38,27 +39,28 @@ EqualOrNullSimplification::EqualOrNullSimplification(ExpressionRewriter &rewrite
 
 // a=b OR (a IS NULL AND b IS NULL) to a IS NOT DISTINCT FROM b
 static unique_ptr<Expression> TryRewriteEqualOrIsNull(Expression &equal_expr, Expression &and_expr) {
-	if (equal_expr.type != ExpressionType::COMPARE_EQUAL || and_expr.type != ExpressionType::CONJUNCTION_AND) {
+	if (equal_expr.GetExpressionType() != ExpressionType::COMPARE_EQUAL ||
+	    and_expr.GetExpressionType() != ExpressionType::CONJUNCTION_AND) {
 		return nullptr;
 	}
 
-	auto &equal_cast = equal_expr.Cast<BoundComparisonExpression>();
+	auto &equal_cast = equal_expr.Cast<BoundFunctionExpression>();
 	auto &and_cast = and_expr.Cast<BoundConjunctionExpression>();
 
 	if (and_cast.children.size() != 2) {
 		return nullptr;
 	}
 
-	// Make sure on the AND conjuction the relevant conditions appear
-	auto &a_exp = *equal_cast.left;
-	auto &b_exp = *equal_cast.right;
+	// Make sure on the AND conjunction the relevant conditions appear
+	auto &a_exp = BoundComparisonExpression::Left(equal_cast);
+	auto &b_exp = BoundComparisonExpression::Right(equal_cast);
 	bool a_is_null_found = false;
 	bool b_is_null_found = false;
 
 	for (const auto &item : and_cast.children) {
 		auto &next_exp = *item;
 
-		if (next_exp.type == ExpressionType::OPERATOR_IS_NULL) {
+		if (next_exp.GetExpressionType() == ExpressionType::OPERATOR_IS_NULL) {
 			auto &next_exp_cast = next_exp.Cast<BoundOperatorExpression>();
 			auto &child = *next_exp_cast.children[0];
 
@@ -75,8 +77,9 @@ static unique_ptr<Expression> TryRewriteEqualOrIsNull(Expression &equal_expr, Ex
 		}
 	}
 	if (a_is_null_found && b_is_null_found) {
-		return make_uniq<BoundComparisonExpression>(ExpressionType::COMPARE_NOT_DISTINCT_FROM,
-		                                            std::move(equal_cast.left), std::move(equal_cast.right));
+		return BoundComparisonExpression::Create(ExpressionType::COMPARE_NOT_DISTINCT_FROM,
+		                                         std::move(BoundComparisonExpression::LeftMutable(equal_cast)),
+		                                         std::move(BoundComparisonExpression::RightMutable(equal_cast)));
 	}
 	return nullptr;
 }
@@ -85,7 +88,7 @@ unique_ptr<Expression> EqualOrNullSimplification::Apply(LogicalOperator &op, vec
                                                         bool &changes_made, bool is_root) {
 	const Expression &or_exp = bindings[0].get();
 
-	if (or_exp.type != ExpressionType::CONJUNCTION_OR) {
+	if (or_exp.GetExpressionType() != ExpressionType::CONJUNCTION_OR) {
 		return nullptr;
 	}
 

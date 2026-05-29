@@ -1,5 +1,46 @@
 [
   {
+    "class": "LogicalTypeModifier",
+    "includes": [
+      "duckdb/common/extension_type_info.hpp"
+    ],
+    "members": [
+      {
+        "id": 100,
+        "name": "value",
+        "type": "Value"
+      },
+      {
+        "id": 101,
+        "name": "label",
+        "type": "string"
+      }
+    ],
+    "pointer_type": "none",
+    "constructor": [
+      "value"
+    ]
+  },
+  {
+    "class": "ExtensionTypeInfo",
+    "includes": [
+      "duckdb/common/extension_type_info.hpp"
+    ],
+    "members": [
+      {
+        "id": 100,
+        "name": "modifiers",
+        "type": "vector<LogicalTypeModifier>"
+      },
+      {
+        "id": 101,
+        "name": "properties",
+        "type": "unordered_map<string, Value>",
+        "default": "unordered_map<string, Value>()"
+      }
+    ]
+  },
+  {
     "class": "ExtraTypeInfo",
     "class_type": "type",
     "includes": [
@@ -15,6 +56,17 @@
         "id": 101,
         "name": "alias",
         "type": "string"
+      },
+      {
+        "id": 102,
+        "name": "modifiers",
+        "type": "vector<Value>",
+        "status": "deleted"
+      },
+      {
+        "id": 103,
+        "name": "extension_info",
+        "type": "unique_ptr<ExtensionTypeInfo>"
       }
     ],
     "pointer_type": "shared_ptr"
@@ -73,9 +125,9 @@
     ]
   },
   {
-    "class": "AggregateStateTypeInfo",
+    "class": "LegacyAggregateStateTypeInfo",
     "base": "ExtraTypeInfo",
-    "enum": "AGGREGATE_STATE_TYPE_INFO",
+    "enum": "LEGACY_AGGREGATE_STATE_TYPE_INFO",
     "members": [
       {
         "id": 200,
@@ -98,6 +150,42 @@
     ]
   },
   {
+    "class": "AggregateStateTypeInfo",
+    "base": "ExtraTypeInfo",
+    "enum": "AGGREGATE_STATE_TYPE_INFO",
+    "ignore_clang_tidy_rules": [
+      {
+        "name": "bugprone-parent-virtual-call",
+        "reason": "Multi-level inheritance is not supported in the generation tool"
+      }
+    ],
+    "members": [
+      {
+        "id": 300,
+        "name": "function_name",
+        "type": "string",
+        "property": "state_type.function_name"
+      },
+      {
+        "id": 301,
+        "name": "return_type",
+        "type": "LogicalType",
+        "property": "state_type.return_type"
+      },
+      {
+        "id": 302,
+        "name": "bound_argument_types",
+        "type": "vector<LogicalType>",
+        "property": "state_type.bound_argument_types"
+      },
+      {
+        "id": 303,
+        "name": "child_types",
+        "type": "child_list_t<LogicalType>"
+      }
+    ]
+  },
+  {
     "class": "ArrayTypeInfo",
     "base": "ExtraTypeInfo",
     "enum": "ARRAY_TYPE_INFO",
@@ -113,30 +201,9 @@
         "type": "uint32_t"
       }
     ],
-    "constructor": ["child_type", "size"]
-  },
-  {
-    "class": "UserTypeInfo",
-    "base": "ExtraTypeInfo",
-    "enum": "USER_TYPE_INFO",
-    "members": [
-      {
-        "id": 200,
-        "name": "user_type_name",
-        "type": "string"
-      },
-      {
-        "id": 201,
-        "name": "catalog",
-        "type": "string",
-        "default": "string()"
-      },
-      {
-        "id": 202,
-        "name": "schema",
-        "type": "string",
-        "default": "string()"
-      }
+    "constructor": [
+      "child_type",
+      "size"
     ]
   },
   {
@@ -155,7 +222,7 @@
     "class": "GenericTypeInfo",
     "base": "ExtraTypeInfo",
     "enum": "GENERIC_TYPE_INFO",
-    "custom_switch_code": "result = make_shared<ExtraTypeInfo>(type);\nbreak;"
+    "custom_switch_code": "result = make_shared_ptr<ExtraTypeInfo>(type);\nbreak;"
   },
   {
     "class": "AnyTypeInfo",
@@ -185,5 +252,35 @@
         "type": "Value"
       }
     ]
+  },
+  {
+    "class": "TemplateTypeInfo",
+    "base": "ExtraTypeInfo",
+    "enum": "TEMPLATE_TYPE_INFO",
+    "members": [
+      {
+        "id": 200,
+        "name": "name",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "class": "GeoTypeInfo",
+    "base": "ExtraTypeInfo",
+    "enum": "GEO_TYPE_INFO",
+    "members": [
+      {
+        "id": 200,
+        "name": "crs",
+        "type": "CoordinateReferenceSystem"
+      }
+    ]
+  },
+  {
+    "class": "UnboundTypeInfo",
+    "base": "ExtraTypeInfo",
+    "enum": "UNBOUND_TYPE_INFO",
+    "custom_implementation": true
   }
 ]

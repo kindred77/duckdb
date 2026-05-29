@@ -1,4 +1,5 @@
-#include "duckdb/storage/buffer/block_handle.hpp"
+#include "duckdb/storage/buffer/buffer_pool_reservation.hpp"
+
 #include "duckdb/storage/buffer/buffer_pool.hpp"
 
 namespace duckdb {
@@ -12,6 +13,7 @@ BufferPoolReservation::BufferPoolReservation(BufferPoolReservation &&src) noexce
 }
 
 BufferPoolReservation &BufferPoolReservation::operator=(BufferPoolReservation &&src) noexcept {
+	pool.UpdateUsedMemory(tag, -UnsafeNumericCast<int64_t>(size));
 	tag = src.tag;
 	size = src.size;
 	src.size = 0;
@@ -23,12 +25,12 @@ BufferPoolReservation::~BufferPoolReservation() {
 }
 
 void BufferPoolReservation::Resize(idx_t new_size) {
-	int64_t delta = (int64_t)new_size - size;
-	pool.IncreaseUsedMemory(tag, delta);
+	auto delta = UnsafeNumericCast<int64_t>(new_size) - UnsafeNumericCast<int64_t>(size);
+	pool.UpdateUsedMemory(tag, delta);
 	size = new_size;
 }
 
-void BufferPoolReservation::Merge(BufferPoolReservation &&src) {
+void BufferPoolReservation::Merge(BufferPoolReservation src) {
 	size += src.size;
 	src.size = 0;
 }

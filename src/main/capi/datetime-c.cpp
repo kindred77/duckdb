@@ -10,6 +10,9 @@ using duckdb::Timestamp;
 
 using duckdb::date_t;
 using duckdb::dtime_t;
+using duckdb::timestamp_ms_t;
+using duckdb::timestamp_ns_t;
+using duckdb::timestamp_sec_t;
 using duckdb::timestamp_t;
 
 duckdb_date_struct duckdb_from_date(duckdb_date date) {
@@ -30,7 +33,7 @@ duckdb_date duckdb_to_date(duckdb_date_struct date) {
 }
 
 bool duckdb_is_finite_date(duckdb_date date) {
-	return Date::IsFinite(date_t(date.days));
+	return date_t(date.days).IsFinite();
 }
 
 duckdb_time_struct duckdb_from_time(duckdb_time time) {
@@ -97,5 +100,17 @@ duckdb_timestamp duckdb_to_timestamp(duckdb_timestamp_struct ts) {
 }
 
 bool duckdb_is_finite_timestamp(duckdb_timestamp ts) {
-	return Timestamp::IsFinite(timestamp_t(ts.micros));
+	return timestamp_t(ts.micros).IsFinite();
+}
+
+bool duckdb_is_finite_timestamp_s(duckdb_timestamp_s ts) {
+	return timestamp_sec_t(ts.seconds).IsFinite();
+}
+
+bool duckdb_is_finite_timestamp_ms(duckdb_timestamp_ms ts) {
+	return timestamp_ms_t(ts.millis).IsFinite();
+}
+
+bool duckdb_is_finite_timestamp_ns(duckdb_timestamp_ns ts) {
+	return timestamp_ns_t(ts.nanos).IsFinite();
 }

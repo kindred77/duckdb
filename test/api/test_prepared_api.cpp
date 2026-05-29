@@ -2,16 +2,18 @@
 #include "test_helpers.hpp"
 
 using namespace duckdb;
-using namespace std;
 
 TEST_CASE("Test prepared statements API", "[api]") {
 	duckdb::unique_ptr<QueryResult> result;
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
 
 	// prepare no statements
 	REQUIRE_FAIL(con.Prepare(""));
+
+	// PrepareAndExecute with no values
+	duckdb::vector<Value> values;
+	REQUIRE_FAIL(con.PendingQuery("", values, false));
 
 	REQUIRE_NO_FAIL(con.Query("CREATE TABLE a (i TINYINT)"));
 	REQUIRE_NO_FAIL(con.Query("INSERT INTO a VALUES (11), (12), (13)"));
@@ -46,14 +48,13 @@ TEST_CASE("Test prepared statements API", "[api]") {
 	REQUIRE(CHECK_COLUMN(result, 0, {1}));
 	result = prepare->Execute(13);
 	REQUIRE(CHECK_COLUMN(result, 0, {1}));
-	REQUIRE(prepare->n_param == 1);
+	REQUIRE(prepare->named_param_map.size() == 1);
 }
 
 TEST_CASE("Test type resolution of function with parameter expressions", "[api]") {
 	DuckDB db(nullptr);
 	Connection con(db);
 	duckdb::unique_ptr<QueryResult> result;
-	con.EnableQueryVerification();
 
 	// can deduce type of prepared parameter here
 	auto prepared = con.Prepare("select 1 + $1");
@@ -90,6 +91,21 @@ TEST_CASE("Test prepared statements and dependencies", "[api]") {
 
 	// now the prepared statement fails when executing
 	REQUIRE_FAIL(prepare->Execute(11));
+}
+
+TEST_CASE("Prepared temp table insert is invalidated after drop", "[api]") {
+	DuckDB db(nullptr);
+	Connection con(db);
+
+	REQUIRE_NO_FAIL(con.Query("CREATE TEMP TABLE t(i INTEGER)"));
+	auto prepared = con.Prepare("INSERT INTO t VALUES (42)");
+	REQUIRE(!prepared->HasError());
+
+	REQUIRE_NO_FAIL(con.Query("DROP TABLE t"));
+
+	auto result = prepared->Execute();
+	REQUIRE(result->HasError());
+	REQUIRE(result->GetError().find("does not exist") != string::npos);
 }
 
 TEST_CASE("Dropping connection with prepared statement resets dependencies", "[api]") {
@@ -256,34 +272,33 @@ TEST_CASE("Test prepared statement parameter counting", "[api]") {
 
 	auto p0 = con.Prepare("SELECT 42");
 	REQUIRE(!p0->HasError());
-	REQUIRE(p0->n_param == 0);
+	REQUIRE(p0->named_param_map.empty());
 
 	auto p1 = con.Prepare("SELECT $1::int");
 	REQUIRE(!p1->HasError());
-	REQUIRE(p1->n_param == 1);
+	REQUIRE(p1->named_param_map.size() == 1);
 
 	p1 = con.Prepare("SELECT ?::int");
 	REQUIRE(!p1->HasError());
-	REQUIRE(p1->n_param == 1);
+	REQUIRE(p1->named_param_map.size() == 1);
 
 	auto p2 = con.Prepare("SELECT $1::int");
 	REQUIRE(!p2->HasError());
-	REQUIRE(p2->n_param == 1);
+	REQUIRE(p2->named_param_map.size() == 1);
 
 	auto p3 = con.Prepare("SELECT ?::int, ?::string");
 	REQUIRE(!p3->HasError());
-	REQUIRE(p3->n_param == 2);
+	REQUIRE(p3->named_param_map.size() == 2);
 
 	auto p4 = con.Prepare("SELECT $1::int, $2::string");
 	REQUIRE(!p4->HasError());
-	REQUIRE(p4->n_param == 2);
+	REQUIRE(p4->named_param_map.size() == 2);
 }
 
 TEST_CASE("Test ANALYZE", "[api]") {
 	duckdb::unique_ptr<QueryResult> result;
 	DuckDB db(nullptr);
 	Connection con(db);
-	con.EnableQueryVerification();
 
 	// ANALYZE runs without errors, note that ANALYZE is actually just ignored
 	REQUIRE_NO_FAIL(con.Query("ANALYZE"));
@@ -475,4 +490,62 @@ TEST_CASE("Test ambiguous prepared statement parameter types", "[api]") {
 
 	result = prep->Execute("hello");
 	REQUIRE(CHECK_COLUMN(result, 0, {"hello"}));
+}
+
+TEST_CASE("Test prepared statements with SET", "[api]") {
+	duckdb::unique_ptr<QueryResult> result;
+	DuckDB db(nullptr);
+	Connection con(db);
+
+	// create a prepared statement and use it to query
+	auto prepare = con.Prepare("SET default_null_order=$1");
+	REQUIRE(prepare->success);
+
+	// too many parameters
+	REQUIRE_FAIL(prepare->Execute("xxx", "yyy"));
+	// too few parameters
+	REQUIRE_FAIL(prepare->Execute());
+	// unsupported setting
+	REQUIRE_FAIL(prepare->Execute("unsupported_mode"));
+	// this works
+	REQUIRE_NO_FAIL(prepare->Execute("NULLS FIRST"));
+}
+
+TEST_CASE("Test prepared statements that require rebind", "[api]") {
+	DuckDB db(nullptr);
+	Connection con1(db);
+
+	auto prepared = con1.Prepare("DROP TABLE IF EXISTS t1");
+
+	Connection con2(db);
+	REQUIRE_NO_FAIL(con2.Query("CREATE OR REPLACE TABLE t1 (c1 varchar)"));
+	REQUIRE_NO_FAIL(prepared->Execute());
+}
+
+class TestExtensionState : public ClientContextState {
+public:
+	bool CanRequestRebind() override {
+		return true;
+	}
+};
+
+TEST_CASE("Test prepared statements with extension that can request a rebind", "[api]") {
+	DuckDB db(nullptr);
+	Connection con(db);
+	REQUIRE_NO_FAIL(con.Query("CREATE OR REPLACE TABLE t1 (c1 INTEGER)"));
+
+	// https://github.com/duckdb/duckdb/pull/11096
+	con.context->registered_state->Insert("test_extension", make_shared_ptr<TestExtensionState>());
+
+	// SelectStatement
+	REQUIRE_NO_FAIL(con.Prepare("SELECT ?")->Execute(42));
+
+	// InsertStatement
+	REQUIRE_NO_FAIL(con.Prepare("INSERT INTO t1 VALUES(?)")->Execute(42));
+
+	// UpdateStatement
+	REQUIRE_NO_FAIL(con.Prepare("UPDATE t1 SET c1 = ?")->Execute(43));
+
+	// SetVariableStatement
+	REQUIRE_NO_FAIL(con.Prepare("SET VARIABLE test_var = ?")->Execute(42));
 }

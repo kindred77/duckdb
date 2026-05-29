@@ -33,7 +33,7 @@ shared_ptr<BoundParameterData> BoundParameterMap::CreateOrGetData(const string &
 	auto entry = parameters.find(identifier);
 	if (entry == parameters.end()) {
 		// no entry yet: create a new one
-		auto data = make_shared<BoundParameterData>();
+		auto data = make_shared_ptr<BoundParameterData>();
 		data->return_type = GetReturnType(identifier);
 
 		CreateNewParameter(identifier, data);
@@ -43,8 +43,7 @@ shared_ptr<BoundParameterData> BoundParameterMap::CreateOrGetData(const string &
 }
 
 unique_ptr<BoundParameterExpression> BoundParameterMap::BindParameterExpression(ParameterExpression &expr) {
-
-	auto &identifier = expr.identifier;
+	auto &identifier = expr.Identifier();
 	D_ASSERT(!parameter_data.count(identifier));
 
 	// No value has been supplied yet,
@@ -54,7 +53,7 @@ unique_ptr<BoundParameterExpression> BoundParameterMap::BindParameterExpression(
 	auto bound_expr = make_uniq<BoundParameterExpression>(identifier);
 
 	bound_expr->parameter_data = param_data;
-	bound_expr->alias = expr.alias;
+	bound_expr->SetAlias(expr.GetAlias());
 
 	auto param_type = param_data->return_type;
 	auto identifier_type = GetReturnType(identifier);
@@ -66,7 +65,7 @@ unique_ptr<BoundParameterExpression> BoundParameterMap::BindParameterExpression(
 		rebind = true;
 	}
 
-	bound_expr->return_type = identifier_type;
+	bound_expr->SetReturnType(identifier_type);
 	return bound_expr;
 }
 

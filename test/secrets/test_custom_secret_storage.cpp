@@ -5,10 +5,10 @@
 #include "duckdb/main/secret/secret_manager.hpp"
 #include "duckdb/main/secret/secret_storage.hpp"
 #include "duckdb/main/secret/secret.hpp"
-#include "duckdb/main/extension_util.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
+#include "duckdb/main/extension_manager.hpp"
 
 using namespace duckdb;
-using namespace std;
 
 struct TestSecretLog {
 	duckdb::mutex lock;
@@ -28,14 +28,17 @@ struct DemoSecretType {
 	}
 
 	static void RegisterDemoSecret(DatabaseInstance &instance, const string &type_name) {
+		ExtensionInfo extension_info {};
+		ExtensionActiveLoad load_info {instance, extension_info, "demo_secret_type_" + type_name, ""};
+		ExtensionLoader loader {load_info};
 		SecretType secret_type;
 		secret_type.name = type_name;
 		secret_type.deserializer = KeyValueSecret::Deserialize<KeyValueSecret>;
 		secret_type.default_provider = "config";
-		ExtensionUtil::RegisterSecretType(instance, secret_type);
+		loader.RegisterSecretType(secret_type);
 
 		CreateSecretFunction secret_fun = {type_name, "config", CreateDemoSecret};
-		ExtensionUtil::RegisterFunction(instance, secret_fun);
+		loader.RegisterFunction(secret_fun);
 	}
 };
 
@@ -43,7 +46,7 @@ struct DemoSecretType {
 class TestSecretStorage : public CatalogSetSecretStorage {
 public:
 	TestSecretStorage(const string &name_p, DatabaseInstance &db, TestSecretLog &logger_p, int64_t tie_break_offset_p)
-	    : CatalogSetSecretStorage(db, name_p), tie_break_offset(tie_break_offset_p), logger(logger_p) {
+	    : CatalogSetSecretStorage(db, name_p, tie_break_offset_p), logger(logger_p) {
 		secrets = make_uniq<CatalogSet>(Catalog::GetSystemCatalog(db));
 		persistent = true;
 		include_in_lookups = true;
@@ -52,11 +55,6 @@ public:
 		return include_in_lookups;
 	}
 
-	int64_t GetTieBreakOffset() override {
-		return tie_break_offset;
-	}
-
-	int64_t tie_break_offset;
 	bool include_in_lookups;
 
 protected:
@@ -91,8 +89,8 @@ TEST_CASE("Test secret lookups by secret type", "[secret][.]") {
 	REQUIRE_NO_FAIL(con.Query("CREATE SECRET s2 (TYPE secret_type_2, SCOPE '')"));
 
 	// Note that the secrets collide completely, except for their types
-	auto res1 = con.Query("SELECT which_secret('blablabla', 'secret_type_1')");
-	auto res2 = con.Query("SELECT which_secret('blablabla', 'secret_type_2')");
+	auto res1 = con.Query("SELECT name FROM which_secret('blablabla', 'secret_type_1')");
+	auto res2 = con.Query("SELECT name FROM which_secret('blablabla', 'secret_type_2')");
 
 	// Correct secret is selected
 	REQUIRE(res1->GetValue(0, 0).ToString() == "s1");
@@ -154,14 +152,14 @@ TEST_CASE("Test adding a custom secret storage", "[secret][.]") {
 	REQUIRE(secret_ptr->secret->GetName() == "s2");
 
 	// Now try resolve secret by path -> this will return s1 because its scope matches best
-	auto which_secret_result = con.Query("SELECT which_secret('s3://foo/bar.csv', 'S3');");
+	auto which_secret_result = con.Query("SELECT name FROM which_secret('s3://foo/bar.csv', 'S3');");
 	REQUIRE(which_secret_result->GetValue(0, 0).ToString() == "s1");
 
 	// Exclude the storage from lookups
 	storage_ref.include_in_lookups = false;
 
 	// Now the lookup will choose the other storage
-	which_secret_result = con.Query("SELECT which_secret('s3://foo/bar.csv', 's3');");
+	which_secret_result = con.Query("SELECT name FROM which_secret('s3://foo/bar.csv', 's3');");
 	REQUIRE(which_secret_result->GetValue(0, 0).ToString() == "s2");
 
 	// Lets drop stuff now
@@ -222,17 +220,17 @@ TEST_CASE("Test tie-break behaviour for custom secret storage", "[secret][.]") {
 	REQUIRE(result->GetValue(0, 2).ToString() == "s3");
 	REQUIRE(result->GetValue(1, 2).ToString() == "test_storage_before");
 
-	result = con.Query("SELECT which_secret('s3://', 's3');");
+	result = con.Query("SELECT name FROM which_secret('s3://', 's3');");
 	REQUIRE(result->GetValue(0, 0).ToString() == "s3");
 
 	REQUIRE_NO_FAIL(con.Query("DROP SECRET s3"));
 
-	result = con.Query("SELECT which_secret('s3://', 's3');");
+	result = con.Query("SELECT name FROM which_secret('s3://', 's3');");
 	REQUIRE(result->GetValue(0, 0).ToString() == "s1");
 
 	REQUIRE_NO_FAIL(con.Query("DROP SECRET s1"));
 
-	result = con.Query("SELECT which_secret('s3://', 's3');");
+	result = con.Query("SELECT name FROM which_secret('s3://', 's3');");
 	REQUIRE(result->GetValue(0, 0).ToString() == "s2");
 
 	REQUIRE_NO_FAIL(con.Query("DROP SECRET s2"));

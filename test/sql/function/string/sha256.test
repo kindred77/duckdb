@@ -2,9 +2,6 @@
 # description: Test the sha256 function
 # group: [string]
 
-statement ok
-PRAGMA enable_verification
-
 query II
 SELECT sha256('hello'), sha256(NULL)
 ----
@@ -15,6 +12,11 @@ query I
 SELECT sha256('')
 ----
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+query I
+SELECT sha256('\xff\xff'::BLOB)
+----
+ca2fd00fa001190744c15c317643ab092e7048ce086a243e2be9437c898de1bb
 
 statement ok
 CREATE TABLE strings AS SELECT s::VARCHAR s FROM generate_series(0,10,1) t(s)
@@ -44,3 +46,4 @@ d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35	6b86b273ff34fce
 statement error
 SELECT sha256()
 ----
+<REGEX>:.*Binder Error: No function matches.*

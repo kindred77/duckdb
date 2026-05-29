@@ -1,141 +1,161 @@
 #pragma once
+#include "duckdb/common/vector/flat_vector.hpp"
+#include "duckdb/common/vector/list_vector.hpp"
+#include "duckdb/function/create_sort_key.hpp"
+#include "duckdb/common/operator/comparison_operators.hpp"
 
 namespace duckdb {
 
-template <class CHILD_TYPE, class RETURN_TYPE, class OP, class LIST_ACCESSOR>
-static void TemplatedContainsOrPosition(DataChunk &args, Vector &result, bool is_nested = false) {
-	D_ASSERT(args.ColumnCount() == 2);
-	auto count = args.size();
-	Vector &list = LIST_ACCESSOR::GetList(args.data[0]);
-	Vector &value_vector = args.data[1];
+template <class T, class RETURN_TYPE, bool FIND_NULLS>
+idx_t ListSearchSimpleOp(const Vector &input_list, const Vector &list_child, const Vector &target, Vector &result,
+                         const idx_t count) {
+	// If the return type is not a bool, return the position
+	const auto return_pos = std::is_same<RETURN_TYPE, int32_t>::value;
 
-	// Create a result vector of type RETURN_TYPE
+	const auto list_entries = input_list.Values<list_entry_t>();
+	const auto child_data = list_child.Values<T>();
+	const auto target_data = target.Values<T>();
+
 	result.SetVectorType(VectorType::FLAT_VECTOR);
-	auto result_entries = FlatVector::GetData<RETURN_TYPE>(result);
-	auto &result_validity = FlatVector::Validity(result);
+	auto result_data = FlatVector::Writer<RETURN_TYPE>(result, count);
 
-	if (list.GetType().id() == LogicalTypeId::SQLNULL) {
-		result_validity.SetInvalid(0);
-		return;
-	}
+	idx_t total_matches = 0;
 
-	auto list_size = LIST_ACCESSOR::GetListSize(list);
-	auto &child_vector = LIST_ACCESSOR::GetEntry(list);
+	for (idx_t row_idx = 0; row_idx < count; ++row_idx) {
+		auto list_entry = list_entries[row_idx];
 
-	UnifiedVectorFormat child_data;
-	child_vector.ToUnifiedFormat(list_size, child_data);
+		// The entire list is NULL, the result is also NULL.
+		if (!list_entry.IsValid()) {
+			result_data.WriteNull();
+			continue;
+		}
+		auto list = list_entry.GetValue();
+		auto target_entry = target_data[row_idx];
 
-	UnifiedVectorFormat list_data;
-	list.ToUnifiedFormat(count, list_data);
-	auto list_entries = UnifiedVectorFormat::GetData<list_entry_t>(list_data);
+		const bool target_valid = target_entry.IsValid();
 
-	UnifiedVectorFormat value_data;
-	value_vector.ToUnifiedFormat(count, value_data);
-
-	// not required for a comparison of nested types
-	auto child_value = UnifiedVectorFormat::GetData<CHILD_TYPE>(child_data);
-	auto values = UnifiedVectorFormat::GetData<CHILD_TYPE>(value_data);
-
-	for (idx_t i = 0; i < count; i++) {
-		auto list_index = list_data.sel->get_index(i);
-		auto value_index = value_data.sel->get_index(i);
-
-		if (!list_data.validity.RowIsValid(list_index) || !value_data.validity.RowIsValid(value_index)) {
-			result_validity.SetInvalid(i);
+		// We are finished, if we are not looking for NULL, and the target is NULL.
+		const auto finished = !FIND_NULLS && !target_valid;
+		// We did not find the target (finished, or list is empty).
+		if (finished || list.length == 0) {
+			if (finished || return_pos) {
+				// Return NULL as the position.
+				result_data.WriteNull();
+			} else {
+				// Set 'contains' to false.
+				result_data.WriteValue(RETURN_TYPE(false));
+			}
 			continue;
 		}
 
-		const auto &list_entry = list_entries[list_index];
+		const auto entry_length = list.length;
+		const auto entry_offset = list.offset;
 
-		result_entries[i] = OP::Initialize();
-		for (idx_t child_idx = 0; child_idx < list_entry.length; child_idx++) {
+		bool found = false;
+		RETURN_TYPE found_value {};
 
-			auto child_value_idx = child_data.sel->get_index(list_entry.offset + child_idx);
-			if (!child_data.validity.RowIsValid(child_value_idx)) {
-				continue;
-			}
+		for (auto list_idx = entry_offset; list_idx < entry_length + entry_offset && !found; list_idx++) {
+			auto child_entry = child_data[list_idx];
+			const bool child_valid = child_entry.IsValid();
 
-			if (!is_nested) {
-				if (Equals::Operation(child_value[child_value_idx], values[value_index])) {
-					result_entries[i] = OP::UpdateResultEntries(child_idx);
-					break; // Found value in list, no need to look further
-				}
-			} else {
-				// FIXME: using Value is less efficient than modifying the vector comparison code
-				// to more efficiently compare nested types
-
-				// Note: When using GetValue we don't first apply the selection vector
-				// because it is already done inside GetValue
-				auto lvalue = child_vector.GetValue(list_entry.offset + child_idx);
-				auto rvalue = value_vector.GetValue(i);
-				if (Value::NotDistinctFrom(lvalue, rvalue)) {
-					result_entries[i] = OP::UpdateResultEntries(child_idx);
-					break; // Found value in list, no need to look further
+			if ((FIND_NULLS && !child_valid && !target_valid) ||
+			    (child_valid && target_valid &&
+			     Equals::Operation<T>(child_entry.GetValue(), target_entry.GetValue()))) {
+				found = true;
+				total_matches++;
+				if (return_pos) {
+					found_value = UnsafeNumericCast<int32_t>(1 + list_idx - entry_offset);
+				} else {
+					found_value = RETURN_TYPE(true);
 				}
 			}
 		}
+
+		if (!found) {
+			if (return_pos) {
+				result_data.WriteNull();
+			} else {
+				result_data.WriteValue(RETURN_TYPE(false));
+			}
+		} else {
+			result_data.WriteValue(found_value);
+		}
 	}
 
-	if (args.AllConstant()) {
-		result.SetVectorType(VectorType::CONSTANT_VECTOR);
-	}
+	return total_matches;
 }
 
-template <class T, class OP, class LIST_ACCESSOR>
-void ListContainsOrPosition(DataChunk &args, Vector &result) {
-	const auto physical_type = args.data[1].GetType().InternalType();
-	switch (physical_type) {
+template <class RETURN_TYPE, bool FIND_NULLS>
+idx_t ListSearchNestedOp(const Vector &list_vec, const Vector &source_vec, const Vector &target_vec, Vector &result_vec,
+                         const idx_t target_count) {
+	// Set up sort keys for nested types.
+	auto source_count = ListVector::GetListSize(list_vec);
+	Vector source_sort_key_vec(LogicalType::BLOB, source_count);
+	Vector target_sort_key_vec(LogicalType::BLOB, target_count);
+
+	const OrderModifiers order_modifiers(OrderType::ASCENDING, OrderByNullType::NULLS_LAST);
+	// Pass explicit counts: source_vec and target_vec may have different sizes than source_count/target_count
+	// when called via dictionary expression optimization (TryExecuteDictionaryExpression uses the dictionary
+	// size as the chunk count, while the non-key arguments retain their original size).
+	CreateSortKeyHelpers::CreateSortKeyWithValidity(source_vec, source_sort_key_vec, order_modifiers, source_count);
+	CreateSortKeyHelpers::CreateSortKeyWithValidity(target_vec, target_sort_key_vec, order_modifiers, target_count);
+
+	return ListSearchSimpleOp<string_t, RETURN_TYPE, FIND_NULLS>(list_vec, source_sort_key_vec, target_sort_key_vec,
+	                                                             result_vec, target_count);
+}
+
+//! "Search" each list in the list vector for the corresponding value in the target vector, returning either
+//! true/false or the position of the value in the list. The result vector is populated with the result of the search.
+//! usually the "source" vector is the list child vector, but it is passed separately to enable searching nested
+//! children, for example when searching the keys of a MAP vectors.
+template <class RETURN_TYPE, bool FIND_NULLS = false>
+idx_t ListSearchOp(const Vector &list_v, const Vector &source_v, const Vector &target_v, Vector &result_v,
+                   idx_t target_count) {
+	const auto type = target_v.GetType().InternalType();
+	switch (type) {
 	case PhysicalType::BOOL:
 	case PhysicalType::INT8:
-		TemplatedContainsOrPosition<int8_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<int8_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::INT16:
-		TemplatedContainsOrPosition<int16_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<int16_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::INT32:
-		TemplatedContainsOrPosition<int32_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<int32_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::INT64:
-		TemplatedContainsOrPosition<int64_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<int64_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::INT128:
-		TemplatedContainsOrPosition<hugeint_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<hugeint_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                              target_count);
 	case PhysicalType::UINT8:
-		TemplatedContainsOrPosition<uint8_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<uint8_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::UINT16:
-		TemplatedContainsOrPosition<uint16_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<uint16_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                             target_count);
 	case PhysicalType::UINT32:
-		TemplatedContainsOrPosition<uint32_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<uint32_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                             target_count);
 	case PhysicalType::UINT64:
-		TemplatedContainsOrPosition<uint64_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<uint64_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                             target_count);
 	case PhysicalType::UINT128:
-		TemplatedContainsOrPosition<uhugeint_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<uhugeint_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                               target_count);
 	case PhysicalType::FLOAT:
-		TemplatedContainsOrPosition<float, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<float, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::DOUBLE:
-		TemplatedContainsOrPosition<double, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<double, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	case PhysicalType::VARCHAR:
-		TemplatedContainsOrPosition<string_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<string_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                             target_count);
 	case PhysicalType::INTERVAL:
-		TemplatedContainsOrPosition<interval_t, T, OP, LIST_ACCESSOR>(args, result);
-		break;
+		return ListSearchSimpleOp<interval_t, RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v,
+		                                                               target_count);
 	case PhysicalType::STRUCT:
 	case PhysicalType::LIST:
 	case PhysicalType::ARRAY:
-		TemplatedContainsOrPosition<int8_t, T, OP, LIST_ACCESSOR>(args, result, true);
-		break;
+		return ListSearchNestedOp<RETURN_TYPE, FIND_NULLS>(list_v, source_v, target_v, result_v, target_count);
 	default:
 		throw NotImplementedException("This function has not been implemented for logical type %s",
-		                              TypeIdToString(physical_type));
+		                              TypeIdToString(type));
 	}
 }
 

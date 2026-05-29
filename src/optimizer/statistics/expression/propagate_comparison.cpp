@@ -1,6 +1,7 @@
 #include "duckdb/optimizer/statistics_propagator.hpp"
-#include "duckdb/planner/expression/bound_comparison_expression.hpp"
 #include "duckdb/planner/expression/bound_constant_expression.hpp"
+#include "duckdb/planner/expression/bound_comparison_expression.hpp"
+#include "duckdb/planner/expression/bound_function_expression.hpp"
 #include "duckdb/optimizer/expression_rewriter.hpp"
 
 namespace duckdb {
@@ -91,34 +92,36 @@ FilterPropagateResult StatisticsPropagator::PropagateComparison(BaseStatistics &
 	}
 }
 
-unique_ptr<BaseStatistics> StatisticsPropagator::PropagateExpression(BoundComparisonExpression &expr,
-                                                                     unique_ptr<Expression> *expr_ptr) {
-	auto left_stats = PropagateExpression(expr.left);
-	auto right_stats = PropagateExpression(expr.right);
+unique_ptr<BaseStatistics> StatisticsPropagator::PropagateComparison(BoundFunctionExpression &expr,
+                                                                     unique_ptr<Expression> &expr_ptr) {
+	auto &left = BoundComparisonExpression::LeftMutable(expr);
+	auto &right = BoundComparisonExpression::RightMutable(expr);
+	auto left_stats = PropagateExpression(left);
+	auto right_stats = PropagateExpression(right);
 	if (!left_stats || !right_stats) {
 		return nullptr;
 	}
 	// propagate the statistics of the comparison operator
-	auto propagate_result = PropagateComparison(*left_stats, *right_stats, expr.type);
+	auto propagate_result = PropagateComparison(*left_stats, *right_stats, expr.GetExpressionType());
 	switch (propagate_result) {
 	case FilterPropagateResult::FILTER_ALWAYS_TRUE:
-		*expr_ptr = make_uniq<BoundConstantExpression>(Value::BOOLEAN(true));
-		return PropagateExpression(*expr_ptr);
+		expr_ptr = make_uniq<BoundConstantExpression>(Value::BOOLEAN(true));
+		return PropagateExpression(expr_ptr);
 	case FilterPropagateResult::FILTER_ALWAYS_FALSE:
-		*expr_ptr = make_uniq<BoundConstantExpression>(Value::BOOLEAN(false));
-		return PropagateExpression(*expr_ptr);
+		expr_ptr = make_uniq<BoundConstantExpression>(Value::BOOLEAN(false));
+		return PropagateExpression(expr_ptr);
 	case FilterPropagateResult::FILTER_TRUE_OR_NULL: {
 		vector<unique_ptr<Expression>> children;
-		children.push_back(std::move(expr.left));
-		children.push_back(std::move(expr.right));
-		*expr_ptr = ExpressionRewriter::ConstantOrNull(std::move(children), Value::BOOLEAN(true));
+		children.push_back(std::move(left));
+		children.push_back(std::move(right));
+		expr_ptr = ExpressionRewriter::ConstantOrNull(std::move(children), Value::BOOLEAN(true));
 		return nullptr;
 	}
 	case FilterPropagateResult::FILTER_FALSE_OR_NULL: {
 		vector<unique_ptr<Expression>> children;
-		children.push_back(std::move(expr.left));
-		children.push_back(std::move(expr.right));
-		*expr_ptr = ExpressionRewriter::ConstantOrNull(std::move(children), Value::BOOLEAN(false));
+		children.push_back(std::move(left));
+		children.push_back(std::move(right));
+		expr_ptr = ExpressionRewriter::ConstantOrNull(std::move(children), Value::BOOLEAN(false));
 		return nullptr;
 	}
 	default:

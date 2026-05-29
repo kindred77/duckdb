@@ -4,7 +4,6 @@
 
 This project and everyone participating in it is governed by a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [quack@duckdb.org](mailto:quack@duckdb.org).
 
-
 ## **Did you find a bug?**
 
 * **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/duckdb/duckdb/issues).
@@ -30,15 +29,15 @@ This project and everyone participating in it is governed by a [Code of Conduct]
 * When maintaining a branch, merge frequently with the main.
 * When maintaining a branch, submit pull requests to the main frequently.
 * If you are working on a bigger issue try to split it up into several smaller issues.
-* Please do not open "Draft" pull requests. Rather, use issues or discussion topics to discuss whatever needs discussing.
+* Please do not open "Draft" pull requests and ensure that you run CI on your fork + branch first before opening a PR (see CI section below). GH actions is free for public forks of open source projects.
 * We reserve full and final discretion over whether or not we will merge a pull request. Adhering to these guidelines is not a complete guarantee that your pull request will be merged.
+* Please refrain from opening pull requests to fix minor typos.
 
 ## CI for pull requests
 
 * Pull requests will need to pass all continuous integration checks before merging.
-* For faster iteration and more control, consider running CI on your own fork or when possible directly locally.
-* Submitting changes to an open pull request will move it to 'draft' state.
-* Pull requests will get a complete run on the main repo CI only when marked as 'ready for review' (via Web UI, button on bottom right).
+* When all checks look good on your local CI, you can open a PR to run the CI on the main DuckDB repo. Submitting changes to an open pull request will move it to 'Draft' state. In that case you can mark it as "Ready for Review" once you've applied all fixes and it passes in your fork to run the public CI again ('ready for review', via the Web UI button on the bottom right).
+* Note that occasionally CI failures may be unrelated. You should check whether it's related to your changes (because if it is, that means your changes are breaking something). Otherwise, you should 1) remember to merge with main frequently and run make format-fix (sometimes you need to run generate-files) 2) check if other PR CI's are failing on the same tests (that's usually a giveaway that it's a temporary problem with the CI) and generally 3) investigate that there is no overlap between your changes and the breaking CI.
 
 ## Nightly CI
 
@@ -49,9 +48,10 @@ This project and everyone participating in it is governed by a [Code of Conduct]
 
 * To build the project, run `make`.
 * To build the project for debugging, run `make debug`.
-* To build optional components, use the flags defined in the Makefile, e.g. to build the JDBC driver, run `BUILD_JDBC=1 make`.
 * For parallel builds, you can use the [Ninja](https://ninja-build.org/) build system: `GEN=ninja make`.
-  * The default number of parallel processes can lockup the system depending on the CPU-to-memory ratio. If this happens, restrict the maximum number of build processes: `CMAKE_BUILD_PARALLEL_LEVEL=4 GEN=ninja make`.
+  * The default number of parallel processes can lock up the system depending on the CPU-to-memory ratio. If this happens, restrict the maximum number of build processes: `CMAKE_BUILD_PARALLEL_LEVEL=4 GEN=ninja make`.
+  * Without using Ninja, build times can still be reduced by setting `CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)`.
+* To speed up rebuilds, install [ccache](https://ccache.dev/). The build system will automatically detect and use it if available.
 
 ## Testing
 
@@ -71,7 +71,7 @@ This project and everyone participating in it is governed by a [Code of Conduct]
 
 * Use tabs for indentation, spaces for alignment.
 * Lines should not exceed 120 columns.
-* To make sure the formatting is consistent, please use version 10.0.1, installable through `python3 -m pip install clang-format==10.0.1.1`
+* To make sure the formatting is consistent, please use version 11.0.1, installable through `python3 -m pip install clang-format==11.0.1` or `pipx install clang-format==11.0.1`.
 * `clang_format` and `black` enforce these rules automatically, use `make format-fix` to run the formatter.
 * The project also comes with an [`.editorconfig` file](https://editorconfig.org/) that corresponds to these rules.
 
@@ -126,3 +126,8 @@ This project and everyone participating in it is governed by a [Code of Conduct]
 * Functions: CamelCase starting with uppercase letter, e.g., GetChunk
 * Avoid `i`, `j`, etc. in **nested** loops. Prefer to use e.g. **column_idx**, **check_idx**. In a **non-nested** loop it is permissible to use **i** as iterator index.
 * These rules are partially enforced by `clang-tidy`.
+
+## Generative AI Policy
+
+Please do not submit pull requests generated by AI (LLMs).
+Reviewing such PRs puts a considerable burden on the maintainers.

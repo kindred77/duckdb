@@ -35,8 +35,9 @@ SELECT f::HUGEINT::FLOAT FROM working_floats
 loop i 0 2
 
 statement error
-SELECT f::HUGEINT FROM (SELECT f FROM broken_floats ORDER BY f LIMIT 1 OFFSET ${i}) t1
+SELECT f::HUGEINT FROM (SELECT f FROM broken_floats ORDER BY f LIMIT 1 OFFSET {i}) t1
 ----
+<REGEX>:Conversion Error.*FLOAT.*is out of range for.*INT128.*
 
 endloop
 
@@ -71,8 +72,9 @@ SELECT f::HUGEINT::DOUBLE FROM working_doubles
 loop i 0 4
 
 statement error
-SELECT f::HUGEINT FROM (SELECT f FROM broken_doubles ORDER BY f LIMIT 1 OFFSET ${i}) t1
+SELECT f::HUGEINT FROM (SELECT f FROM broken_doubles ORDER BY f LIMIT 1 OFFSET {i}) t1
 ----
+<REGEX>:Conversion Error.*DOUBLE.*is out of range for.*INT128.*
 
 endloop
 
@@ -108,8 +110,9 @@ SELECT f::HUGEINT FROM working_strings
 loop i 0 14
 
 statement error
-SELECT f::HUGEINT FROM (SELECT f FROM broken_strings ORDER BY f LIMIT 1 OFFSET ${i}) t1
+SELECT f::HUGEINT FROM (SELECT f FROM broken_strings ORDER BY f LIMIT 1 OFFSET {i}) t1
 ----
+<REGEX>:Conversion Error.*string.*INT128.*
 
 endloop
 
@@ -284,7 +287,7 @@ SELECT p::HUGEINT::VARCHAR FROM powers_of_ten
 -10000000000000000000000000000000000000
 -100000000000000000000000000000000000000
 
-# test large constants and correct parsing into either HUGEINT or DOUBLE
+# test large constants and correct parsing into either HUGEINT, UHUGEINT, or BIGNUM
 query II
 SELECT typeof(4832904823908104981209840981240981277), 4832904823908104981209840981240981277
 ----
@@ -298,22 +301,22 @@ HUGEINT	48329048239081049812098409812409812772
 query II
 SELECT typeof(483290482390810498120984098124098127725), 483290482390810498120984098124098127725
 ----
-DOUBLE	483290482390810498120984098124098127725.0
+BIGNUM	483290482390810498120984098124098127725
 
 query II
 SELECT typeof(4832904823908104981209840981240981277256), 4832904823908104981209840981240981277256
 ----
-DOUBLE	4832904823908104981209840981240981277256.0
+BIGNUM	4832904823908104981209840981240981277256
 
 query II
 SELECT typeof(48329048239081049812098409812409812772568), 48329048239081049812098409812409812772568
 ----
-DOUBLE	48329048239081049812098409812409812772568.0
+BIGNUM	48329048239081049812098409812409812772568
 
 query II
 SELECT typeof(483290482390810498120984098124098127725683), 483290482390810498120984098124098127725683
 ----
-DOUBLE	483290482390810498120984098124098127725683.0
+BIGNUM	483290482390810498120984098124098127725683
 
 query I
 SELECT 0::HUGEINT::VARCHAR
@@ -331,10 +334,12 @@ select '255'::HUGEINT::UINT8
 statement error
 select '-1'::hugeint::uint8
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT8.*
 
 statement error
 select '256'::hugeint::uint8
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT8.*
 
 # uint16
 query I
@@ -345,10 +350,12 @@ select '65535'::HUGEINT::UINT16
 statement error
 select '-1'::hugeint::uint16
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT16.*
 
 statement error
 select '65536'::hugeint::uint16
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT16.*
 
 # uint32
 query I
@@ -359,10 +366,12 @@ select '4294967295'::HUGEINT::UINT32
 statement error
 select '-1'::hugeint::uint32
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT32.*
 
 statement error
 select '4294967296'::hugeint::uint32
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT32.*
 
 # UINT64
 query I
@@ -373,10 +382,12 @@ select '18446744073709551615'::HUGEINT::UINT64
 statement error
 select '-1'::hugeint::UINT64
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT64.*
 
 statement error
 select '18446744073709551616'::hugeint::UINT64
 ----
+<REGEX>:Conversion Error.*INT128.*is out of range for.*UINT64.*
 
 # uint -> hugeint
 query I

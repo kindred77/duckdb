@@ -1,9 +1,7 @@
 #include "capi_tester.hpp"
-
 #include <regex>
 
 using namespace duckdb;
-using namespace std;
 
 static void require_hugeint_eq(duckdb_hugeint left, duckdb_hugeint right) {
 	REQUIRE(left.lower == right.lower);
@@ -128,6 +126,7 @@ TEST_CASE("Basic test of C API", "[capi]") {
 	REQUIRE(duckdb_result_error(nullptr) == nullptr);
 	REQUIRE(duckdb_nullmask_data(nullptr, 0) == nullptr);
 	REQUIRE(duckdb_column_data(nullptr, 0) == nullptr);
+	REQUIRE(duckdb_result_error_type(nullptr) == DUCKDB_ERROR_INVALID);
 }
 
 TEST_CASE("Test different types of C API", "[capi]") {
@@ -247,6 +246,20 @@ TEST_CASE("Test different types of C API", "[capi]") {
 	REQUIRE(time_val.sec == 30);
 	REQUIRE(time_val.micros == 123400);
 	REQUIRE(result->Fetch<string>(0, 2) == Value::TIME(12, 0, 30, 123400).ToString());
+
+	// time_ns columns
+	REQUIRE_NO_FAIL(tester.Query("CREATE TABLE time_ns_values(d TIME_NS)"));
+	REQUIRE_NO_FAIL(tester.Query("INSERT INTO time_ns_values VALUES ('12:34:56.789123456'), (NULL), ('12:34:56')"));
+
+	result = tester.Query("SELECT * FROM time_ns_values ORDER BY d");
+	REQUIRE_NO_FAIL(*result);
+	REQUIRE(result->IsNull(0, 0));
+	duckdb_time_ns time_ns_val = result->Fetch<duckdb_time_ns>(0, 1);
+	REQUIRE(time_ns_val.nanos == 45296000000000);
+	REQUIRE(result->Fetch<string>(0, 1) == Value::TIME_NS(dtime_ns_t(45296000000000)).ToString());
+	time_ns_val = result->Fetch<duckdb_time_ns>(0, 2);
+	REQUIRE(time_ns_val.nanos == 45296789123456);
+	REQUIRE(result->Fetch<string>(0, 2) == Value::TIME_NS(dtime_ns_t(45296789123456)).ToString());
 
 	// blob columns
 	REQUIRE_NO_FAIL(tester.Query("CREATE TABLE blobs(b BLOB)"));
@@ -567,7 +580,7 @@ TEST_CASE("Test C API config", "[capi]") {
 	REQUIRE(duckdb_set_config(config, "aaaa_invalidoption", "read_only") == DuckDBSuccess);
 	REQUIRE(((DBConfig *)config)->options.unrecognized_options["aaaa_invalidoption"] == "read_only");
 	REQUIRE(duckdb_open_ext(dbdir.c_str(), &db, config, &error) == DuckDBError);
-	REQUIRE_THAT(error, Catch::Matchers::Contains("Unrecognized configuration property"));
+	REQUIRE_THAT(error, Catch::Matchers::Contains("The following options were not recognized"));
 	duckdb_free(error);
 
 	// we can destroy the config right after duckdb_open
@@ -626,7 +639,6 @@ TEST_CASE("Issue #2058: Cleanup after execution of invalid SQL statement causes 
 }
 
 TEST_CASE("Decimal -> Double casting issue", "[capi]") {
-
 	CAPITester tester;
 	duckdb::unique_ptr<CAPIResult> result;
 
@@ -645,7 +657,6 @@ TEST_CASE("Decimal -> Double casting issue", "[capi]") {
 }
 
 TEST_CASE("Test custom_user_agent config", "[capi]") {
-
 	{
 		duckdb_database db;
 		duckdb_connection con;
@@ -702,4 +713,42 @@ TEST_CASE("Test custom_user_agent config", "[capi]") {
 		duckdb_disconnect(&con);
 		duckdb_close(&db);
 	}
+}
+
+TEST_CASE("Test unsupported types in the deprecated C API", "[capi]") {
+	CAPITester tester;
+	REQUIRE(tester.OpenDatabase(nullptr));
+
+	string query_1 = R"EOF(
+		CREATE TABLE test(
+			id BIGINT,
+			one DECIMAL(18,3)[]
+		);
+	)EOF";
+	string query_2 = "INSERT INTO test VALUES (410, '[]');";
+	string query_3 = "INSERT INTO test VALUES (412, '[]');";
+	string query_4 = "SELECT id, one FROM test;";
+	REQUIRE_NO_FAIL(tester.Query(query_1));
+	REQUIRE_NO_FAIL(tester.Query(query_2));
+	REQUIRE_NO_FAIL(tester.Query(query_3));
+
+	// Passes, but does return invalid data for unsupported types.
+	auto result = tester.Query(query_4);
+	auto &result_c = result->InternalResult();
+
+	auto first_bigint_row = duckdb_value_string(&result_c, 0, 0).data;
+	REQUIRE(!string(first_bigint_row).compare("410"));
+	duckdb_free(first_bigint_row);
+	REQUIRE(duckdb_value_string(&result_c, 1, 0).data == nullptr);
+
+	auto second_bigint_row = duckdb_value_string(&result_c, 0, 1).data;
+	REQUIRE(!string(second_bigint_row).compare("412"));
+	duckdb_free(second_bigint_row);
+	REQUIRE(duckdb_value_string(&result_c, 1, 1).data == nullptr);
+}
+
+TEST_CASE("Test creating DUCKDB_ERROR_INTERNAL error data", "[capi]") {
+	auto error_data = duckdb_create_error_data(DUCKDB_ERROR_INTERNAL, "foo");
+	REQUIRE(error_data);
+	duckdb_destroy_error_data(&error_data);
 }

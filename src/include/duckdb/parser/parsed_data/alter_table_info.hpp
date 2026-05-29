@@ -11,7 +11,7 @@
 #include "duckdb/parser/parsed_data/alter_info.hpp"
 #include "duckdb/parser/column_definition.hpp"
 #include "duckdb/parser/constraint.hpp"
-#include "duckdb/parser/parsed_data/parse_info.hpp"
+#include "duckdb/parser/result_modifier.hpp"
 
 namespace duckdb {
 
@@ -35,6 +35,12 @@ struct ChangeOwnershipInfo : public AlterInfo {
 public:
 	CatalogType GetCatalogType() const override;
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterInfo> Deserialize(Deserializer &deserializer);
+
+	explicit ChangeOwnershipInfo();
 };
 
 //===--------------------------------------------------------------------===//
@@ -50,6 +56,7 @@ struct SetCommentInfo : public AlterInfo {
 public:
 	CatalogType GetCatalogType() const override;
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &deserializer);
@@ -71,7 +78,15 @@ enum class AlterTableType : uint8_t {
 	FOREIGN_KEY_CONSTRAINT = 7,
 	SET_NOT_NULL = 8,
 	DROP_NOT_NULL = 9,
-	SET_COLUMN_COMMENT = 10
+	SET_COLUMN_COMMENT = 10,
+	ADD_CONSTRAINT = 11,
+	SET_PARTITIONED_BY = 12,
+	SET_SORTED_BY = 13,
+	ADD_FIELD = 14,
+	REMOVE_FIELD = 15,
+	RENAME_FIELD = 16,
+	SET_TABLE_OPTIONS = 17,
+	RESET_TABLE_OPTIONS = 18,
 };
 
 struct AlterTableInfo : public AlterInfo {
@@ -104,12 +119,39 @@ struct RenameColumnInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
 private:
 	RenameColumnInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// RenameFieldInfo
+//===--------------------------------------------------------------------===//
+struct RenameFieldInfo : public AlterTableInfo {
+	RenameFieldInfo(AlterEntryData data, vector<string> column_path, string new_name_p);
+	~RenameFieldInfo() override;
+
+	//! Path to source field.
+	vector<string> column_path;
+	//! New name of the column (field).
+	string new_name;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	string GetColumnName() const override {
+		return column_path[0];
+	}
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	RenameFieldInfo();
 };
 
 //===--------------------------------------------------------------------===//
@@ -124,6 +166,7 @@ struct RenameTableInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
@@ -146,12 +189,41 @@ struct AddColumnInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
 private:
 	explicit AddColumnInfo(ColumnDefinition new_column);
+};
+
+//===--------------------------------------------------------------------===//
+// AddFieldInfo
+//===--------------------------------------------------------------------===//
+struct AddFieldInfo : public AlterTableInfo {
+	AddFieldInfo(AlterEntryData data, vector<string> column_path, ColumnDefinition new_field, bool if_field_not_exists);
+	~AddFieldInfo() override;
+
+	//! Path to source field.
+	vector<string> column_path;
+	//! New field to add.
+	ColumnDefinition new_field;
+	//! Whether or not an error should be thrown if the field does not exist.
+	bool if_field_not_exists;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	string GetColumnName() const override {
+		return column_path[0];
+	}
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	explicit AddFieldInfo(ColumnDefinition new_column);
 };
 
 //===--------------------------------------------------------------------===//
@@ -170,6 +242,7 @@ struct RemoveColumnInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 	string GetColumnName() const override {
@@ -180,6 +253,33 @@ private:
 	RemoveColumnInfo();
 };
 
+//===--------------------------------------------------------------------===//
+// RemoveFieldInfo
+//===--------------------------------------------------------------------===//
+struct RemoveFieldInfo : public AlterTableInfo {
+	RemoveFieldInfo(AlterEntryData data, vector<string> column_path, bool if_column_exists, bool cascade);
+	~RemoveFieldInfo() override;
+
+	//! Path to source field.
+	vector<string> column_path;
+	//! Whether or not an error should be thrown if the column does not exist.
+	bool if_column_exists;
+	//! Whether or not the column should be removed if a dependency conflict arises (used by GENERATED columns).
+	bool cascade;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	string GetColumnName() const override {
+		return column_path[0];
+	}
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	RemoveFieldInfo();
+};
 //===--------------------------------------------------------------------===//
 // ChangeColumnTypeInfo
 //===--------------------------------------------------------------------===//
@@ -197,6 +297,7 @@ struct ChangeColumnTypeInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 	string GetColumnName() const override {
@@ -221,6 +322,7 @@ struct SetDefaultInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
@@ -245,6 +347,7 @@ struct AlterForeignKeyInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
@@ -264,6 +367,7 @@ struct SetNotNullInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
@@ -283,6 +387,7 @@ struct DropNotNullInfo : public AlterTableInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
 
@@ -307,7 +412,7 @@ public:
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &deserializer);
 
 protected:
-	AlterViewInfo(AlterViewType type);
+	explicit AlterViewInfo(AlterViewType type);
 };
 
 //===--------------------------------------------------------------------===//
@@ -322,11 +427,112 @@ struct RenameViewInfo : public AlterViewInfo {
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterViewInfo> Deserialize(Deserializer &deserializer);
 
 private:
 	RenameViewInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// AddConstraintInfo
+//===--------------------------------------------------------------------===//
+struct AddConstraintInfo : public AlterTableInfo {
+	AddConstraintInfo(AlterEntryData data, unique_ptr<Constraint> constraint);
+	~AddConstraintInfo() override;
+
+	//! The constraint to add.
+	unique_ptr<Constraint> constraint;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	AddConstraintInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// SetPartitionedByInfo
+//===--------------------------------------------------------------------===//
+struct SetPartitionedByInfo : public AlterTableInfo {
+	SetPartitionedByInfo(AlterEntryData data, vector<unique_ptr<ParsedExpression>> partition_keys);
+	~SetPartitionedByInfo() override;
+
+	//! The partition keys
+	vector<unique_ptr<ParsedExpression>> partition_keys;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	SetPartitionedByInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// SetSortedByInfo
+//===--------------------------------------------------------------------===//
+struct SetSortedByInfo : public AlterTableInfo {
+	SetSortedByInfo(AlterEntryData data, vector<OrderByNode> orders);
+	~SetSortedByInfo() override;
+
+	//! The sort keys
+	vector<OrderByNode> orders;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	SetSortedByInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// SetOptionsInfo
+//===--------------------------------------------------------------------===//
+struct SetTableOptionsInfo : public AlterTableInfo {
+	SetTableOptionsInfo(AlterEntryData data, case_insensitive_map_t<unique_ptr<ParsedExpression>> table_options);
+	~SetTableOptionsInfo() override;
+
+	case_insensitive_map_t<unique_ptr<ParsedExpression>> table_options;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	SetTableOptionsInfo();
+};
+
+//===--------------------------------------------------------------------===//
+// ResetOptionsInfo
+//===--------------------------------------------------------------------===//
+struct ResetTableOptionsInfo : public AlterTableInfo {
+	ResetTableOptionsInfo(AlterEntryData data, case_insensitive_set_t table_options);
+	~ResetTableOptionsInfo() override;
+
+	case_insensitive_set_t table_options;
+
+public:
+	unique_ptr<AlterInfo> Copy() const override;
+	string ToString() const override;
+
+	void Serialize(Serializer &serializer) const override;
+	static unique_ptr<AlterTableInfo> Deserialize(Deserializer &deserializer);
+
+private:
+	ResetTableOptionsInfo();
 };
 
 } // namespace duckdb

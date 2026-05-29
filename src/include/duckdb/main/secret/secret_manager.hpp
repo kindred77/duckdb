@@ -16,9 +16,29 @@
 #include "duckdb/parser/parsed_data/create_secret_info.hpp"
 
 namespace duckdb {
-class SecretManager;
+
+struct BoundStatement;
 struct DBConfig;
+class SecretManager;
 class SchemaCatalogEntry;
+
+//! A Secret Entry in the secret manager
+struct SecretEntry {
+public:
+	explicit SecretEntry(unique_ptr<const BaseSecret> secret) : secret(secret != nullptr ? secret->Clone() : nullptr) {
+	}
+	SecretEntry(const SecretEntry &other)
+	    : persist_type(other.persist_type), storage_mode(other.storage_mode),
+	      secret((other.secret != nullptr) ? other.secret->Clone() : nullptr) {
+	}
+
+	//! Whether the secret is persistent
+	SecretPersistType persist_type;
+	//! The storage backend of the secret
+	string storage_mode;
+	//! The secret pointer
+	unique_ptr<const BaseSecret> secret;
+};
 
 //! Return value of a Secret Lookup
 struct SecretMatch {
@@ -50,24 +70,6 @@ public:
 
 	unique_ptr<SecretEntry> secret_entry;
 	int64_t score;
-};
-
-//! A Secret Entry in the secret manager
-struct SecretEntry {
-public:
-	SecretEntry(unique_ptr<const BaseSecret> secret) : secret(secret != nullptr ? secret->Clone() : nullptr) {};
-
-	SecretEntry(const SecretEntry &other)
-	    : persist_type(other.persist_type), storage_mode(other.storage_mode),
-	      secret((other.secret != nullptr) ? other.secret->Clone() : nullptr) {
-	}
-
-	//! Whether the secret is persistent
-	SecretPersistType persist_type;
-	//! The storage backend of the secret
-	string storage_mode;
-	//! The secret pointer
-	unique_ptr<const BaseSecret> secret;
 };
 
 struct SecretManagerConfig {
@@ -105,8 +107,9 @@ public:
 	//! Load a secret storage
 	DUCKDB_API void LoadSecretStorage(unique_ptr<SecretStorage> storage);
 
-	//! Deserialize a secret by automatically selecting the correct deserializer
-	DUCKDB_API unique_ptr<BaseSecret> DeserializeSecret(Deserializer &deserializer);
+	//! Deserialize a secret by automatically selecting the correct deserializer, secret_path can be set to improve
+	//! error hints
+	DUCKDB_API unique_ptr<BaseSecret> DeserializeSecret(Deserializer &deserializer, const string &secret_path = "");
 	//! Register a new SecretType
 	DUCKDB_API void RegisterSecretType(SecretType &type);
 	//! Lookup a SecretType
@@ -118,9 +121,9 @@ public:
 	                                                  unique_ptr<const BaseSecret> secret, OnCreateConflict on_conflict,
 	                                                  SecretPersistType persist_type, const string &storage = "");
 	//! Create a secret from a CreateSecretInfo
-	DUCKDB_API unique_ptr<SecretEntry> CreateSecret(ClientContext &context, const CreateSecretInfo &info);
+	DUCKDB_API unique_ptr<SecretEntry> CreateSecret(ClientContext &context, const CreateSecretInput &info);
 	//! The Bind for create secret is done by the secret manager
-	DUCKDB_API BoundStatement BindCreateSecret(CatalogTransaction transaction, CreateSecretInfo &info);
+	DUCKDB_API BoundStatement BindCreateSecret(CatalogTransaction transaction, CreateSecretInput &info);
 	//! Lookup the best matching secret by matching the secret scopes to the path
 	DUCKDB_API SecretMatch LookupSecret(CatalogTransaction transaction, const string &path, const string &type);
 	//! Get a secret by name, optionally from a specific storage
@@ -133,6 +136,9 @@ public:
 	                                 const string &storage = "");
 	//! List all secrets from all secret storages
 	DUCKDB_API vector<SecretEntry> AllSecrets(CatalogTransaction transaction);
+
+	//! List all secret types
+	DUCKDB_API vector<SecretType> AllSecretTypes();
 
 	//! Secret Manager settings
 	DUCKDB_API virtual void SetEnablePersistentSecrets(bool enabled);
@@ -153,8 +159,14 @@ public:
 	                                 const string &storage = "");
 
 private:
-	//! Lookup a SecretType
+	//! Register a secret type
+	void RegisterSecretTypeInternal(SecretType &type);
+	//! Lookup a SecretType, throws if not found
 	SecretType LookupTypeInternal(const string &type);
+	//! Try to lookup a SecretType
+	bool TryLookupTypeInternal(const string &type, SecretType &type_out);
+	//! Register a secret provider
+	void RegisterSecretFunctionInternal(CreateSecretFunction function, OnCreateConflict on_conflict);
 	//! Lookup a CreateSecretFunction
 	optional_ptr<CreateSecretFunction> LookupFunctionInternal(const string &type, const string &provider);
 	//! Register a new Secret
@@ -170,6 +182,10 @@ private:
 	void AutoloadExtensionForType(const string &type);
 	//! Autoload extension for specific secret function
 	void AutoloadExtensionForFunction(const string &type, const string &provider);
+
+	//! Will throw appropriate error message when type not found
+	[[noreturn]] void ThrowTypeNotFoundError(const string &type, const string &secret_path = "");
+	[[noreturn]] void ThrowProviderNotFoundError(const string &type, const string &provider, bool was_default = false);
 
 	//! Thread-safe accessors for secret_storages
 	vector<reference<SecretStorage>> GetSecretStorages();
@@ -200,11 +216,18 @@ public:
 	DefaultSecretGenerator(Catalog &catalog, SecretManager &secret_manager, case_insensitive_set_t &persistent_secrets);
 
 public:
+	unique_ptr<CatalogEntry> CreateDefaultEntry(CatalogTransaction transaction, const string &entry_name) override;
 	unique_ptr<CatalogEntry> CreateDefaultEntry(ClientContext &context, const string &entry_name) override;
 	vector<string> GetDefaultEntries() override;
+	bool LockDuringCreate() const override {
+		return true;
+	}
 
 protected:
+	unique_ptr<CatalogEntry> CreateDefaultEntryInternal(const string &entry_name);
+
 	SecretManager &secret_manager;
+	mutex lock;
 	case_insensitive_set_t persistent_secrets;
 };
 

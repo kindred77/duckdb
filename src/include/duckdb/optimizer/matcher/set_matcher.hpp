@@ -9,6 +9,7 @@
 #pragma once
 
 #include "duckdb/common/common.hpp"
+#include "duckdb/common/numeric_utils.hpp"
 #include "duckdb/common/unordered_set.hpp"
 
 namespace duckdb {
@@ -29,7 +30,7 @@ public:
 		INVALID
 	};
 
-	/* The double {{}} in the intializer for excluded_entries is intentional, workaround for bug in gcc-4.9 */
+	/* The double {{}} in the initializer for excluded_entries is intentional, workaround for bug in gcc-4.9 */
 	template <class T, class MATCHER>
 	static bool MatchRecursive(vector<unique_ptr<MATCHER>> &matchers, vector<reference<T>> &entries,
 	                           vector<reference<T>> &bindings, unordered_set<idx_t> excluded_entries, idx_t m_idx = 0) {
@@ -59,7 +60,7 @@ public:
 					return true;
 				} else {
 					// we did not find a match! remove any bindings we added in the call to Match()
-					bindings.erase(bindings.begin() + previous_binding_count, bindings.end());
+					bindings.erase(bindings.begin() + NumericCast<int64_t>(previous_binding_count), bindings.end());
 				}
 			}
 		}

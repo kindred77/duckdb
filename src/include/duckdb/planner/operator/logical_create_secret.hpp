@@ -19,11 +19,11 @@ public:
 	static constexpr const LogicalOperatorType TYPE = LogicalOperatorType::LOGICAL_CREATE_SECRET;
 
 public:
-	LogicalCreateSecret(CreateSecretFunction function_p, CreateSecretInfo info_p)
-	    : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_SECRET), info(std::move(info_p)) {
+	explicit LogicalCreateSecret(CreateSecretInput secret_input_p)
+	    : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_SECRET), secret_input(std::move(secret_input_p)) {
 	}
 
-	CreateSecretInfo info;
+	CreateSecretInput secret_input;
 
 public:
 	idx_t EstimateCardinality(ClientContext &context) override {

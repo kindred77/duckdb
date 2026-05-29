@@ -3,9 +3,6 @@
 # group: [pedro]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE t0(c0 AS (1), c1 INT);
 
 statement ok
@@ -17,10 +14,12 @@ ALTER TABLE t0 ALTER c1 SET NOT NULL;
 statement error
 ALTER TABLE t0 ALTER c0 SET NOT NULL;
 ----
+<REGEX>:Binder Error.*Unsupported constraint.*
 
 statement error
 INSERT INTO t0 VALUES (NULL);
 ----
+<REGEX>:Constraint Error.*NOT NULL.*failed.*
 
 statement ok
 DROP TABLE t0;
@@ -34,4 +33,4 @@ INSERT INTO t0 VALUES (NULL);
 statement error
 ALTER TABLE t0 ALTER c1 SET NOT NULL;
 ----
-
+<REGEX>:Constraint Error.*NOT NULL.*failed.*

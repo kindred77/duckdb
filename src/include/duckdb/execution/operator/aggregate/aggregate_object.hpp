@@ -17,23 +17,24 @@ class BoundAggregateExpression;
 class BoundWindowExpression;
 
 struct FunctionDataWrapper {
-	FunctionDataWrapper(unique_ptr<FunctionData> function_data_p) : function_data(std::move(function_data_p)) {
+	explicit FunctionDataWrapper(unique_ptr<FunctionData> function_data_p) : function_data(std::move(function_data_p)) {
 	}
 
 	unique_ptr<FunctionData> function_data;
 };
 
-struct AggregateObject {
-	AggregateObject(AggregateFunction function, FunctionData *bind_data, idx_t child_count, idx_t payload_size,
+struct AggregateObject { // NOLINT: work-around bug in clang-tidy
+	AggregateObject(BoundAggregateFunction function, FunctionData *bind_data, idx_t child_count, idx_t payload_size,
 	                AggregateType aggr_type, PhysicalType return_type, Expression *filter = nullptr);
+	explicit AggregateObject(BoundAggregateExpression &aggr);
 	explicit AggregateObject(BoundAggregateExpression *aggr);
-	explicit AggregateObject(BoundWindowExpression &window);
+	explicit AggregateObject(const BoundWindowExpression &window);
 
 	FunctionData *GetFunctionData() const {
 		return bind_data_wrapper ? bind_data_wrapper->function_data.get() : nullptr;
 	}
 
-	AggregateFunction function;
+	BoundAggregateFunction function;
 	shared_ptr<FunctionDataWrapper> bind_data_wrapper;
 	idx_t child_count;
 	idx_t payload_size;

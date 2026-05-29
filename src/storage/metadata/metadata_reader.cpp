@@ -4,16 +4,12 @@ namespace duckdb {
 
 MetadataReader::MetadataReader(MetadataManager &manager, MetaBlockPointer pointer,
                                optional_ptr<vector<MetaBlockPointer>> read_pointers_p, BlockReaderType type)
-    : manager(manager), type(type), next_pointer(FromDiskPointer(pointer)), has_next_block(true),
-      read_pointers(read_pointers_p), index(0), offset(0), next_offset(pointer.offset), capacity(0) {
-	if (read_pointers) {
-		D_ASSERT(read_pointers->empty());
-		read_pointers->push_back(pointer);
-	}
+    : manager(manager), type(type), next_pointer(pointer), has_next_block(true), read_pointers(read_pointers_p),
+      index(0), offset(0), next_offset(pointer.offset), capacity(0) {
 }
 
 MetadataReader::MetadataReader(MetadataManager &manager, BlockPointer pointer)
-    : MetadataReader(manager, MetadataManager::FromBlockPointer(pointer)) {
+    : MetadataReader(manager, MetadataManager::FromBlockPointer(pointer, manager.GetMetadataBlockSize())) {
 }
 
 MetadataPointer MetadataReader::FromDiskPointer(MetaBlockPointer pointer) {
@@ -28,6 +24,10 @@ MetadataReader::~MetadataReader() {
 }
 
 void MetadataReader::ReadData(data_ptr_t buffer, idx_t read_size) {
+	ReadData(QueryContext(), buffer, read_size);
+}
+
+void MetadataReader::ReadData(QueryContext context, data_ptr_t buffer, idx_t read_size) {
 	while (offset + read_size > capacity) {
 		// cannot read entire entry from block
 		// first read what we can from this block
@@ -39,7 +39,7 @@ void MetadataReader::ReadData(data_ptr_t buffer, idx_t read_size) {
 			offset += read_size;
 		}
 		// then move to the next block
-		ReadNextBlock();
+		ReadNextBlock(context);
 	}
 	// we have enough left in this block to read from the buffer
 	memcpy(buffer, Ptr(), read_size);
@@ -47,39 +47,46 @@ void MetadataReader::ReadData(data_ptr_t buffer, idx_t read_size) {
 }
 
 MetaBlockPointer MetadataReader::GetMetaBlockPointer() {
+	if (capacity == 0) {
+		throw InternalException("GetMetaBlockPointer called but there is no active pointer");
+	}
 	return manager.GetDiskPointer(block.pointer, UnsafeNumericCast<uint32_t>(offset));
 }
 
 void MetadataReader::ReadNextBlock() {
+	ReadNextBlock(QueryContext());
+}
+
+void MetadataReader::ReadNextBlock(QueryContext context) {
 	if (!has_next_block) {
 		throw IOException("No more data remaining in MetadataReader");
 	}
-	block = manager.Pin(next_pointer);
-	index = next_pointer.index;
+	if (read_pointers) {
+		read_pointers->push_back(next_pointer);
+	}
+	auto next_disk_pointer = FromDiskPointer(next_pointer);
+	block = manager.Pin(context, next_disk_pointer);
+	index = next_disk_pointer.index;
 
 	idx_t next_block = Load<idx_t>(BasePtr());
 	if (next_block == idx_t(-1)) {
 		has_next_block = false;
 	} else {
-		next_pointer = FromDiskPointer(MetaBlockPointer(next_block, 0));
-		MetaBlockPointer next_block_pointer(next_block, 0);
-		if (read_pointers) {
-			read_pointers->push_back(next_block_pointer);
-		}
+		next_pointer = MetaBlockPointer(next_block, 0);
 	}
 	if (next_offset < sizeof(block_id_t)) {
 		next_offset = sizeof(block_id_t);
 	}
-	if (next_offset > MetadataManager::METADATA_BLOCK_SIZE) {
+	if (next_offset > GetMetadataManager().GetMetadataBlockSize()) {
 		throw InternalException("next_offset cannot be bigger than block size");
 	}
 	offset = next_offset;
 	next_offset = sizeof(block_id_t);
-	capacity = MetadataManager::METADATA_BLOCK_SIZE;
+	capacity = GetMetadataManager().GetMetadataBlockSize();
 }
 
 data_ptr_t MetadataReader::BasePtr() {
-	return block.handle.Ptr() + index * MetadataManager::METADATA_BLOCK_SIZE;
+	return block.handle.GetDataMutable() + index * GetMetadataManager().GetMetadataBlockSize();
 }
 
 data_ptr_t MetadataReader::Ptr() {

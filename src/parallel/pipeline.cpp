@@ -2,7 +2,7 @@
 
 #include "duckdb/common/algorithm.hpp"
 #include "duckdb/common/printer.hpp"
-#include "duckdb/common/tree_renderer.hpp"
+#include "duckdb/common/tree_renderer/text_tree_renderer.hpp"
 #include "duckdb/execution/executor.hpp"
 #include "duckdb/execution/operator/aggregate/physical_ungrouped_aggregate.hpp"
 #include "duckdb/execution/operator/scan/physical_table_scan.hpp"
@@ -12,6 +12,7 @@
 #include "duckdb/parallel/pipeline_event.hpp"
 #include "duckdb/parallel/pipeline_executor.hpp"
 #include "duckdb/parallel/task_scheduler.hpp"
+#include "duckdb/main/settings.hpp"
 
 namespace duckdb {
 
@@ -72,16 +73,23 @@ ClientContext &Pipeline::GetClientContext() {
 	return executor.context;
 }
 
-bool Pipeline::GetProgress(double &current_percentage, idx_t &source_cardinality) {
+bool Pipeline::GetProgress(ProgressData &progress) {
 	D_ASSERT(source);
-	source_cardinality = source->estimated_cardinality;
+	idx_t source_cardinality = MinValue<idx_t>(source->estimated_cardinality, 1ULL << 48ULL);
+	if (source_cardinality < 1) {
+		source_cardinality = 1;
+	}
 	if (!initialized) {
-		current_percentage = 0;
+		progress.done = 0;
+		progress.total = double(source_cardinality);
 		return true;
 	}
 	auto &client = executor.context;
-	current_percentage = source->GetProgress(client, *source_state);
-	return current_percentage >= 0;
+
+	progress = source->GetProgress(client, *source_state);
+	progress.Normalize(double(source_cardinality));
+	progress = sink->GetSinkProgress(client, *sink->sink_state, progress);
+	return progress.IsValid();
 }
 
 void Pipeline::ScheduleSequentialTask(shared_ptr<Event> &event) {
@@ -90,7 +98,7 @@ void Pipeline::ScheduleSequentialTask(shared_ptr<Event> &event) {
 	event->SetTasks(std::move(tasks));
 }
 
-bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
+bool Pipeline::TryGetMaxThreads(idx_t &max_threads) {
 	// check if the sink, source and all intermediate operators support parallelism
 	if (!sink->ParallelSink()) {
 		return false;
@@ -98,21 +106,20 @@ bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
 	if (!source->ParallelSource()) {
 		return false;
 	}
+	max_threads = source_state->MaxThreads();
+
 	for (auto &op_ref : operators) {
 		auto &op = op_ref.get();
 		if (!op.ParallelOperator()) {
 			return false;
 		}
-	}
-	if (sink->RequiresBatchIndex()) {
-		if (!source->SupportsBatchIndex()) {
-			throw InternalException(
-			    "Attempting to schedule a pipeline where the sink requires batch index but source does not support it");
+		if (op.op_state) {
+			max_threads = MinValue<idx_t>(max_threads, op.op_state->MaxThreads(max_threads));
 		}
 	}
-	idx_t max_threads = source_state->MaxThreads();
+
 	auto &scheduler = TaskScheduler::GetScheduler(executor.context);
-	idx_t active_threads = scheduler.NumberOfThreads();
+	auto active_threads = NumericCast<idx_t>(scheduler.NumberOfThreads());
 	if (max_threads > active_threads) {
 		max_threads = active_threads;
 	}
@@ -122,11 +129,40 @@ bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
 	if (max_threads > active_threads) {
 		max_threads = active_threads;
 	}
+
+	return true;
+}
+
+bool Pipeline::ScheduleParallel(shared_ptr<Event> &event) {
+	idx_t max_threads;
+
+	if (!TryGetMaxThreads(max_threads)) {
+		return false;
+	}
+
+	// Handle partition requirements specific to scheduling
+	auto partition_info = sink->RequiredPartitionInfo();
+	if (partition_info.batch_index) {
+		if (!source->SupportsPartitioning(OperatorPartitionInfo::BatchIndex())) {
+			throw InternalException(
+			    "Attempting to schedule a pipeline where the sink requires batch index but source does not support it");
+		}
+	}
+
 	return LaunchScanTasks(event, max_threads);
 }
 
+idx_t Pipeline::GetMaxThreads() {
+	idx_t max_threads;
+
+	if (!TryGetMaxThreads(max_threads)) {
+		return 1; // Fallback for unsupported parallelism
+	}
+
+	return max_threads;
+}
+
 bool Pipeline::IsOrderDependent() const {
-	auto &config = DBConfig::GetConfig(executor.context);
 	if (source) {
 		auto source_order = source->SourceOrder();
 		if (source_order == OrderPreservationType::FIXED_ORDER) {
@@ -145,7 +181,7 @@ bool Pipeline::IsOrderDependent() const {
 			return true;
 		}
 	}
-	if (!config.options.preserve_insertion_order) {
+	if (!Settings::Get<PreserveInsertionOrderSetting>(executor.context)) {
 		return false;
 	}
 	if (sink && sink->SinkOrderDependent()) {
@@ -192,6 +228,36 @@ void Pipeline::ResetSink() {
 	}
 }
 
+void Pipeline::ResetSinkForReschedule() {
+	if (!sink) {
+		return;
+	}
+	if (!sink->IsSink()) {
+		throw InternalException("Sink of pipeline does not have IsSink set");
+	}
+	lock_guard<mutex> guard(sink->lock);
+	auto &client = GetClientContext();
+	auto allow_reuse = Settings::Get<EnableCachingOperatorsSetting>(client);
+	if (allow_reuse && sink->sink_state && sink->sink_state->SupportsReuse()) {
+		sink->sink_state->Reset(client);
+		return;
+	}
+	sink->sink_state = sink->GetGlobalSinkState(client);
+}
+
+void Pipeline::PrepareFinalize() {
+	if (sink) {
+		if (!sink->IsSink()) {
+			throw InternalException("Sink of pipeline does not have IsSink set");
+		}
+		lock_guard<mutex> guard(sink->lock);
+		if (!sink->sink_state) {
+			throw InternalException("Sink of pipeline does not have sink state");
+		}
+		sink->PrepareFinalize(GetClientContext(), *sink->sink_state);
+	}
+}
+
 void Pipeline::Reset() {
 	ResetSink();
 	for (auto &op_ref : operators) {
@@ -204,6 +270,31 @@ void Pipeline::Reset() {
 	ResetSource(false);
 	// we no longer reset source here because this function is no longer guaranteed to be called by the main thread
 	// source reset needs to be called by the main thread because resetting a source may call into clients like R
+	initialized = true;
+}
+
+void Pipeline::ResetForReschedule(bool reset_sink) {
+	if (reset_sink) {
+		ResetSinkForReschedule();
+	}
+	auto &client = GetClientContext();
+	auto allow_reuse = Settings::Get<EnableCachingOperatorsSetting>(client);
+	for (auto &op_ref : operators) {
+		auto &op = op_ref.get();
+		lock_guard<mutex> guard(op.lock);
+		if (allow_reuse && op.op_state && op.ResetGlobalOperatorState(client, *op.op_state)) {
+			continue;
+		}
+		op.op_state = op.GetGlobalOperatorState(client);
+	}
+	if (source && !source->IsSource()) {
+		throw InternalException("Source of pipeline does not have IsSource set");
+	}
+	if (!allow_reuse || !source_state || !source_state->SupportsReuse()) {
+		source_state = source->GetGlobalSourceState(client);
+	} else {
+		source_state->Reset(client);
+	}
 	initialized = true;
 }
 
@@ -230,8 +321,12 @@ void Pipeline::AddDependency(shared_ptr<Pipeline> &pipeline) {
 	pipeline->parents.push_back(weak_ptr<Pipeline>(shared_from_this()));
 }
 
+vector<weak_ptr<Pipeline>> Pipeline::GetDependencies() const {
+	return dependencies;
+}
+
 string Pipeline::ToString() const {
-	TreeRenderer renderer;
+	TextTreeRenderer renderer;
 	return renderer.ToString(*this);
 }
 
@@ -269,6 +364,10 @@ vector<const_reference<PhysicalOperator>> Pipeline::GetOperators() const {
 		result.push_back(*sink);
 	}
 	return result;
+}
+
+const vector<reference<PhysicalOperator>> &Pipeline::GetIntermediateOperators() const {
+	return operators;
 }
 
 void Pipeline::ClearSource() {

@@ -9,7 +9,7 @@ CREATE TABLE lineitem(a INT NOT NULL,
 
 
 statement ok
-COPY lineitem FROM 'test/sql/copy/csv/data/test/test_comp.csv.gzz' (COMPRESSION 'gzip', AUTO_DETECT 1);
+COPY lineitem FROM '{DATA_DIR}/csv/test/test_comp.csv.gzz' (COMPRESSION 'gzip', AUTO_DETECT 1);
 
 query I
 SELECT COUNT(*) FROM lineitem
@@ -32,7 +32,7 @@ CREATE TABLE lineitem(a INT NOT NULL,
 
 
 statement ok
-COPY lineitem FROM 'test/sql/copy/csv/data/test/test_comp.csv.gz' (COMPRESSION 'infer', AUTO_DETECT 1);
+COPY lineitem FROM '{DATA_DIR}/csv/test/test_comp.csv.gz' (COMPRESSION 'infer', AUTO_DETECT 1);
 
 query I
 SELECT COUNT(*) FROM lineitem
@@ -49,12 +49,12 @@ statement ok
 DROP TABLE lineitem
 
 statement error
-COPY lineitem FROM 'test/sql/copy/csv/data/test/test_comp.csv.gz' COMPRESSION 'none';
+COPY lineitem FROM '{DATA_DIR}/csv/test/test_comp.csv.gz' COMPRESSION 'none';
 ----
-
+syntax error at or near "COMPRESSION"
 
 statement ok
-CREATE TABLE lineitem AS SELECT * FROM read_csv_auto('test/sql/copy/csv/data/test/test_comp.csv.gzz', compression='gzip');
+CREATE TABLE lineitem AS SELECT * FROM read_csv_auto('{DATA_DIR}/csv/test/test_comp.csv.gzz', compression='gzip');
 
 query I
 SELECT COUNT(*) FROM lineitem
@@ -71,7 +71,7 @@ statement ok
 DROP TABLE lineitem
 
 statement ok
-CREATE TABLE lineitem AS SELECT * FROM read_csv('test/sql/copy/csv/data/test/test_comp.csv.gzz', compression='gzip', AUTO_DETECT=TRUE);
+CREATE TABLE lineitem AS SELECT * FROM read_csv('{DATA_DIR}/csv/test/test_comp.csv.gzz', compression='gzip', AUTO_DETECT=TRUE);
 
 query I
 SELECT COUNT(*) FROM lineitem

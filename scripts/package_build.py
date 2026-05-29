@@ -4,33 +4,42 @@ import shutil
 import subprocess
 from python_helpers import open_utf8
 import re
+import tempfile
 
-excluded_objects = ['utf8proc_data.cpp']
+excluded_objects = ['utf8proc_data.cpp', 'dummy_static_extension_loader.cpp']
 
 
 def third_party_includes():
     includes = []
+    includes += [os.path.join('third_party', 'concurrentqueue')]
+    includes += [os.path.join('third_party', 'fast_float')]
+    includes += [os.path.join('third_party', 'fastpforlib')]
     includes += [os.path.join('third_party', 'fmt', 'include')]
     includes += [os.path.join('third_party', 'fsst')]
-    includes += [os.path.join('third_party', 're2')]
-    includes += [os.path.join('third_party', 'miniz')]
-    includes += [os.path.join('third_party', 'utf8proc', 'include')]
-    includes += [os.path.join('third_party', 'utf8proc')]
-    includes += [os.path.join('third_party', 'hyperloglog')]
-    includes += [os.path.join('third_party', 'skiplist')]
-    includes += [os.path.join('third_party', 'fastpforlib')]
-    includes += [os.path.join('third_party', 'tdigest')]
-    includes += [os.path.join('third_party', 'libpg_query', 'include')]
-    includes += [os.path.join('third_party', 'libpg_query')]
-    includes += [os.path.join('third_party', 'concurrentqueue')]
-    includes += [os.path.join('third_party', 'pcg')]
     includes += [os.path.join('third_party', 'httplib')]
-    includes += [os.path.join('third_party', 'fast_float')]
-    includes += [os.path.join('third_party', 'mbedtls')]
-    includes += [os.path.join('third_party', 'mbedtls', 'include')]
-    includes += [os.path.join('third_party', 'mbedtls', 'library')]
+    includes += [os.path.join('third_party', 'hyperloglog')]
     includes += [os.path.join('third_party', 'jaro_winkler')]
     includes += [os.path.join('third_party', 'jaro_winkler', 'details')]
+    includes += [os.path.join('third_party', 'lz4')]
+    includes += [os.path.join('third_party', 'brotli', 'include')]
+    includes += [os.path.join('third_party', 'brotli', 'common')]
+    includes += [os.path.join('third_party', 'brotli', 'dec')]
+    includes += [os.path.join('third_party', 'brotli', 'enc')]
+    includes += [os.path.join('third_party', 'mbedtls', 'include')]
+    includes += [os.path.join('third_party', 'mbedtls', 'library')]
+    includes += [os.path.join('third_party', 'miniz')]
+    includes += [os.path.join('third_party', 'pcg')]
+    includes += [os.path.join('third_party', 'pdqsort')]
+    includes += [os.path.join('third_party', 're2')]
+    includes += [os.path.join('third_party', 'ska_sort')]
+    includes += [os.path.join('third_party', 'skiplist')]
+    includes += [os.path.join('third_party', 'tdigest')]
+    includes += [os.path.join('third_party', 'utf8proc')]
+    includes += [os.path.join('third_party', 'utf8proc', 'include')]
+    includes += [os.path.join('third_party', 'vergesort')]
+    includes += [os.path.join('third_party', 'yyjson', 'include')]
+    includes += [os.path.join('third_party', 'zstd', 'include')]
+    includes += [os.path.join('third_party', 'jemalloc', 'include')]
     return includes
 
 
@@ -44,8 +53,10 @@ def third_party_sources():
     sources += [os.path.join('third_party', 'skiplist')]
     sources += [os.path.join('third_party', 'fastpforlib')]
     sources += [os.path.join('third_party', 'utf8proc')]
-    sources += [os.path.join('third_party', 'libpg_query')]
     sources += [os.path.join('third_party', 'mbedtls')]
+    sources += [os.path.join('third_party', 'yyjson')]
+    sources += [os.path.join('third_party', 'zstd')]
+    sources += [os.path.join('third_party', 'jemalloc')]
     return sources
 
 
@@ -128,30 +139,51 @@ def get_relative_path(source_dir, target_file):
     return target_file
 
 
+######
+# MAIN_BRANCH_VERSIONING default should be 'True' for main branch and feature branches
+# MAIN_BRANCH_VERSIONING default should be 'False' for release branches
+# MAIN_BRANCH_VERSIONING default value needs to keep in sync between:
+# - CMakeLists.txt
+# - scripts/package_build.py
+######
+MAIN_BRANCH_VERSIONING = True
+if os.getenv('MAIN_BRANCH_VERSIONING') == "0":
+    MAIN_BRANCH_VERSIONING = False
+if os.getenv('MAIN_BRANCH_VERSIONING') == "1":
+    MAIN_BRANCH_VERSIONING = True
+
+
 def get_git_describe():
-    override_git_describe = ''
-    if 'OVERRIDE_GIT_DESCRIBE' in os.environ:
-        override_git_describe = os.environ['OVERRIDE_GIT_DESCRIBE']
+    override_git_describe = os.getenv('OVERRIDE_GIT_DESCRIBE') or ''
+    versioning_tag_match = 'v*.*.*'
+    if MAIN_BRANCH_VERSIONING:
+        versioning_tag_match = 'v*.*.0'
     # empty override_git_describe, either since env was empty string or not existing
     # -> ask git (that can fail, so except in place)
     if len(override_git_describe) == 0:
         try:
-            return subprocess.check_output(['git', 'describe', '--tags', '--long']).strip().decode('utf8')
-        except:
-            return "v0.0.0-0-deadbeeff"
-    if len(override_git_describe.split('-')) == 2:
+            return (
+                subprocess.check_output(
+                    ['git', 'describe', '--tags', '--long', '--debug', '--match', versioning_tag_match]
+                )
+                .strip()
+                .decode('utf8')
+            )
+        except subprocess.CalledProcessError:
+            return "v0.0.0-0-gdeadbeeff"
+    if len(override_git_describe.split('-')) == 3:
         return override_git_describe
-    if len(override_git_describe.split('-')) == 0:
+    if len(override_git_describe.split('-')) == 1:
         override_git_describe += "-0"
-    assert len(override_git_describe.split('-')) == 1
+    assert len(override_git_describe.split('-')) == 2
     try:
         return (
             override_git_describe
-            + "-"
+            + "-g"
             + subprocess.check_output(['git', 'log', '-1', '--format=%h']).strip().decode('utf8')
         )
-    except:
-        return override_git_describe + "-" + "deadbeeff"
+    except subprocess.CalledProcessError:
+        return override_git_describe + "-g" + "deadbeeff"
 
 
 def git_commit_hash():
@@ -159,7 +191,7 @@ def git_commit_hash():
         return os.environ['SETUPTOOLS_SCM_PRETEND_HASH']
     try:
         git_describe = get_git_describe()
-        hash = git_describe.split('-')[2]
+        hash = git_describe.split('-')[2].lstrip('g')
         return hash
     except:
         return "deadbeeff"
@@ -184,7 +216,13 @@ def git_dev_version():
             return "v" + '.'.join(version_splits)
         else:
             # not on a tag: increment the version by one and add a -devX suffix
-            version_splits[2] = str(int(version_splits[2]) + 1)
+            # this needs to keep in sync with changes to CMakeLists.txt
+            if MAIN_BRANCH_VERSIONING == True:
+                # increment minor version
+                version_splits[1] = str(int(version_splits[1]) + 1)
+            else:
+                # increment patch version
+                version_splits[2] = str(int(version_splits[2]) + 1)
             return "v" + '.'.join(version_splits) + "-dev" + dev_version
     except:
         return "v0.0.0"
@@ -208,9 +246,37 @@ def include_package(pkg_name, pkg_dir, include_files, include_list, source_list)
     sys.path = original_path
 
 
-def build_package(target_dir, extensions, linenumbers=False, unity_count=32, folder_name='duckdb', short_paths=False):
+def get_extension_linked_define(extension):
+    return f'DUCKDB_EXTENSION_{extension.upper()}_LINKED'
+
+
+def build_package(
+    target_dir,
+    extensions,
+    linenumbers=False,
+    unity_count=32,
+    folder_name='duckdb',
+    short_paths=False,
+    default_linked_extensions=None,
+):
     if not os.path.isdir(target_dir):
         os.mkdir(target_dir)
+
+    extensions = list(extensions)
+    # Keep existing package_build behavior by default: all packaged extensions are linked.
+    # Callers that package a superset can pass default_linked_extensions to emit a loader
+    # that is controlled by DUCKDB_EXTENSION_<NAME>_LINKED compile definitions instead.
+    if default_linked_extensions is None:
+        default_linked_extensions = extensions
+    default_linked_extensions = set(default_linked_extensions)
+    packaged_extensions = set(extensions)
+    unpackaged_linked_extensions = default_linked_extensions - packaged_extensions
+    if unpackaged_linked_extensions:
+        raise ValueError(
+            "default_linked_extensions must be a subset of extensions: {}".format(
+                ', '.join(sorted(unpackaged_linked_extensions))
+            )
+        )
 
     scripts_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(scripts_dir)
@@ -239,9 +305,54 @@ def build_package(target_dir, extensions, linenumbers=False, unity_count=32, fol
     # include the main extension helper
     include_files += [os.path.join('src', 'include', 'duckdb', 'main', 'extension_helper.hpp')]
     # include the separate extensions
+    ext_loader_body = ''
+    ext_loader_defines = ''
+    ext_headers = ''
+    ext_name_vector_initializer = ''
     for ext in extensions:
         ext_path = os.path.join(scripts_dir, '..', 'extension', ext)
         include_package(ext, ext_path, include_files, include_list, source_list)
+
+        ext_linked_define = get_extension_linked_define(ext)
+        ext_linked_default = 1 if ext in default_linked_extensions else 0
+
+        ext_loader_defines += (
+            f"#ifndef {ext_linked_define}\n" f"#define {ext_linked_define} {ext_linked_default}\n" "#endif\n\n"
+        )
+
+        ext_headers += f'#if {ext_linked_define}\n#include "{ext}_extension.hpp"\n#endif\n'
+
+        # handle generated_extension_loader
+        # this - beautifully - approximates code in extension/CMakeLists.txt
+        ext_name_camelcase = ext.replace('_', ' ').title().replace(' ', '')
+
+        ext_loader_body += (
+            f"#if {ext_linked_define}\n"
+            f"    if (extension==\"{ext}\") {{\n"
+            f"        db.LoadStaticExtension<{ext_name_camelcase}Extension>();\n"
+            "        return ExtensionLoadResult::LOADED_EXTENSION;\n"
+            "    }\n"
+            "#endif\n"
+        )
+
+        ext_name_vector_initializer += f"\n#if {ext_linked_define}\n" f"        \"{ext}\",\n" "#endif"
+
+    loader_code = open(os.path.join('extension', 'generated_extension_loader.cpp.in'), 'rb').read().decode('utf8')
+    loader_code = (
+        loader_code.replace('${EXT_LOADER_BODY}', ext_loader_body)
+        .replace('${EXT_NAME_VECTOR_INITIALIZER}', ext_name_vector_initializer)
+        .replace('${EXT_TEST_PATH_INITIALIZER}', '')
+        .replace('CMake', 'package_build.py')
+    )
+
+    loader_code = ext_loader_defines + ext_headers + loader_code
+
+    loader_name = 'generated_extension_loader_package_build.cpp'
+    f = open(loader_name, 'wb')
+    f.write(loader_code.encode('utf8'))
+    f.close()
+
+    source_list += [loader_name]
 
     for src in source_list:
         copy_file(src, target_dir)
@@ -336,23 +447,26 @@ def build_package(target_dir, extensions, linenumbers=False, unity_count=32, fol
         for dirname in files_per_directory.keys():
             current_files = files_per_directory[dirname]
             cmake_file = os.path.join(dirname, 'CMakeLists.txt')
-            unity_build = False
-            if os.path.isfile(cmake_file):
+            unity_files = []
+            if os.path.isfile(cmake_file) and len(current_files) > 1:
                 with open(cmake_file, 'r') as f:
                     text = f.read()
-                    if 'add_library_unity' in text:
-                        unity_build = True
-                        # re-order the files in the unity build so that they follow the same order as the CMake
-                        scores = {}
-                        filenames = [x[0] for x in re.findall('([a-zA-Z0-9_]+[.](cpp|cc|c|cxx))', text)]
-                        score = 0
-                        for filename in filenames:
-                            scores[filename] = score
-                            score += 1
-                        current_files.sort(
-                            key=lambda x: scores[os.path.basename(x)] if os.path.basename(x) in scores else 99999
-                        )
-            if not unity_build:
+                    # Find the unity files in groups
+                    pos = 0
+                    end = len(text)
+                    while pos < end:
+                        lib = text.find('add_library_unity', pos)
+                        if lib == -1:
+                            break
+                        pos = text.find(')', lib)
+                        if pos == -1:
+                            break
+                        filenames = [x[0] for x in re.findall('([a-zA-Z0-9_]+[.](cpp|cc|c|cxx))', text[lib:pos])]
+                        # Remove the unity files from the CMake list
+                        unity_set = set(filenames)
+                        unity_files += [x for x in current_files if os.path.basename(x) in unity_set]
+                        current_files = [x for x in current_files if os.path.basename(x) not in unity_set]
+            if current_files:
                 if short_paths:
                     # replace source files with "__"
                     for file in current_files:
@@ -361,10 +475,10 @@ def build_package(target_dir, extensions, linenumbers=False, unity_count=32, fol
                 else:
                     # directly use the source files
                     new_source_files += [os.path.join(folder_name, file) for file in current_files]
-            else:
+            if unity_files:
                 unity_base = dirname.replace(os.path.sep, '_')
                 unity_name = f'ub_{unity_base}.cpp'
-                new_source_files.append(generate_unity_build(current_files, unity_name, linenumbers))
+                new_source_files.append(generate_unity_build(unity_files, unity_name, linenumbers))
         return new_source_files
 
     original_sources = source_list

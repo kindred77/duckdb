@@ -1,6 +1,6 @@
 ###
 # This script copies all extensions in a build folder from their cmake-produced structure into the extension repository
-# structure of ./<duckdb_version>/<build_archictecture>/<extension_name>.duckdb_extension
+# structure of ./<duckdb_version>/<build_architecture>/<extension_name>.duckdb_extension
 # Note that it requires duckdb_platofrom_out file to be populated with the platform
 
 import os
@@ -27,7 +27,8 @@ if os.name == 'nt':
     dst_path = dst_path.replace("/", "\\")
 
 with open(duckdb_platform_out, 'r') as f:
-    duckdb_platform = [line.split(None, 1)[0] for line in f][0]
+    lines = f.readlines()
+    duckdb_platform = lines[0]
 
 # Create destination path
 dest_path = os.path.join(dst_path, duckdb_version, duckdb_platform)

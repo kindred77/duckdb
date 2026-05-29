@@ -1,3 +1,4 @@
+import argparse
 import glob
 import json
 import os
@@ -14,39 +15,42 @@ ENABLE_PROFILING = "PRAGMA enable_profiling=json"
 PROFILE_OUTPUT = f"PRAGMA profile_output='{PROFILE_FILENAME}'"
 
 BANNER_SIZE = 52
+RETRIES = 2
+RETRIABLE_EXIT_CODES = {134, -6}
 
 
-def print_usage():
-    print(
-        f"Expected usage: python3 scripts/{os.path.basename(__file__)} --old=/old/duckdb_cli --new=/new/duckdb_cli --dir=/path/to/benchmark/dir"
-    )
-    exit(1)
-
-
-def parse_args():
-    old = None
-    new = None
-    benchmark_dir = None
-    for arg in sys.argv[1:]:
-        if arg.startswith("--old="):
-            old = arg.replace("--old=", "")
-        elif arg.startswith("--new="):
-            new = arg.replace("--new=", "")
-        elif arg.startswith("--dir="):
-            benchmark_dir = arg.replace("--dir=", "")
-        else:
-            print_usage()
-    if old == None or new == None or benchmark_dir == None:
-        print_usage()
-    return old, new, benchmark_dir
+def run_with_retry(command, context, **kwargs):
+    attempts = RETRIES + 1
+    for attempt in range(1, attempts + 1):
+        completed = subprocess.run(command, shell=True, check=False, **kwargs)
+        if completed.returncode == 0:
+            return completed
+        if completed.returncode in RETRIABLE_EXIT_CODES and attempt < attempts:
+            print(
+                f"Retrying crash-like failure in {context} "
+                f"(attempt {attempt + 1}/{attempts}, return code {completed.returncode})"
+            )
+            continue
+        raise subprocess.CalledProcessError(
+            completed.returncode,
+            command,
+            output=completed.stdout,
+            stderr=completed.stderr,
+        )
 
 
 def init_db(cli, dbname, benchmark_dir):
     print(f"INITIALIZING {dbname} ...")
-    subprocess.run(
-        f"{cli} {dbname} < {benchmark_dir}/init/schema.sql", shell=True, check=True, stdout=subprocess.DEVNULL
+    run_with_retry(
+        f"{cli} {dbname} < {benchmark_dir}/init/schema.sql",
+        context=f"init schema ({dbname})",
+        stdout=subprocess.DEVNULL,
     )
-    subprocess.run(f"{cli} {dbname} < {benchmark_dir}/init/load.sql", shell=True, check=True, stdout=subprocess.DEVNULL)
+    run_with_retry(
+        f"{cli} {dbname} < {benchmark_dir}/init/load.sql",
+        context=f"init load ({dbname})",
+        stdout=subprocess.DEVNULL,
+    )
     print("INITIALIZATION DONE")
 
 
@@ -63,17 +67,81 @@ class PlanCost:
         self.probe_side += other.probe_side
         return self
 
+    def __gt__(self, other):
+        if self == other or self.total < other.total:
+            return False
+        # if the total intermediate cardinalities is greater, also inspect time.
+        # it's possible a plan reordering increased cardinalities, but overall execution time
+        # was not greatly affected
+        total_card_increased = self.total > other.total
+        build_card_increased = self.build_side > other.build_side
+        if total_card_increased and build_card_increased:
+            return True
+        # we know the total cardinality is either the same or higher and the build side has not increased
+        # in this case fall back to the timing. It's possible that even if the probe side is higher
+        # since the tuples are in flight, the plan executes faster
+        return self.time > other.time * 1.03
 
-def op_inspect(op):
+    def __lt__(self, other):
+        if self == other:
+            return False
+        return not (self > other)
+
+    def __eq__(self, other):
+        return self.total == other.total and self.build_side == other.build_side and self.probe_side == other.probe_side
+
+
+def get_physical_operator_type(op) -> str:
+    # New format uses 'type' for the physical operator type (e.g. "HASH_JOIN")
+    if 'type' in op:
+        return op['type']
+    # Legacy format (legacy_metrics_format=true) uses 'operator_name'
+    if 'operator_name' in op:
+        return op['operator_name']
+    # Old format (pre-metricsrefactor) stored the physical type in 'name'
+    return op.get('name', '')
+
+
+def get_operator_cardinality(op) -> int:
+    # New format uses 'intermediate_rows', old format uses 'operator_cardinality'
+    if 'intermediate_rows' in op:
+        return op['intermediate_rows']
+    return op.get('operator_cardinality', 0)
+
+
+def has_operator_cardinality(op) -> bool:
+    return 'intermediate_rows' in op or 'operator_cardinality' in op
+
+
+def get_root_operator(data) -> dict:
+    if 'operator' in data:
+        return data['operator'][0]
+    # main branch (pre-rename) uses 'operator_info'
+    if 'operator_info' in data:
+        return data['operator_info'][0]
+    return data['children'][0]
+
+
+def is_measured_join(op) -> bool:
+    if get_physical_operator_type(op) != 'HASH_JOIN':
+        return False
+    extra_info = op.get('extra_info', {})
+    if 'Join Type' not in extra_info:
+        return False
+    if extra_info['Join Type'].startswith('MARK'):
+        return False
+    return True
+
+
+def op_inspect(op) -> PlanCost:
     cost = PlanCost()
-    if op['name'] == "Query":
-        cost.time = op['timing']
-    if op['name'] == 'HASH_JOIN' and not op['extra_info'].startswith('MARK'):
-        cost.total = op['cardinality']
-        if 'cardinality' in op['children'][0]:
-            cost.probe_side += op['children'][0]['cardinality']
-        if 'cardinality' in op['children'][1]:
-            cost.build_side += op['children'][1]['cardinality']
+    if is_measured_join(op):
+        cost.total = get_operator_cardinality(op)
+        if has_operator_cardinality(op['children'][0]):
+            cost.probe_side += get_operator_cardinality(op['children'][0])
+        if has_operator_cardinality(op['children'][1]):
+            cost.build_side += get_operator_cardinality(op['children'][1])
+
         left_cost = op_inspect(op['children'][0])
         right_cost = op_inspect(op['children'][1])
         cost.probe_side += left_cost.probe_side + right_cost.probe_side
@@ -81,7 +149,7 @@ def op_inspect(op):
         cost.total += left_cost.total + right_cost.total
         return cost
 
-    for child_op in op['children']:
+    for child_op in op.get('children', []):
         cost += op_inspect(child_op)
 
     return cost
@@ -89,10 +157,9 @@ def op_inspect(op):
 
 def query_plan_cost(cli, dbname, query):
     try:
-        subprocess.run(
+        run_with_retry(
             f"{cli} --readonly {dbname} -c \"{ENABLE_PROFILING};{PROFILE_OUTPUT};{query}\"",
-            shell=True,
-            check=True,
+            context=f"query profiling ({dbname})",
             capture_output=True,
         )
     except subprocess.CalledProcessError as e:
@@ -107,7 +174,8 @@ def query_plan_cost(cli, dbname, query):
         print("-------------------------")
         raise e
     with open(PROFILE_FILENAME, 'r') as file:
-        return op_inspect(json.load(file))
+        data = json.load(file)
+        return op_inspect(get_root_operator(data))
 
 
 def print_banner(text):
@@ -135,27 +203,19 @@ def print_diffs(diffs):
         print("New probe cost:", new_cost.probe_side)
 
 
-def cardinality_is_higher(old_cost, new_cost):
-    new_cardinality_higher = (
-        old_cost.total < new_cost.total
-        or old_cost.build_side < new_cost.build_side
-        or old_cost.probe_side < new_cost.probe_side
-    )
-    new_timing_higher = old_cost.time < new_cost.time
-
-    # if the cardinalities have changed, its possible build side probe sides
-    # have changed, but this may still lead to better execution. So return
-    # result of timing
-    if new_cardinality_higher:
-        return new_timing_higher
-
-    # if new_cardinality_higher is False, we either have the same plan, or
-    # an even better plan with less cardinalities.
-    return False
-
-
 def main():
-    old, new, benchmark_dir = parse_args()
+    parser = argparse.ArgumentParser(description="Plan cost regression test script with old and new versions.")
+
+    parser.add_argument("--old", type=str, help="Path to the old runner.", required=True)
+    parser.add_argument("--new", type=str, help="Path to the new runner.", required=True)
+    parser.add_argument("--dir", type=str, help="Path to the benchmark directory.", required=True)
+
+    args = parser.parse_args()
+
+    old = args.old
+    new = args.new
+    benchmark_dir = args.dir
+
     init_db(old, OLD_DB_NAME, benchmark_dir)
     init_db(new, NEW_DB_NAME, benchmark_dir)
 
@@ -176,9 +236,9 @@ def main():
         old_cost = query_plan_cost(old, OLD_DB_NAME, query)
         new_cost = query_plan_cost(new, NEW_DB_NAME, query)
 
-        if cardinality_is_higher(old_cost, new_cost):
+        if old_cost > new_cost:
             improvements.append((query_name, old_cost, new_cost))
-        elif cardinality_is_higher(new_cost, old_cost):
+        elif new_cost > old_cost:
             regressions.append((query_name, old_cost, new_cost))
 
     exit_code = 0

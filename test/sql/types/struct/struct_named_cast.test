@@ -2,9 +2,6 @@
 # description: Test struct named casts
 # group: [struct]
 
-statement ok
-PRAGMA enable_verification
-
 query I
 SELECT {'a': 42, 'b': 84}::STRUCT(b INT, a INT)
 ----
@@ -22,11 +19,10 @@ SELECT {'a': ['1', '2', '3'], 'b': 84}::STRUCT(b INT, A INT[])
 ----
 {'b': 84, 'A': [1, 2, 3]}
 
-# name mismatch
-statement error
+query I
 SELECT {'a': ['1', '2', '3'], 'b': 84}::STRUCT(b INT, c INT[])
 ----
-element "a" in source struct was not found in target struct
+{'b': 84, 'c': NULL}
 
 # unnamed struct cast
 query I

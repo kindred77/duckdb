@@ -3,9 +3,6 @@
 # group: [cast]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE bits (b bit);
 
 statement ok
@@ -147,6 +144,23 @@ SELECT 7.4e-323::BIT;
 ----
 0000000000000000000000000000000000000000000000000000000000001111
 
+#              casting from string type
+# ---------------------------------------------------
+query I
+SELECT ''::BIT;
+----
+0
+
+query I
+SELECT bit_length(''::BIT);
+----
+1
+
+query I
+SELECT TRY_CAST('' AS BIT);
+----
+0
+
 #  bitstrings that are too large for casted-to type
 # ---------------------------------------------------
 statement error
@@ -195,6 +209,16 @@ query I
 SELECT '1111'::BIT::BLOB;
 ----
 \x0F
+
+query I
+select 'ab'::BLOB::BIT::BLOB;
+----
+ab
+
+query I
+select 'a'::BLOB::BIT::BLOB;
+----
+a
 
 query I
 SELECT bitstring('1111', 33)::BLOB;

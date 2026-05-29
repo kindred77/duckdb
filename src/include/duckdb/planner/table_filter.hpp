@@ -9,20 +9,30 @@
 #pragma once
 
 #include "duckdb/common/common.hpp"
-#include "duckdb/common/types.hpp"
-#include "duckdb/common/unordered_map.hpp"
 #include "duckdb/common/enums/filter_propagate_result.hpp"
+#include "duckdb/planner/column_binding.hpp"
+#include "duckdb/common/column_index.hpp"
 
 namespace duckdb {
 class BaseStatistics;
+class Expression;
+class PhysicalOperator;
+class PhysicalTableScan;
 
 enum class TableFilterType : uint8_t {
-	CONSTANT_COMPARISON = 0, // constant comparison (e.g. =C, >C, >=C, <C, <=C)
-	IS_NULL = 1,
-	IS_NOT_NULL = 2,
-	CONJUNCTION_OR = 3,
-	CONJUNCTION_AND = 4,
-	STRUCT_EXTRACT = 5
+	LEGACY_CONSTANT_COMPARISON = 0, // constant comparison (e.g. =C, >C, >=C, <C, <=C)
+	LEGACY_IS_NULL = 1,             // C IS NULL
+	LEGACY_IS_NOT_NULL = 2,         // C IS NOT NULL
+	LEGACY_CONJUNCTION_OR = 3,      // OR of different filters
+	LEGACY_CONJUNCTION_AND = 4,     // AND of different filters
+	LEGACY_STRUCT_EXTRACT = 5,      // filter applies to child-column of struct
+	LEGACY_OPTIONAL_FILTER = 6,     // executing filter is not required for query correctness
+	LEGACY_IN_FILTER = 7,           // col IN (C1, C2, C3, ...)
+	LEGACY_DYNAMIC_FILTER = 8,      // dynamic filters can be updated at run-time
+	EXPRESSION_FILTER = 9,          // an arbitrary expression
+	LEGACY_BLOOM_FILTER = 10,       // a probabilistic filter that can test whether a value is in a set of other value
+	LEGACY_PERFECT_HASH_JOIN_FILTER = 11, // perfect hash join probe pushed down
+	LEGACY_PREFIX_RANGE_FILTER = 12,      // probabilistic range-based filter
 };
 
 //! TableFilter represents a filter pushed down into the table scan.
@@ -36,13 +46,7 @@ public:
 	TableFilterType filter_type;
 
 public:
-	//! Returns true if the statistics indicate that the segment can contain values that satisfy that filter
-	virtual FilterPropagateResult CheckStatistics(BaseStatistics &stats) = 0;
-	virtual string ToString(const string &column_name) = 0;
-	virtual bool Equals(const TableFilter &other) const {
-		return filter_type != other.filter_type;
-	}
-
+	virtual unique_ptr<Expression> ToExpression(const Expression &column) const = 0;
 	virtual void Serialize(Serializer &serializer) const;
 	static unique_ptr<TableFilter> Deserialize(Deserializer &deserializer);
 
@@ -50,7 +54,7 @@ public:
 	template <class TARGET>
 	TARGET &Cast() {
 		if (filter_type != TARGET::TYPE) {
-			throw InternalException("Failed to cast table to type - table filter type mismatch");
+			throw InternalException("Failed to cast to type - table filter type mismatch");
 		}
 		return reinterpret_cast<TARGET &>(*this);
 	}
@@ -58,46 +62,10 @@ public:
 	template <class TARGET>
 	const TARGET &Cast() const {
 		if (filter_type != TARGET::TYPE) {
-			throw InternalException("Failed to cast table to type - table filter type mismatch");
+			throw InternalException("Failed to cast to type - table filter type mismatch");
 		}
 		return reinterpret_cast<const TARGET &>(*this);
 	}
-};
-
-class TableFilterSet {
-public:
-	unordered_map<idx_t, unique_ptr<TableFilter>> filters;
-
-public:
-	void PushFilter(idx_t table_index, unique_ptr<TableFilter> filter);
-
-	bool Equals(TableFilterSet &other) {
-		if (filters.size() != other.filters.size()) {
-			return false;
-		}
-		for (auto &entry : filters) {
-			auto other_entry = other.filters.find(entry.first);
-			if (other_entry == other.filters.end()) {
-				return false;
-			}
-			if (!entry.second->Equals(*other_entry->second)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	static bool Equals(TableFilterSet *left, TableFilterSet *right) {
-		if (left == right) {
-			return true;
-		}
-		if (!left || !right) {
-			return false;
-		}
-		return left->Equals(*right);
-	}
-
-	void Serialize(Serializer &serializer) const;
-	static TableFilterSet Deserialize(Deserializer &deserializer);
 };
 
 } // namespace duckdb

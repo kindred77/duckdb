@@ -40,7 +40,14 @@ DUCKDB_API bool IsInvalidCatalog(const string &str);
 
 //! Special value used to signify the ROW ID of a table
 DUCKDB_API extern const column_t COLUMN_IDENTIFIER_ROW_ID;
+//! Special value used to signify an empty column (used for e.g. COUNT(*))
+DUCKDB_API extern const column_t COLUMN_IDENTIFIER_EMPTY;
+//! Special value used to signify the ROW_NUMBER of a table
+DUCKDB_API extern const column_t COLUMN_IDENTIFIER_ROW_NUMBER;
+DUCKDB_API extern const column_t VIRTUAL_COLUMN_START;
 DUCKDB_API bool IsRowIdColumnId(column_t column_id);
+DUCKDB_API bool IsRowNumberColumnId(column_t column_id);
+DUCKDB_API bool IsVirtualColumn(column_t column_id);
 
 //! The maximum row identifier used in tables
 extern const row_t MAX_ROW_ID;
@@ -57,6 +64,8 @@ extern const double PI;
 struct DConstants {
 	//! The value used to signify an invalid index entry
 	static constexpr const idx_t INVALID_INDEX = idx_t(-1);
+	//! The total maximum vector size (128GB)
+	static constexpr const idx_t MAX_VECTOR_SIZE = 1ULL << 37ULL;
 };
 
 struct LogicalIndex {
@@ -74,7 +83,7 @@ struct LogicalIndex {
 	inline bool operator<(const LogicalIndex &rhs) const {
 		return index < rhs.index;
 	};
-	bool IsValid() {
+	bool IsValid() const {
 		return index != DConstants::INVALID_INDEX;
 	}
 };
@@ -94,7 +103,7 @@ struct PhysicalIndex {
 	inline bool operator<(const PhysicalIndex &rhs) const {
 		return index < rhs.index;
 	};
-	bool IsValid() {
+	bool IsValid() const {
 		return index != DConstants::INVALID_INDEX;
 	}
 };

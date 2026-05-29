@@ -1,4 +1,5 @@
 #include "duckdb/parser/parsed_data/vacuum_info.hpp"
+#include "duckdb/parser/keyword_helper.hpp"
 
 namespace duckdb {
 
@@ -11,6 +12,27 @@ unique_ptr<VacuumInfo> VacuumInfo::Copy() {
 	if (has_table) {
 		result->ref = ref->Copy();
 	}
+	result->columns = columns;
+	return result;
+}
+
+string VacuumInfo::ToString() const {
+	string result = "";
+	result += "VACUUM";
+	if (options.analyze) {
+		result += " ANALYZE";
+	}
+	if (ref) {
+		result += " " + ref->ToString();
+		if (!columns.empty()) {
+			vector<string> names;
+			for (auto &column : columns) {
+				names.push_back(SQLIdentifier::ToString(column));
+			}
+			result += "(" + StringUtil::Join(names, ", ") + ")";
+		}
+	}
+	result += ";";
 	return result;
 }
 

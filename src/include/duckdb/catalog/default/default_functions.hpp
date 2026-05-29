@@ -17,8 +17,7 @@ class SchemaCatalogEntry;
 struct DefaultMacro {
 	const char *schema;
 	const char *name;
-	const char *parameters[8];
-	const char *macro;
+	const char *macro_definition; // e.g. "(param1, param2) AS expr" or "(x, sep := ',') AS expr"
 };
 
 class DefaultFunctionGenerator : public DefaultGenerator {
@@ -27,16 +26,11 @@ public:
 
 	SchemaCatalogEntry &schema;
 
-	DUCKDB_API static unique_ptr<CreateMacroInfo> CreateInternalMacroInfo(DefaultMacro &default_macro);
-	DUCKDB_API static unique_ptr<CreateMacroInfo> CreateInternalTableMacroInfo(DefaultMacro &default_macro);
+	DUCKDB_API static unique_ptr<CreateMacroInfo> CreateInternalMacroInfo(const DefaultMacro &default_macro);
 
 public:
 	unique_ptr<CatalogEntry> CreateDefaultEntry(ClientContext &context, const string &entry_name) override;
 	vector<string> GetDefaultEntries() override;
-
-private:
-	static unique_ptr<CreateMacroInfo> CreateInternalTableMacroInfo(DefaultMacro &default_macro,
-	                                                                unique_ptr<MacroFunction> function);
 };
 
 } // namespace duckdb

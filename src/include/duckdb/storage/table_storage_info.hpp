@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include "duckdb/common/types/value.hpp"
-#include "duckdb/common/unordered_map.hpp"
-#include "duckdb/storage/block.hpp"
 #include "duckdb/storage/index_storage_info.hpp"
 #include "duckdb/storage/storage_info.hpp"
+#include "duckdb/storage/table/column_data.hpp"
+#include "duckdb/common/optional_idx.hpp"
 
 namespace duckdb {
 
@@ -26,10 +25,11 @@ struct ColumnSegmentInfo {
 	idx_t segment_start;
 	idx_t segment_count;
 	string compression_type;
-	string segment_stats;
+	Value segment_stats;
 	bool has_updates;
 	bool persistent;
 	block_id_t block_id;
+	vector<block_id_t> additional_blocks;
 	idx_t block_offset;
 	string segment_info;
 };
@@ -38,7 +38,7 @@ struct ColumnSegmentInfo {
 class TableStorageInfo {
 public:
 	//! The (estimated) cardinality of the table
-	idx_t cardinality = DConstants::INVALID_INDEX;
+	optional_idx cardinality;
 	//! Info of the indexes of a table
 	vector<IndexInfo> index_info;
 };

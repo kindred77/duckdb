@@ -15,6 +15,8 @@
 #include "duckdb/common/types/data_chunk.hpp"
 #include "duckdb/execution/execution_context.hpp"
 #include "duckdb/optimizer/join_order/join_node.hpp"
+#include "duckdb/parallel/interrupt.hpp"
+#include "duckdb/execution/partition_info.hpp"
 
 namespace duckdb {
 class Event;
@@ -25,17 +27,6 @@ class PipelineBuildState;
 class MetaPipeline;
 class InterruptState;
 
-struct SourcePartitionInfo {
-	//! The current batch index
-	//! This is only set in case RequiresBatchIndex() is true, and the source has support for it (SupportsBatchIndex())
-	//! Otherwise this is left on INVALID_INDEX
-	//! The batch index is a globally unique, increasing index that should be used to maintain insertion order
-	//! //! in conjunction with parallelism
-	optional_idx batch_index;
-	//! The minimum batch index that any thread is currently actively reading
-	optional_idx min_batch_index;
-};
-
 // LCOV_EXCL_START
 class OperatorState {
 public:
@@ -45,6 +36,13 @@ public:
 	virtual void Finalize(const PhysicalOperator &op, ExecutionContext &context) {
 	}
 
+	virtual bool SupportsReuse() const {
+		return false;
+	}
+
+	virtual void Reset() {
+	}
+
 	template <class TARGET>
 	TARGET &Cast() {
 		DynamicCastCheck<TARGET>(this);
@@ -52,7 +50,7 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 };
@@ -69,12 +67,16 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
+	}
+
+	virtual idx_t MaxThreads(idx_t source_max_threads) {
+		return source_max_threads;
 	}
 };
 
-class GlobalSinkState {
+class GlobalSinkState : public StateWithBlockableTasks {
 public:
 	GlobalSinkState() : state(SinkFinalizeType::READY) {
 	}
@@ -83,6 +85,16 @@ public:
 
 	SinkFinalizeType state;
 
+	virtual bool SupportsReuse() const {
+		return false;
+	}
+
+	virtual void Reset(ClientContext &context) {
+		annotated_lock_guard<annotated_mutex> guard(lock);
+		ResetBlocking();
+		state = SinkFinalizeType::READY;
+	}
+
 	template <class TARGET>
 	TARGET &Cast() {
 		DynamicCastCheck<TARGET>(this);
@@ -90,7 +102,7 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 
@@ -107,6 +119,13 @@ public:
 	//! Source partition info
 	SourcePartitionInfo partition_info;
 
+	virtual bool SupportsReuse() const {
+		return false;
+	}
+
+	virtual void Reset(ExecutionContext &context, GlobalSinkState &gstate) {
+	}
+
 	template <class TARGET>
 	TARGET &Cast() {
 		DynamicCastCheck<TARGET>(this);
@@ -114,12 +133,12 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 };
 
-class GlobalSourceState {
+class GlobalSourceState : public StateWithBlockableTasks {
 public:
 	virtual ~GlobalSourceState() {
 	}
@@ -128,6 +147,15 @@ public:
 		return 1;
 	}
 
+	virtual bool SupportsReuse() const {
+		return false;
+	}
+
+	virtual void Reset(ClientContext &context) {
+		annotated_lock_guard<annotated_mutex> guard(lock);
+		ResetBlocking();
+	}
+
 	template <class TARGET>
 	TARGET &Cast() {
 		DynamicCastCheck<TARGET>(this);
@@ -135,7 +163,7 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 };
@@ -145,6 +173,13 @@ public:
 	virtual ~LocalSourceState() {
 	}
 
+	virtual bool SupportsReuse() const {
+		return false;
+	}
+
+	virtual void Reset(ExecutionContext &context, GlobalSourceState &gstate) {
+	}
+
 	template <class TARGET>
 	TARGET &Cast() {
 		DynamicCastCheck<TARGET>(this);
@@ -152,7 +187,7 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 };
@@ -177,6 +212,11 @@ struct OperatorSinkCombineInput {
 
 struct OperatorSinkFinalizeInput {
 	GlobalSinkState &global_state;
+	InterruptState &interrupt_state;
+};
+
+struct OperatorFinalizeInput {
+	GlobalOperatorState &global_state;
 	InterruptState &interrupt_state;
 };
 

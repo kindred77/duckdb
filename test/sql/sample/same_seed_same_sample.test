@@ -1,45 +1,27 @@
 # name: test/sql/sample/same_seed_same_sample.test
-# description: Test SAMPLE keyword
+# description: Test same seed same sample for system sample
 # group: [sample]
 
-# testing a table with less cardinality than the standard vector size
+require vector_size 2048
 
 statement ok
-CREATE or replace TABLE t1 as select range a, [1, a, 2] b, a::VARCHAR || 'ducktastic' c, get_current_time() c from range(1000);
+CREATE OR REPLACE TABLE test AS SELECT UNNEST(RANGE(100000)) as x;
 
-loop i 1 8
+loop i 0 20
 
-statement ok
-pragma threads=${i};
-
-query III nosort result_1
-SELECT * from t1 using sample reservoir(100) repeatable (1) order by a;
+query II
+SELECT COUNT(*), min(x) FROM test TABLESAMPLE system (25 PERCENT) REPEATABLE (42);
 ----
-
-
-query III nosort result_1
-SELECT * from t1 using sample reservoir(100) repeatable (1) order by a;
-----
+20480	12288
 
 endloop
 
-# testing a table with greater cardinality than the standard vector size
 
-statement ok
-CREATE or replace TABLE t1 as select range a, [1, a, 2] b, a::VARCHAR || 'ducktastic' c, get_current_time() c from range(100000);
+loop i 0 20
 
-loop i 1 8
-
-statement ok
-pragma threads=${i};
-
-query III nosort result_2
-SELECT * from t1 using sample reservoir(6000) repeatable (1) order by a;
+query II
+SELECT COUNT(*), min(x) FROM test TABLESAMPLE BERNOULLI (25 PERCENT) REPEATABLE (42);
 ----
-
-
-query III nosort result_2
-SELECT * from t1 using sample reservoir(6000) repeatable (1) order by a;
-----
+24903	6
 
 endloop

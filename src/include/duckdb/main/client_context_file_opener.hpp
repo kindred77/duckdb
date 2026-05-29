@@ -21,12 +21,15 @@ public:
 	explicit ClientContextFileOpener(ClientContext &context_p) : context(context_p) {
 	}
 
+	Logger &GetLogger() const override;
 	SettingLookupResult TryGetCurrentSetting(const string &key, Value &result, FileOpenerInfo &info) override;
 	SettingLookupResult TryGetCurrentSetting(const string &key, Value &result) override;
 
-	ClientContext *TryGetClientContext() override {
+	optional_ptr<ClientContext> TryGetClientContext() override {
 		return &context;
-	};
+	}
+	optional_ptr<DatabaseInstance> TryGetDatabase() override;
+	HTTPUtil &GetHTTPUtil() override;
 
 private:
 	ClientContext &context;

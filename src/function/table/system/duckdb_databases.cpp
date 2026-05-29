@@ -1,6 +1,7 @@
 #include "duckdb/function/table/system_functions.hpp"
 #include "duckdb/main/database_manager.hpp"
 #include "duckdb/main/attached_database.hpp"
+#include "duckdb/storage/storage_manager.hpp"
 
 namespace duckdb {
 
@@ -8,7 +9,7 @@ struct DuckDBDatabasesData : public GlobalTableFunctionState {
 	DuckDBDatabasesData() : offset(0) {
 	}
 
-	vector<reference<AttachedDatabase>> entries;
+	vector<shared_ptr<AttachedDatabase>> entries;
 	idx_t offset;
 };
 
@@ -26,12 +27,26 @@ static unique_ptr<FunctionData> DuckDBDatabasesBind(ClientContext &context, Tabl
 	names.emplace_back("comment");
 	return_types.emplace_back(LogicalType::VARCHAR);
 
+	names.emplace_back("tags");
+	return_types.emplace_back(LogicalType::MAP(LogicalType::VARCHAR, LogicalType::VARCHAR));
+
 	names.emplace_back("internal");
 	return_types.emplace_back(LogicalType::BOOLEAN);
 
 	names.emplace_back("type");
 	return_types.emplace_back(LogicalType::VARCHAR);
 
+	names.emplace_back("readonly");
+	return_types.emplace_back(LogicalType::BOOLEAN);
+
+	names.emplace_back("encrypted");
+	return_types.emplace_back(LogicalType::BOOLEAN);
+
+	names.emplace_back("cipher");
+	return_types.emplace_back(LogicalType::VARCHAR);
+
+	names.emplace_back("options");
+	return_types.emplace_back(LogicalType::MAP(LogicalType::VARCHAR, LogicalType::VARCHAR));
 	return nullptr;
 }
 
@@ -53,33 +68,66 @@ void DuckDBDatabasesFunction(ClientContext &context, TableFunctionInput &data_p,
 	// start returning values
 	// either fill up the chunk or return all the remaining columns
 	idx_t count = 0;
+
+	// database_name, VARCHAR
+	auto &database_name = output.data[0];
+	// database_oid, BIGINT
+	auto &database_oid = output.data[1];
+	// path, VARCHAR
+	auto &path = output.data[2];
+	// comment, VARCHAR
+	auto &comment = output.data[3];
+	// tags, MAP
+	auto &tags = output.data[4];
+	// internal, BOOLEAN
+	auto &internal = output.data[5];
+	// type, VARCHAR
+	auto &type = output.data[6];
+	// readonly, BOOLEAN
+	auto &readonly = output.data[7];
+	// encrypted, BOOLEAN
+	auto &encrypted = output.data[8];
+	// cipher, VARCHAR
+	auto &cipher = output.data[9];
+	// options, MAP
+	auto &options = output.data[10];
+
 	while (data.offset < data.entries.size() && count < STANDARD_VECTOR_SIZE) {
 		auto &entry = data.entries[data.offset++];
+		auto &attached = *entry;
+		auto &catalog = attached.GetCatalog();
+		if (attached.GetVisibility() == AttachVisibility::HIDDEN) {
+			continue;
+		}
 
-		auto &attached = entry.get().Cast<AttachedDatabase>();
-		// return values:
-
-		idx_t col = 0;
-		// database_name, VARCHAR
-		output.SetValue(col++, count, attached.GetName());
-		// database_oid, BIGINT
-		output.SetValue(col++, count, Value::BIGINT(attached.oid));
-		// path, VARCHAR
+		database_name.Append(Value(attached.GetName()));
+		database_oid.Append(Value::BIGINT(NumericCast<int64_t>(attached.oid)));
 		bool is_internal = attached.IsSystem() || attached.IsTemporary();
+		bool is_readonly = attached.IsReadOnly();
+		string cipher_str;
 		Value db_path;
 		if (!is_internal) {
-			bool in_memory = attached.GetCatalog().InMemory();
+			bool in_memory = catalog.InMemory();
 			if (!in_memory) {
-				db_path = Value(attached.GetCatalog().GetDBPath());
+				db_path = Value(catalog.GetDBPath());
+			}
+			if (catalog.IsEncrypted()) {
+				cipher_str = catalog.GetEncryptionCipher();
 			}
 		}
-		output.SetValue(col++, count, db_path);
-		// comment, VARCHAR
-		output.SetValue(col++, count, Value(attached.comment));
-		// internal, BOOLEAN
-		output.SetValue(col++, count, Value::BOOLEAN(is_internal));
-		// type, VARCHAR
-		output.SetValue(col++, count, Value(attached.GetCatalog().GetCatalogType()));
+		path.Append(db_path);
+		comment.Append(Value(attached.comment));
+		tags.Append(Value::MAP(attached.tags));
+		internal.Append(Value::BOOLEAN(is_internal));
+		type.Append(Value(catalog.GetCatalogType()));
+		readonly.Append(Value::BOOLEAN(is_readonly));
+		encrypted.Append(Value::BOOLEAN(catalog.IsEncrypted()));
+		cipher.Append(cipher_str.empty() ? Value() : Value(cipher_str));
+		InsertionOrderPreservingMap<string> options_map;
+		for (const auto &option : attached.GetAttachOptions()) {
+			options_map.insert(option.first, option.second.ToString());
+		}
+		options.Append(Value::MAP(options_map));
 
 		count++;
 	}

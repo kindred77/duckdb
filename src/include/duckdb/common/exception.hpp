@@ -10,7 +10,6 @@
 
 #include "duckdb/common/assert.hpp"
 #include "duckdb/common/exception_format_value.hpp"
-#include "duckdb/common/shared_ptr.hpp"
 #include "duckdb/common/unordered_map.hpp"
 #include "duckdb/common/typedefs.hpp"
 
@@ -25,10 +24,10 @@ class ParsedExpression;
 class QueryErrorContext;
 class TableRef;
 struct hugeint_t;
-class optional_idx;
+class optional_idx; // NOLINT: matching std style
 
-inline void assert_restrict_function(const void *left_start, const void *left_end, const void *right_start,
-                                     const void *right_end, const char *fname, int linenr) {
+inline void AssertRestrictFunction(const void *left_start, const void *left_end, const void *right_start,
+                                   const void *right_end, const char *fname, int linenr) {
 	// assert that the two pointers do not overlap
 #ifdef DEBUG
 	if (!(left_end <= right_start || right_end <= left_start)) {
@@ -39,13 +38,13 @@ inline void assert_restrict_function(const void *left_start, const void *left_en
 }
 
 #define ASSERT_RESTRICT(left_start, left_end, right_start, right_end)                                                  \
-	assert_restrict_function(left_start, left_end, right_start, right_end, __FILE__, __LINE__)
+	AssertRestrictFunction(left_start, left_end, right_start, right_end, __FILE__, __LINE__)
 
 //===--------------------------------------------------------------------===//
 // Exception Types
 //===--------------------------------------------------------------------===//
 
-enum class ExceptionType {
+enum class ExceptionType : uint8_t {
 	INVALID = 0,          // invalid type
 	OUT_OF_RANGE = 1,     // value out of range error
 	CONVERSION = 2,       // conversion/casting error
@@ -86,25 +85,29 @@ enum class ExceptionType {
 	DEPENDENCY = 37,             // dependency
 	HTTP = 38,
 	MISSING_EXTENSION = 39, // Thrown when an extension is used but not loaded
-	AUTOLOAD = 40,          // Thrown when an extension is used but not loaded
-	SEQUENCE = 41
+	AUTOLOAD = 40,          // Thrown when an extension fails to autoload
+	SEQUENCE = 41,
+	INVALID_CONFIGURATION =
+	    42 // An invalid configuration was detected (e.g. a Secret param was missing, or a required setting not found)
 };
 
 class Exception : public std::runtime_error {
 public:
 	DUCKDB_API Exception(ExceptionType exception_type, const string &message);
-	DUCKDB_API Exception(ExceptionType exception_type, const string &message,
-	                     const unordered_map<string, string> &extra_info);
+
+	DUCKDB_API Exception(const unordered_map<string, string> &extra_info, ExceptionType exception_type,
+	                     const string &message);
 
 public:
 	DUCKDB_API static string ExceptionTypeToString(ExceptionType type);
 	DUCKDB_API static ExceptionType StringToExceptionType(const string &type);
 
-	template <typename... Args>
-	static string ConstructMessage(const string &msg, Args... params) {
-		const std::size_t num_args = sizeof...(Args);
-		if (num_args == 0)
+	template <typename... ARGS>
+	static string ConstructMessage(const string &msg, ARGS const &...params) {
+		const std::size_t num_args = sizeof...(ARGS);
+		if (num_args == 0) {
 			return msg;
+		}
 		std::vector<ExceptionFormatValue> values;
 		return ConstructMessageRecursive(msg, values, params...);
 	}
@@ -117,26 +120,29 @@ public:
 	DUCKDB_API static unordered_map<string, string> InitializeExtraInfo(const string &subtype,
 	                                                                    optional_idx error_location);
 
+	//! Whether this exception type can occur during execution of a query
+	DUCKDB_API static bool IsExecutionError(ExceptionType type);
 	DUCKDB_API static string ToJSON(ExceptionType type, const string &message);
-	DUCKDB_API static string ToJSON(ExceptionType type, const string &message,
-	                                const unordered_map<string, string> &extra_info);
+
+	DUCKDB_API static string ToJSON(const unordered_map<string, string> &extra_info, ExceptionType type,
+	                                const string &message);
 
 	DUCKDB_API static bool InvalidatesTransaction(ExceptionType exception_type);
 	DUCKDB_API static bool InvalidatesDatabase(ExceptionType exception_type);
 
 	DUCKDB_API static string ConstructMessageRecursive(const string &msg, std::vector<ExceptionFormatValue> &values);
 
-	template <class T, typename... Args>
-	static string ConstructMessageRecursive(const string &msg, std::vector<ExceptionFormatValue> &values, T param,
-	                                        Args... params) {
-		values.push_back(ExceptionFormatValue::CreateFormatValue<T>(param));
+	template <class T, typename... ARGS>
+	static string ConstructMessageRecursive(const string &msg, std::vector<ExceptionFormatValue> &values,
+	                                        const T &param, ARGS &&...params) {
+		values.push_back(ExceptionFormatValue::CreateFormatValue(param));
 		return ConstructMessageRecursive(msg, values, params...);
 	}
 
 	DUCKDB_API static bool UncaughtException();
 
-	DUCKDB_API static string GetStackTrace(int max_depth = 120);
-	static string FormatStackTrace(string message = "") {
+	DUCKDB_API static string GetStackTrace(idx_t max_depth = 120);
+	static string FormatStackTrace(const string &message = "") {
 		return (message + "\n" + GetStackTrace());
 	}
 
@@ -150,9 +156,9 @@ class ConnectionException : public Exception {
 public:
 	DUCKDB_API explicit ConnectionException(const string &msg);
 
-	template <typename... Args>
-	explicit ConnectionException(const string &msg, Args... params)
-	    : ConnectionException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit ConnectionException(const string &msg, ARGS &&...params)
+	    : ConnectionException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -160,9 +166,9 @@ class PermissionException : public Exception {
 public:
 	DUCKDB_API explicit PermissionException(const string &msg);
 
-	template <typename... Args>
-	explicit PermissionException(const string &msg, Args... params)
-	    : PermissionException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit PermissionException(const string &msg, ARGS &&...params)
+	    : PermissionException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -170,32 +176,36 @@ class OutOfRangeException : public Exception {
 public:
 	DUCKDB_API explicit OutOfRangeException(const string &msg);
 
-	template <typename... Args>
-	explicit OutOfRangeException(const string &msg, Args... params)
-	    : OutOfRangeException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit OutOfRangeException(const string &msg, ARGS &&...params)
+	    : OutOfRangeException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
-	DUCKDB_API OutOfRangeException(const int64_t value, const PhysicalType origType, const PhysicalType newType);
-	DUCKDB_API OutOfRangeException(const hugeint_t value, const PhysicalType origType, const PhysicalType newType);
-	DUCKDB_API OutOfRangeException(const double value, const PhysicalType origType, const PhysicalType newType);
-	DUCKDB_API OutOfRangeException(const PhysicalType varType, const idx_t length);
+	DUCKDB_API OutOfRangeException(const int64_t value, const PhysicalType orig_type, const PhysicalType new_type);
+	DUCKDB_API OutOfRangeException(const hugeint_t value, const PhysicalType orig_type, const PhysicalType new_type);
+	DUCKDB_API OutOfRangeException(const double value, const PhysicalType orig_type, const PhysicalType new_type);
+	DUCKDB_API OutOfRangeException(const PhysicalType var_type, const idx_t length);
 };
 
 class OutOfMemoryException : public Exception {
 public:
 	DUCKDB_API explicit OutOfMemoryException(const string &msg);
 
-	template <typename... Args>
-	explicit OutOfMemoryException(const string &msg, Args... params)
-	    : OutOfMemoryException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit OutOfMemoryException(const string &msg, ARGS &&...params)
+	    : OutOfMemoryException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
+
+private:
+	string ExtendOutOfMemoryError(const string &msg);
 };
 
 class SyntaxException : public Exception {
 public:
 	DUCKDB_API explicit SyntaxException(const string &msg);
 
-	template <typename... Args>
-	explicit SyntaxException(const string &msg, Args... params) : SyntaxException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit SyntaxException(const string &msg, ARGS &&...params)
+	    : SyntaxException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -203,9 +213,9 @@ class ConstraintException : public Exception {
 public:
 	DUCKDB_API explicit ConstraintException(const string &msg);
 
-	template <typename... Args>
-	explicit ConstraintException(const string &msg, Args... params)
-	    : ConstraintException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit ConstraintException(const string &msg, ARGS &&...params)
+	    : ConstraintException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -213,26 +223,28 @@ class DependencyException : public Exception {
 public:
 	DUCKDB_API explicit DependencyException(const string &msg);
 
-	template <typename... Args>
-	explicit DependencyException(const string &msg, Args... params)
-	    : DependencyException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit DependencyException(const string &msg, ARGS &&...params)
+	    : DependencyException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
 class IOException : public Exception {
 public:
 	DUCKDB_API explicit IOException(const string &msg);
-	DUCKDB_API explicit IOException(const string &msg, const unordered_map<string, string> &extra_info);
+
+	DUCKDB_API explicit IOException(const unordered_map<string, string> &extra_info, const string &msg);
 	explicit IOException(ExceptionType exception_type, const string &msg) : Exception(exception_type, msg) {
 	}
 
-	template <typename... Args>
-	explicit IOException(const string &msg, Args... params) : IOException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit IOException(const string &msg, ARGS &&...params)
+	    : IOException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 
-	template <typename... Args>
-	explicit IOException(const string &msg, const unordered_map<string, string> &extra_info, Args... params)
-	    : IOException(ConstructMessage(msg, params...), extra_info) {
+	template <typename... ARGS>
+	explicit IOException(const unordered_map<string, string> &extra_info, const string &msg, ARGS &&...params)
+	    : IOException(extra_info, ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -240,19 +252,25 @@ class MissingExtensionException : public Exception {
 public:
 	DUCKDB_API explicit MissingExtensionException(const string &msg);
 
-	template <typename... Args>
-	explicit MissingExtensionException(const string &msg, Args... params)
-	    : MissingExtensionException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit MissingExtensionException(const string &msg, ARGS &&...params)
+	    : MissingExtensionException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
 class NotImplementedException : public Exception {
 public:
 	DUCKDB_API explicit NotImplementedException(const string &msg);
+	explicit NotImplementedException(const unordered_map<string, string> &extra_info, const string &msg);
 
-	template <typename... Args>
-	explicit NotImplementedException(const string &msg, Args... params)
-	    : NotImplementedException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit NotImplementedException(const string &msg, ARGS &&...params)
+	    : NotImplementedException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
+	}
+	template <typename... ARGS>
+	explicit NotImplementedException(const unordered_map<string, string> &extra_info, const string &msg,
+	                                 ARGS &&...params)
+	    : NotImplementedException(extra_info, ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -265,9 +283,9 @@ class SerializationException : public Exception {
 public:
 	DUCKDB_API explicit SerializationException(const string &msg);
 
-	template <typename... Args>
-	explicit SerializationException(const string &msg, Args... params)
-	    : SerializationException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit SerializationException(const string &msg, ARGS &&...params)
+	    : SerializationException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
@@ -275,14 +293,15 @@ class SequenceException : public Exception {
 public:
 	DUCKDB_API explicit SequenceException(const string &msg);
 
-	template <typename... Args>
-	explicit SequenceException(const string &msg, Args... params)
-	    : SequenceException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit SequenceException(const string &msg, ARGS &&...params)
+	    : SequenceException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
 class InterruptException : public Exception {
 public:
+	static constexpr const char *INTERRUPT_MESSAGE = "Interrupted!";
 	DUCKDB_API InterruptException();
 };
 
@@ -290,40 +309,77 @@ class FatalException : public Exception {
 public:
 	explicit FatalException(const string &msg) : FatalException(ExceptionType::FATAL, msg) {
 	}
-	template <typename... Args>
-	explicit FatalException(const string &msg, Args... params) : FatalException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit FatalException(const string &msg, ARGS &&...params)
+	    : FatalException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 
 protected:
 	DUCKDB_API explicit FatalException(ExceptionType type, const string &msg);
-	template <typename... Args>
-	explicit FatalException(ExceptionType type, const string &msg, Args... params)
-	    : FatalException(type, ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit FatalException(ExceptionType type, const string &msg, ARGS &&...params)
+	    : FatalException(type, ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
 class InternalException : public Exception {
 public:
 	DUCKDB_API explicit InternalException(const string &msg);
+	InternalException(const unordered_map<string, string> &extra_info, const string &msg);
 
-	template <typename... Args>
-	explicit InternalException(const string &msg, Args... params)
-	    : InternalException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit InternalException(const string &msg, ARGS &&...params)
+	    : InternalException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
+	}
+
+	template <typename... ARGS>
+	explicit InternalException(const unordered_map<string, string> &extra_info, const string &msg, ARGS &&...params)
+	    : InternalException(extra_info, ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 
 class InvalidInputException : public Exception {
 public:
 	DUCKDB_API explicit InvalidInputException(const string &msg);
-	DUCKDB_API explicit InvalidInputException(const string &msg, const unordered_map<string, string> &extra_info);
+	DUCKDB_API explicit InvalidInputException(const unordered_map<string, string> &extra_info, const string &msg);
 
-	template <typename... Args>
-	explicit InvalidInputException(const string &msg, Args... params)
-	    : InvalidInputException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit InvalidInputException(const string &msg, ARGS &&...params)
+	    : InvalidInputException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
-	template <typename... Args>
-	explicit InvalidInputException(Expression &expr, const string &msg, Args... params)
-	    : InvalidInputException(ConstructMessage(msg, params...), Exception::InitializeExtraInfo(expr)) {
+
+	template <typename... ARGS>
+	explicit InvalidInputException(const Expression &expr, const string &msg, ARGS &&...params)
+	    : InvalidInputException(Exception::InitializeExtraInfo(expr),
+	                            ConstructMessage(msg, std::forward<ARGS>(params)...)) {
+	}
+};
+
+class ExecutorException : public Exception {
+public:
+	DUCKDB_API explicit ExecutorException(const string &msg);
+
+	template <typename... ARGS>
+	explicit ExecutorException(const string &msg, ARGS &&...params)
+	    : ExecutorException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
+	}
+};
+
+class InvalidConfigurationException : public Exception {
+public:
+	DUCKDB_API explicit InvalidConfigurationException(const string &msg);
+
+	DUCKDB_API explicit InvalidConfigurationException(const unordered_map<string, string> &extra_info,
+	                                                  const string &msg);
+
+	template <typename... ARGS>
+	explicit InvalidConfigurationException(const string &msg, ARGS &&...params)
+	    : InvalidConfigurationException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
+	}
+	template <typename... ARGS>
+	explicit InvalidConfigurationException(const Expression &expr, const string &msg, ARGS &&...params)
+	    : InvalidConfigurationException(ConstructMessage(msg, std::forward<ARGS>(params)...),
+	                                    Exception::InitializeExtraInfo(expr)) {
 	}
 };
 
@@ -331,8 +387,7 @@ class InvalidTypeException : public Exception {
 public:
 	DUCKDB_API InvalidTypeException(PhysicalType type, const string &msg);
 	DUCKDB_API InvalidTypeException(const LogicalType &type, const string &msg);
-	DUCKDB_API
-	InvalidTypeException(const string &msg); //! Needed to be able to recreate the exception after it's been serialized
+	DUCKDB_API explicit InvalidTypeException(const string &msg);
 };
 
 class TypeMismatchException : public Exception {
@@ -341,17 +396,16 @@ public:
 	DUCKDB_API TypeMismatchException(const LogicalType &type_1, const LogicalType &type_2, const string &msg);
 	DUCKDB_API TypeMismatchException(optional_idx error_location, const LogicalType &type_1, const LogicalType &type_2,
 	                                 const string &msg);
-	DUCKDB_API
-	TypeMismatchException(const string &msg); //! Needed to be able to recreate the exception after it's been serialized
+	DUCKDB_API explicit TypeMismatchException(const string &msg);
 };
 
 class ParameterNotAllowedException : public Exception {
 public:
 	DUCKDB_API explicit ParameterNotAllowedException(const string &msg);
 
-	template <typename... Args>
-	explicit ParameterNotAllowedException(const string &msg, Args... params)
-	    : ParameterNotAllowedException(ConstructMessage(msg, params...)) {
+	template <typename... ARGS>
+	explicit ParameterNotAllowedException(const string &msg, ARGS &&...params)
+	    : ParameterNotAllowedException(ConstructMessage(msg, std::forward<ARGS>(params)...)) {
 	}
 };
 

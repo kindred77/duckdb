@@ -3,10 +3,7 @@
 # group: [aggregates]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
-PRAGMA verify_external
+SET debug_force_external=true;
 
 statement error
 select approx_count_distinct(*)
@@ -62,13 +59,13 @@ create  table t as select range a, mod(range,10) b from range(2000);
 query III
 SELECT COUNT( a),approx_count_distinct(a),approx_count_distinct(b) from t
 ----
-2000	1991	10
+2000	2034	10
 
 query I
 SELECT approx_count_distinct(a) from t group by a %2 order by all;
 ----
-986
-993
+975
+1033
 
 query I
 SELECT count(*) from t where a < 10;

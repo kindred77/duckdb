@@ -41,6 +41,10 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "HASH_GROUP_BY";
 	case PhysicalOperatorType::PERFECT_HASH_GROUP_BY:
 		return "PERFECT_HASH_GROUP_BY";
+	case PhysicalOperatorType::PARTITIONED_AGGREGATE:
+		return "PARTITIONED_AGGREGATE";
+	case PhysicalOperatorType::LIMITED_DISTINCT:
+		return "LIMITED_DISTINCT";
 	case PhysicalOperatorType::FILTER:
 		return "FILTER";
 	case PhysicalOperatorType::PROJECTION:
@@ -49,8 +53,6 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "COPY_TO_FILE";
 	case PhysicalOperatorType::BATCH_COPY_TO_FILE:
 		return "BATCH_COPY_TO_FILE";
-	case PhysicalOperatorType::FIXED_BATCH_COPY_TO_FILE:
-		return "FIXED_BATCH_COPY_TO_FILE";
 	case PhysicalOperatorType::LEFT_DELIM_JOIN:
 		return "LEFT_DELIM_JOIN";
 	case PhysicalOperatorType::RIGHT_DELIM_JOIN:
@@ -83,6 +85,8 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "DELETE";
 	case PhysicalOperatorType::UPDATE:
 		return "UPDATE";
+	case PhysicalOperatorType::MERGE_INTO:
+		return "MERGE_INTO";
 	case PhysicalOperatorType::EMPTY_RESULT:
 		return "EMPTY_RESULT";
 	case PhysicalOperatorType::CREATE_TABLE:
@@ -103,10 +107,14 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "VACUUM";
 	case PhysicalOperatorType::RECURSIVE_CTE:
 		return "REC_CTE";
+	case PhysicalOperatorType::RECURSIVE_KEY_CTE:
+		return "REC_KEY_CTE";
 	case PhysicalOperatorType::CTE:
 		return "CTE";
 	case PhysicalOperatorType::RECURSIVE_CTE_SCAN:
 		return "REC_CTE_SCAN";
+	case PhysicalOperatorType::RECURSIVE_RECURRING_CTE_SCAN:
+		return "REC_REC_CTE_SCAN";
 	case PhysicalOperatorType::CTE_SCAN:
 		return "CTE_SCAN";
 	case PhysicalOperatorType::EXPRESSION_SCAN:
@@ -135,6 +143,8 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "EXPORT";
 	case PhysicalOperatorType::SET:
 		return "SET";
+	case PhysicalOperatorType::SET_VARIABLE:
+		return "SET_VARIABLE";
 	case PhysicalOperatorType::RESET:
 		return "RESET";
 	case PhysicalOperatorType::LOAD:
@@ -143,6 +153,8 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "INOUT_FUNCTION";
 	case PhysicalOperatorType::CREATE_TYPE:
 		return "CREATE_TYPE";
+	case PhysicalOperatorType::CREATE_TRIGGER:
+		return "CREATE_TRIGGER";
 	case PhysicalOperatorType::ATTACH:
 		return "ATTACH";
 	case PhysicalOperatorType::DETACH:
@@ -157,6 +169,12 @@ string PhysicalOperatorToString(PhysicalOperatorType type) {
 		return "COPY_DATABASE";
 	case PhysicalOperatorType::VERIFY_VECTOR:
 		return "VERIFY_VECTOR";
+	case PhysicalOperatorType::UPDATE_EXTENSIONS:
+		return "UPDATE_EXTENSIONS";
+	case PhysicalOperatorType::CONNECT:
+		return "CONNECT";
+	case PhysicalOperatorType::DISCONNECT:
+		return "DISCONNECT";
 	case PhysicalOperatorType::INVALID:
 		break;
 	}

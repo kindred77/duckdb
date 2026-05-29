@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "duckdb/parser/parsed_expression.hpp"
 #include "duckdb/parser/sql_statement.hpp"
 
 namespace duckdb {
@@ -28,5 +27,6 @@ protected:
 
 public:
 	unique_ptr<SQLStatement> Copy() const override;
+	string ToString() const override;
 };
 } // namespace duckdb

@@ -55,6 +55,11 @@ bool BinaryDeserializer::OnNullableBegin() {
 void BinaryDeserializer::OnNullableEnd() {
 }
 
+bool BinaryDeserializer::CanDeserializeProperty(const field_id_t field_id, const char *tag) {
+	auto next_field = PeekField();
+	return next_field == field_id;
+}
+
 //-------------------------------------------------------------------------
 // Primitive Types
 //-------------------------------------------------------------------------
@@ -113,7 +118,7 @@ string BinaryDeserializer::ReadString() {
 	if (len == 0) {
 		return string();
 	}
-	auto buffer = make_unsafe_uniq_array<data_t>(len);
+	auto buffer = make_unsafe_uniq_array_uninitialized<data_t>(len);
 	ReadData(buffer.get(), len);
 	return string(const_char_ptr_cast(buffer.get()), len);
 }

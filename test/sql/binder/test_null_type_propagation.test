@@ -2,9 +2,6 @@
 # description: Test binding of NULL type
 # group: [binder]
 
-statement ok
-PRAGMA enable_verification
-
 # regular binding
 query I
 SELECT NULL
@@ -143,7 +140,7 @@ True
 query I
 SELECT typeof(#1) FROM v1
 ----
-NULL
+"NULL"
 
 # also with unions
 statement ok
@@ -165,7 +162,7 @@ True
 query I
 SELECT typeof(#1) FROM v2 LIMIT 1
 ----
-NULL
+"NULL"
 
 # nulls in lists
 query I
@@ -198,11 +195,13 @@ SELECT * FROM cte
 ----
 NULL
 
-require noalternativeverify
+require no_alternative_verify
 
-query I
-WITH cte AS (SELECT NULL)
-SELECT * FROM cte UNION ALL SELECT CAST(1 AS BOOLEAN)
-----
-NULL
-True
+# This does not work like this anymore, because CTE inlining happens in the optimizer.
+# NULL type propagation for UNION ALL does not work as this test intends for materialized CTEs
+# query I
+# WITH cte AS NOT MATERIALIZED (SELECT NULL)
+# SELECT * FROM cte UNION ALL SELECT CAST(1 AS BOOLEAN)
+# ----
+# NULL
+# True

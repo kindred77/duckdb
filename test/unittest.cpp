@@ -1,50 +1,33 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
+#include <stdlib.h>
 
 #include "duckdb/common/file_system.hpp"
 #include "duckdb/common/string_util.hpp"
+#include "sqlite/sqllogic_test_logger.hpp"
+#include "sqlite/sqllogic_test_runner.hpp"
 #include "test_helpers.hpp"
+#include "test_config.hpp"
 
 using namespace duckdb;
 
-namespace duckdb {
-static bool test_force_storage = false;
-static bool test_force_reload = false;
-static bool test_memory_leaks = false;
-
-bool TestForceStorage() {
-	return test_force_storage;
-}
-
-bool TestForceReload() {
-	return test_force_reload;
-}
-
-bool TestMemoryLeaks() {
-	return test_memory_leaks;
-}
-
-} // namespace duckdb
-
-int main(int argc, char *argv[]) {
+int main(int argc_in, char *argv[]) {
 	duckdb::unique_ptr<FileSystem> fs = FileSystem::CreateLocal();
 	string test_directory = DUCKDB_ROOT_DIRECTORY;
-	bool delete_test_path = true;
 
+	auto &test_config = TestConfiguration::Get();
+	test_config.Initialize();
+	bool keep_home = false;
+
+	idx_t argc = NumericCast<idx_t>(argc_in);
 	int new_argc = 0;
 	auto new_argv = duckdb::unique_ptr<char *[]>(new char *[argc]);
-	for (int i = 0; i < argc; i++) {
-		if (string(argv[i]) == "--force-storage") {
-			test_force_storage = true;
-		} else if (string(argv[i]) == "--force-reload" || string(argv[i]) == "--force-restart") {
-			test_force_reload = true;
-		} else if (StringUtil::StartsWith(string(argv[i]), "--memory-leak") ||
-		           StringUtil::StartsWith(string(argv[i]), "--test-memory-leak")) {
-			test_memory_leaks = true;
-		} else if (string(argv[i]) == "--test-dir") {
+	for (idx_t i = 0; i < argc; i++) {
+		string argument(argv[i]);
+		if (argument == "--test-dir") {
 			test_directory = string(argv[++i]);
-		} else if (string(argv[i]) == "--test-temp-dir") {
-			delete_test_path = false;
+		} else if (argument == "--test-temp-dir") {
+			SetDeleteTestPath(false);
 			auto test_dir = string(argv[++i]);
 			if (fs->DirectoryExists(test_dir)) {
 				fprintf(stderr, "--test-temp-dir cannot point to a directory that already exists (%s)\n",
@@ -52,21 +35,17 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}
 			SetTestDirectory(test_dir);
-		} else if (string(argv[i]) == "--require") {
+		} else if (argument == "--require") {
 			AddRequire(string(argv[++i]));
-		} else if (string(argv[i]) == "--zero-initialize") {
-			SetDebugInitialize(0);
-		} else if (string(argv[i]) == "--one-initialize") {
-			SetDebugInitialize(0xFF);
-		} else if (string(argv[i]) == "--single-threaded") {
-			SetSingleThreaded();
-		} else {
+		} else if (argument == "--keep-home") {
+			keep_home = true;
+		} else if (!test_config.ParseArgument(argument, argc, argv, i)) {
 			new_argv[new_argc] = argv[i];
 			new_argc++;
 		}
 	}
+	test_config.ChangeWorkingDirectory(test_directory);
 
-	TestChangeDirectory(test_directory);
 	// delete the testing directory if it exists
 	auto dir = TestCreatePath("");
 	try {
@@ -78,11 +57,49 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	RegisterSqllogictests();
+	// Override the home dir so the .duckdb dir is isolated per test process.
+	if (!keep_home) {
+#ifdef DUCKDB_WINDOWS
+		if (_putenv_s("USERPROFILE", dir.c_str()) != 0) {
+			fprintf(stderr, "Failed to set USERPROFILE environment variable\n");
+			return 1;
+		}
+#else
+		if (setenv("HOME", dir.c_str(), 1) != 0) {
+			fprintf(stderr, "Failed to set HOME environment variable\n");
+			return 1;
+		}
+#endif
+	}
 
+	if (test_config.GetSkipCompiledTests()) {
+		Catch::getMutableRegistryHub().clearTests();
+	}
+	RegisterSqllogictests();
 	int result = Catch::Session().run(new_argc, new_argv.get());
 
-	if (delete_test_path) {
+	std::string failures_summary = FailureSummary::GetFailureSummary();
+	if (!failures_summary.empty()) {
+		auto description = test_config.GetDescription();
+		if (!description.empty()) {
+			std::cerr << "\n====================================================" << std::endl;
+			std::cerr << "====================  TEST INFO  ===================" << std::endl;
+			std::cerr << "====================================================\n" << std::endl;
+			std::cerr << description << std::endl;
+		}
+		std::cerr << "\n====================================================" << std::endl;
+		std::cerr << "================  FAILURES SUMMARY  ================" << std::endl;
+		std::cerr << "====================================================\n" << std::endl;
+		std::cerr << failures_summary;
+	}
+	std::string skip_reason_summary = SQLLogicTestRunner::GetSkipReasonSummary();
+	if (!skip_reason_summary.empty()) {
+		std::cerr << "\n"
+		          << "Skipped tests for the following reasons:" << std::endl;
+		std::cerr << skip_reason_summary;
+	}
+
+	if (DeleteTestPath()) {
 		TestDeleteDirectory(dir);
 	}
 

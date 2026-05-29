@@ -11,16 +11,11 @@
 #include "duckdb/storage/compression/alprd/algorithm/alprd.hpp"
 #include "duckdb/storage/compression/alprd/alprd_constants.hpp"
 
-#include "duckdb/common/limits.hpp"
-#include "duckdb/common/types/null_value.hpp"
-#include "duckdb/function/compression/compression.hpp"
+#include "duckdb/common/exception.hpp"
 #include "duckdb/function/compression_function.hpp"
-#include "duckdb/main/config.hpp"
 #include "duckdb/storage/buffer_manager.hpp"
 
-#include "duckdb/storage/table/column_data_checkpointer.hpp"
 #include "duckdb/storage/table/column_segment.hpp"
-#include "duckdb/common/operator/subtract.hpp"
 #include "duckdb/storage/table/scan_state.hpp"
 
 namespace duckdb {
@@ -28,7 +23,7 @@ namespace duckdb {
 template <class T>
 struct AlpRDVectorState {
 public:
-	using EXACT_TYPE = typename FloatingToExact<T>::type;
+	using EXACT_TYPE = typename FloatingToExact<T>::TYPE;
 
 	void Reset() {
 		index = 0;
@@ -70,15 +65,15 @@ public:
 template <class T>
 struct AlpRDScanState : public SegmentScanState {
 public:
-	using EXACT_TYPE = typename FloatingToExact<T>::type;
+	using EXACT_TYPE = typename FloatingToExact<T>::TYPE;
 
 	explicit AlpRDScanState(ColumnSegment &segment) : segment(segment), count(segment.count) {
-		auto &buffer_manager = BufferManager::GetBufferManager(segment.db);
+		auto &buffer_manager = BufferManager::GetBufferManager(segment.GetDatabase());
 
-		handle = buffer_manager.Pin(segment.block);
+		handle = buffer_manager.Pin(segment.GetBlockHandle());
 		// ScanStates never exceed the boundaries of a Segment,
 		// but are not guaranteed to start at the beginning of the Block
-		segment_data = handle.Ptr() + segment.GetBlockOffset();
+		segment_data = handle.GetDataMutable() + segment.GetBlockOffset();
 		auto metadata_offset = Load<uint32_t>(segment_data);
 		metadata_ptr = segment_data + metadata_offset;
 
@@ -90,7 +85,11 @@ public:
 		uint8_t actual_dictionary_size =
 		    Load<uint8_t>(segment_data + AlpRDConstants::METADATA_POINTER_SIZE + AlpRDConstants::RIGHT_BIT_WIDTH_SIZE +
 		                  AlpRDConstants::LEFT_BIT_WIDTH_SIZE);
-		uint8_t actual_dictionary_size_bytes = actual_dictionary_size * AlpRDConstants::DICTIONARY_ELEMENT_SIZE;
+		if (actual_dictionary_size > AlpRDConstants::MAX_DICTIONARY_SIZE) {
+			throw IOException("Corrupt database file: ALPRD dictionary size exceeds maximum");
+		}
+		idx_t actual_dictionary_size_bytes =
+		    static_cast<idx_t>(actual_dictionary_size) * AlpRDConstants::DICTIONARY_ELEMENT_SIZE;
 
 		// Load the left parts dictionary which is after the segment header and is of a fixed size
 		memcpy(vector_state.left_parts_dict, (void *)(segment_data + AlpRDConstants::HEADER_SIZE),
@@ -149,7 +148,7 @@ public:
 		// Load the offset (metadata) indicating where the vector data starts
 		metadata_ptr -= AlpRDConstants::METADATA_POINTER_SIZE;
 		auto data_byte_offset = Load<uint32_t>(metadata_ptr);
-		D_ASSERT(data_byte_offset < Storage::BLOCK_SIZE);
+		D_ASSERT(data_byte_offset < segment.GetBlockSize());
 
 		idx_t vector_size = MinValue((idx_t)AlpRDConstants::ALP_VECTOR_SIZE, (count - total_value_count));
 
@@ -158,7 +157,18 @@ public:
 		// Load the vector data
 		vector_state.exceptions_count = Load<uint16_t>(vector_ptr);
 		vector_ptr += AlpRDConstants::EXCEPTIONS_COUNT_SIZE;
-		D_ASSERT(vector_state.exceptions_count <= vector_size);
+
+		const bool uncompressed_mode = vector_state.exceptions_count == AlpRDConstants::UNCOMPRESSED_MODE_SENTINEL;
+		if (uncompressed_mode) {
+			if (!SKIP) {
+				// Read uncompressed values
+				memcpy(value_buffer, vector_ptr, sizeof(T) * vector_size);
+			}
+			return;
+		}
+		if (vector_state.exceptions_count > vector_size) {
+			throw IOException("Corrupt database file: ALPRD exceptions_count exceeds vector size");
+		}
 
 		auto left_bp_size = BitpackingPrimitives::GetRequiredSize(vector_size, vector_state.left_bit_width);
 		auto right_bp_size = BitpackingPrimitives::GetRequiredSize(vector_size, vector_state.right_bit_width);
@@ -184,12 +194,11 @@ public:
 public:
 	//! Skip the next 'skip_count' values, we don't store the values
 	void Skip(ColumnSegment &col_segment, idx_t skip_count) {
-
 		if (total_value_count != 0 && !VectorFinished()) {
 			// Finish skipping the current vector
-			idx_t to_skip = LeftInVector();
-			skip_count -= to_skip;
+			idx_t to_skip = MinValue<idx_t>(skip_count, LeftInVector());
 			ScanVector<EXACT_TYPE, true>(nullptr, to_skip);
+			skip_count -= to_skip;
 		}
 		// Figure out how many entire vectors we can skip
 		// For these vectors, we don't even need to process the metadata or values
@@ -209,7 +218,7 @@ public:
 };
 
 template <class T>
-unique_ptr<SegmentScanState> AlpRDInitScan(ColumnSegment &segment) {
+unique_ptr<SegmentScanState> AlpRDInitScan(const QueryContext &context, ColumnSegment &segment) {
 	auto result = make_uniq_base<SegmentScanState, AlpRDScanState<T>>(segment);
 	return result;
 }
@@ -220,11 +229,11 @@ unique_ptr<SegmentScanState> AlpRDInitScan(ColumnSegment &segment) {
 template <class T>
 void AlpRDScanPartial(ColumnSegment &segment, ColumnScanState &state, idx_t scan_count, Vector &result,
                       idx_t result_offset) {
-	using EXACT_TYPE = typename FloatingToExact<T>::type;
+	using EXACT_TYPE = typename FloatingToExact<T>::TYPE;
 	auto &scan_state = (AlpRDScanState<T> &)*state.scan_state;
 
 	// Get the pointer to the result values
-	auto current_result_ptr = FlatVector::GetData<EXACT_TYPE>(result);
+	auto current_result_ptr = FlatVector::GetDataMutableUnsafe<EXACT_TYPE>(result);
 	result.SetVectorType(VectorType::FLAT_VECTOR);
 	current_result_ptr += result_offset;
 

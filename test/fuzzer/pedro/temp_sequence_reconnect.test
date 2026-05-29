@@ -4,30 +4,25 @@
 
 require skip_reload
 
-statement ok
-PRAGMA enable_verification
-
-load __TEST_DIR__/temp_sequence_restart
+load {TEST_DIR}/temp_sequence_restart
 
 statement ok
 CREATE SEQUENCE t1;
 
 statement ok
-CREATE TABLE t1 (c1 INT, CHECK(nextval('t1')));
+CREATE TABLE t1 (
+	c1 INT,
+	CHECK(nextval('t1'))
+);
 
 statement ok
 CREATE TEMP SEQUENCE t1;
 
-statement error
+statement ok
 ALTER TABLE t1 ADD c0 INT;
-----
-Cross catalog dependencies are not supported
 
 statement ok
 DROP SEQUENCE temp.t1
-
-statement ok
-ALTER TABLE t1 ADD c0 INT;
 
 reconnect
 

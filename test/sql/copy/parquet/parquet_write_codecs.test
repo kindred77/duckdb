@@ -4,53 +4,41 @@
 
 require parquet
 
+
+foreach codec UNCOMPRESSED SNAPPY GZIP ZSTD LZ4 LZ4_RAW BROTLI
+
 # codec uncompressed
 statement ok
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/uncompressed.parquet' (FORMAT 'parquet', CODEC 'UNCOMPRESSED');
+COPY (SELECT 42, 'hello') TO '{TEMP_DIR}/{codec}.parquet' (FORMAT 'parquet', CODEC '{codec}');
 
 query II
-SELECT * FROM parquet_scan('__TEST_DIR__/uncompressed.parquet');
+SELECT * FROM parquet_scan('{TEMP_DIR}/{codec}.parquet');
 ----
 42	hello
 
-# codec snappy
 statement ok
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/snappy.parquet' (FORMAT 'parquet', CODEC 'SNAPPY');
+COPY (FROM "{DATA_DIR}/parquet-testing/userdata1.parquet") TO '{TEMP_DIR}/userdata-{codec}.parquet' (FORMAT 'parquet', CODEC '{codec}', ROW_GROUP_SIZE 10);
 
-query II
-SELECT * FROM parquet_scan('__TEST_DIR__/snappy.parquet');
-----
-42	hello
-
-# codec gzip
 statement ok
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/gzip.parquet' (FORMAT 'parquet', CODEC 'GZIP');
+FROM "{TEMP_DIR}/userdata-{codec}.parquet";
 
-query II
-SELECT * FROM parquet_scan('__TEST_DIR__/gzip.parquet');
-----
-42	hello
+endloop
 
-# codec zstd
-statement ok
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/zstd.parquet' (FORMAT 'parquet', CODEC 'ZSTD');
-
-query II
-SELECT * FROM parquet_scan('__TEST_DIR__/zstd.parquet');
-----
-42	hello
 
 # unsupported codec
 statement error
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/gzip.parquet' (FORMAT 'parquet', CODEC 'BLABLABLA');
+COPY (SELECT 42, 'hello') TO '{TEMP_DIR}/gzip.parquet' (FORMAT 'parquet', CODEC 'BLABLABLA');
 ----
+<REGEX>:.*Binder Error: Expected codec argument.*
 
 # empty codec
 statement error
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/gzip.parquet' (FORMAT 'parquet', CODEC);
+COPY (SELECT 42, 'hello') TO '{TEMP_DIR}/gzip.parquet' (FORMAT 'parquet', CODEC);
 ----
+<REGEX>:.*Invalid Input Error.*requires an argument.*
 
 # integer codec
 statement error
-COPY (SELECT 42, 'hello') TO '__TEST_DIR__/gzip.parquet' (FORMAT 'parquet', CODEC 3);
+COPY (SELECT 42, 'hello') TO '{TEMP_DIR}/gzip.parquet' (FORMAT 'parquet', CODEC 3);
 ----
+<REGEX>:.*Invalid Input Error.*could not be cast as this type.*

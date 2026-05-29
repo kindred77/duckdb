@@ -8,15 +8,23 @@
 
 #pragma once
 
-#include "duckdb/common/unordered_set.hpp"
-#include "duckdb/function/scalar/compressed_materialization_functions.hpp"
+#include "duckdb/common/types.hpp"
 #include "duckdb/planner/column_binding_map.hpp"
 #include "duckdb/storage/statistics/base_statistics.hpp"
 
 namespace duckdb {
 
+class Optimizer;
+class ClientContext;
 class LogicalOperator;
-struct JoinCondition;
+
+enum class CompressedMaterializationType : uint8_t {
+	INVALID = 0,
+	//! Use the opaque internal (de-)compress functions
+	FUNCTION = 1,
+	//! Use down- and upcasts that are transparent to subsequent optimizers
+	CAST = 2
+};
 
 struct CMChildInfo {
 public:
@@ -42,7 +50,7 @@ public:
 
 	//! Type before compressing
 	LogicalType type;
-	bool needs_decompression;
+	CompressedMaterializationType materialization_type;
 	unique_ptr<BaseStatistics> stats;
 };
 
@@ -62,11 +70,13 @@ public:
 
 struct CompressExpression {
 public:
-	CompressExpression(unique_ptr<Expression> expression, unique_ptr<BaseStatistics> stats);
+	CompressExpression(unique_ptr<Expression> expression, unique_ptr<BaseStatistics> stats,
+	                   CompressedMaterializationType materialization_type);
 
 public:
 	unique_ptr<Expression> expression;
 	unique_ptr<BaseStatistics> stats;
+	CompressedMaterializationType materialization_type;
 };
 
 typedef column_binding_map_t<unique_ptr<BaseStatistics>> statistics_map_t;
@@ -74,37 +84,48 @@ typedef column_binding_map_t<unique_ptr<BaseStatistics>> statistics_map_t;
 //! The CompressedMaterialization optimizer compressed columns using projections, based on available statistics,
 //! but only if the data enters a materializing operator
 class CompressedMaterialization {
+private:
+	//! Somewhat defensive constants that try to limit when compressed materialization is triggered for joins
+	//! We only consider compressed materialization for joins when the build cardinality is greater than this
+	static constexpr idx_t JOIN_BUILD_CARDINALITY_THRESHOLD = 1048576;
+	//! If the cardinality > threshold, we always perform compressed materialization if there are this many columns
+	static constexpr idx_t JOIN_BUILD_COLUMN_COUNT_THRESHOLD = 20;
+	//! If not, we perform compressed materialization if join result cardinality > build cardinality * this threshold
+	static constexpr double JOIN_CARDINALITY_RATIO_THRESHOLD = 8;
+
 public:
-	explicit CompressedMaterialization(ClientContext &context, Binder &binder, statistics_map_t &&statistics_map);
+	CompressedMaterialization(Optimizer &optimizer, LogicalOperator &root, statistics_map_t &statistics_map);
 
 	void Compress(unique_ptr<LogicalOperator> &op);
 
 private:
-	//! Depth-first traversal of the plan
-	void CompressInternal(unique_ptr<LogicalOperator> &op);
-
 	//! Compress materializing operators
 	void CompressAggregate(unique_ptr<LogicalOperator> &op);
+	void CompressComparisonJoin(unique_ptr<LogicalOperator> &op);
 	void CompressDistinct(unique_ptr<LogicalOperator> &op);
 	void CompressOrder(unique_ptr<LogicalOperator> &op);
 
 	//! Update statistics after compressing
 	void UpdateAggregateStats(unique_ptr<LogicalOperator> &op);
+	void UpdateComparisonJoinStats(unique_ptr<LogicalOperator> &op);
 	void UpdateOrderStats(unique_ptr<LogicalOperator> &op);
 
 	//! Adds bindings referenced in expression to referenced_bindings
 	static void GetReferencedBindings(const Expression &expression, column_binding_set_t &referenced_bindings);
 	//! Updates CMBindingInfo in the binding_map in info
-	void UpdateBindingInfo(CompressedMaterializationInfo &info, const ColumnBinding &binding, bool needs_decompression);
+	void UpdateBindingInfo(CompressedMaterializationInfo &info, const ColumnBinding &binding,
+	                       CompressedMaterializationType materialization_type);
 
 	//! Create (de)compress projections around the operator
 	void CreateProjections(unique_ptr<LogicalOperator> &op, CompressedMaterializationInfo &info);
 	bool TryCompressChild(CompressedMaterializationInfo &info, const CMChildInfo &child_info,
 	                      vector<unique_ptr<CompressExpression>> &compress_expressions);
 	void CreateCompressProjection(unique_ptr<LogicalOperator> &child_op,
-	                              vector<unique_ptr<CompressExpression>> &&compress_exprs,
+	                              vector<unique_ptr<CompressExpression>> compress_exprs,
 	                              CompressedMaterializationInfo &info, CMChildInfo &child_info);
 	void CreateDecompressProjection(unique_ptr<LogicalOperator> &op, CompressedMaterializationInfo &info);
+	unique_ptr<Expression> CreateRestoreExpression(unique_ptr<Expression> input, const CMBindingInfo &binding_info,
+	                                               const BaseStatistics &stats);
 
 	//! Create expressions that apply a scalar compression function
 	unique_ptr<CompressExpression> GetCompressExpression(const ColumnBinding &binding, const LogicalType &type,
@@ -118,15 +139,16 @@ private:
 	                                               const BaseStatistics &stats);
 	unique_ptr<Expression> GetIntegralDecompress(unique_ptr<Expression> input, const LogicalType &result_type,
 	                                             const BaseStatistics &stats);
-	unique_ptr<Expression> GetStringDecompress(unique_ptr<Expression> input, const BaseStatistics &stats);
+	unique_ptr<Expression> GetStringDecompress(unique_ptr<Expression> input, const LogicalType &result_type,
+	                                           const BaseStatistics &stats);
 
 private:
+	Optimizer &optimizer;
 	ClientContext &context;
-	Binder &binder;
-	statistics_map_t statistics_map;
-	unordered_set<idx_t> compression_table_indices;
-	unordered_set<idx_t> decompression_table_indices;
+	//! The root of the query plan
 	optional_ptr<LogicalOperator> root;
+	//! The map of ColumnBinding -> statistics for the various nodes
+	statistics_map_t &statistics_map;
 };
 
 } // namespace duckdb

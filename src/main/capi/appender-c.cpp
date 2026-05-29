@@ -3,10 +3,12 @@
 
 using duckdb::Appender;
 using duckdb::AppenderWrapper;
+using duckdb::BaseAppender;
 using duckdb::Connection;
 using duckdb::date_t;
 using duckdb::dtime_t;
 using duckdb::ErrorData;
+using duckdb::ErrorDataWrapper;
 using duckdb::hugeint_t;
 using duckdb::interval_t;
 using duckdb::string_t;
@@ -15,24 +17,76 @@ using duckdb::uhugeint_t;
 
 duckdb_state duckdb_appender_create(duckdb_connection connection, const char *schema, const char *table,
                                     duckdb_appender *out_appender) {
+	return duckdb_appender_create_ext(connection, INVALID_CATALOG, schema, table, out_appender);
+}
+
+duckdb_state duckdb_appender_create_ext(duckdb_connection connection, const char *catalog, const char *schema,
+                                        const char *table, duckdb_appender *out_appender) {
 	Connection *conn = reinterpret_cast<Connection *>(connection);
 
 	if (!connection || !table || !out_appender) {
 		return DuckDBError;
 	}
+	if (catalog == nullptr) {
+		catalog = INVALID_CATALOG;
+	}
 	if (schema == nullptr) {
 		schema = DEFAULT_SCHEMA;
 	}
+
 	auto wrapper = new AppenderWrapper();
-	*out_appender = (duckdb_appender)wrapper;
+	*out_appender = reinterpret_cast<duckdb_appender>(wrapper);
 	try {
-		wrapper->appender = duckdb::make_uniq<Appender>(*conn, schema, table);
+		wrapper->appender = duckdb::make_uniq<Appender>(*conn, catalog, schema, table);
 	} catch (std::exception &ex) {
-		ErrorData error(ex);
-		wrapper->error = error.RawMessage();
+		wrapper->error_data = ErrorData(ex);
 		return DuckDBError;
 	} catch (...) { // LCOV_EXCL_START
-		wrapper->error = "Unknown create appender error";
+		wrapper->error_data = ErrorData("Unknown create appender error");
+		return DuckDBError;
+	} // LCOV_EXCL_STOP
+	return DuckDBSuccess;
+}
+
+duckdb_state duckdb_appender_create_query(duckdb_connection connection, const char *query, idx_t column_count,
+                                          duckdb_logical_type *types_p, const char *table_name_p,
+                                          const char **column_names_p, duckdb_appender *out_appender) {
+	Connection *conn = reinterpret_cast<Connection *>(connection);
+
+	if (!connection || !query || !column_count || !types_p) {
+		return DuckDBError;
+	}
+	duckdb::vector<duckdb::LogicalType> types;
+	duckdb::vector<duckdb::string> column_names;
+	duckdb::string table_name;
+	for (idx_t c = 0; c < column_count; ++c) {
+		if (!types_p[c]) {
+			return DuckDBError;
+		}
+		types.push_back(*reinterpret_cast<duckdb::LogicalType *>(types_p[c]));
+	}
+	if (table_name_p) {
+		table_name = table_name_p;
+	}
+	if (column_names_p) {
+		for (idx_t c = 0; c < column_count; ++c) {
+			if (!column_names_p[c]) {
+				return DuckDBError;
+			}
+			column_names.push_back(column_names_p[c]);
+		}
+	}
+
+	auto wrapper = new AppenderWrapper();
+	*out_appender = reinterpret_cast<duckdb_appender>(wrapper);
+	try {
+		wrapper->appender = duckdb::make_uniq<duckdb::QueryAppender>(*conn, query, std::move(types),
+		                                                             std::move(column_names), std::move(table_name));
+	} catch (std::exception &ex) {
+		wrapper->error_data = ErrorData(ex);
+		return DuckDBError;
+	} catch (...) { // LCOV_EXCL_START
+		wrapper->error_data = ErrorData("Unknown create appender error");
 		return DuckDBError;
 	} // LCOV_EXCL_STOP
 	return DuckDBSuccess;
@@ -42,13 +96,18 @@ duckdb_state duckdb_appender_destroy(duckdb_appender *appender) {
 	if (!appender || !*appender) {
 		return DuckDBError;
 	}
-	duckdb_appender_close(*appender);
+	auto state = duckdb_appender_close(*appender);
 	auto wrapper = reinterpret_cast<AppenderWrapper *>(*appender);
 	if (wrapper) {
+		// If flush/close previously failed, preserve that error even if close just succeeded with empty collection.
+		// (Non-fatal column-level errors do not set flush_failed, so those are not propagated here.)
+		if (wrapper->flush_failed) {
+			state = DuckDBError;
+		}
 		delete wrapper;
 	}
 	*appender = nullptr;
-	return DuckDBSuccess;
+	return state;
 }
 
 template <class FUN>
@@ -58,19 +117,27 @@ duckdb_state duckdb_appender_run_function(duckdb_appender appender, FUN &&functi
 	}
 	auto wrapper = reinterpret_cast<AppenderWrapper *>(appender);
 	if (!wrapper->appender) {
+		wrapper->error_data = ErrorData("not a valid appender");
 		return DuckDBError;
 	}
 	try {
 		function(*wrapper->appender);
 	} catch (std::exception &ex) {
-		ErrorData error(ex);
-		wrapper->error = error.RawMessage();
+		wrapper->error_data = ErrorData(ex);
 		return DuckDBError;
 	} catch (...) { // LCOV_EXCL_START
-		wrapper->error = "Unknown error";
+		wrapper->error_data = ErrorData("Unknown appender error");
 		return DuckDBError;
 	} // LCOV_EXCL_STOP
 	return DuckDBSuccess;
+}
+
+duckdb_state duckdb_appender_add_column(duckdb_appender appender_p, const char *name) {
+	return duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.AddColumn(name); });
+}
+
+duckdb_state duckdb_appender_clear_columns(duckdb_appender appender_p) {
+	return duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.ClearColumns(); });
 }
 
 const char *duckdb_appender_error(duckdb_appender appender) {
@@ -78,18 +145,29 @@ const char *duckdb_appender_error(duckdb_appender appender) {
 		return nullptr;
 	}
 	auto wrapper = reinterpret_cast<AppenderWrapper *>(appender);
-	if (wrapper->error.empty()) {
+	if (!wrapper->error_data.HasError()) {
 		return nullptr;
 	}
-	return wrapper->error.c_str();
+	return wrapper->error_data.RawMessage().c_str();
+}
+
+duckdb_error_data duckdb_appender_error_data(duckdb_appender appender) {
+	auto errorDataWrapper = new ErrorDataWrapper();
+	if (!appender) {
+		return reinterpret_cast<duckdb_error_data>(errorDataWrapper);
+	}
+
+	auto appenderWrapper = reinterpret_cast<AppenderWrapper *>(appender);
+	errorDataWrapper->error_data = appenderWrapper->error_data;
+	return reinterpret_cast<duckdb_error_data>(errorDataWrapper);
 }
 
 duckdb_state duckdb_appender_begin_row(duckdb_appender appender) {
 	return DuckDBSuccess;
 }
 
-duckdb_state duckdb_appender_end_row(duckdb_appender appender) {
-	return duckdb_appender_run_function(appender, [&](Appender &appender) { appender.EndRow(); });
+duckdb_state duckdb_appender_end_row(duckdb_appender appender_p) {
+	return duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.EndRow(); });
 }
 
 template <class T>
@@ -101,8 +179,44 @@ duckdb_state duckdb_append_internal(duckdb_appender appender, T value) {
 	try {
 		appender_instance->appender->Append<T>(value);
 	} catch (std::exception &ex) {
-		ErrorData error(ex);
-		appender_instance->error = error.RawMessage();
+		appender_instance->error_data = ErrorData(ex);
+		return DuckDBError;
+	} catch (...) {
+		return DuckDBError;
+	}
+	return DuckDBSuccess;
+}
+
+duckdb_state duckdb_append_default(duckdb_appender appender) {
+	if (!appender) {
+		return DuckDBError;
+	}
+	auto *appender_instance = reinterpret_cast<AppenderWrapper *>(appender);
+
+	try {
+		appender_instance->appender->AppendDefault();
+	} catch (std::exception &ex) {
+		appender_instance->error_data = ErrorData(ex);
+		return DuckDBError;
+	} catch (...) {
+		return DuckDBError;
+	}
+	return DuckDBSuccess;
+}
+
+duckdb_state duckdb_append_default_to_chunk(duckdb_appender appender, duckdb_data_chunk chunk, idx_t col, idx_t row) {
+	if (!appender || !chunk) {
+		return DuckDBError;
+	}
+
+	auto *appender_instance = reinterpret_cast<AppenderWrapper *>(appender);
+
+	auto data_chunk = reinterpret_cast<duckdb::DataChunk *>(chunk);
+
+	try {
+		appender_instance->appender->AppendDefault(*data_chunk, col, row);
+	} catch (std::exception &ex) {
+		appender_instance->error_data = ErrorData(ex);
 		return DuckDBError;
 	} catch (...) {
 		return DuckDBError;
@@ -199,17 +313,36 @@ duckdb_state duckdb_append_varchar(duckdb_appender appender, const char *val) {
 duckdb_state duckdb_append_varchar_length(duckdb_appender appender, const char *val, idx_t length) {
 	return duckdb_append_internal<string_t>(appender, string_t(val, duckdb::UnsafeNumericCast<uint32_t>(length)));
 }
+
 duckdb_state duckdb_append_blob(duckdb_appender appender, const void *data, idx_t length) {
-	auto value = duckdb::Value::BLOB((duckdb::const_data_ptr_t)data, length);
+	auto value = duckdb::Value::BLOB(duckdb::const_data_ptr_cast(data), length);
 	return duckdb_append_internal<duckdb::Value>(appender, value);
 }
 
-duckdb_state duckdb_appender_flush(duckdb_appender appender) {
-	return duckdb_appender_run_function(appender, [&](Appender &appender) { appender.Flush(); });
+duckdb_state duckdb_appender_flush(duckdb_appender appender_p) {
+	auto state = duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.Flush(); });
+	if (state == DuckDBError) {
+		auto wrapper = reinterpret_cast<AppenderWrapper *>(appender_p);
+		if (wrapper) {
+			wrapper->flush_failed = true;
+		}
+	}
+	return state;
 }
 
-duckdb_state duckdb_appender_close(duckdb_appender appender) {
-	return duckdb_appender_run_function(appender, [&](Appender &appender) { appender.Close(); });
+duckdb_state duckdb_appender_clear(duckdb_appender appender_p) {
+	return duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.Clear(); });
+}
+
+duckdb_state duckdb_appender_close(duckdb_appender appender_p) {
+	auto state = duckdb_appender_run_function(appender_p, [&](BaseAppender &appender) { appender.Close(); });
+	if (state == DuckDBError) {
+		auto wrapper = reinterpret_cast<AppenderWrapper *>(appender_p);
+		if (wrapper) {
+			wrapper->flush_failed = true;
+		}
+	}
+	return state;
 }
 
 idx_t duckdb_appender_column_count(duckdb_appender appender) {
@@ -222,7 +355,7 @@ idx_t duckdb_appender_column_count(duckdb_appender appender) {
 		return 0;
 	}
 
-	return wrapper->appender->GetTypes().size();
+	return wrapper->appender->GetActiveTypes().size();
 }
 
 duckdb_logical_type duckdb_appender_column_type(duckdb_appender appender, idx_t col_idx) {
@@ -235,13 +368,19 @@ duckdb_logical_type duckdb_appender_column_type(duckdb_appender appender, idx_t 
 		return nullptr;
 	}
 
-	return reinterpret_cast<duckdb_logical_type>(new duckdb::LogicalType(wrapper->appender->GetTypes()[col_idx]));
+	auto &logical_type = wrapper->appender->GetActiveTypes()[col_idx];
+	return reinterpret_cast<duckdb_logical_type>(new duckdb::LogicalType(logical_type));
 }
 
-duckdb_state duckdb_append_data_chunk(duckdb_appender appender, duckdb_data_chunk chunk) {
+duckdb_state duckdb_append_value(duckdb_appender appender, duckdb_value value) {
+	return duckdb_append_internal<duckdb::Value>(appender, *(reinterpret_cast<duckdb::Value *>(value)));
+}
+
+duckdb_state duckdb_append_data_chunk(duckdb_appender appender_p, duckdb_data_chunk chunk) {
 	if (!chunk) {
 		return DuckDBError;
 	}
-	auto data_chunk = (duckdb::DataChunk *)chunk;
-	return duckdb_appender_run_function(appender, [&](Appender &appender) { appender.AppendDataChunk(*data_chunk); });
+	auto data_chunk = reinterpret_cast<duckdb::DataChunk *>(chunk);
+	return duckdb_appender_run_function(appender_p,
+	                                    [&](BaseAppender &appender) { appender.AppendDataChunk(*data_chunk); });
 }

@@ -147,39 +147,39 @@ static inline void flag_similar_characters_step(const common::BlockPatternMatchV
 
     if (BoundMask.words == 1) {
         uint64_t PM_j = PM.get(word, T_j) & BoundMask.last_mask & BoundMask.first_mask &
-                        (~flagged.P_flag[word]);
+                        (~flagged.P_flag[static_cast<size_t>(word)]);
 
-        flagged.P_flag[word] |= blsi(PM_j);
-        flagged.T_flag[j_word] |= static_cast<uint64_t>(PM_j != 0) << j_pos;
+        flagged.P_flag[static_cast<size_t>(word)] |= blsi(PM_j);
+        flagged.T_flag[static_cast<size_t>(j_word)] |= static_cast<uint64_t>(PM_j != 0) << j_pos;
         return;
     }
 
     if (BoundMask.first_mask) {
-        uint64_t PM_j = PM.get(word, T_j) & BoundMask.first_mask & (~flagged.P_flag[word]);
+        uint64_t PM_j = PM.get(word, T_j) & BoundMask.first_mask & (~flagged.P_flag[static_cast<size_t>(word)]);
 
         if (PM_j) {
-            flagged.P_flag[word] |= blsi(PM_j);
-            flagged.T_flag[j_word] |= 1ull << j_pos;
+            flagged.P_flag[static_cast<size_t>(word)] |= blsi(PM_j);
+            flagged.T_flag[static_cast<size_t>(j_word)] |= 1ull << j_pos;
             return;
         }
         word++;
     }
 
     for (; word < last_word - 1; ++word) {
-        uint64_t PM_j = PM.get(word, T_j) & (~flagged.P_flag[word]);
+        uint64_t PM_j = PM.get(word, T_j) & (~flagged.P_flag[static_cast<size_t>(word)]);
 
         if (PM_j) {
-            flagged.P_flag[word] |= blsi(PM_j);
-            flagged.T_flag[j_word] |= 1ull << j_pos;
+            flagged.P_flag[static_cast<size_t>(word)] |= blsi(PM_j);
+            flagged.T_flag[static_cast<size_t>(j_word)] |= 1ull << j_pos;
             return;
         }
     }
 
     if (BoundMask.last_mask) {
-        uint64_t PM_j = PM.get(word, T_j) & BoundMask.last_mask & (~flagged.P_flag[word]);
+        uint64_t PM_j = PM.get(word, T_j) & BoundMask.last_mask & (~flagged.P_flag[static_cast<size_t>(word)]);
 
-        flagged.P_flag[word] |= blsi(PM_j);
-        flagged.T_flag[j_word] |= static_cast<uint64_t>(PM_j != 0) << j_pos;
+        flagged.P_flag[static_cast<size_t>(word)] |= blsi(PM_j);
+        flagged.T_flag[static_cast<size_t>(j_word)] |= static_cast<uint64_t>(PM_j != 0) << j_pos;
     }
 }
 
@@ -199,8 +199,8 @@ flag_similar_characters_block(const common::BlockPatternMatchVector& PM, InputIt
     int64_t PatternWords = common::ceildiv(P_len, 64);
 
     FlaggedCharsMultiword flagged;
-    flagged.T_flag.resize(TextWords);
-    flagged.P_flag.resize(PatternWords);
+    flagged.T_flag.resize(static_cast<size_t>(TextWords));
+    flagged.P_flag.resize(static_cast<size_t>(PatternWords));
 
     SearchBoundMask BoundMask;
     int64_t start_range = std::min(Bound + 1, P_len);
@@ -262,21 +262,21 @@ count_transpositions_block(const common::BlockPatternMatchVector& PM, InputIt1 T
     using namespace intrinsics;
     int64_t TextWord = 0;
     int64_t PatternWord = 0;
-    uint64_t T_flag = flagged.T_flag[TextWord];
-    uint64_t P_flag = flagged.P_flag[PatternWord];
+    uint64_t T_flag = flagged.T_flag[static_cast<size_t>(TextWord)];
+    uint64_t P_flag = flagged.P_flag[static_cast<size_t>(PatternWord)];
 
     int64_t Transpositions = 0;
     while (FlaggedChars) {
         while (!T_flag) {
             TextWord++;
             T_first += 64;
-            T_flag = flagged.T_flag[TextWord];
+            T_flag = flagged.T_flag[static_cast<size_t>(TextWord)];
         }
 
         while (T_flag) {
             while (!P_flag) {
                 PatternWord++;
-                P_flag = flagged.P_flag[PatternWord];
+                P_flag = flagged.P_flag[static_cast<size_t>(PatternWord)];
             }
 
             uint64_t PatternFlagMask = blsi(P_flag);
@@ -448,7 +448,7 @@ double jaro_winkler_similarity(InputIt1 P_first, InputIt1 P_last, InputIt2 T_fir
 
     double jaro_score_cutoff = score_cutoff;
     if (jaro_score_cutoff > 0.7) {
-        double prefix_sim = prefix * prefix_weight;
+        double prefix_sim = static_cast<double>(prefix) * prefix_weight;
 
         if (prefix_sim >= 1.0) {
             jaro_score_cutoff = 0.7;
@@ -461,7 +461,7 @@ double jaro_winkler_similarity(InputIt1 P_first, InputIt1 P_last, InputIt2 T_fir
 
     double Sim = jaro_similarity(P_first, P_last, T_first, T_last, jaro_score_cutoff);
     if (Sim > 0.7) {
-        Sim += prefix * prefix_weight * (1.0 - Sim);
+        Sim += static_cast<double>(prefix) * prefix_weight * (1.0 - Sim);
     }
 
     return common::result_cutoff(Sim, score_cutoff);
@@ -486,7 +486,7 @@ double jaro_winkler_similarity(const common::BlockPatternMatchVector& PM, InputI
 
     double jaro_score_cutoff = score_cutoff;
     if (jaro_score_cutoff > 0.7) {
-        double prefix_sim = prefix * prefix_weight;
+        double prefix_sim = static_cast<double>(prefix) * prefix_weight;
 
         if (prefix_sim >= 1.0) {
             jaro_score_cutoff = 0.7;
@@ -499,7 +499,7 @@ double jaro_winkler_similarity(const common::BlockPatternMatchVector& PM, InputI
 
     double Sim = jaro_similarity(PM, P_first, P_last, T_first, T_last, jaro_score_cutoff);
     if (Sim > 0.7) {
-        Sim += prefix * prefix_weight * (1.0 - Sim);
+        Sim += static_cast<double>(prefix) * prefix_weight * (1.0 - Sim);
     }
 
     return common::result_cutoff(Sim, score_cutoff);

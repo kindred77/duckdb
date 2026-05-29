@@ -3,9 +3,6 @@
 # group: [virtual]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE unit (
 	price INTEGER,
 	amount_sold INTEGER,
@@ -28,6 +25,7 @@ SELECT * FROM unit;
 statement error
 ALTER TABLE unit DROP COLUMN price;
 ----
+Cannot drop column: column is a dependency of 1 or more generated column(s)
 
 statement ok
 ALTER TABLE unit DROP COLUMN price CASCADE;

@@ -6,11 +6,10 @@ require skip_reload
 
 require notmingw
 
-statement ok
-PRAGMA enable_verification
+require allow_unsigned_extensions
 
 statement ok
-LOAD '__BUILD_DIRECTORY__/test/extension/loadable_extension_demo.duckdb_extension';
+LOAD '{BUILD_DIRECTORY}/test/extension/loadable_extension_demo.duckdb_extension';
 
 statement ok
 CREATE TABLE points(i INTEGER, point POINT, pt STRUCT(i INTEGER, j INTEGER));
@@ -40,10 +39,12 @@ SELECT sub_point(({'x': 2, 'y': 3})::POINT, ({'x': 3, 'y': 4})::POINT)
 statement error
 SELECT add_point(pt, pt) from points;
 ----
+<REGEX>:Binder Error:.*No function matches.*
 
 statement error
 SELECT sub_point(pt, pt) from points;
 ----
+<REGEX>:Binder Error:.*No function matches.*
 
 query I
 SELECT add_point(point, point) from points;

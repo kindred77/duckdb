@@ -51,6 +51,8 @@ struct PivotColumn {
 
 	void Serialize(Serializer &serializer) const;
 	static PivotColumn Deserialize(Deserializer &source);
+
+	vector<PivotColumnEntry> GetEntriesForSerialization(Serializer &serializer) const;
 };
 
 //! Represents a PIVOT or UNPIVOT expression
@@ -72,8 +74,6 @@ public:
 	vector<PivotColumn> pivots;
 	//! The groups to pivot over. If none are specified all columns not included in the pivots/aggregate are chosen.
 	vector<string> groups;
-	//! Aliases for the column names
-	vector<string> column_name_alias;
 	//! Whether or not to include nulls in the result (UNPIVOT only)
 	bool include_nulls;
 	//! The set of values to pivot on (bound pivot only)

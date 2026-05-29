@@ -1,3 +1,8 @@
+#include "duckdb/common/vector/array_vector.hpp"
+#include "duckdb/common/vector/flat_vector.hpp"
+#include "duckdb/common/vector/list_vector.hpp"
+#include "duckdb/common/vector/map_vector.hpp"
+#include "duckdb/common/vector/struct_vector.hpp"
 #include "duckdb/common/types/column/column_data_collection_segment.hpp"
 
 #include "duckdb/common/vector_operations/vector_operations.hpp"
@@ -6,16 +11,47 @@ namespace duckdb {
 
 ColumnDataCollectionSegment::ColumnDataCollectionSegment(shared_ptr<ColumnDataAllocator> allocator_p,
                                                          vector<LogicalType> types_p)
-    : allocator(std::move(allocator_p)), types(std::move(types_p)), count(0),
-      heap(make_shared<StringHeap>(allocator->GetAllocator())) {
+    : allocator(std::move(allocator_p)), total_allocated(0), last_chunk_total_allocated(0), types(std::move(types_p)),
+      count(0), heap(make_shared_ptr<StringHeap>(allocator->GetAllocator())) {
+}
+
+void ColumnDataCollectionSegment::Reset() {
+	count = 0;
+	total_allocated = 0;
+	last_chunk_total_allocated = 0;
+	chunk_data.clear();
+	vector_data.clear();
+	child_indices.clear();
+	heap->GetAllocator().Reset();
 }
 
 idx_t ColumnDataCollectionSegment::GetDataSize(idx_t type_size) {
 	return AlignValue(type_size * STANDARD_VECTOR_SIZE);
 }
 
-validity_t *ColumnDataCollectionSegment::GetValidityPointer(data_ptr_t base_ptr, idx_t type_size) {
+validity_t *ColumnDataCollectionSegment::GetValidityPointerForWriting(data_ptr_t base_ptr, idx_t type_size) {
 	return reinterpret_cast<validity_t *>(base_ptr + GetDataSize(type_size));
+}
+
+validity_t *ColumnDataCollectionSegment::GetValidityPointer(data_ptr_t base_ptr, idx_t type_size, idx_t count) {
+	auto validity_mask = reinterpret_cast<validity_t *>(base_ptr + GetDataSize(type_size));
+
+	// Optimized check to see if all entries are valid
+	for (idx_t i = 0; i < (count / ValidityMask::BITS_PER_VALUE); i++) {
+		if (!ValidityMask::AllValid(validity_mask[i])) {
+			return validity_mask;
+		}
+	}
+
+	if ((count % ValidityMask::BITS_PER_VALUE) != 0) {
+		// Create a mask with the lower `bits_to_check` bits set to 1
+		validity_t mask = (1ULL << (count % ValidityMask::BITS_PER_VALUE)) - 1;
+		if ((validity_mask[(count / ValidityMask::BITS_PER_VALUE)] & mask) != mask) {
+			return validity_mask;
+		}
+	}
+	// All entries are valid, no need to initialize the validity mask
+	return nullptr;
 }
 
 VectorDataIndex ColumnDataCollectionSegment::AllocateVectorInternal(const LogicalType &type, ChunkMetaData &chunk_meta,
@@ -24,11 +60,12 @@ VectorDataIndex ColumnDataCollectionSegment::AllocateVectorInternal(const Logica
 	meta_data.count = 0;
 
 	auto internal_type = type.InternalType();
-	auto type_size = ((internal_type == PhysicalType::STRUCT) || (internal_type == PhysicalType::ARRAY))
-	                     ? 0
-	                     : GetTypeIdSize(internal_type);
-	allocator->AllocateData(GetDataSize(type_size) + ValidityMask::STANDARD_MASK_SIZE, meta_data.block_id,
-	                        meta_data.offset, chunk_state);
+	auto struct_or_array = internal_type == PhysicalType::STRUCT || internal_type == PhysicalType::ARRAY;
+	auto type_size = struct_or_array ? 0 : GetTypeIdSize(internal_type);
+
+	const auto allocation_size = GetDataSize(type_size) + ValidityMask::STANDARD_MASK_SIZE;
+	allocator->AllocateData(allocation_size, meta_data.block_id, meta_data.offset, chunk_state);
+	total_allocated += allocation_size;
 	if (allocator->GetType() == ColumnDataAllocatorType::BUFFER_MANAGER_ALLOCATOR ||
 	    allocator->GetType() == ColumnDataAllocatorType::HYBRID) {
 		chunk_meta.block_ids.insert(meta_data.block_id);
@@ -78,7 +115,10 @@ VectorDataIndex ColumnDataCollectionSegment::AllocateStringHeap(idx_t size, Chun
 	VectorMetaData meta_data;
 	meta_data.count = 0;
 
-	allocator->AllocateData(AlignValue(size), meta_data.block_id, meta_data.offset, &append_state.current_chunk_state);
+	const auto allocation_size = AlignValue(size);
+	allocator->AllocateData(allocation_size, meta_data.block_id, meta_data.offset, &append_state.current_chunk_state);
+	total_allocated += allocation_size;
+
 	chunk_meta.block_ids.insert(meta_data.block_id);
 
 	VectorDataIndex index(vector_data.size());
@@ -92,6 +132,11 @@ VectorDataIndex ColumnDataCollectionSegment::AllocateStringHeap(idx_t size, Chun
 }
 
 void ColumnDataCollectionSegment::AllocateNewChunk() {
+	if (!chunk_data.empty()) {
+		chunk_data.back().allocation_size = total_allocated - last_chunk_total_allocated;
+	}
+	last_chunk_total_allocated = total_allocated;
+
 	ChunkMetaData meta_data;
 	meta_data.count = 0;
 	meta_data.vector_data.reserve(types.size());
@@ -134,6 +179,10 @@ void ColumnDataCollectionSegment::SetChildIndex(VectorChildIndex base_idx, idx_t
 	child_indices[base_idx.index + child_number] = index;
 }
 
+bool TypeHasData(const LogicalType &type) {
+	return type.InternalType() != PhysicalType::STRUCT && type.InternalType() != PhysicalType::ARRAY;
+}
+
 idx_t ColumnDataCollectionSegment::ReadVectorInternal(ChunkManagementState &state, VectorDataIndex vector_index,
                                                       Vector &result) {
 	auto &vector_type = result.GetType();
@@ -142,11 +191,14 @@ idx_t ColumnDataCollectionSegment::ReadVectorInternal(ChunkManagementState &stat
 	auto &vdata = GetVectorData(vector_index);
 
 	auto base_ptr = allocator->GetDataPointer(state, vdata.block_id, vdata.offset);
-	auto validity_data = GetValidityPointer(base_ptr, type_size);
+	auto validity_data = GetValidityPointer(base_ptr, type_size, vdata.count);
 	if (!vdata.next_data.IsValid() && state.properties != ColumnDataScanProperties::DISALLOW_ZERO_COPY) {
 		// no next data, we can do a zero-copy read of this vector
-		FlatVector::SetData(result, base_ptr);
-		FlatVector::Validity(result).Initialize(validity_data);
+		if (TypeHasData(result.GetType())) {
+			FlatVector::SetData(result, base_ptr, count_t(vdata.count));
+		}
+		FlatVector::ValidityMutable(result).Initialize(validity_data, STANDARD_VECTOR_SIZE);
+		FlatVector::SetSize(result, count_t(vdata.count));
 		return vdata.count;
 	}
 
@@ -161,24 +213,25 @@ idx_t ColumnDataCollectionSegment::ReadVectorInternal(ChunkManagementState &stat
 		next_index = current_vdata.next_data;
 	}
 	// resize the result vector
-	result.Resize(0, vector_count);
+	result.Reserve(vector_count);
 	next_index = vector_index;
 	// now perform the copy of each of the vectors
-	auto target_data = FlatVector::GetData(result);
-	auto &target_validity = FlatVector::Validity(result);
+	auto target_data = FlatVector::GetDataMutable(result);
+	auto &target_validity = FlatVector::ValidityMutable(result);
 	idx_t current_offset = 0;
 	while (next_index.IsValid()) {
 		auto &current_vdata = GetVectorData(next_index);
 		base_ptr = allocator->GetDataPointer(state, current_vdata.block_id, current_vdata.offset);
-		validity_data = GetValidityPointer(base_ptr, type_size);
+		validity_data = GetValidityPointer(base_ptr, type_size, current_vdata.count);
 		if (type_size > 0) {
 			memcpy(target_data + current_offset * type_size, base_ptr, current_vdata.count * type_size);
 		}
-		ValidityMask current_validity(validity_data);
+		ValidityMask current_validity(validity_data, STANDARD_VECTOR_SIZE);
 		target_validity.SliceInPlace(current_validity, current_offset, 0, current_vdata.count);
 		current_offset += current_vdata.count;
 		next_index = current_vdata.next_data;
 	}
+	FlatVector::SetSize(result, count_t(vector_count));
 	return vector_count;
 }
 
@@ -188,24 +241,23 @@ idx_t ColumnDataCollectionSegment::ReadVector(ChunkManagementState &state, Vecto
 	auto internal_type = vector_type.InternalType();
 	auto &vdata = GetVectorData(vector_index);
 	if (vdata.count == 0) {
+		FlatVector::SetSize(result, 0);
 		return 0;
 	}
 	auto vcount = ReadVectorInternal(state, vector_index, result);
 	if (internal_type == PhysicalType::LIST) {
 		// list: copy child
-		auto &child_vector = ListVector::GetEntry(result);
+		auto &child_vector = ListVector::GetChildMutable(result);
 		auto child_count = ReadVector(state, GetChildIndex(vdata.child_index), child_vector);
 		ListVector::SetListSize(result, child_count);
-
 	} else if (internal_type == PhysicalType::ARRAY) {
-		auto &child_vector = ArrayVector::GetEntry(result);
+		auto &child_vector = ArrayVector::GetChildMutable(result);
 		auto child_count = ReadVector(state, GetChildIndex(vdata.child_index), child_vector);
 		(void)child_count;
 	} else if (internal_type == PhysicalType::STRUCT) {
 		auto &child_vectors = StructVector::GetEntries(result);
 		for (idx_t child_idx = 0; child_idx < child_vectors.size(); child_idx++) {
-			auto child_count =
-			    ReadVector(state, GetChildIndex(vdata.child_index, child_idx), *child_vectors[child_idx]);
+			auto child_count = ReadVector(state, GetChildIndex(vdata.child_index, child_idx), child_vectors[child_idx]);
 			if (child_count != vcount) {
 				throw InternalException("Column Data Collection: mismatch in struct child sizes");
 			}
@@ -213,20 +265,21 @@ idx_t ColumnDataCollectionSegment::ReadVector(ChunkManagementState &state, Vecto
 	} else if (internal_type == PhysicalType::VARCHAR) {
 		if (allocator->GetType() == ColumnDataAllocatorType::BUFFER_MANAGER_ALLOCATOR) {
 			auto next_index = vector_index;
+			const auto copied =
+			    vdata.next_data.IsValid() || state.properties == ColumnDataScanProperties::DISALLOW_ZERO_COPY;
 			idx_t offset = 0;
 			while (next_index.IsValid()) {
 				auto &current_vdata = GetVectorData(next_index);
 				for (auto &swizzle_segment : current_vdata.swizzle_data) {
 					auto &string_heap_segment = GetVectorData(swizzle_segment.child_index);
-					allocator->UnswizzlePointers(state, result, offset + swizzle_segment.offset, swizzle_segment.count,
-					                             string_heap_segment.block_id, string_heap_segment.offset);
+					allocator->UnswizzlePointers(state, result, swizzle_segment, string_heap_segment, offset, copied);
 				}
 				offset += current_vdata.count;
 				next_index = current_vdata.next_data;
 			}
 		}
 		if (state.properties == ColumnDataScanProperties::DISALLOW_ZERO_COPY) {
-			VectorOperations::Copy(result, result, vdata.count, 0, 0);
+			VectorOperations::Copy(result, result, vcount, 0, 0);
 		}
 	}
 	return vcount;
@@ -236,6 +289,7 @@ void ColumnDataCollectionSegment::ReadChunk(idx_t chunk_index, ChunkManagementSt
                                             const vector<column_t> &column_ids) {
 	D_ASSERT(chunk.ColumnCount() == column_ids.size());
 	D_ASSERT(state.properties != ColumnDataScanProperties::INVALID);
+	chunk.Reset();
 	InitializeChunkState(chunk_index, state);
 	auto &chunk_meta = chunk_data[chunk_index];
 	for (idx_t i = 0; i < column_ids.size(); i++) {
@@ -258,6 +312,15 @@ idx_t ColumnDataCollectionSegment::SizeInBytes() const {
 idx_t ColumnDataCollectionSegment::AllocationSize() const {
 	D_ASSERT(!allocator->IsShared());
 	return allocator->AllocationSize() + heap->AllocationSize();
+}
+
+idx_t ColumnDataCollectionSegment::GetChunkAllocationSize(const idx_t chunk_idx) const {
+	auto &chunk_meta = chunk_data[chunk_idx];
+	if (chunk_meta.allocation_size.IsValid()) {
+		return chunk_meta.allocation_size.GetIndex();
+	}
+	// Last chunk - derive it
+	return total_allocated - last_chunk_total_allocated;
 }
 
 void ColumnDataCollectionSegment::FetchChunk(idx_t chunk_idx, DataChunk &result) {

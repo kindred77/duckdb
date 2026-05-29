@@ -8,18 +8,19 @@
 
 namespace duckdb {
 
-BoundAggregateExpression::BoundAggregateExpression(AggregateFunction function, vector<unique_ptr<Expression>> children,
+BoundAggregateExpression::BoundAggregateExpression(BoundAggregateFunction function,
+                                                   vector<unique_ptr<Expression>> children,
                                                    unique_ptr<Expression> filter, unique_ptr<FunctionData> bind_info,
                                                    AggregateType aggr_type)
-    : Expression(ExpressionType::BOUND_AGGREGATE, ExpressionClass::BOUND_AGGREGATE, function.return_type),
+    : Expression(ExpressionType::BOUND_AGGREGATE, ExpressionClass::BOUND_AGGREGATE, function.GetReturnType()),
       function(std::move(function)), children(std::move(children)), bind_info(std::move(bind_info)),
       aggr_type(aggr_type), filter(std::move(filter)) {
-	D_ASSERT(!this->function.name.empty());
+	D_ASSERT(!this->function.GetName().empty());
 }
 
 string BoundAggregateExpression::ToString() const {
 	return FunctionExpression::ToString<BoundAggregateExpression, Expression, BoundOrderModifier>(
-	    *this, string(), string(), function.name, false, IsDistinct(), filter.get(), order_bys.get());
+	    *this, string(), string(), function.GetName(), false, IsDistinct(), filter.get(), order_bys.get());
 }
 
 hash_t BoundAggregateExpression::Hash() const {
@@ -61,11 +62,12 @@ bool BoundAggregateExpression::Equals(const BaseExpression &other_p) const {
 }
 
 bool BoundAggregateExpression::PropagatesNullValues() const {
-	return function.null_handling == FunctionNullHandling::SPECIAL_HANDLING ? false
-	                                                                        : Expression::PropagatesNullValues();
+	return function.GetProperties().GetNullHandling() == FunctionNullHandling::SPECIAL_HANDLING
+	           ? false
+	           : Expression::PropagatesNullValues();
 }
 
-unique_ptr<Expression> BoundAggregateExpression::Copy() {
+unique_ptr<Expression> BoundAggregateExpression::Copy() const {
 	vector<unique_ptr<Expression>> new_children;
 	new_children.reserve(children.size());
 	for (auto &child : children) {
@@ -93,13 +95,19 @@ void BoundAggregateExpression::Serialize(Serializer &serializer) const {
 unique_ptr<Expression> BoundAggregateExpression::Deserialize(Deserializer &deserializer) {
 	auto return_type = deserializer.ReadProperty<LogicalType>(200, "return_type");
 	auto children = deserializer.ReadProperty<vector<unique_ptr<Expression>>>(201, "children");
-	auto entry = FunctionSerializer::Deserialize<AggregateFunction, AggregateFunctionCatalogEntry>(
-	    deserializer, CatalogType::AGGREGATE_FUNCTION_ENTRY, children, std::move(return_type));
+	auto entry = FunctionSerializer::Deserialize<BoundAggregateFunction, AggregateFunctionCatalogEntry>(
+	    deserializer, CatalogType::AGGREGATE_FUNCTION_ENTRY, children, return_type);
 	auto aggregate_type = deserializer.ReadProperty<AggregateType>(203, "aggregate_type");
-	auto filter = deserializer.ReadPropertyWithDefault<unique_ptr<Expression>>(204, "filter", unique_ptr<Expression>());
+	auto filter =
+	    deserializer.ReadPropertyWithExplicitDefault<unique_ptr<Expression>>(204, "filter", unique_ptr<Expression>());
 	auto result = make_uniq<BoundAggregateExpression>(std::move(entry.first), std::move(children), std::move(filter),
 	                                                  std::move(entry.second), aggregate_type);
-	deserializer.ReadPropertyWithDefault(205, "order_bys", result->order_bys, unique_ptr<BoundOrderModifier>());
+	if (result->return_type != return_type) {
+		// return type mismatch - push a cast
+		auto &context = deserializer.Get<ClientContext &>();
+		return BoundCastExpression::AddCastToType(context, std::move(result), return_type);
+	}
+	deserializer.ReadPropertyWithExplicitDefault(205, "order_bys", result->order_bys, unique_ptr<BoundOrderModifier>());
 	return std::move(result);
 }
 

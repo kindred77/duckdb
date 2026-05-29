@@ -1,16 +1,12 @@
-#define DUCKDB_EXTENSION_MAIN
-
-#include "tpch_extension.hpp"
-
-#ifndef DUCKDB_AMALGAMATION
 #include "duckdb/function/table_function.hpp"
-#include "duckdb/parser/parsed_data/create_view_info.hpp"
-#include "duckdb/parser/parser.hpp"
-#include "duckdb/parser/statement/select_statement.hpp"
-#include "duckdb/main/extension_util.hpp"
-#endif
+#include "duckdb/main/attached_database.hpp"
+#include "duckdb/main/client_data.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
+#include "duckdb/catalog/catalog_search_path.hpp"
+#include "duckdb/planner/binder.hpp"
 
 #include "dbgen/dbgen.hpp"
+#include "tpch_extension.hpp"
 
 namespace duckdb {
 
@@ -28,10 +24,20 @@ struct DBGenFunctionData : public TableFunctionData {
 	int step = -1;
 };
 
-static duckdb::unique_ptr<FunctionData> DbgenBind(ClientContext &context, TableFunctionBindInput &input,
-                                                  vector<LogicalType> &return_types, vector<string> &names) {
+static unique_ptr<FunctionData> DbgenBind(ClientContext &context, TableFunctionBindInput &input,
+                                          vector<LogicalType> &return_types, vector<string> &names) {
 	auto result = make_uniq<DBGenFunctionData>();
+
+	// Set the current catalog and schema.
+	const auto current_catalog = DatabaseManager::GetDefaultDatabase(context);
+	const auto current_schema = ClientData::Get(context).catalog_search_path->GetDefault().schema;
+	result->catalog = current_catalog;
+	result->schema = current_schema;
+
 	for (auto &kv : input.named_parameters) {
+		if (kv.second.IsNull()) {
+			throw BinderException("Cannot use NULL as function argument");
+		}
 		if (kv.first == "sf") {
 			result->sf = DoubleValue::Get(kv.second);
 		} else if (kv.first == "catalog") {
@@ -51,14 +57,21 @@ static duckdb::unique_ptr<FunctionData> DbgenBind(ClientContext &context, TableF
 	if (result->children != 1 && result->step == -1) {
 		throw InvalidInputException("Step must be defined when children are defined");
 	}
-
+	if (input.binder) {
+		auto &catalog = Catalog::GetCatalog(context, result->catalog);
+		auto &properties = input.binder->GetStatementProperties();
+		DatabaseModificationType modification;
+		modification |= DatabaseModificationType::CREATE_CATALOG_ENTRY;
+		modification |= DatabaseModificationType::INSERT_DATA;
+		properties.RegisterDBModify(catalog, context, modification);
+	}
 	return_types.emplace_back(LogicalType::BOOLEAN);
 	names.emplace_back("Success");
 	return std::move(result);
 }
 
 static void DbgenFunction(ClientContext &context, TableFunctionInput &data_p, DataChunk &output) {
-	auto &data = (DBGenFunctionData &)*data_p.bind_data;
+	auto &data = data_p.bind_data->CastNoConst<DBGenFunctionData>();
 	if (data.finished) {
 		return;
 	}
@@ -92,19 +105,23 @@ static duckdb::unique_ptr<FunctionData> TPCHQueryBind(ClientContext &context, Ta
 }
 
 static void TPCHQueryFunction(ClientContext &context, TableFunctionInput &data_p, DataChunk &output) {
-	auto &data = (TPCHData &)*data_p.global_state;
+	auto &data = data_p.global_state->Cast<TPCHData>();
 	idx_t tpch_queries = 22;
 	if (data.offset >= tpch_queries) {
 		// finished returning values
 		return;
 	}
 	idx_t chunk_count = 0;
+
+	// query_nr, INTEGER
+	auto &query_nr = output.data[0];
+	// query, VARCHAR
+	auto &query_col = output.data[1];
+
 	while (data.offset < tpch_queries && chunk_count < STANDARD_VECTOR_SIZE) {
 		auto query = tpch::DBGenWrapper::GetQuery(data.offset + 1);
-		// "query_nr", PhysicalType::INT32
-		output.SetValue(0, chunk_count, Value::INTEGER((int32_t)data.offset + 1));
-		// "query", PhysicalType::VARCHAR
-		output.SetValue(1, chunk_count, Value(query));
+		query_nr.Append(Value::INTEGER((int32_t)data.offset + 1));
+		query_col.Append(Value(query));
 		data.offset++;
 		chunk_count++;
 	}
@@ -126,7 +143,7 @@ static duckdb::unique_ptr<FunctionData> TPCHQueryAnswerBind(ClientContext &conte
 }
 
 static void TPCHQueryAnswerFunction(ClientContext &context, TableFunctionInput &data_p, DataChunk &output) {
-	auto &data = (TPCHData &)*data_p.global_state;
+	auto &data = data_p.global_state->Cast<TPCHData>();
 	idx_t tpch_queries = 22;
 	vector<double> scale_factors {0.01, 0.1, 1};
 	idx_t total_answers = tpch_queries * scale_factors.size();
@@ -135,16 +152,21 @@ static void TPCHQueryAnswerFunction(ClientContext &context, TableFunctionInput &
 		return;
 	}
 	idx_t chunk_count = 0;
+
+	// query_nr, INTEGER
+	auto &query_nr = output.data[0];
+	// scale_factor, DOUBLE
+	auto &scale_factor = output.data[1];
+	// answer, VARCHAR
+	auto &answer_col = output.data[2];
+
 	while (data.offset < total_answers && chunk_count < STANDARD_VECTOR_SIZE) {
 		idx_t cur_query = data.offset % tpch_queries;
 		idx_t cur_sf = data.offset / tpch_queries;
 		auto answer = tpch::DBGenWrapper::GetAnswer(scale_factors[cur_sf], cur_query + 1);
-		// "query_nr", PhysicalType::INT32
-		output.SetValue(0, chunk_count, Value::INTEGER((int32_t)cur_query + 1));
-		// "scale_factor", PhysicalType::INT32
-		output.SetValue(1, chunk_count, Value::DOUBLE(scale_factors[cur_sf]));
-		// "query", PhysicalType::VARCHAR
-		output.SetValue(2, chunk_count, Value(answer));
+		query_nr.Append(Value::INTEGER((int32_t)cur_query + 1));
+		scale_factor.Append(Value::DOUBLE(scale_factors[cur_sf]));
+		answer_col.Append(Value(answer));
 		data.offset++;
 		chunk_count++;
 	}
@@ -156,9 +178,7 @@ static string PragmaTpchQuery(ClientContext &context, const FunctionParameters &
 	return tpch::DBGenWrapper::GetQuery(index);
 }
 
-void TpchExtension::Load(DuckDB &db) {
-	auto &db_instance = *db.instance;
-
+static void LoadInternal(ExtensionLoader &loader) {
 	TableFunction dbgen_func("dbgen", {}, DbgenFunction, DbgenBind);
 	dbgen_func.named_parameters["sf"] = LogicalType::DOUBLE;
 	dbgen_func.named_parameters["overwrite"] = LogicalType::BOOLEAN;
@@ -167,19 +187,23 @@ void TpchExtension::Load(DuckDB &db) {
 	dbgen_func.named_parameters["suffix"] = LogicalType::VARCHAR;
 	dbgen_func.named_parameters["children"] = LogicalType::UINTEGER;
 	dbgen_func.named_parameters["step"] = LogicalType::UINTEGER;
-	ExtensionUtil::RegisterFunction(db_instance, dbgen_func);
+	loader.RegisterFunction(dbgen_func);
 
 	// create the TPCH pragma that allows us to run the query
 	auto tpch_func = PragmaFunction::PragmaCall("tpch", PragmaTpchQuery, {LogicalType::BIGINT});
-	ExtensionUtil::RegisterFunction(db_instance, tpch_func);
+	loader.RegisterFunction(tpch_func);
 
 	// create the TPCH_QUERIES function that returns the query
 	TableFunction tpch_query_func("tpch_queries", {}, TPCHQueryFunction, TPCHQueryBind, TPCHInit);
-	ExtensionUtil::RegisterFunction(db_instance, tpch_query_func);
+	loader.RegisterFunction(tpch_query_func);
 
 	// create the TPCH_ANSWERS that returns the query result
 	TableFunction tpch_query_answer_func("tpch_answers", {}, TPCHQueryAnswerFunction, TPCHQueryAnswerBind, TPCHInit);
-	ExtensionUtil::RegisterFunction(db_instance, tpch_query_answer_func);
+	loader.RegisterFunction(tpch_query_answer_func);
+}
+
+void TpchExtension::Load(ExtensionLoader &loader) {
+	LoadInternal(loader);
 }
 
 std::string TpchExtension::GetQuery(int query) {
@@ -194,20 +218,19 @@ std::string TpchExtension::Name() {
 	return "tpch";
 }
 
+std::string TpchExtension::Version() const {
+#ifdef EXT_VERSION_TPCH
+	return EXT_VERSION_TPCH;
+#else
+	return "";
+#endif
+}
+
 } // namespace duckdb
 
 extern "C" {
 
-DUCKDB_EXTENSION_API void tpch_init(duckdb::DatabaseInstance &db) {
-	duckdb::DuckDB db_wrapper(db);
-	db_wrapper.LoadExtension<duckdb::TpchExtension>();
-}
-
-DUCKDB_EXTENSION_API const char *tpch_version() {
-	return duckdb::DuckDB::LibraryVersion();
+DUCKDB_CPP_EXTENSION_ENTRY(tpch, loader) {
+	duckdb::LoadInternal(loader);
 }
 }
-
-#ifndef DUCKDB_EXTENSION_MAIN
-#error DUCKDB_EXTENSION_MAIN not defined
-#endif

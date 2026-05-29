@@ -47,6 +47,8 @@ timestamp_t AddOperator::Operation(interval_t left, date_t right);
 template <>
 timestamp_t AddOperator::Operation(timestamp_t left, interval_t right);
 template <>
+timestamp_t AddOperator::Operation(timestamp_t left, double right);
+template <>
 timestamp_t AddOperator::Operation(interval_t left, timestamp_t right);
 
 struct TryAddOperator {
@@ -64,6 +66,8 @@ template <>
 bool TryAddOperator::Operation(uint32_t left, uint32_t right, uint32_t &result);
 template <>
 bool TryAddOperator::Operation(uint64_t left, uint64_t right, uint64_t &result);
+template <>
+bool TryAddOperator::Operation(date_t left, int32_t right, date_t &result);
 
 template <>
 bool TryAddOperator::Operation(int8_t left, int8_t right, int8_t &result);

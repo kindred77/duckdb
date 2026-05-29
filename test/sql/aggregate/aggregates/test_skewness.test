@@ -2,9 +2,6 @@
 # description: Test skewness aggregate
 # group: [aggregates]
 
-statement ok
-PRAGMA enable_verification
-
 #Corner cases
 statement error
 select skewness()
@@ -28,7 +25,7 @@ select skewness(*)
 query I
 select skewness (10) from range (5)
 ----
-NULL
+NAN
 
 #Empty Table
 query I

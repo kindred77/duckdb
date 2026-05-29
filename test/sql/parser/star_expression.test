@@ -3,9 +3,6 @@
 # group: [parser]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE integers AS SELECT 42 i, 84 j UNION ALL SELECT 13, 14
 
 statement error
@@ -51,7 +48,7 @@ SELECT * FROM integers ORDER BY *, *
 statement error
 SELECT * FROM integers ORDER BY * + 42
 ----
-only allowed as the root element
+cannot be applied to a star expression
 
 statement error
 INSERT INTO integers VALUES (*, *)
@@ -64,6 +61,6 @@ VALUES (*)
 not supported
 
 statement error
-FROM range(*, *);
+FROM read_csv(*, *);
 ----
 not supported

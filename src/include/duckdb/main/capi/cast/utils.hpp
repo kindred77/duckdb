@@ -25,8 +25,8 @@ T UnsafeFetchFromPtr(void *pointer) {
 
 template <class T>
 void *UnsafeFetchPtr(duckdb_result *result, idx_t col, idx_t row) {
-	D_ASSERT(row < result->__deprecated_row_count);
-	return (void *)&(((T *)result->__deprecated_columns[col].__deprecated_data)[row]);
+	D_ASSERT(row < result->deprecated_row_count);
+	return (void *)&(((T *)result->deprecated_columns[col].deprecated_data)[row]);
 }
 
 template <class T>
@@ -78,7 +78,7 @@ struct ToCStringCastWrapper {
 	template <class SOURCE_TYPE, class RESULT_TYPE>
 	static bool Operation(SOURCE_TYPE input, RESULT_TYPE &result) {
 		Vector result_vector(LogicalType::VARCHAR, nullptr);
-		auto result_string = OP::template Operation<SOURCE_TYPE>(input, result_vector);
+		auto result_string = OP::template Operation<SOURCE_TYPE>(input, StringVector::GetStringHeap(result_vector));
 		auto result_size = result_string.GetSize();
 		auto result_data = result_string.GetData();
 

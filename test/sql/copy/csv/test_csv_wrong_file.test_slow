@@ -1,11 +1,11 @@
 # name: test/sql/copy/csv/test_csv_wrong_file.test_slow
-# description: Test CSV read over wrong file format
+# description: Test CSV read from wrong file format
 # group: [csv]
 
 require tpch
 
 # load the DB from disk
-load __TEST_DIR__/test_csv_tpch.db
+load {TEST_DIR}/test_csv_tpch.db
 
 statement ok
 CALL dbgen(sf=1)
@@ -13,6 +13,6 @@ CALL dbgen(sf=1)
 restart
 
 statement error
-from read_csv('__TEST_DIR__/test_csv_tpch.db')
+from read_csv('{TEST_DIR}/test_csv_tpch.db')
 ----
-CSV options could not be auto-detected. Consider setting parser options manually.
+It was not possible to automatically detect the CSV parsing dialect

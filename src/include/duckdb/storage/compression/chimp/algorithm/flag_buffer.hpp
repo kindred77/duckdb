@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "duckdb.h"
 #include "duckdb/storage/compression/chimp/algorithm/chimp_utils.hpp"
 #ifdef DEBUG
 #include "duckdb/common/vector.hpp"
@@ -34,7 +33,6 @@ struct FlagBufferConstants {
 // So we can just read/write from left to right
 template <bool EMPTY>
 class FlagBuffer {
-
 public:
 	FlagBuffer() : counter(0), buffer(nullptr) {
 	}
@@ -58,7 +56,7 @@ public:
 #endif
 
 	uint64_t BitsWritten() const {
-		return counter * 2;
+		return counter * 2ULL;
 	}
 
 	void Insert(ChimpConstants::Flags value) {

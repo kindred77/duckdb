@@ -1,32 +1,49 @@
 #include "duckdb/optimizer/join_order/relation_statistics_helper.hpp"
 #include "duckdb/planner/expression/list.hpp"
 #include "duckdb/planner/operator/list.hpp"
-#include "duckdb/planner/filter/conjunction_filter.hpp"
+#include "duckdb/planner/filter/expression_filter.hpp"
+#include "duckdb/planner/expression/bound_comparison_expression.hpp"
+#include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/planner/expression_iterator.hpp"
 #include "duckdb/catalog/catalog_entry/table_catalog_entry.hpp"
 #include "duckdb/function/table/table_scan.hpp"
 #include "duckdb/planner/operator/logical_get.hpp"
 #include "duckdb/storage/data_table.hpp"
-#include "duckdb/planner/filter/constant_filter.hpp"
+
+#include <math.h>
 
 namespace duckdb {
 
+bool ExpressionBinding::FoundExpression() const {
+	return expression;
+}
+
+bool ExpressionBinding::FoundColumnRef() const {
+	if (!FoundExpression()) {
+		return false;
+	}
+	return expression->GetExpressionType() == ExpressionType::BOUND_COLUMN_REF;
+}
+
+RelationStats::RelationStats() : cardinality(1), filter_strength(1), stats_initialized(false) {
+}
+
 static ExpressionBinding GetChildColumnBinding(Expression &expr) {
 	auto ret = ExpressionBinding();
-	switch (expr.expression_class) {
+	switch (expr.GetExpressionClass()) {
 	case ExpressionClass::BOUND_FUNCTION: {
 		// TODO: Other expression classes that can have 0 children?
 		auto &func = expr.Cast<BoundFunctionExpression>();
 		// no children some sort of gen_random_uuid() or equivalent.
 		if (func.children.empty()) {
-			ret.found_expression = true;
+			ret.expression = expr;
 			ret.expression_is_constant = true;
 			return ret;
 		}
 		break;
 	}
 	case ExpressionClass::BOUND_COLUMN_REF: {
-		ret.found_expression = true;
+		ret.expression = expr;
 		auto &new_col_ref = expr.Cast<BoundColumnRefExpression>();
 		ret.child_binding = ColumnBinding(new_col_ref.binding.table_index, new_col_ref.binding.column_index);
 		return ret;
@@ -36,20 +53,45 @@ static ExpressionBinding GetChildColumnBinding(Expression &expr) {
 	case ExpressionClass::BOUND_DEFAULT:
 	case ExpressionClass::BOUND_PARAMETER:
 	case ExpressionClass::BOUND_REF:
-		ret.found_expression = true;
+		ret.expression = expr;
 		ret.expression_is_constant = true;
 		return ret;
 	default:
 		break;
 	}
 	ExpressionIterator::EnumerateChildren(expr, [&](unique_ptr<Expression> &child) {
+		if (ret.FoundColumnRef()) {
+			//! Already found a column ref expression
+			return;
+		}
 		auto recursive_result = GetChildColumnBinding(*child);
-		if (recursive_result.found_expression) {
+		if (recursive_result.FoundExpression()) {
 			ret = recursive_result;
+			return;
 		}
 	});
 	// we didn't find a Bound Column Ref
 	return ret;
+}
+
+idx_t RelationStatisticsHelper::GetDistinctCount(LogicalGet &get, ClientContext &context,
+                                                 const ColumnIndex &column_id) {
+	if (!get.function.statistics && !get.function.statistics_extended) {
+		return 0;
+	}
+	unique_ptr<BaseStatistics> column_statistics;
+	if (get.function.statistics_extended) {
+		TableFunctionGetStatisticsInput input(get.bind_data.get(), column_id);
+		column_statistics = get.function.statistics_extended(context, input);
+	} else {
+		D_ASSERT(get.function.statistics);
+		column_statistics = get.function.statistics(context, get.bind_data.get(), column_id.GetPrimaryIndex());
+	}
+	if (!column_statistics) {
+		return 0;
+	}
+	auto distinct_count = column_statistics->GetDistinctCount();
+	return distinct_count;
 }
 
 RelationStats RelationStatisticsHelper::ExtractGetStats(LogicalGet &get, ClientContext &context) {
@@ -57,77 +99,76 @@ RelationStats RelationStatisticsHelper::ExtractGetStats(LogicalGet &get, ClientC
 
 	auto base_table_cardinality = get.EstimateCardinality(context);
 	auto cardinality_after_filters = base_table_cardinality;
-	unique_ptr<BaseStatistics> column_statistics;
 
-	auto table_thing = get.GetTable();
+	auto catalog_table = get.GetTable();
 	auto name = string("some table");
-	if (table_thing) {
-		name = table_thing->name;
+	if (catalog_table) {
+		name = catalog_table->name;
 		return_stats.table_name = name;
 	}
 
-	// if we can get the catalog table, then our column statistics will be accurate
-	// parquet readers etc. will still return statistics, but they initialize distinct column
-	// counts to 0.
-	// TODO: fix this, some file formats can encode distinct counts, we don't want to rely on
-	//  getting a catalog table to know that we can use statistics.
-	bool have_catalog_table_statistics = false;
-	if (get.GetTable()) {
-		have_catalog_table_statistics = true;
-	}
-
 	// first push back basic distinct counts for each column (if we have them).
-	for (idx_t i = 0; i < get.column_ids.size(); i++) {
-		bool have_distinct_count_stats = false;
-		if (get.function.statistics) {
-			column_statistics = get.function.statistics(context, get.bind_data.get(), get.column_ids[i]);
-			if (column_statistics && have_catalog_table_statistics) {
-				auto column_distinct_count = DistinctCount({column_statistics->GetDistinctCount(), true});
-				return_stats.column_distinct_count.push_back(column_distinct_count);
-				return_stats.column_names.push_back(name + "." + get.names.at(get.column_ids.at(i)));
-				have_distinct_count_stats = true;
-			}
-		}
-		if (!have_distinct_count_stats) {
-			// currently treating the cardinality as the distinct count.
+	auto &column_ids = get.GetColumnIds();
+	for (idx_t i = 0; i < column_ids.size(); i++) {
+		auto column_id = column_ids[i].GetPrimaryIndex();
+		auto distinct_count = GetDistinctCount(get, context, column_ids[i]);
+		if (distinct_count > 0) {
+			auto column_distinct_count = DistinctCount({distinct_count, true});
+			return_stats.column_distinct_count.push_back(column_distinct_count);
+			return_stats.column_names.push_back(name + "." + get.names.at(column_id));
+		} else {
+			// treat the cardinality as the distinct count.
 			// the cardinality estimator will update these distinct counts based
 			// on the extra columns that are joined on.
 			auto column_distinct_count = DistinctCount({cardinality_after_filters, false});
 			return_stats.column_distinct_count.push_back(column_distinct_count);
 			auto column_name = string("column");
-			if (get.column_ids.at(i) < get.names.size()) {
-				column_name = get.names.at(get.column_ids.at(i));
+			if (column_id < get.names.size()) {
+				column_name = get.names.at(column_id);
 			}
 			return_stats.column_names.push_back(get.GetName() + "." + column_name);
 		}
 	}
 
-	if (!get.table_filters.filters.empty()) {
-		column_statistics = nullptr;
-		for (auto &it : get.table_filters.filters) {
-			if (get.bind_data && get.function.name.compare("seq_scan") == 0) {
-				auto &table_scan_bind_data = get.bind_data->Cast<TableScanBindData>();
-				column_statistics = get.function.statistics(context, &table_scan_bind_data, it.first);
+	if (get.table_filters.HasFilters()) {
+		unique_ptr<BaseStatistics> column_statistics;
+		bool has_non_optional_filters = false;
+		for (auto &entry : get.table_filters) {
+			auto &column_index = get.GetColumnIndex(entry.GetIndex());
+			if (get.bind_data && (get.function.statistics || get.function.statistics_extended)) {
+				if (get.function.statistics_extended) {
+					TableFunctionGetStatisticsInput input(get.bind_data.get(), column_index);
+					column_statistics = get.function.statistics_extended(context, input);
+				} else {
+					D_ASSERT(get.function.statistics);
+					column_statistics =
+					    get.function.statistics(context, get.bind_data.get(), column_index.GetPrimaryIndex());
+				}
 			}
 
-			if (column_statistics && it.second->filter_type == TableFilterType::CONJUNCTION_AND) {
-				auto &filter = it.second->Cast<ConjunctionAndFilter>();
-				idx_t cardinality_with_and_filter = RelationStatisticsHelper::InspectConjunctionAND(
-				    base_table_cardinality, it.first, filter, *column_statistics);
-				cardinality_after_filters = MinValue(cardinality_after_filters, cardinality_with_and_filter);
+			if (column_statistics) {
+				idx_t cardinality_with_filter =
+				    InspectTableFilter(base_table_cardinality, entry.Filter(), *column_statistics);
+				cardinality_after_filters = MinValue(cardinality_after_filters, cardinality_with_filter);
+			}
+
+			if (!ExpressionFilter::IsOptionalFilter(entry.Filter())) {
+				has_non_optional_filters = true;
 			}
 		}
 		// if the above code didn't find an equality filter (i.e country_code = "[us]")
 		// and there are other table filters (i.e cost > 50), use default selectivity.
 		bool has_equality_filter = (cardinality_after_filters != base_table_cardinality);
-		if (!has_equality_filter && !get.table_filters.filters.empty()) {
-			cardinality_after_filters =
-			    MaxValue<idx_t>(base_table_cardinality * RelationStatisticsHelper::DEFAULT_SELECTIVITY, 1);
+		if (!has_equality_filter && has_non_optional_filters) {
+			cardinality_after_filters = MaxValue<idx_t>(
+			    LossyNumericCast<idx_t>(double(base_table_cardinality) * RelationStatisticsHelper::DEFAULT_SELECTIVITY),
+			    1U);
 		}
 		if (base_table_cardinality == 0) {
 			cardinality_after_filters = 0;
 		}
 	}
+
 	return_stats.cardinality = cardinality_after_filters;
 	// update the estimated cardinality of the get as well.
 	// This is not updated during plan reconstruction.
@@ -158,7 +199,7 @@ RelationStats RelationStatisticsHelper::ExtractProjectionStats(LogicalProjection
 	for (auto &expr : proj.expressions) {
 		proj_stats.column_names.push_back(expr->GetName());
 		auto res = GetChildColumnBinding(*expr);
-		D_ASSERT(res.found_expression);
+		D_ASSERT(res.FoundExpression());
 		if (res.expression_is_constant) {
 			proj_stats.column_distinct_count.push_back(DistinctCount({1, true}));
 		} else {
@@ -220,24 +261,31 @@ RelationStats RelationStatisticsHelper::CombineStatsOfReorderableOperator(vector
 }
 
 RelationStats RelationStatisticsHelper::CombineStatsOfNonReorderableOperator(LogicalOperator &op,
-                                                                             vector<RelationStats> child_stats) {
-	D_ASSERT(child_stats.size() == 2);
+                                                                             const vector<RelationStats> &child_stats) {
 	RelationStats ret;
-	idx_t child_1_card = child_stats[0].stats_initialized ? child_stats[0].cardinality : 0;
-	idx_t child_2_card = child_stats[1].stats_initialized ? child_stats[1].cardinality : 0;
-	ret.cardinality = MaxValue(child_1_card, child_2_card);
+	ret.cardinality = 0;
+
+	// default predicted cardinality is the max of all child cardinalities
+	vector<idx_t> child_cardinalities;
+	for (auto &stats : child_stats) {
+		idx_t child_cardinality = stats.stats_initialized ? stats.cardinality : 0;
+		ret.cardinality = MaxValue(ret.cardinality, child_cardinality);
+		child_cardinalities.push_back(child_cardinality);
+	}
 	switch (op.type) {
 	case LogicalOperatorType::LOGICAL_COMPARISON_JOIN: {
+		D_ASSERT(child_stats.size() == 2);
 		auto &join = op.Cast<LogicalComparisonJoin>();
 		switch (join.join_type) {
 		case JoinType::RIGHT_ANTI:
 		case JoinType::RIGHT_SEMI:
-			ret.cardinality = child_2_card;
+			ret.cardinality = child_cardinalities[1];
 			break;
 		case JoinType::ANTI:
 		case JoinType::SEMI:
 		case JoinType::SINGLE:
-			ret.cardinality = child_1_card;
+		case JoinType::MARK:
+			ret.cardinality = child_cardinalities[0];
 			break;
 		default:
 			break;
@@ -248,18 +296,21 @@ RelationStats RelationStatisticsHelper::CombineStatsOfNonReorderableOperator(Log
 		auto &setop = op.Cast<LogicalSetOperation>();
 		if (setop.setop_all) {
 			// setop returns all records
-			ret.cardinality = child_1_card + child_2_card;
-		} else {
-			ret.cardinality = MaxValue(child_1_card, child_2_card);
+			ret.cardinality = 0;
+			for (auto &child_cardinality : child_cardinalities) {
+				ret.cardinality += child_cardinality;
+			}
 		}
 		break;
 	}
 	case LogicalOperatorType::LOGICAL_INTERSECT: {
-		ret.cardinality = MinValue(child_1_card, child_2_card);
+		D_ASSERT(child_stats.size() == 2);
+		ret.cardinality = MinValue(child_cardinalities[0], child_cardinalities[1]);
 		break;
 	}
 	case LogicalOperatorType::LOGICAL_EXCEPT: {
-		ret.cardinality = child_1_card;
+		D_ASSERT(child_stats.size() == 2);
+		ret.cardinality = child_cardinalities[0];
 		break;
 	}
 	default:
@@ -268,8 +319,12 @@ RelationStats RelationStatisticsHelper::CombineStatsOfNonReorderableOperator(Log
 
 	ret.stats_initialized = true;
 	ret.filter_strength = 1;
-	ret.table_name = child_stats[0].table_name + " joined with " + child_stats[1].table_name;
+	ret.table_name = string();
 	for (auto &stats : child_stats) {
+		if (!ret.table_name.empty()) {
+			ret.table_name += " joined with ";
+		}
+		ret.table_name += stats.table_name;
 		// MARK joins are nonreorderable. They won't return initialized stats
 		// continue in this case.
 		if (!stats.stats_initialized) {
@@ -320,14 +375,16 @@ RelationStats RelationStatisticsHelper::ExtractAggregationStats(LogicalAggregate
 	// TODO: look at child distinct count to better estimate cardinality.
 	stats.cardinality = child_stats.cardinality;
 	stats.column_distinct_count = child_stats.column_distinct_count;
-	double new_card = -1;
+	vector<double> distinct_counts;
 	for (auto &g_set : aggr.grouping_sets) {
+		vector<double> set_distinct_counts;
 		for (auto &ind : g_set) {
-			if (aggr.groups[ind]->expression_class != ExpressionClass::BOUND_COLUMN_REF) {
+			auto &group = aggr.GetGroupExpression(ind);
+			if (group.GetExpressionClass() != ExpressionClass::BOUND_COLUMN_REF) {
 				continue;
 			}
-			auto bound_col = &aggr.groups[ind]->Cast<BoundColumnRefExpression>();
-			auto col_index = bound_col->binding.column_index;
+			auto &bound_col = group.Cast<BoundColumnRefExpression>();
+			auto col_index = bound_col.binding.column_index;
 			if (col_index >= child_stats.column_distinct_count.size()) {
 				// it is possible the column index of the grouping_set is not in the child stats.
 				// this can happen when delim joins are present, since delim scans are not currently
@@ -335,24 +392,59 @@ RelationStats RelationStatisticsHelper::ExtractAggregationStats(LogicalAggregate
 				// be grouped by. Hopefully this can be fixed with duckdb-internal#606
 				continue;
 			}
-			if (new_card < child_stats.column_distinct_count[col_index].distinct_count) {
-				new_card = child_stats.column_distinct_count[col_index].distinct_count;
-			}
+			double distinct_count = static_cast<double>(child_stats.column_distinct_count[col_index].distinct_count);
+			set_distinct_counts.push_back(distinct_count == 0 ? 1 : distinct_count);
+		}
+		// We use the grouping set with the most group key columns for cardinality estimation
+		if (set_distinct_counts.size() > distinct_counts.size()) {
+			distinct_counts = std::move(set_distinct_counts);
 		}
 	}
-	if (new_card < 0 || new_card >= child_stats.cardinality) {
+
+	double new_card;
+	if (distinct_counts.empty()) {
 		// We have no good statistics on distinct count.
 		// most likely we are running on parquet files. Therefore we divide by 2.
-		new_card = (double)child_stats.cardinality / 2;
+		new_card = static_cast<double>(child_stats.cardinality) / 2.0;
+	} else {
+		// Multiply distinct counts
+		double product = 1;
+		for (const auto &distinct_count : distinct_counts) {
+			product *= distinct_count;
+		}
+
+		// Assume slight correlation for each grouping column
+		const auto correction = pow(0.95, static_cast<double>(distinct_counts.size() - 1));
+		product *= correction;
+
+		// Estimate using the "Occupancy Problem",
+		// where "product" is number of bins, and "child_stats.cardinality" is number of balls
+		const auto mult = 1.0 - exp(-static_cast<double>(child_stats.cardinality) / product);
+		if (mult == 0) { // Can become 0 with very large estimates due to double imprecision
+			new_card = static_cast<double>(child_stats.cardinality);
+		} else {
+			new_card = product * mult;
+		}
+		new_card = MinValue(new_card, static_cast<double>(child_stats.cardinality));
 	}
-	stats.cardinality = new_card;
+
+	// an ungrouped aggregate has 1 row
+	stats.cardinality = aggr.groups.empty() ? 1 : LossyNumericCast<idx_t>(new_card);
 	stats.column_names = child_stats.column_names;
 	stats.stats_initialized = true;
-	auto num_child_columns = aggr.GetColumnBindings().size();
+	const auto aggr_column_bindings = aggr.GetColumnBindings();
+	auto num_child_columns = aggr_column_bindings.size();
 
-	for (idx_t column_index = child_stats.column_distinct_count.size(); column_index < num_child_columns;
-	     column_index++) {
-		stats.column_distinct_count.push_back(DistinctCount({child_stats.cardinality, false}));
+	for (idx_t column_index = 0; column_index < num_child_columns; column_index++) {
+		const auto &binding = aggr_column_bindings[column_index];
+		if (binding.table_index == aggr.group_index && column_index < distinct_counts.size()) {
+			// Group column that we have the HLL of
+			stats.column_distinct_count.push_back(
+			    DistinctCount({LossyNumericCast<idx_t>(distinct_counts[column_index]), true}));
+		} else {
+			// Non-group column, or we don't have the HLL
+			stats.column_distinct_count.push_back(DistinctCount({child_stats.cardinality, false}));
+		}
 		stats.column_names.push_back("aggregate");
 	}
 	return stats;
@@ -368,23 +460,32 @@ RelationStats RelationStatisticsHelper::ExtractEmptyResultStats(LogicalEmptyResu
 	return stats;
 }
 
-idx_t RelationStatisticsHelper::InspectConjunctionAND(idx_t cardinality, idx_t column_index,
-                                                      ConjunctionAndFilter &filter, BaseStatistics &base_stats) {
+idx_t RelationStatisticsHelper::InspectTableFilter(idx_t cardinality, const TableFilter &filter,
+                                                   BaseStatistics &base_stats) {
 	auto cardinality_after_filters = cardinality;
-	for (auto &child_filter : filter.child_filters) {
-		if (child_filter->filter_type != TableFilterType::CONSTANT_COMPARISON) {
-			continue;
+	auto &expr_filter = ExpressionFilter::GetExpressionFilter(filter, "RelationStatisticsHelper::InspectTableFilter");
+	auto &expr = *expr_filter.expr;
+	if (expr.GetExpressionType() == ExpressionType::CONJUNCTION_AND) {
+		auto &conj = expr.Cast<BoundConjunctionExpression>();
+		for (auto &child : conj.children) {
+			ExpressionFilter child_filter(child->Copy());
+			cardinality_after_filters =
+			    MinValue(cardinality_after_filters, InspectTableFilter(cardinality, child_filter, base_stats));
 		}
-		auto &comparison_filter = child_filter->Cast<ConstantFilter>();
-		if (comparison_filter.comparison_type != ExpressionType::COMPARE_EQUAL) {
-			continue;
-		}
-		auto column_count = base_stats.GetDistinctCount();
-		// column_count = 0 when there is no column count (i.e parquet scans)
-		if (column_count > 0) {
-			// we want the ceil of cardinality/column_count. We also want to avoid compiler errors
-			cardinality_after_filters = (cardinality + column_count - 1) / column_count;
-		}
+		return cardinality_after_filters;
+	}
+	if (!BoundComparisonExpression::IsComparison(expr)) {
+		return cardinality_after_filters;
+	}
+	auto &comparison = expr.Cast<BoundFunctionExpression>();
+	if (comparison.GetExpressionType() != ExpressionType::COMPARE_EQUAL) {
+		return cardinality_after_filters;
+	}
+	auto column_count = base_stats.GetDistinctCount();
+	// column_count = 0 when there is no column count (i.e parquet scans)
+	if (column_count > 0) {
+		// we want the ceil of cardinality/column_count. We also want to avoid compiler errors
+		cardinality_after_filters = (cardinality + column_count - 1) / column_count;
 	}
 	return cardinality_after_filters;
 }

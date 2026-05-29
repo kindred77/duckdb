@@ -10,9 +10,8 @@
 
 #include "duckdb/parser/parsed_expression.hpp"
 #include "duckdb/parser/tableref.hpp"
-#include "duckdb/common/vector.hpp"
 #include "duckdb/parser/statement/select_statement.hpp"
-#include "duckdb/main/external_dependencies.hpp"
+#include "duckdb/common/enums/ordinality_request_type.hpp"
 
 namespace duckdb {
 //! Represents a Table producing function
@@ -24,13 +23,12 @@ public:
 	DUCKDB_API TableFunctionRef();
 
 	unique_ptr<ParsedExpression> function;
-	vector<string> column_name_alias;
 
 	// if the function takes a subquery as argument its in here
 	unique_ptr<SelectStatement> subquery;
 
-	// External dependencies of this table function
-	unique_ptr<ExternalDependency> external_dependency;
+	//! Whether or not WITH ORDINALITY has been invoked
+	OrdinalityType with_ordinality = OrdinalityType::WITHOUT_ORDINALITY;
 
 public:
 	string ToString() const override;

@@ -21,23 +21,25 @@ string ForeignKeyConstraint::ToString() const {
 			if (i > 0) {
 				base += ", ";
 			}
-			base += KeywordHelper::WriteOptionallyQuoted(fk_columns[i]);
+			base += SQLIdentifier(fk_columns[i]);
 		}
 		base += ") REFERENCES ";
-		if (!info.schema.empty()) {
+		if (!info.schema.empty() && info.schema != DEFAULT_SCHEMA) {
 			base += info.schema;
 			base += ".";
 		}
 		base += info.table;
-		base += "(";
+		if (!pk_columns.empty()) {
+			base += "(";
 
-		for (idx_t i = 0; i < pk_columns.size(); i++) {
-			if (i > 0) {
-				base += ", ";
+			for (idx_t i = 0; i < pk_columns.size(); i++) {
+				if (i > 0) {
+					base += ", ";
+				}
+				base += SQLIdentifier(pk_columns[i]);
 			}
-			base += KeywordHelper::WriteOptionallyQuoted(pk_columns[i]);
+			base += ")";
 		}
-		base += ")";
 
 		return base;
 	}

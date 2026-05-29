@@ -3,13 +3,9 @@
 # group: [window]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 PRAGMA explain_output = PHYSICAL_ONLY;
 
-statement ok
-SELECT SETSEED(0.867309);
+set seed 0.8675309
 
 statement ok
 CREATE TABLE eventlog AS
@@ -75,4 +71,4 @@ FROM generate_series(1, 10) as tbl(x);
 query II
 EXPLAIN FROM noncse;
 ----
-physical_plan	<REGEX>:.*quantile\(x\).*quantile\(x\).*
+physical_plan	<REGEX>:.*quantile_disc\(x\).*quantile_disc\(x\).*

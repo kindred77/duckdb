@@ -1,14 +1,19 @@
 #include "duckdb/function/scalar/strftime_format.hpp"
+#include "duckdb/common/exception/conversion_exception.hpp"
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/common/to_string.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
 #include "duckdb/common/types/date.hpp"
 #include "duckdb/common/types/time.hpp"
 #include "duckdb/common/types/timestamp.hpp"
+#include "duckdb/common/operator/add.hpp"
+#include "duckdb/common/operator/multiply.hpp"
+
+#include <cctype>
 
 namespace duckdb {
 
-idx_t StrfTimepecifierSize(StrTimeSpecifier specifier) {
+static idx_t StrfTimepecifierSize(StrTimeSpecifier specifier) {
 	switch (specifier) {
 	case StrTimeSpecifier::ABBREVIATED_WEEKDAY_NAME:
 	case StrTimeSpecifier::ABBREVIATED_MONTH_NAME:
@@ -43,6 +48,14 @@ idx_t StrfTimepecifierSize(StrTimeSpecifier specifier) {
 	}
 }
 
+static void StrfTimeSplitOffset(int offset, int &hh, int &mm, int &ss) {
+	hh = offset / Interval::SECS_PER_HOUR;
+	offset = offset % Interval::SECS_PER_HOUR;
+
+	mm = offset / Interval::SECS_PER_MINUTE;
+	ss = offset % Interval::SECS_PER_MINUTE;
+}
+
 void StrTimeFormat::AddLiteral(string literal) {
 	constant_size += literal.size();
 	literals.push_back(std::move(literal));
@@ -66,31 +79,34 @@ void StrfTimeFormat::AddFormatSpecifier(string preceding_literal, StrTimeSpecifi
 	StrTimeFormat::AddFormatSpecifier(std::move(preceding_literal), specifier);
 }
 
-idx_t StrfTimeFormat::GetSpecifierLength(StrTimeSpecifier specifier, date_t date, dtime_t time, int32_t utc_offset,
+idx_t StrfTimeFormat::GetSpecifierLength(StrTimeSpecifier specifier, date_t date, int32_t data[8],
                                          const char *tz_name) {
 	switch (specifier) {
 	case StrTimeSpecifier::FULL_WEEKDAY_NAME:
 		return Date::DAY_NAMES[Date::ExtractISODayOfTheWeek(date) % 7].GetSize();
 	case StrTimeSpecifier::FULL_MONTH_NAME:
-		return Date::MONTH_NAMES[Date::ExtractMonth(date) - 1].GetSize();
+		return Date::MONTH_NAMES[data[1] - 1].GetSize();
 	case StrTimeSpecifier::YEAR_DECIMAL: {
-		auto year = Date::ExtractYear(date);
+		auto year = data[0];
 		// Be consistent with WriteStandardSpecifier
 		if (0 <= year && year <= 9999) {
 			return 4;
 		} else {
-			return NumericHelper::SignedLength<int32_t, uint32_t>(year);
+			return UnsafeNumericCast<idx_t>(NumericHelper::SignedLength<int32_t, uint32_t>(year));
 		}
 	}
 	case StrTimeSpecifier::MONTH_DECIMAL: {
 		idx_t len = 1;
-		auto month = Date::ExtractMonth(date);
+		auto month = data[1];
 		len += month >= 10;
 		return len;
 	}
-	case StrTimeSpecifier::UTC_OFFSET:
-		// ±HH or ±HH:MM
-		return (utc_offset % 60) ? 6 : 3;
+	case StrTimeSpecifier::UTC_OFFSET: {
+		// ±HH or ±HH:MM or ±HH:MM:SS
+		int hh, mm, ss;
+		StrfTimeSplitOffset(data[7], hh, mm, ss);
+		return ss ? 9 : (mm ? 6 : 3);
+	}
 	case StrTimeSpecifier::TZ_NAME:
 		if (tz_name) {
 			return strlen(tz_name);
@@ -103,8 +119,7 @@ idx_t StrfTimeFormat::GetSpecifierLength(StrTimeSpecifier specifier, date_t date
 	case StrTimeSpecifier::SECOND_DECIMAL: {
 		// time specifiers
 		idx_t len = 1;
-		int32_t hour, min, sec, msec;
-		Time::Convert(time, hour, min, sec, msec);
+		int32_t hour = data[3], min = data[4], sec = data[5];
 		switch (specifier) {
 		case StrTimeSpecifier::HOUR_24_DECIMAL:
 			len += hour >= 10;
@@ -128,35 +143,49 @@ idx_t StrfTimeFormat::GetSpecifierLength(StrTimeSpecifier specifier, date_t date
 		return len;
 	}
 	case StrTimeSpecifier::DAY_OF_MONTH:
-		return NumericHelper::UnsignedLength<uint32_t>(Date::ExtractDay(date));
+		return UnsafeNumericCast<idx_t>(NumericHelper::UnsignedLength<uint32_t>(UnsafeNumericCast<uint32_t>(data[2])));
 	case StrTimeSpecifier::DAY_OF_YEAR_DECIMAL:
-		return NumericHelper::UnsignedLength<uint32_t>(Date::ExtractDayOfTheYear(date));
+		return UnsafeNumericCast<idx_t>(
+		    NumericHelper::UnsignedLength<uint32_t>(UnsafeNumericCast<uint32_t>(Date::ExtractDayOfTheYear(date))));
 	case StrTimeSpecifier::YEAR_WITHOUT_CENTURY:
-		return NumericHelper::UnsignedLength<uint32_t>(AbsValue(Date::ExtractYear(date)) % 100);
+		return UnsafeNumericCast<idx_t>(
+		    NumericHelper::UnsignedLength<uint32_t>(UnsafeNumericCast<uint32_t>(AbsValue(data[0]) % 100)));
 	default:
 		throw InternalException("Unimplemented specifier for GetSpecifierLength");
 	}
 }
 
 //! Returns the total length of the date formatted by this format specifier
-idx_t StrfTimeFormat::GetLength(date_t date, dtime_t time, int32_t utc_offset, const char *tz_name) {
+idx_t StrfTimeFormat::GetLength(date_t date, int32_t data[8], const char *tz_name) const {
 	idx_t size = constant_size;
 	if (!var_length_specifiers.empty()) {
 		for (auto &specifier : var_length_specifiers) {
-			size += GetSpecifierLength(specifier, date, time, utc_offset, tz_name);
+			size += GetSpecifierLength(specifier, date, data, tz_name);
 		}
 	}
 	return size;
 }
 
-char *StrfTimeFormat::WriteString(char *target, const string_t &str) {
+idx_t StrfTimeFormat::GetLength(date_t date, dtime_t time, int32_t utc_offset, const char *tz_name) {
+	if (!var_length_specifiers.empty()) {
+		int32_t data[8];
+		Date::Convert(date, data[0], data[1], data[2]);
+		Time::Convert(time, data[3], data[4], data[5], data[6]);
+		data[6] *= Interval::NANOS_PER_MICRO;
+		data[7] = utc_offset;
+		return GetLength(date, data, tz_name);
+	}
+	return constant_size;
+}
+
+char *StrfTimeFormat::WriteString(char *target, const string_t &str) const {
 	idx_t size = str.GetSize();
 	memcpy(target, str.GetData(), size);
 	return target + size;
 }
 
 // write a value in the range of 0..99 unpadded (e.g. "1", "2", ... "98", "99")
-char *StrfTimeFormat::Write2(char *target, uint8_t value) {
+char *StrfTimeFormat::Write2(char *target, uint8_t value) const {
 	D_ASSERT(value < 100);
 	if (value >= 10) {
 		return WritePadded2(target, value);
@@ -167,7 +196,7 @@ char *StrfTimeFormat::Write2(char *target, uint8_t value) {
 }
 
 // write a value in the range of 0..99 padded to 2 digits
-char *StrfTimeFormat::WritePadded2(char *target, uint32_t value) {
+char *StrfTimeFormat::WritePadded2(char *target, uint32_t value) const {
 	D_ASSERT(value < 100);
 	auto index = static_cast<unsigned>(value * 2);
 	*target++ = duckdb_fmt::internal::data::digits[index];
@@ -176,7 +205,7 @@ char *StrfTimeFormat::WritePadded2(char *target, uint32_t value) {
 }
 
 // write a value in the range of 0..999 padded
-char *StrfTimeFormat::WritePadded3(char *target, uint32_t value) {
+char *StrfTimeFormat::WritePadded3(char *target, uint32_t value) const {
 	D_ASSERT(value < 1000);
 	if (value >= 100) {
 		WritePadded2(target + 1, value % 100);
@@ -190,16 +219,16 @@ char *StrfTimeFormat::WritePadded3(char *target, uint32_t value) {
 }
 
 // write a value in the range of 0..999999... padded to the given number of digits
-char *StrfTimeFormat::WritePadded(char *target, uint32_t value, size_t padding) {
+char *StrfTimeFormat::WritePadded(char *target, uint32_t value, size_t padding) const {
 	D_ASSERT(padding > 1);
 	if (padding % 2) {
-		int decimals = value % 1000;
+		uint32_t decimals = value % 1000u;
 		WritePadded3(target + padding - 3, decimals);
 		value /= 1000;
 		padding -= 3;
 	}
 	for (size_t i = 0; i < padding / 2; i++) {
-		int decimals = value % 100;
+		uint32_t decimals = value % 100u;
 		WritePadded2(target + padding - 2 * (i + 1), decimals);
 		value /= 100;
 	}
@@ -224,7 +253,7 @@ bool StrfTimeFormat::IsDateSpecifier(StrTimeSpecifier specifier) {
 	}
 }
 
-char *StrfTimeFormat::WriteDateSpecifier(StrTimeSpecifier specifier, date_t date, char *target) {
+char *StrfTimeFormat::WriteDateSpecifier(StrTimeSpecifier specifier, date_t date, char *target) const {
 	switch (specifier) {
 	case StrTimeSpecifier::ABBREVIATED_WEEKDAY_NAME: {
 		auto dow = Date::ExtractISODayOfTheWeek(date);
@@ -244,26 +273,26 @@ char *StrfTimeFormat::WriteDateSpecifier(StrTimeSpecifier specifier, date_t date
 	}
 	case StrTimeSpecifier::DAY_OF_YEAR_PADDED: {
 		int32_t doy = Date::ExtractDayOfTheYear(date);
-		target = WritePadded3(target, doy);
+		target = WritePadded3(target, UnsafeNumericCast<uint32_t>(doy));
 		break;
 	}
 	case StrTimeSpecifier::WEEK_NUMBER_PADDED_MON_FIRST:
-		target = WritePadded2(target, Date::ExtractWeekNumberRegular(date, true));
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(Date::ExtractWeekNumberRegular(date, true)));
 		break;
 	case StrTimeSpecifier::WEEK_NUMBER_PADDED_SUN_FIRST:
-		target = WritePadded2(target, Date::ExtractWeekNumberRegular(date, false));
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(Date::ExtractWeekNumberRegular(date, false)));
 		break;
 	case StrTimeSpecifier::WEEK_NUMBER_ISO:
-		target = WritePadded2(target, Date::ExtractISOWeekNumber(date));
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(Date::ExtractISOWeekNumber(date)));
 		break;
 	case StrTimeSpecifier::DAY_OF_YEAR_DECIMAL: {
-		uint32_t doy = Date::ExtractDayOfTheYear(date);
+		auto doy = UnsafeNumericCast<uint32_t>(Date::ExtractDayOfTheYear(date));
 		target += NumericHelper::UnsignedLength<uint32_t>(doy);
 		NumericHelper::FormatUnsigned(doy, target);
 		break;
 	}
 	case StrTimeSpecifier::YEAR_ISO:
-		target = WritePadded(target, Date::ExtractISOYearNumber(date), 4);
+		target = WritePadded(target, UnsafeNumericCast<uint32_t>(Date::ExtractISOYearNumber(date)), 4);
 		break;
 	case StrTimeSpecifier::WEEKDAY_ISO:
 		*target = char('0' + uint8_t(Date::ExtractISODayOfTheWeek(date)));
@@ -276,11 +305,11 @@ char *StrfTimeFormat::WriteDateSpecifier(StrTimeSpecifier specifier, date_t date
 }
 
 char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t data[], const char *tz_name,
-                                             size_t tz_len, char *target) {
-	// data contains [0] year, [1] month, [2] day, [3] hour, [4] minute, [5] second, [6] msec, [7] utc
+                                             size_t tz_len, char *target) const {
+	// data contains [0] year, [1] month, [2] day, [3] hour, [4] minute, [5] second, [6] ns, [7] utc (secs)
 	switch (specifier) {
 	case StrTimeSpecifier::DAY_OF_MONTH_PADDED:
-		target = WritePadded2(target, data[2]);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(data[2]));
 		break;
 	case StrTimeSpecifier::ABBREVIATED_MONTH_NAME: {
 		auto &month_name = Date::MONTH_NAMES_ABBREVIATED[data[1] - 1];
@@ -291,14 +320,14 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 		return WriteString(target, month_name);
 	}
 	case StrTimeSpecifier::MONTH_DECIMAL_PADDED:
-		target = WritePadded2(target, data[1]);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(data[1]));
 		break;
 	case StrTimeSpecifier::YEAR_WITHOUT_CENTURY_PADDED:
-		target = WritePadded2(target, AbsValue(data[0]) % 100);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(AbsValue(data[0]) % 100));
 		break;
 	case StrTimeSpecifier::YEAR_DECIMAL:
 		if (data[0] >= 0 && data[0] <= 9999) {
-			target = WritePadded(target, data[0], 4);
+			target = WritePadded(target, UnsafeNumericCast<uint32_t>(data[0]), 4);
 		} else {
 			int32_t year = data[0];
 			if (data[0] < 0) {
@@ -306,13 +335,13 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 				year = -year;
 				target++;
 			}
-			auto len = NumericHelper::UnsignedLength<uint32_t>(year);
+			auto len = NumericHelper::UnsignedLength<uint32_t>(UnsafeNumericCast<uint32_t>(year));
 			NumericHelper::FormatUnsigned(year, target + len);
 			target += len;
 		}
 		break;
 	case StrTimeSpecifier::HOUR_24_PADDED: {
-		target = WritePadded2(target, data[3]);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(data[3]));
 		break;
 	}
 	case StrTimeSpecifier::HOUR_12_PADDED: {
@@ -320,7 +349,7 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 		if (hour == 0) {
 			hour = 12;
 		}
-		target = WritePadded2(target, hour);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(hour));
 		break;
 	}
 	case StrTimeSpecifier::AM_PM:
@@ -328,31 +357,35 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 		*target++ = 'M';
 		break;
 	case StrTimeSpecifier::MINUTE_PADDED: {
-		target = WritePadded2(target, data[4]);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(data[4]));
 		break;
 	}
 	case StrTimeSpecifier::SECOND_PADDED:
-		target = WritePadded2(target, data[5]);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(data[5]));
 		break;
 	case StrTimeSpecifier::NANOSECOND_PADDED:
-		target = WritePadded(target, data[6] * Interval::NANOS_PER_MICRO, 9);
+		target = WritePadded(target, UnsafeNumericCast<uint32_t>(data[6]), 9);
 		break;
 	case StrTimeSpecifier::MICROSECOND_PADDED:
-		target = WritePadded(target, data[6], 6);
+		target = WritePadded(target, UnsafeNumericCast<uint32_t>(data[6] / Interval::NANOS_PER_MICRO), 6);
 		break;
 	case StrTimeSpecifier::MILLISECOND_PADDED:
-		target = WritePadded3(target, data[6] / Interval::MICROS_PER_MSEC);
+		target = WritePadded3(target, UnsafeNumericCast<uint32_t>(data[6] / Interval::NANOS_PER_MSEC));
 		break;
 	case StrTimeSpecifier::UTC_OFFSET: {
 		*target++ = (data[7] < 0) ? '-' : '+';
 
 		auto offset = abs(data[7]);
-		auto offset_hours = offset / Interval::MINS_PER_HOUR;
-		auto offset_minutes = offset % Interval::MINS_PER_HOUR;
-		target = WritePadded2(target, offset_hours);
-		if (offset_minutes) {
+		int hh, mm, ss;
+		StrfTimeSplitOffset(offset, hh, mm, ss);
+		target = WritePadded2(target, UnsafeNumericCast<uint32_t>(hh));
+		if (mm || ss) {
 			*target++ = ':';
-			target = WritePadded2(target, offset_minutes);
+			target = WritePadded2(target, UnsafeNumericCast<uint32_t>(mm));
+		}
+		if (ss) {
+			*target++ = ':';
+			target = WritePadded2(target, UnsafeNumericCast<uint32_t>(ss));
 		}
 		break;
 	}
@@ -363,7 +396,7 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 		}
 		break;
 	case StrTimeSpecifier::DAY_OF_MONTH: {
-		target = Write2(target, data[2] % 100);
+		target = Write2(target, UnsafeNumericCast<uint8_t>(data[2] % 100));
 		break;
 	}
 	case StrTimeSpecifier::MONTH_DECIMAL: {
@@ -371,7 +404,7 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 		break;
 	}
 	case StrTimeSpecifier::YEAR_WITHOUT_CENTURY: {
-		target = Write2(target, AbsValue(data[0]) % 100);
+		target = Write2(target, UnsafeNumericCast<uint8_t>(AbsValue(data[0]) % 100));
 		break;
 	}
 	case StrTimeSpecifier::HOUR_24_DECIMAL: {
@@ -400,7 +433,7 @@ char *StrfTimeFormat::WriteStandardSpecifier(StrTimeSpecifier specifier, int32_t
 	return target;
 }
 
-void StrfTimeFormat::FormatString(date_t date, int32_t data[8], const char *tz_name, char *target) {
+void StrfTimeFormat::FormatStringNS(date_t date, int32_t data[8], const char *tz_name, char *target) const {
 	D_ASSERT(specifiers.size() + 1 == literals.size());
 	idx_t i;
 	for (i = 0; i < specifiers.size(); i++) {
@@ -417,6 +450,12 @@ void StrfTimeFormat::FormatString(date_t date, int32_t data[8], const char *tz_n
 	}
 	// copy the final literal into the target
 	memcpy(target, literals[i].c_str(), literals[i].size());
+}
+
+void StrfTimeFormat::FormatString(date_t date, int32_t data[8], const char *tz_name, char *target) {
+	data[6] *= Interval::NANOS_PER_MICRO;
+	FormatStringNS(date, data, tz_name, target);
+	data[6] /= Interval::NANOS_PER_MICRO;
 }
 
 void StrfTimeFormat::FormatString(date_t date, dtime_t time, char *target) {
@@ -436,7 +475,7 @@ string StrfTimeFormat::Format(timestamp_t timestamp, const string &format_str) {
 	auto time = Timestamp::GetTime(timestamp);
 
 	auto len = format.GetLength(date, time, 0, nullptr);
-	auto result = make_unsafe_uniq_array<char>(len);
+	auto result = make_unsafe_uniq_array_uninitialized<char>(len);
 	format.FormatString(date, time, result.get());
 	return string(result.get(), len);
 }
@@ -598,7 +637,9 @@ string StrTimeFormat::ParseFormatSpecifier(const string &format_string, StrTimeF
 					// parse the subformat in a separate format specifier
 					StrfTimeFormat locale_format;
 					string error = StrTimeFormat::ParseFormatSpecifier(subformat, locale_format);
-					D_ASSERT(error.empty());
+					if (!error.empty()) {
+						throw InternalException("Failed to bind sub-format specifier \"%s\": %s", subformat, error);
+					}
 					// add the previous literal to the first literal of the subformat
 					locale_format.literals[0] = std::move(current_literal) + locale_format.literals[0];
 					current_literal = "";
@@ -626,42 +667,87 @@ string StrTimeFormat::ParseFormatSpecifier(const string &format_string, StrTimeF
 	return string();
 }
 
-void StrfTimeFormat::ConvertDateVector(Vector &input, Vector &result, idx_t count) {
+void StrfTimeFormat::ConvertDateVector(const Vector &input, Vector &result) {
 	D_ASSERT(input.GetType().id() == LogicalTypeId::DATE);
 	D_ASSERT(result.GetType().id() == LogicalTypeId::VARCHAR);
-	UnaryExecutor::ExecuteWithNulls<date_t, string_t>(
-	    input, result, count, [&](date_t input, ValidityMask &mask, idx_t idx) {
-		    if (Date::IsFinite(input)) {
-			    dtime_t time(0);
-			    idx_t len = GetLength(input, time, 0, nullptr);
-			    string_t target = StringVector::EmptyString(result, len);
-			    FormatString(input, time, target.GetDataWriteable());
-			    target.Finalize();
-			    return target;
-		    } else {
-			    return StringVector::AddString(result, Date::ToString(input));
-		    }
-	    });
+	auto &heap = StringVector::GetStringHeap(result);
+	UnaryExecutor::Execute<date_t, string_t>(input, result, [&](date_t input) {
+		if (input.IsFinite()) {
+			dtime_t time(0);
+			idx_t len = GetLength(input, time, 0, nullptr);
+			string_t target = heap.EmptyString(len);
+			FormatString(input, time, target.GetDataWriteable());
+			target.Finalize();
+			return target;
+		} else {
+			return heap.AddString(Date::ToString(input));
+		}
+	});
 }
 
-void StrfTimeFormat::ConvertTimestampVector(Vector &input, Vector &result, idx_t count) {
+string_t StrfTimeFormat::ConvertTimestampValue(const timestamp_t &input, StringHeap &heap) const {
+	if (input.IsFinite()) {
+		date_t date;
+		dtime_t time;
+		Timestamp::Convert(input, date, time);
+
+		int32_t data[8]; // year, month, day, hour, min, sec, ns, offset
+		Date::Convert(date, data[0], data[1], data[2]);
+		Time::Convert(time, data[3], data[4], data[5], data[6]);
+		data[6] *= Interval::NANOS_PER_MICRO;
+		data[7] = 0;
+		const char *tz_name = nullptr;
+
+		idx_t len = GetLength(date, data, tz_name);
+		string_t target = heap.EmptyString(len);
+		FormatStringNS(date, data, tz_name, target.GetDataWriteable());
+		target.Finalize();
+		return target;
+	} else {
+		return heap.AddString(Timestamp::ToString(input));
+	}
+}
+
+string_t StrfTimeFormat::ConvertTimestampValue(const timestamp_ns_t &input, StringHeap &heap) const {
+	if (input.IsFinite()) {
+		date_t date;
+		dtime_t time;
+		int32_t nanos;
+		Timestamp::Convert(input, date, time, nanos);
+
+		int32_t data[8]; // year, month, day, hour, min, sec, ns, offset
+		Date::Convert(date, data[0], data[1], data[2]);
+		Time::Convert(time, data[3], data[4], data[5], data[6]);
+		data[6] *= Interval::NANOS_PER_MICRO;
+		data[6] += nanos;
+		data[7] = 0;
+		const char *tz_name = nullptr;
+
+		idx_t len = GetLength(date, data, tz_name);
+		string_t target = heap.EmptyString(len);
+		FormatStringNS(date, data, tz_name, target.GetDataWriteable());
+		target.Finalize();
+		return target;
+	} else {
+		return heap.AddString(Timestamp::ToString(timestamp_t(input.value)));
+	}
+}
+
+void StrfTimeFormat::ConvertTimestampVector(const Vector &input, Vector &result) {
 	D_ASSERT(input.GetType().id() == LogicalTypeId::TIMESTAMP || input.GetType().id() == LogicalTypeId::TIMESTAMP_TZ);
 	D_ASSERT(result.GetType().id() == LogicalTypeId::VARCHAR);
-	UnaryExecutor::ExecuteWithNulls<timestamp_t, string_t>(
-	    input, result, count, [&](timestamp_t input, ValidityMask &mask, idx_t idx) {
-		    if (Timestamp::IsFinite(input)) {
-			    date_t date;
-			    dtime_t time;
-			    Timestamp::Convert(input, date, time);
-			    idx_t len = GetLength(date, time, 0, nullptr);
-			    string_t target = StringVector::EmptyString(result, len);
-			    FormatString(date, time, target.GetDataWriteable());
-			    target.Finalize();
-			    return target;
-		    } else {
-			    return StringVector::AddString(result, Timestamp::ToString(input));
-		    }
-	    });
+	auto &heap = StringVector::GetStringHeap(result);
+	UnaryExecutor::Execute<timestamp_t, string_t>(input, result,
+	                                              [&](timestamp_t ts) { return ConvertTimestampValue(ts, heap); });
+}
+
+void StrfTimeFormat::ConvertTimestampNSVector(const Vector &input, Vector &result) {
+	D_ASSERT(input.GetType().id() == LogicalTypeId::TIMESTAMP_NS ||
+	         input.GetType().id() == LogicalTypeId::TIMESTAMP_TZ_NS);
+	D_ASSERT(result.GetType().id() == LogicalTypeId::VARCHAR);
+	auto &heap = StringVector::GetStringHeap(result);
+	UnaryExecutor::Execute<timestamp_ns_t, string_t>(
+	    input, result, [&](timestamp_ns_t ts) { return ConvertTimestampValue(ts, heap); });
 }
 
 void StrpTimeFormat::AddFormatSpecifier(string preceding_literal, StrTimeSpecifier specifier) {
@@ -737,8 +823,7 @@ int32_t StrpTimeFormat::TryParseCollection(const char *data, idx_t &pos, idx_t s
 	return -1;
 }
 
-//! Parses a timestamp using the given specifier
-bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
+bool StrpTimeFormat::Parse(const char *data, size_t size, ParseResult &result, bool strict) const {
 	auto &result_data = result.data;
 	auto &error_message = result.error_message;
 	auto &error_position = result.error_position;
@@ -752,15 +837,11 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 	result_data[5] = 0;
 	result_data[6] = 0;
 	result_data[7] = 0;
-
-	auto data = str.GetData();
-	idx_t size = str.GetSize();
 	// skip leading spaces
 	while (StringUtil::CharacterIsSpace(*data)) {
 		data++;
 		size--;
 	}
-
 	//	Check for specials
 	//	Precheck for alphas for performance.
 	idx_t pos = 0;
@@ -841,11 +922,13 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 		if (numeric_width[i] > 0) {
 			// numeric specifier: parse a number
 			uint64_t number = 0;
+			int digits = 0;
 			size_t start_pos = pos;
-			size_t end_pos = start_pos + numeric_width[i];
+			size_t end_pos = start_pos + UnsafeNumericCast<size_t>(numeric_width[i]);
 			while (pos < size && pos < end_pos && StringUtil::CharacterIsDigit(data[pos])) {
-				number = number * 10 + data[pos] - '0';
+				number = number * 10 + UnsafeNumericCast<uint64_t>(data[pos]) - '0';
 				pos++;
+				++digits;
 			}
 			if (pos == start_pos) {
 				// expected a number here
@@ -891,6 +974,9 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				}
 				// year without century..
 				// Python uses 69 as a crossover point (i.e. >= 69 is 19.., < 69 is 20..)
+				if (pos - start_pos < 2 && strict) {
+					return false;
+				}
 				if (number >= 100) {
 					// %y only supports numbers between [0..99]
 					error_message = "Year without century out of range, expected a value between 0 and 99";
@@ -914,6 +1000,9 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 					break;
 				default:
 					break;
+				}
+				if (pos - start_pos < 2 && strict) {
+					return false;
 				}
 				// year as full number
 				result_data[0] = UnsafeNumericCast<int32_t>(number);
@@ -947,7 +1036,6 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 					error_message = "Incompatible ISO year offset specified";
 					error_position = start_pos;
 					return false;
-					break;
 				}
 				if (number > 9999) {
 					// %G only supports numbers between [0..9999]
@@ -998,20 +1086,28 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				result_data[5] = UnsafeNumericCast<int32_t>(number);
 				break;
 			case StrTimeSpecifier::NANOSECOND_PADDED:
+				for (; digits < numeric_width[i]; ++digits) {
+					number *= 10;
+				}
 				D_ASSERT(number < Interval::NANOS_PER_SEC); // enforced by the length of the number
-				// microseconds (rounded)
-				result_data[6] =
-				    UnsafeNumericCast<int32_t>((number + Interval::NANOS_PER_MICRO / 2) / Interval::NANOS_PER_MICRO);
-				break;
-			case StrTimeSpecifier::MICROSECOND_PADDED:
-				D_ASSERT(number < Interval::MICROS_PER_SEC); // enforced by the length of the number
-				// microseconds
+				// nanoseconds
 				result_data[6] = UnsafeNumericCast<int32_t>(number);
 				break;
+			case StrTimeSpecifier::MICROSECOND_PADDED:
+				for (; digits < numeric_width[i]; ++digits) {
+					number *= 10;
+				}
+				D_ASSERT(number < Interval::MICROS_PER_SEC); // enforced by the length of the number
+				// nanoseconds
+				result_data[6] = UnsafeNumericCast<int32_t>(number * Interval::NANOS_PER_MICRO);
+				break;
 			case StrTimeSpecifier::MILLISECOND_PADDED:
+				for (; digits < numeric_width[i]; ++digits) {
+					number *= 10;
+				}
 				D_ASSERT(number < Interval::MSECS_PER_SEC); // enforced by the length of the number
-				// microseconds
-				result_data[6] = UnsafeNumericCast<int32_t>(number * Interval::MICROS_PER_MSEC);
+				// nanoseconds
+				result_data[6] = UnsafeNumericCast<int32_t>(number * Interval::NANOS_PER_MSEC);
 				break;
 			case StrTimeSpecifier::WEEK_NUMBER_PADDED_SUN_FIRST:
 			case StrTimeSpecifier::WEEK_NUMBER_PADDED_MON_FIRST:
@@ -1053,17 +1149,18 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				weekday = number;
 				break;
 			case StrTimeSpecifier::WEEK_NUMBER_ISO:
-				// y/m/d overrides G/V/u but does not conflict
 				switch (offset_specifier) {
+				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY_PADDED:
+				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY:
+				case StrTimeSpecifier::YEAR_DECIMAL:
+					error_message = "ISO week offsets are incompatible with non-ISO year specifiers. Use '%G' instead";
+					error_position = start_pos;
+					return false;
 				case StrTimeSpecifier::DAY_OF_MONTH_PADDED:
 				case StrTimeSpecifier::DAY_OF_MONTH:
 				case StrTimeSpecifier::MONTH_DECIMAL_PADDED:
 				case StrTimeSpecifier::MONTH_DECIMAL:
-				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY_PADDED:
-				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY:
-				case StrTimeSpecifier::YEAR_DECIMAL:
 					// Just validate, don't use
-					break;
 					break;
 				case StrTimeSpecifier::WEEKDAY_DECIMAL:
 					// First offset specifier
@@ -1116,8 +1213,7 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY_PADDED:
 				case StrTimeSpecifier::YEAR_WITHOUT_CENTURY:
 				case StrTimeSpecifier::YEAR_DECIMAL:
-					// Part of the offset
-					break;
+					// Switch to offset parsing
 				case StrTimeSpecifier::WEEKDAY_DECIMAL:
 					// First offset specifier
 					offset_specifier = specifiers[i];
@@ -1202,13 +1298,13 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				break;
 			}
 			case StrTimeSpecifier::UTC_OFFSET: {
-				int hour_offset, minute_offset;
-				if (!Timestamp::TryParseUTCOffset(data, pos, size, hour_offset, minute_offset)) {
-					error_message = "Expected +HH[MM] or -HH[MM]";
+				int hh, mm, ss;
+				if (!Timestamp::TryParseUTCOffset(data, pos, size, hh, mm, ss)) {
+					error_message = "Expected ±HH[MM] or -HH[:MM[:SS]]";
 					error_position = pos;
 					return false;
 				}
-				result_data[7] = hour_offset * Interval::MINS_PER_HOUR + minute_offset;
+				result_data[7] = (hh * Interval::MINS_PER_HOUR + mm) * Interval::SECS_PER_MINUTE + ss;
 				break;
 			}
 			case StrTimeSpecifier::TZ_NAME: {
@@ -1226,7 +1322,7 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 				// But tz must not be empty.
 				if (tz_end == tz_begin) {
 					error_message = "Empty Time Zone name";
-					error_position = tz_begin - data;
+					error_position = UnsafeNumericCast<idx_t>(tz_begin - data);
 					return false;
 				}
 				result.tz.assign(tz_begin, tz_end);
@@ -1285,7 +1381,9 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 	case StrTimeSpecifier::WEEK_NUMBER_PADDED_MON_FIRST: {
 		// Adjust weekday to be 0-based for the week type
 		if (has_weekday) {
-			weekday = (weekday + 7 - int(offset_specifier == StrTimeSpecifier::WEEK_NUMBER_PADDED_MON_FIRST)) % 7;
+			weekday = (weekday + 7 -
+			           static_cast<uint64_t>(offset_specifier == StrTimeSpecifier::WEEK_NUMBER_PADDED_MON_FIRST)) %
+			          7;
 		}
 		// Get the start of week 1, move back 7 days and then weekno * 7 + weekday gives the date
 		const auto jan1 = Date::FromDate(result_data[0], 1, 1);
@@ -1321,6 +1419,13 @@ bool StrpTimeFormat::Parse(string_t str, ParseResult &result) const {
 	return true;
 }
 
+//! Parses a timestamp using the given specifier
+bool StrpTimeFormat::Parse(string_t str, ParseResult &result, bool strict) const {
+	auto data = str.GetData();
+	idx_t size = str.GetSize();
+	return Parse(data, size, result, strict);
+}
+
 StrpTimeFormat::ParseResult StrpTimeFormat::Parse(const string &format_string, const string &text) {
 	StrpTimeFormat format;
 	format.format_specifier = format_string;
@@ -1335,15 +1440,25 @@ StrpTimeFormat::ParseResult StrpTimeFormat::Parse(const string &format_string, c
 	return result;
 }
 
+bool StrpTimeFormat::TryParse(const string &format_string, const string &text, ParseResult &result) {
+	StrpTimeFormat format;
+	format.format_specifier = format_string;
+	string error = StrTimeFormat::ParseFormatSpecifier(format_string, format);
+	if (!error.empty()) {
+		throw InvalidInputException("Failed to parse format specifier %s: %s", format_string, error);
+	}
+	return format.Parse(text, result);
+}
+
 bool StrTimeFormat::Empty() const {
 	return format_specifier.empty();
 }
 
-string StrpTimeFormat::FormatStrpTimeError(const string &input, idx_t position) {
-	if (position == DConstants::INVALID_INDEX) {
+string StrpTimeFormat::FormatStrpTimeError(const string &input, optional_idx position) {
+	if (!position.IsValid()) {
 		return string();
 	}
-	return input + "\n" + string(position, ' ') + "^";
+	return input + "\n" + string(position.GetIndex(), ' ') + "^";
 }
 
 date_t StrpTimeFormat::ParseResult::ToDate() {
@@ -1357,6 +1472,30 @@ bool StrpTimeFormat::ParseResult::TryToDate(date_t &result) {
 	return Date::TryFromDate(data[0], data[1], data[2], result);
 }
 
+int32_t StrpTimeFormat::ParseResult::GetMicros() const {
+	return UnsafeNumericCast<int32_t>((data[6] + Interval::NANOS_PER_MICRO / 2) / Interval::NANOS_PER_MICRO);
+}
+
+dtime_t StrpTimeFormat::ParseResult::ToTime() {
+	int hh, mm, ss;
+	StrfTimeSplitOffset(data[7], hh, mm, ss);
+	return Time::FromTime(data[3] - hh, data[4] - mm, data[5] - ss, GetMicros());
+}
+
+int64_t StrpTimeFormat::ParseResult::ToTimeNS() {
+	int hh, mm, ss;
+	StrfTimeSplitOffset(data[7], hh, mm, ss);
+	return Time::ToNanoTime(data[3] - hh, data[4] - mm, data[5] - ss, data[6]);
+}
+
+bool StrpTimeFormat::ParseResult::TryToTime(dtime_t &result) {
+	if (data[7]) {
+		return false;
+	}
+	result = Time::FromTime(data[3], data[4], data[5], GetMicros());
+	return true;
+}
+
 timestamp_t StrpTimeFormat::ParseResult::ToTimestamp() {
 	if (is_special) {
 		if (special == date_t::infinity()) {
@@ -1367,10 +1506,8 @@ timestamp_t StrpTimeFormat::ParseResult::ToTimestamp() {
 		return Timestamp::FromDatetime(special, dtime_t(0));
 	}
 
-	date_t date = Date::FromDate(data[0], data[1], data[2]);
-	const auto hour_offset = data[7] / Interval::MINS_PER_HOUR;
-	const auto mins_offset = data[7] % Interval::MINS_PER_HOUR;
-	dtime_t time = Time::FromTime(data[3] - hour_offset, data[4] - mins_offset, data[5], data[6]);
+	date_t date = ToDate();
+	dtime_t time = ToTime();
 	return Timestamp::FromDatetime(date, time);
 }
 
@@ -1379,10 +1516,51 @@ bool StrpTimeFormat::ParseResult::TryToTimestamp(timestamp_t &result) {
 	if (!TryToDate(date)) {
 		return false;
 	}
-	const auto hour_offset = data[7] / Interval::MINS_PER_HOUR;
-	const auto mins_offset = data[7] % Interval::MINS_PER_HOUR;
-	dtime_t time = Time::FromTime(data[3] - hour_offset, data[4] - mins_offset, data[5], data[6]);
+	dtime_t time = ToTime();
 	return Timestamp::TryFromDatetime(date, time, result);
+}
+
+timestamp_ns_t StrpTimeFormat::ParseResult::ToTimestampNS() {
+	timestamp_ns_t result;
+	if (is_special) {
+		if (special == date_t::infinity()) {
+			result.value = timestamp_t::infinity().value;
+		} else if (special == date_t::ninfinity()) {
+			result.value = timestamp_t::ninfinity().value;
+		} else {
+			result.value = special.days * Interval::NANOS_PER_DAY;
+		}
+	} else {
+		// Don't use rounded µs
+		const auto date = ToDate();
+		const auto time = ToTimeNS();
+		if (!TryMultiplyOperator::Operation<int64_t, int64_t, int64_t>(date.days, Interval::NANOS_PER_DAY,
+		                                                               result.value)) {
+			throw ConversionException("Date out of nanosecond range: %d-%d-%d", data[0], data[1], data[2]);
+		}
+		if (!TryAddOperator::Operation<int64_t, int64_t, int64_t>(result.value, time, result.value)) {
+			throw ConversionException("Overflow exception in date/time -> timestamp_ns conversion");
+		}
+	}
+
+	return result;
+}
+
+bool StrpTimeFormat::ParseResult::TryToTimestampNS(timestamp_ns_t &result) {
+	date_t date;
+	if (!TryToDate(date)) {
+		return false;
+	}
+
+	// Don't use rounded µs
+	const auto time = ToTimeNS();
+	if (!TryMultiplyOperator::Operation<int64_t, int64_t, int64_t>(date.days, Interval::NANOS_PER_DAY, result.value)) {
+		return false;
+	}
+	if (!TryAddOperator::Operation<int64_t, int64_t, int64_t>(result.value, time, result.value)) {
+		return false;
+	}
+	return result.IsFinite();
 }
 
 string StrpTimeFormat::ParseResult::FormatError(string_t input, const string &format_specifier) {
@@ -1400,6 +1578,23 @@ bool StrpTimeFormat::TryParseDate(string_t input, date_t &result, string &error_
 	return parse_result.TryToDate(result);
 }
 
+bool StrpTimeFormat::TryParseDate(const char *data, size_t size, date_t &result) const {
+	ParseResult parse_result;
+	if (!Parse(data, size, parse_result)) {
+		return false;
+	}
+	return parse_result.TryToDate(result);
+}
+
+bool StrpTimeFormat::TryParseTime(string_t input, dtime_t &result, string &error_message) const {
+	ParseResult parse_result;
+	if (!Parse(input, parse_result)) {
+		error_message = parse_result.FormatError(input, format_specifier);
+		return false;
+	}
+	return parse_result.TryToTime(result);
+}
+
 bool StrpTimeFormat::TryParseTimestamp(string_t input, timestamp_t &result, string &error_message) const {
 	ParseResult parse_result;
 	if (!Parse(input, parse_result)) {
@@ -1409,20 +1604,29 @@ bool StrpTimeFormat::TryParseTimestamp(string_t input, timestamp_t &result, stri
 	return parse_result.TryToTimestamp(result);
 }
 
-date_t StrpTimeFormat::ParseDate(string_t input) {
-	ParseResult result;
-	if (!Parse(input, result)) {
-		throw InvalidInputException(result.FormatError(input, format_specifier));
+bool StrpTimeFormat::TryParseTimestamp(const char *data, size_t size, timestamp_t &result) const {
+	ParseResult parse_result;
+	if (!Parse(data, size, parse_result)) {
+		return false;
 	}
-	return result.ToDate();
+	return parse_result.TryToTimestamp(result);
 }
 
-timestamp_t StrpTimeFormat::ParseTimestamp(string_t input) {
-	ParseResult result;
-	if (!Parse(input, result)) {
-		throw InvalidInputException(result.FormatError(input, format_specifier));
+bool StrpTimeFormat::TryParseTimestampNS(string_t input, timestamp_ns_t &result, string &error_message) const {
+	ParseResult parse_result;
+	if (!Parse(input, parse_result)) {
+		error_message = parse_result.FormatError(input, format_specifier);
+		return false;
 	}
-	return result.ToTimestamp();
+	return parse_result.TryToTimestampNS(result);
+}
+
+bool StrpTimeFormat::TryParseTimestampNS(const char *data, size_t size, timestamp_ns_t &result) const {
+	ParseResult parse_result;
+	if (!Parse(data, size, parse_result)) {
+		return false;
+	}
+	return parse_result.TryToTimestampNS(result);
 }
 
 } // namespace duckdb

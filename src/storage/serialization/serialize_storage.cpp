@@ -25,7 +25,9 @@ BlockPointer BlockPointer::Deserialize(Deserializer &deserializer) {
 }
 
 void DataPointer::Serialize(Serializer &serializer) const {
-	serializer.WritePropertyWithDefault<uint64_t>(100, "row_start", row_start);
+	if (!serializer.ShouldSerialize(StorageVersion::V1_5_0)) {
+		serializer.WritePropertyWithDefault<uint64_t>(100, "row_start", row_start);
+	}
 	serializer.WritePropertyWithDefault<uint64_t>(101, "tuple_count", tuple_count);
 	serializer.WriteProperty<BlockPointer>(102, "block_pointer", block_pointer);
 	serializer.WriteProperty<CompressionType>(103, "compression_type", compression_type);
@@ -34,13 +36,12 @@ void DataPointer::Serialize(Serializer &serializer) const {
 }
 
 DataPointer DataPointer::Deserialize(Deserializer &deserializer) {
-	auto row_start = deserializer.ReadPropertyWithDefault<uint64_t>(100, "row_start");
+	deserializer.ReadDeletedProperty<uint64_t>(100, "row_start");
 	auto tuple_count = deserializer.ReadPropertyWithDefault<uint64_t>(101, "tuple_count");
 	auto block_pointer = deserializer.ReadProperty<BlockPointer>(102, "block_pointer");
 	auto compression_type = deserializer.ReadProperty<CompressionType>(103, "compression_type");
 	auto statistics = deserializer.ReadProperty<BaseStatistics>(104, "statistics");
 	DataPointer result(std::move(statistics));
-	result.row_start = row_start;
 	result.tuple_count = tuple_count;
 	result.block_pointer = block_pointer;
 	result.compression_type = compression_type;
@@ -88,6 +89,7 @@ void IndexStorageInfo::Serialize(Serializer &serializer) const {
 	serializer.WritePropertyWithDefault<string>(100, "name", name);
 	serializer.WritePropertyWithDefault<idx_t>(101, "root", root);
 	serializer.WritePropertyWithDefault<vector<FixedSizeAllocatorInfo>>(102, "allocator_infos", allocator_infos);
+	serializer.WritePropertyWithDefault<case_insensitive_map_t<Value>>(103, "options", options, case_insensitive_map_t<Value>());
 }
 
 IndexStorageInfo IndexStorageInfo::Deserialize(Deserializer &deserializer) {
@@ -95,6 +97,7 @@ IndexStorageInfo IndexStorageInfo::Deserialize(Deserializer &deserializer) {
 	deserializer.ReadPropertyWithDefault<string>(100, "name", result.name);
 	deserializer.ReadPropertyWithDefault<idx_t>(101, "root", result.root);
 	deserializer.ReadPropertyWithDefault<vector<FixedSizeAllocatorInfo>>(102, "allocator_infos", result.allocator_infos);
+	deserializer.ReadPropertyWithExplicitDefault<case_insensitive_map_t<Value>>(103, "options", result.options, case_insensitive_map_t<Value>());
 	return result;
 }
 

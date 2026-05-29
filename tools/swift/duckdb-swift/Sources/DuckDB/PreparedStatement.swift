@@ -22,10 +22,14 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 //  IN THE SOFTWARE.
 
+#if compiler(>=6.0)
+internal import Cduckdb
+#else
 @_implementationOnly import Cduckdb
+#endif
 import Foundation
 
-/// An object reperesenting a DuckDB prepared statement
+/// An object representing a DuckDB prepared statement
 ///
 /// A prepared statement is a parameterized query. The query is prepared with
 /// question marks (`?`) or dollar symbols (`$1`) indicating the parameters of

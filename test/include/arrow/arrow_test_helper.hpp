@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "test_helpers.hpp"
 #include "duckdb/common/helper.hpp"
 #include "duckdb/common/types/value.hpp"
@@ -21,6 +23,7 @@
 #include "duckdb/common/arrow/arrow_converter.hpp"
 #include "duckdb/common/arrow/arrow_wrapper.hpp"
 #include "duckdb/main/extension_helper.hpp"
+#include "duckdb/common/arrow/arrow_query_result.hpp"
 
 class ArrowStreamTestFactory {
 public:
@@ -34,16 +37,24 @@ namespace duckdb {
 class ArrowTestFactory {
 public:
 	ArrowTestFactory(vector<LogicalType> types_p, vector<string> names_p, duckdb::unique_ptr<QueryResult> result_p,
-	                 bool big_result, ClientProperties options)
+	                 bool big_result, ClientProperties options, ClientContext &context)
 	    : types(std::move(types_p)), names(std::move(names_p)), result(std::move(result_p)), big_result(big_result),
-	      options(options) {
+	      options(std::move(options)), context(context) {
+		if (result->type == QueryResultType::ARROW_RESULT) {
+			auto &arrow_result = result->Cast<ArrowQueryResult>();
+			prefetched_chunks = arrow_result.ConsumeArrays();
+			chunk_iterator = prefetched_chunks.begin();
+		}
 	}
 
 	vector<LogicalType> types;
 	vector<string> names;
 	duckdb::unique_ptr<QueryResult> result;
+	vector<unique_ptr<ArrowArrayWrapper>> prefetched_chunks;
+	vector<unique_ptr<ArrowArrayWrapper>>::iterator chunk_iterator;
 	bool big_result;
 	ClientProperties options;
+	ClientContext &context;
 
 	struct ArrowArrayStreamData {
 		explicit ArrowArrayStreamData(ArrowTestFactory &factory, ClientProperties options)
@@ -78,12 +89,11 @@ public:
 	static bool RunArrowComparison(Connection &con, const string &query, ArrowArrayStream &arrow_stream);
 
 private:
-	static bool CompareResults(unique_ptr<QueryResult> arrow, unique_ptr<MaterializedQueryResult> duck,
-	                           const string &query);
+	static bool CompareResults(Connection &con, shared_ptr<Relation> arrow_tbl, const string &query);
 
 public:
-	static unique_ptr<QueryResult> ScanArrowObject(Connection &con, vector<Value> &params);
 	static vector<Value> ConstructArrowScan(ArrowTestFactory &factory);
 	static vector<Value> ConstructArrowScan(ArrowArrayStream &stream);
+	static unique_ptr<QueryResult> ScanArrowObject(Connection &con, vector<Value> &params);
 };
 } // namespace duckdb

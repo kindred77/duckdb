@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "duckdb/common/common.hpp"
+#include "duckdb/common/constants.hpp"
 #include "duckdb/common/vector.hpp"
 #include "duckdb/common/exception.hpp"
 
@@ -31,7 +31,7 @@ enum class ConstraintType : uint8_t {
 enum class ForeignKeyType : uint8_t {
 	FK_TYPE_PRIMARY_KEY_TABLE = 0,   // main table
 	FK_TYPE_FOREIGN_KEY_TABLE = 1,   // referencing table
-	FK_TYPE_SELF_REFERENCE_TABLE = 2 // self refrencing table
+	FK_TYPE_SELF_REFERENCE_TABLE = 2 // self referencing table
 };
 
 struct ForeignKeyInfo {
@@ -44,6 +44,15 @@ struct ForeignKeyInfo {
 	vector<PhysicalIndex> pk_keys;
 	//! The set of foreign key table's column's index
 	vector<PhysicalIndex> fk_keys;
+
+	bool IsDeleteConstraint() const {
+		return type == ForeignKeyType::FK_TYPE_PRIMARY_KEY_TABLE ||
+		       type == ForeignKeyType::FK_TYPE_SELF_REFERENCE_TABLE;
+	}
+	bool IsAppendConstraint() const {
+		return type == ForeignKeyType::FK_TYPE_FOREIGN_KEY_TABLE ||
+		       type == ForeignKeyType::FK_TYPE_SELF_REFERENCE_TABLE;
+	}
 };
 
 //! Constraint is the base class of any type of table constraint.

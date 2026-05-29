@@ -8,9 +8,9 @@
 namespace duckdb {
 
 // Forward declaration to allow conversion between hugeint and uhugeint
-struct uhugeint_t;
+struct uhugeint_t; // NOLINT: use numeric casing
 
-struct hugeint_t {
+struct hugeint_t { // NOLINT: use numeric casing
 public:
 	uint64_t lower;
 	int64_t upper;
@@ -76,7 +76,17 @@ public:
 	DUCKDB_API explicit operator int16_t() const;
 	DUCKDB_API explicit operator int32_t() const;
 	DUCKDB_API explicit operator int64_t() const;
-	DUCKDB_API operator uhugeint_t() const; // NOLINT: Allow implicit conversion from `hugeint_t`
+	DUCKDB_API explicit operator uhugeint_t() const;
 };
 
 } // namespace duckdb
+
+namespace std {
+template <>
+struct hash<duckdb::hugeint_t> {
+	size_t operator()(const duckdb::hugeint_t &val) const {
+		using std::hash;
+		return hash<int64_t> {}(val.upper) ^ hash<uint64_t> {}(val.lower);
+	}
+};
+} // namespace std

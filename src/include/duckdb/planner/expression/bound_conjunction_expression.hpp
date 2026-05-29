@@ -23,13 +23,16 @@ public:
 	vector<unique_ptr<Expression>> children;
 
 public:
+	const vector<unique_ptr<Expression>> &GetChildren() const {
+		return children;
+	}
 	string ToString() const override;
 
 	bool Equals(const BaseExpression &other) const override;
 
 	bool PropagatesNullValues() const override;
 
-	unique_ptr<Expression> Copy() override;
+	unique_ptr<Expression> Copy() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<Expression> Deserialize(Deserializer &deserializer);

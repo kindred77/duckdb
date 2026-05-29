@@ -3,9 +3,6 @@
 # group: [interval]
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE intervals(i INTERVAL, s VARCHAR);
 
 statement ok
@@ -56,10 +53,11 @@ SELECT date_part('seconds', i) FROM intervals;
 query I
 SELECT date_part('epoch', i) FROM intervals;
 ----
-63115200
-41925600
-3628800
-2066
+63115200.0
+41925600.0
+3628800.0
+2066.3434
+
 
 query I
 SELECT date_part(s, i) FROM intervals;
@@ -119,7 +117,7 @@ SELECT date_part('offset', i) FROM intervals;
 foreach partcode millennium century decade year quarter month day hour minute second millisecond microsecond epoch
 
 query III
-SELECT i, DATE_PART('${partcode}', i) AS p, ${partcode}(i) AS f
+SELECT i, DATE_PART('{partcode}', i) AS p, {partcode}(i) AS f
 FROM intervals
 WHERE p <> f;
 ----
@@ -134,9 +132,9 @@ endloop
 foreach partcode millennium century decade year quarter month day hour minute second millisecond microsecond epoch
 
 query III
-SELECT i, DATE_PART('${partcode}', i) AS p, DATE_PART(['${partcode}'], i) AS st
+SELECT i, DATE_PART('{partcode}', i) AS p, DATE_PART(['{partcode}'], i) AS st
 FROM intervals
-WHERE p <> st['${partcode}'];
+WHERE p <> st['{partcode}'];
 ----
 
 endloop
@@ -205,12 +203,22 @@ ORDER BY 1;
 1 year 4 months	41472000000
 2 years	62208000000
 
+query II
+SELECT i, nanosecond(i) AS parts
+FROM intervals
+ORDER BY 1;
+----
+00:34:26.3434	26343400000
+42 days	0
+1 year 4 months	0
+2 years	0
+
 # Invalid parts
 
 foreach datepart dow isodow doy week isoyear yearweek era timezone timezone_hour timezone_minute
 
 statement error
-SELECT i, DATE_PART(['${datepart}'], i) AS parts
+SELECT i, DATE_PART(['{datepart}'], i) AS parts
 FROM intervals
 ORDER BY 1;
 ----

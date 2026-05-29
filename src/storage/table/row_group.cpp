@@ -1,39 +1,52 @@
 #include "duckdb/storage/table/row_group.hpp"
-#include "duckdb/common/types/vector.hpp"
+#include "duckdb/transaction/commit_state.hpp"
+
 #include "duckdb/common/exception.hpp"
-#include "duckdb/storage/table/column_data.hpp"
-#include "duckdb/storage/table/column_checkpoint_state.hpp"
-#include "duckdb/storage/table/update_segment.hpp"
-#include "duckdb/storage/table_storage_info.hpp"
-#include "duckdb/common/chrono.hpp"
-#include "duckdb/planner/table_filter.hpp"
+#include "duckdb/common/serializer/binary_serializer.hpp"
+#include "duckdb/common/serializer/deserializer.hpp"
+#include "duckdb/common/serializer/serializer.hpp"
+#include "duckdb/common/typedefs.hpp"
+#include "duckdb/common/types/vector.hpp"
+#include "duckdb/common/vector/flat_vector.hpp"
+#include "duckdb/execution/adaptive_filter.hpp"
 #include "duckdb/execution/expression_executor.hpp"
+#include "duckdb/planner/filter/expression_filter.hpp"
+#include "duckdb/planner/table_filter.hpp"
 #include "duckdb/storage/checkpoint/table_data_writer.hpp"
 #include "duckdb/storage/metadata/metadata_reader.hpp"
-#include "duckdb/transaction/duck_transaction_manager.hpp"
-#include "duckdb/main/database.hpp"
-#include "duckdb/main/attached_database.hpp"
-#include "duckdb/transaction/duck_transaction.hpp"
+#include "duckdb/storage/statistics/base_statistics.hpp"
+#include "duckdb/storage/statistics/string_stats.hpp"
 #include "duckdb/storage/table/append_state.hpp"
-#include "duckdb/storage/table/scan_state.hpp"
+#include "duckdb/storage/table/column_checkpoint_state.hpp"
+#include "duckdb/storage/table/column_data.hpp"
 #include "duckdb/storage/table/row_version_manager.hpp"
-#include "duckdb/common/serializer/serializer.hpp"
-#include "duckdb/common/serializer/deserializer.hpp"
-#include "duckdb/common/serializer/binary_serializer.hpp"
-#include "duckdb/planner/filter/conjunction_filter.hpp"
-#include "duckdb/planner/filter/struct_filter.hpp"
+#include "duckdb/storage/table/scan_state.hpp"
+#include "duckdb/storage/table_storage_info.hpp"
+#include "duckdb/transaction/duck_transaction.hpp"
+#include "duckdb/transaction/duck_transaction_manager.hpp"
+#include "duckdb/storage/table/row_id_column_data.hpp"
+#include "duckdb/storage/table/row_number_column_data.hpp"
+#include "duckdb/storage/table/row_group_collection.hpp"
+#include "duckdb/main/settings.hpp"
+
+#include "duckdb/common/storage_compatibility.hpp"
+#include "duckdb/planner/expression/bound_cast_expression.hpp"
+#include "duckdb/planner/expression/bound_reference_expression.hpp"
 
 namespace duckdb {
 
-RowGroup::RowGroup(RowGroupCollection &collection, idx_t start, idx_t count)
-    : SegmentBase<RowGroup>(start, count), collection(collection), allocation_size(0) {
+RowGroup::RowGroup(RowGroupCollection &collection_p, idx_t count)
+    : SegmentBase<RowGroup>(count), collection(collection_p), version_info(nullptr), deletes_is_loaded(false),
+      allocation_size(0), row_id_is_loaded(false), row_number_is_loaded(false), has_changes(false) {
 	Verify();
 }
 
-RowGroup::RowGroup(RowGroupCollection &collection, RowGroupPointer &&pointer)
-    : SegmentBase<RowGroup>(pointer.row_start, pointer.tuple_count), collection(collection), allocation_size(0) {
+RowGroup::RowGroup(RowGroupCollection &collection_p, RowGroupPointer pointer)
+    : SegmentBase<RowGroup>(pointer.tuple_count), collection(collection_p), version_info(nullptr),
+      deletes_is_loaded(false), allocation_size(0), row_id_is_loaded(false), row_number_is_loaded(false),
+      has_changes(false) {
 	// deserialize the columns
-	if (pointer.data_pointers.size() != collection.GetTypes().size()) {
+	if (pointer.data_pointers.size() != collection_p.GetTypes().size()) {
 		throw IOException("Row group column count is unaligned with table column count. Corrupt file?");
 	}
 	this->column_pointers = std::move(pointer.data_pointers);
@@ -43,26 +56,58 @@ RowGroup::RowGroup(RowGroupCollection &collection, RowGroupPointer &&pointer)
 		this->is_loaded[c] = false;
 	}
 	this->deletes_pointers = std::move(pointer.deletes_pointers);
-	this->deletes_is_loaded = false;
+	this->has_metadata_blocks = pointer.has_metadata_blocks;
+	this->extra_metadata_blocks = std::move(pointer.extra_metadata_blocks);
+	this->has_per_column_metadata_blocks = pointer.has_per_column_metadata_blocks;
+	this->per_column_metadata_blocks = std::move(pointer.per_column_metadata_blocks);
 
 	Verify();
 }
 
-void RowGroup::MoveToCollection(RowGroupCollection &collection, idx_t new_start) {
-	this->collection = collection;
-	this->start = new_start;
-	for (auto &column : GetColumns()) {
-		column->SetStart(new_start);
+RowGroup::RowGroup(RowGroupCollection &collection_p, PersistentRowGroupData &data)
+    : SegmentBase<RowGroup>(data.count), collection(collection_p), version_info(nullptr), deletes_is_loaded(false),
+      allocation_size(0), row_id_is_loaded(false), row_number_is_loaded(false), has_changes(false) {
+	auto &block_manager = GetBlockManager();
+	auto &info = GetTableInfo();
+	auto &types = collection.get().GetTypes();
+	columns.reserve(types.size());
+	for (idx_t c = 0; c < types.size(); c++) {
+		auto entry = ColumnData::CreateColumn(block_manager, info, c, types[c]);
+		entry->InitializeColumn(data.column_data[c]);
+		columns.push_back(std::move(entry));
 	}
-	if (!HasUnloadedDeletes()) {
-		auto &vinfo = GetVersionInfo();
-		if (vinfo) {
-			vinfo->SetStart(new_start);
+
+	Verify();
+}
+
+void RowGroup::MoveToCollection(RowGroupCollection &collection_p) {
+	lock_guard<mutex> l(row_group_lock);
+	// FIXME
+	// MoveToCollection causes any_changes to be set to true because we are changing the start position of the row group
+	// the start position is ONLY written when targeting old serialization versions - as such, we don't actually
+	// need to do this when targeting newer serialization versions
+	// not doing this could allow metadata reuse in these situations, which would improve vacuuming performance
+	// especially when vacuuming from the beginning of large tables
+	has_changes = true;
+	this->collection = collection_p;
+	for (idx_t c = 0; c < columns.size(); c++) {
+		if (!ColumnIsLoaded(c)) {
+			// we only need to set the column start position if it is already loaded
+			// if it is not loaded - we will set the correct start position upon loading
+			continue;
 		}
+		columns[c]->SetDataType(ColumnDataType::MAIN_TABLE);
 	}
 }
 
 RowGroup::~RowGroup() {
+}
+
+bool RowGroup::ColumnIsLoaded(storage_t c) const {
+	if (!is_loaded) {
+		return true;
+	}
+	return is_loaded[c];
 }
 
 vector<shared_ptr<ColumnData>> &RowGroup::GetColumns() {
@@ -77,22 +122,86 @@ idx_t RowGroup::GetColumnCount() const {
 	return columns.size();
 }
 
-ColumnData &RowGroup::GetColumn(storage_t c) {
+idx_t RowGroup::GetRowGroupSize() const {
+	return collection.get().GetRowGroupSize();
+}
+
+void RowGroup::LoadRowIdColumnData() const {
+	if (row_id_is_loaded) {
+		return;
+	}
+	lock_guard<mutex> l(row_group_lock);
+	if (row_id_column_data) {
+		return;
+	}
+	row_id_column_data = make_uniq<RowIdColumnData>(GetBlockManager(), GetTableInfo());
+	row_id_column_data->count = count.load();
+	row_id_is_loaded = true;
+}
+
+void RowGroup::LoadRowNumberColumnData() const {
+	if (row_number_is_loaded) {
+		return;
+	}
+	lock_guard<mutex> l(row_group_lock);
+	if (row_number_column_data) {
+		return;
+	}
+	row_number_column_data = make_uniq<RowNumberColumnData>(GetBlockManager(), GetTableInfo());
+	row_number_column_data->count = count.load();
+	row_number_is_loaded = true;
+}
+
+ColumnData &RowGroup::GetColumn(const StorageIndex &c) const {
+	auto &res = GetColumn(c.GetPrimaryIndex());
+	return res;
+}
+
+ColumnData &RowGroup::GetColumn(storage_t c) const {
+	LoadColumn(c);
+	if (c == COLUMN_IDENTIFIER_ROW_ID) {
+		return *row_id_column_data;
+	}
+	if (c == COLUMN_IDENTIFIER_ROW_NUMBER) {
+		return *row_number_column_data;
+	}
+	return *columns[c];
+}
+
+ColumnData &RowGroup::GetRawColumnData(const StorageIndex &c) const {
+	return GetColumn(c);
+}
+
+ColumnData &RowGroup::GetRawColumnData(storage_t c) const {
+	return GetColumn(c);
+}
+
+void RowGroup::LoadColumn(storage_t c) const {
+	if (c == COLUMN_IDENTIFIER_ROW_ID) {
+		LoadRowIdColumnData();
+		return;
+	}
+	if (c == COLUMN_IDENTIFIER_ROW_NUMBER) {
+		LoadRowNumberColumnData();
+		return;
+	}
 	D_ASSERT(c < columns.size());
 	if (!is_loaded) {
 		// not being lazy loaded
 		D_ASSERT(columns[c]);
-		return *columns[c];
+		return;
 	}
 	if (is_loaded[c]) {
 		D_ASSERT(columns[c]);
-		return *columns[c];
+		return;
 	}
 	lock_guard<mutex> l(row_group_lock);
 	if (columns[c]) {
+		// another thread loaded the column while we were waiting for the lock
 		D_ASSERT(is_loaded[c]);
-		return *columns[c];
+		return;
 	}
+	// load the column
 	if (column_pointers.size() != columns.size()) {
 		throw InternalException("Lazy loading a column but the pointer was not set");
 	}
@@ -100,152 +209,262 @@ ColumnData &RowGroup::GetColumn(storage_t c) {
 	auto &types = GetCollection().GetTypes();
 	auto &block_pointer = column_pointers[c];
 	MetadataReader column_data_reader(metadata_manager, block_pointer);
-	this->columns[c] =
-	    ColumnData::Deserialize(GetBlockManager(), GetTableInfo(), c, start, column_data_reader, types[c]);
+	this->columns[c] = ColumnData::Deserialize(GetBlockManager(), GetTableInfo(), c, column_data_reader, types[c]);
 	is_loaded[c] = true;
 	if (this->columns[c]->count != this->count) {
-		throw InternalException("Corrupted database - loaded column with index %llu at row start %llu, count %llu did "
+		throw InternalException("Corrupted database - loaded column with index %llu, count %llu did "
 		                        "not match count of row group %llu",
-		                        c, start, this->columns[c]->count, this->count.load());
+		                        c, this->columns[c]->count.load(), this->count.load());
 	}
-	return *columns[c];
 }
 
-BlockManager &RowGroup::GetBlockManager() {
+void RowGroup::UnloadColumn(storage_t c) {
+	if (column_pointers.size() != columns.size()) {
+		throw InternalException("Trying to unload a column but column pointers were not set");
+	}
+	if (!ColumnIsLoaded(c)) {
+		throw InternalException("Trying to unload a column that is not loaded");
+	}
+	lock_guard<mutex> l(row_group_lock);
+	if (!is_loaded) {
+		// is_loaded is not set - all columns must be loaded
+		this->is_loaded = unique_ptr<atomic<bool>[]>(new atomic<bool>[columns.size()]);
+		for (idx_t c = 0; c < columns.size(); c++) {
+			this->is_loaded[c] = true;
+		}
+	}
+	this->is_loaded[c] = false;
+	columns[c].reset();
+}
+
+BlockManager &RowGroup::GetBlockManager() const {
 	return GetCollection().GetBlockManager();
 }
-DataTableInfo &RowGroup::GetTableInfo() {
+DataTableInfo &RowGroup::GetTableInfo() const {
 	return GetCollection().GetTableInfo();
 }
 
-void RowGroup::InitializeEmpty(const vector<LogicalType> &types) {
+void RowGroup::InitializeEmpty(const vector<LogicalType> &types, ColumnDataType data_type) {
 	// set up the segment trees for the column segments
 	D_ASSERT(columns.empty());
 	for (idx_t i = 0; i < types.size(); i++) {
-		auto column_data = ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), i, start, types[i]);
+		auto column_data = ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), i, types[i], data_type);
 		columns.push_back(std::move(column_data));
 	}
 }
 
-void ColumnScanState::Initialize(const LogicalType &type, optional_ptr<TableScanOptions> options) {
+void ColumnScanState::PushDownCast(const LogicalType &original_type, const LogicalType &cast_type) {
+	D_ASSERT(context.Valid());
+	D_ASSERT(!expression_state);
+	auto &client_context = *context.GetClientContext();
+
+	auto input = make_uniq<BoundReferenceExpression>(original_type, 0ULL);
+	auto cast_expression = BoundCastExpression::AddCastToType(client_context, std::move(input), cast_type);
+	expression_state = make_uniq<PushedDownExpressionState>(client_context);
+	expression_state->target.Initialize(client_context, {cast_type});
+	expression_state->input.Initialize(client_context, {original_type});
+	expression_state->executor.AddExpression(*cast_expression);
+	expression_state->expression = std::move(cast_expression);
+}
+
+void ColumnScanState::Initialize(const QueryContext &context_p, const LogicalType &type, const StorageIndex &column_id,
+                                 optional_ptr<TableScanOptions> options) {
+	auto &children = column_id.GetChildIndexes();
 	// Register the options in the state
 	scan_options = options;
+	context = context_p;
+	storage_index = column_id;
 
+	D_ASSERT(type.id() != LogicalTypeId::INVALID);
 	if (type.id() == LogicalTypeId::VALIDITY) {
 		// validity - nothing to initialize
 		return;
 	}
+
+	if (type.id() == LogicalTypeId::VARIANT) {
+		// variant - column scan states are created later
+		// this is done because the internal shape of the VARIANT is different per rowgroup
+		scan_child_column.resize(2, true);
+		if (!storage_index.IsPushdownExtract()) {
+			return;
+		}
+		auto &scan_type = storage_index.GetScanType();
+		if (scan_type.id() != LogicalTypeId::VARIANT) {
+			PushDownCast(type, scan_type);
+		}
+		return;
+	}
+
+	D_ASSERT(child_states.empty());
 	if (type.InternalType() == PhysicalType::STRUCT) {
 		// validity + struct children
 		auto &struct_children = StructType::GetChildTypes(type);
-		child_states.resize(struct_children.size() + 1);
-		for (idx_t i = 0; i < struct_children.size(); i++) {
-			child_states[i + 1].Initialize(struct_children[i].second, options);
+		child_states.reserve(struct_children.size() + 1);
+		for (idx_t i = 0; i <= struct_children.size(); i++) {
+			child_states.emplace_back(parent);
+		}
+
+		if (children.empty()) {
+			// scan all struct children
+			scan_child_column.resize(struct_children.size(), true);
+			for (idx_t i = 0; i < struct_children.size(); i++) {
+				child_states[i + 1].Initialize(context, struct_children[i].second, options);
+			}
+		} else {
+			if (storage_index.IsPushdownExtract()) {
+				D_ASSERT(context.Valid());
+				scan_child_column.resize(1, true);
+				D_ASSERT(children.size() == 1);
+				auto &child = children[0];
+				auto child_index = child.GetPrimaryIndex();
+				auto &child_type = StructType::GetChildTypes(type)[child_index].second;
+				if (!child.HasChildren() && child_type != child.GetType()) {
+					PushDownCast(child_type, child.GetType());
+				}
+				child_states[1].Initialize(context, struct_children[child_index].second, child, options);
+			} else {
+				// only scan the specified subset of columns
+				scan_child_column.resize(struct_children.size(), false);
+				for (idx_t i = 0; i < children.size(); i++) {
+					auto &child = children[i];
+					auto index = child.GetPrimaryIndex();
+					scan_child_column[index] = true;
+					child_states[index + 1].Initialize(context, struct_children[index].second, child, options);
+				}
+			}
 		}
 		child_states[0].scan_options = options;
 	} else if (type.InternalType() == PhysicalType::LIST) {
 		// validity + list child
-		child_states.resize(2);
-		child_states[1].Initialize(ListType::GetChildType(type), options);
+		for (idx_t i = 0; i < 2; i++) {
+			child_states.emplace_back(parent);
+		}
+		child_states[1].Initialize(context, ListType::GetChildType(type), options);
 		child_states[0].scan_options = options;
 	} else if (type.InternalType() == PhysicalType::ARRAY) {
 		// validity + array child
-		child_states.resize(2);
+		for (idx_t i = 0; i < 2; i++) {
+			child_states.emplace_back(parent);
+		}
 		child_states[0].scan_options = options;
-		child_states[1].Initialize(ArrayType::GetChildType(type), options);
+		child_states[1].Initialize(context, ArrayType::GetChildType(type), options);
 	} else {
 		// validity
-		child_states.resize(1);
+		child_states.emplace_back(parent);
 		child_states[0].scan_options = options;
 	}
 }
 
-void CollectionScanState::Initialize(const vector<LogicalType> &types) {
+void ColumnScanState::Initialize(const QueryContext &context_p, const LogicalType &type,
+                                 optional_ptr<TableScanOptions> options) {
+	auto column_id = StorageIndex(0);
+	Initialize(context_p, type, column_id, options);
+}
+
+void CollectionScanState::Initialize(const QueryContext &context, const vector<LogicalType> &types) {
 	auto &column_ids = GetColumnIds();
-	column_scans = make_unsafe_uniq_array<ColumnScanState>(column_ids.size());
+	D_ASSERT(column_scans.empty());
+	column_scans.reserve(column_scans.size());
 	for (idx_t i = 0; i < column_ids.size(); i++) {
-		if (column_ids[i] == COLUMN_IDENTIFIER_ROW_ID) {
+		column_scans.emplace_back(*this);
+	}
+	for (idx_t i = 0; i < column_ids.size(); i++) {
+		if (column_ids[i].IsRowIdColumn() || column_ids[i].IsRowNumberColumn()) {
 			continue;
 		}
-		column_scans[i].Initialize(types[column_ids[i]], &GetOptions());
+		auto index = column_ids[i].GetPrimaryIndex();
+		auto &type = types[index];
+		column_scans[i].Initialize(context, type, column_ids[i], &GetOptions());
 	}
 }
 
-bool RowGroup::InitializeScanWithOffset(CollectionScanState &state, idx_t vector_offset) {
+bool RowGroup::InitializeScanWithOffset(CollectionScanState &state, SegmentNode<RowGroup> &node, idx_t vector_offset) {
 	auto &column_ids = state.GetColumnIds();
-	auto filters = state.GetFilters();
-	if (filters) {
-		if (!CheckZonemap(*filters, column_ids)) {
-			return false;
-		}
+	auto &filters = state.GetFilterInfo();
+	if (!CheckZonemap(filters)) {
+		return false;
+	}
+	if (!RefersToSameObject(node.GetNode(), *this)) {
+		throw InternalException("RowGroup::InitializeScanWithOffset segment node mismatch");
 	}
 
-	state.row_group = this;
+	state.row_group = node;
 	state.vector_index = vector_offset;
-	state.max_row_group_row =
-	    this->start > state.max_row ? 0 : MinValue<idx_t>(this->count, state.max_row - this->start);
-	auto row_number = start + vector_offset * STANDARD_VECTOR_SIZE;
+	auto row_start = node.GetRowStart();
+	state.max_row_group_row = row_start > state.max_row ? 0 : MinValue<idx_t>(this->count, state.max_row - row_start);
+	auto row_number = vector_offset * STANDARD_VECTOR_SIZE;
 	if (state.max_row_group_row == 0) {
 		// exceeded row groups to scan
 		return false;
 	}
-	D_ASSERT(state.column_scans);
+	D_ASSERT(!state.column_scans.empty());
 	for (idx_t i = 0; i < column_ids.size(); i++) {
 		const auto &column = column_ids[i];
-		if (column != COLUMN_IDENTIFIER_ROW_ID) {
-			auto &column_data = GetColumn(column);
-			column_data.InitializeScanWithOffset(state.column_scans[i], row_number);
-			state.column_scans[i].scan_options = &state.GetOptions();
-		} else {
-			state.column_scans[i].current = nullptr;
-		}
+		auto &column_data = GetColumn(column);
+		column_data.InitializeScanWithOffset(state.column_scans[i], row_number);
+		state.column_scans[i].scan_options = &state.GetOptions();
 	}
 	return true;
 }
 
-bool RowGroup::InitializeScan(CollectionScanState &state) {
+bool RowGroup::InitializeScan(CollectionScanState &state, SegmentNode<RowGroup> &node) {
 	auto &column_ids = state.GetColumnIds();
-	auto filters = state.GetFilters();
-	if (filters) {
-		if (!CheckZonemap(*filters, column_ids)) {
-			return false;
-		}
+	auto &filters = state.GetFilterInfo();
+	if (!CheckZonemap(filters)) {
+		return false;
 	}
-	state.row_group = this;
+	if (!RefersToSameObject(node.GetNode(), *this)) {
+		throw InternalException("RowGroup::InitializeScan segment node mismatch");
+	}
+	auto row_start = node.GetRowStart();
+	state.row_group = node;
 	state.vector_index = 0;
-	state.max_row_group_row =
-	    this->start > state.max_row ? 0 : MinValue<idx_t>(this->count, state.max_row - this->start);
+	state.max_row_group_row = row_start > state.max_row ? 0 : MinValue<idx_t>(this->count, state.max_row - row_start);
 	if (state.max_row_group_row == 0) {
 		return false;
 	}
-	D_ASSERT(state.column_scans);
+	D_ASSERT(!state.column_scans.empty());
 	for (idx_t i = 0; i < column_ids.size(); i++) {
 		auto column = column_ids[i];
-		if (column != COLUMN_IDENTIFIER_ROW_ID) {
-			auto &column_data = GetColumn(column);
-			column_data.InitializeScan(state.column_scans[i]);
-			state.column_scans[i].scan_options = &state.GetOptions();
-		} else {
-			state.column_scans[i].current = nullptr;
-		}
+		auto &column_data = GetColumn(column);
+		column_data.InitializeScan(state.column_scans[i]);
+		state.column_scans[i].scan_options = &state.GetOptions();
 	}
 	return true;
+}
+
+unique_ptr<RowGroup> RowGroup::CreateNewRowGroupCopy(RowGroupCollection &new_collection, idx_t new_column_count) {
+	auto row_group = make_uniq<RowGroup>(new_collection, this->count);
+	row_group->deletes_pointers = deletes_pointers;
+	row_group->deletes_is_loaded = deletes_is_loaded.load();
+	row_group->owned_version_info = owned_version_info;
+	row_group->version_info = version_info.load();
+	row_group->columns.resize(new_column_count);
+	if (is_loaded) {
+		row_group->is_loaded = unique_ptr<atomic<bool>[]>(new atomic<bool>[new_column_count]);
+	}
+	if (!column_pointers.empty()) {
+		row_group->column_pointers.resize(new_column_count);
+	}
+	row_group->has_per_column_metadata_blocks = has_per_column_metadata_blocks;
+	row_group->has_changes = true;
+	return row_group;
 }
 
 unique_ptr<RowGroup> RowGroup::AlterType(RowGroupCollection &new_collection, const LogicalType &target_type,
                                          idx_t changed_idx, ExpressionExecutor &executor,
-                                         CollectionScanState &scan_state, DataChunk &scan_chunk) {
+                                         CollectionScanState &scan_state, SegmentNode<RowGroup> &node,
+                                         DataChunk &scan_chunk) {
 	Verify();
 
 	// construct a new column data for this type
-	auto column_data = ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), changed_idx, start, target_type);
+	auto column_data = ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), changed_idx, target_type);
 
 	ColumnAppendState append_state;
 	column_data->InitializeAppend(append_state);
 
 	// scan the original table, and fill the new column with the transformed value
-	scan_state.Initialize(GetCollection().GetTypes());
-	InitializeScan(scan_state);
+	InitializeScan(scan_state, node);
 
 	DataChunk append_chunk;
 	vector<LogicalType> append_types;
@@ -255,7 +474,7 @@ unique_ptr<RowGroup> RowGroup::AlterType(RowGroupCollection &new_collection, con
 	while (true) {
 		// scan the table
 		scan_chunk.Reset();
-		ScanCommitted(scan_state, scan_chunk, TableScanType::TABLE_SCAN_COMMITTED_ROWS);
+		Scan(scan_state, scan_chunk, TableScanType::TABLE_SCAN_ALL_ROWS);
 		if (scan_chunk.size() == 0) {
 			break;
 		}
@@ -264,53 +483,97 @@ unique_ptr<RowGroup> RowGroup::AlterType(RowGroupCollection &new_collection, con
 		executor.ExecuteExpression(scan_chunk, append_vector);
 		column_data->Append(append_state, append_vector, scan_chunk.size());
 	}
+	column_data->FinalizeAppend(nullptr, append_state);
 
-	// set up the row_group based on this row_group
-	auto row_group = make_uniq<RowGroup>(new_collection, this->start, this->count);
-	row_group->version_info = GetOrCreateVersionInfoPtr();
-	auto &cols = GetColumns();
-	for (idx_t i = 0; i < cols.size(); i++) {
+	auto supports_per_column_writes = new_collection.SupportsPerColumnWrites();
+	if (!supports_per_column_writes) {
+		// ensure all columns are loaded, as checkpointing will need to load them anyway, and it's better to fail-fast
+		// in case these don't fit in memory here
+		GetColumns();
+	}
+	unique_lock<mutex> lock(row_group_lock);
+	auto row_group = CreateNewRowGroupCopy(new_collection, columns.size());
+	// copy existing columns, but swap out the one at changed_idx
+	for (idx_t i = 0; i < columns.size(); i++) {
 		if (i == changed_idx) {
-			// this is the altered column: use the new column
-			row_group->columns.push_back(std::move(column_data));
+			row_group->columns[i] = std::move(column_data);
+			if (row_group->is_loaded) {
+				row_group->is_loaded[i] = true;
+			}
+			column_data.reset();
 		} else {
-			// this column was not altered: use the data directly
-			row_group->columns.push_back(cols[i]);
+			row_group->columns[i] = columns[i];
+			if (row_group->is_loaded) {
+				row_group->is_loaded[i] = is_loaded[i].load();
+			}
+			if (!row_group->column_pointers.empty()) {
+				row_group->column_pointers[i] = column_pointers[i];
+			}
 		}
 	}
+	if (has_per_column_metadata_blocks) {
+		row_group->per_column_metadata_blocks = per_column_metadata_blocks;
+		row_group->per_column_metadata_blocks.RemoveColumn(changed_idx);
+	}
+	lock.unlock();
 	row_group->Verify();
 	return row_group;
 }
 
 unique_ptr<RowGroup> RowGroup::AddColumn(RowGroupCollection &new_collection, ColumnDefinition &new_column,
-                                         ExpressionExecutor &executor, Expression &default_value, Vector &result) {
+                                         ExpressionExecutor &executor) {
 	Verify();
 
 	// construct a new column data for the new column
 	auto added_column =
-	    ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), GetColumnCount(), start, new_column.Type());
+	    ColumnData::CreateColumn(GetBlockManager(), GetTableInfo(), GetColumnCount(), new_column.Type());
 
 	idx_t rows_to_write = this->count;
 	if (rows_to_write > 0) {
 		DataChunk dummy_chunk;
+		DataChunk result_chunk;
+		result_chunk.Initialize(Allocator::DefaultAllocator(), {new_column.GetType()});
+		auto &result = result_chunk.data[0];
 
 		ColumnAppendState state;
 		added_column->InitializeAppend(state);
 		for (idx_t i = 0; i < rows_to_write; i += STANDARD_VECTOR_SIZE) {
 			idx_t rows_in_this_vector = MinValue<idx_t>(rows_to_write - i, STANDARD_VECTOR_SIZE);
 			dummy_chunk.SetCardinality(rows_in_this_vector);
+			result_chunk.Reset();
 			executor.ExecuteExpression(dummy_chunk, result);
 			added_column->Append(state, result, rows_in_this_vector);
 		}
+		added_column->FinalizeAppend(nullptr, state);
 	}
 
-	// set up the row_group based on this row_group
-	auto row_group = make_uniq<RowGroup>(new_collection, this->start, this->count);
-	row_group->version_info = GetOrCreateVersionInfoPtr();
-	row_group->columns = GetColumns();
-	// now add the new column
-	row_group->columns.push_back(std::move(added_column));
+	if (!new_collection.SupportsPerColumnWrites()) {
+		// ensure all columns are loaded, as checkpointing will need to load them anyway, and it's better to fail-fast
+		// in case these don't fit in memory here
+		GetColumns();
+	}
 
+	unique_lock<mutex> lock(row_group_lock);
+	auto row_group = CreateNewRowGroupCopy(new_collection, columns.size() + 1);
+	// copy existing columns
+	for (idx_t i = 0; i < columns.size(); i++) {
+		row_group->columns[i] = columns[i];
+		if (row_group->is_loaded) {
+			row_group->is_loaded[i] = is_loaded[i].load();
+		}
+		if (!row_group->column_pointers.empty()) {
+			row_group->column_pointers[i] = column_pointers[i];
+		}
+	}
+	if (has_per_column_metadata_blocks) {
+		row_group->per_column_metadata_blocks = per_column_metadata_blocks;
+	}
+	// add the new column
+	row_group->columns[columns.size()] = std::move(added_column);
+	if (row_group->is_loaded) {
+		row_group->is_loaded[columns.size()] = true;
+	}
+	lock.unlock();
 	row_group->Verify();
 	return row_group;
 }
@@ -320,28 +583,64 @@ unique_ptr<RowGroup> RowGroup::RemoveColumn(RowGroupCollection &new_collection, 
 
 	D_ASSERT(removed_column < columns.size());
 
-	auto row_group = make_uniq<RowGroup>(new_collection, this->start, this->count);
-	row_group->version_info = GetOrCreateVersionInfoPtr();
-	// copy over all columns except for the removed one
-	auto &cols = GetColumns();
-	for (idx_t i = 0; i < cols.size(); i++) {
-		if (i != removed_column) {
-			row_group->columns.push_back(cols[i]);
-		}
+	if (!new_collection.SupportsPerColumnWrites()) {
+		// ensure all columns are loaded, as checkpointing will need to load them anyway, and it's better to fail-fast
+		// in case these don't fit in memory here
+		GetColumns();
 	}
-
+	unique_lock<mutex> lock(row_group_lock);
+	auto row_group = CreateNewRowGroupCopy(new_collection, columns.size() - 1);
+	// copy over all columns except for the removed one
+	idx_t target_idx = 0;
+	for (idx_t i = 0; i < columns.size(); i++) {
+		if (i == removed_column) {
+			continue;
+		}
+		row_group->columns[target_idx] = columns[i];
+		if (row_group->is_loaded) {
+			row_group->is_loaded[target_idx] = is_loaded[i].load();
+		}
+		if (!row_group->column_pointers.empty()) {
+			row_group->column_pointers[target_idx] = column_pointers[i];
+		}
+		target_idx++;
+	}
+	if (has_per_column_metadata_blocks) {
+		row_group->per_column_metadata_blocks = per_column_metadata_blocks;
+		row_group->per_column_metadata_blocks.RemoveColumn(target_idx);
+	}
+	lock.unlock();
 	row_group->Verify();
 	return row_group;
 }
 
-void RowGroup::CommitDrop() {
+void RowGroup::CommitDrop(CommitDropState &drop_state) {
 	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
-		CommitDropColumn(column_idx);
+		CommitDropColumn(column_idx, drop_state);
 	}
 }
 
-void RowGroup::CommitDropColumn(idx_t column_idx) {
-	GetColumn(column_idx).CommitDropColumn();
+struct BlockIdDropper : public BlockIdVisitor {
+	explicit BlockIdDropper(CommitDropState &drop_state) : drop_state(drop_state) {
+	}
+
+	void Visit(block_id_t block_id) override {
+		drop_state.DropBlock(block_id);
+	}
+
+	CommitDropState &drop_state;
+};
+
+void RowGroup::CommitDropColumn(const idx_t column_index, CommitDropState &drop_state) {
+	auto &column = GetColumn(column_index);
+	BlockIdDropper dropper(drop_state);
+	column.VisitBlockIds(dropper);
+}
+
+void RowGroup::CommitDrop() {
+	CommitDropState drop_state(&GetBlockManager());
+	CommitDrop(drop_state);
+	drop_state.FinalizeCommit();
 }
 
 void RowGroup::NextVector(CollectionScanState &state) {
@@ -349,104 +648,108 @@ void RowGroup::NextVector(CollectionScanState &state) {
 	const auto &column_ids = state.GetColumnIds();
 	for (idx_t i = 0; i < column_ids.size(); i++) {
 		const auto &column = column_ids[i];
-		if (column == COLUMN_IDENTIFIER_ROW_ID) {
-			continue;
-		}
-		D_ASSERT(column < columns.size());
 		GetColumn(column).Skip(state.column_scans[i]);
 	}
 }
 
-bool RowGroup::CheckZonemap(TableFilterSet &filters, const vector<storage_t> &column_ids) {
-	for (auto &entry : filters.filters) {
-		auto column_index = entry.first;
-		auto &filter = entry.second;
-		const auto &base_column_index = column_ids[column_index];
-		if (!GetColumn(base_column_index).CheckZonemap(*filter)) {
+FilterPropagateResult RowGroup::CheckRowIdFilter(const TableFilter &filter, idx_t beg_row, idx_t end_row) {
+	// RowId columns dont have a zonemap, but we can trivially create stats to check the filter against.
+	BaseStatistics dummy_stats = NumericStats::CreateEmpty(LogicalType::ROW_TYPE);
+	dummy_stats.SetHasNoNullFast();
+	NumericStats::SetMin(dummy_stats, UnsafeNumericCast<row_t>(beg_row));
+	NumericStats::SetMax(dummy_stats, UnsafeNumericCast<row_t>(end_row));
+
+	auto &expr_filter = ExpressionFilter::GetExpressionFilter(filter, "RowGroup::CheckRowIdFilter");
+	return expr_filter.CheckStatistics(dummy_stats);
+}
+
+bool RowGroup::CheckZonemap(ScanFilterInfo &filters) {
+	auto &filter_list = filters.GetFilterList();
+	// new row group - label all filters as up for grabs again
+	filters.CheckAllFilters();
+	for (idx_t i = 0; i < filter_list.size(); i++) {
+		auto &entry = filter_list[i];
+		auto &filter = entry.filter;
+		const auto &base_column_index = entry.table_column_index;
+
+		auto prune_result = GetColumn(base_column_index).CheckZonemap(base_column_index, filter);
+		if (prune_result == FilterPropagateResult::FILTER_ALWAYS_FALSE) {
 			return false;
+		}
+		if (ExpressionFilter::IsRootOptionalFilter(filter)) {
+			// these are only for row group checking, set as always true so we don't check it
+			filters.SetFilterAlwaysTrue(i);
+		} else if (prune_result == FilterPropagateResult::FILTER_ALWAYS_TRUE) {
+			// filter is always true - no need to check it
+			// label the filter as always true so we don't need to check it anymore
+			filters.SetFilterAlwaysTrue(i);
 		}
 	}
 	return true;
-}
-
-static idx_t GetFilterScanCount(ColumnScanState &state, TableFilter &filter) {
-	switch (filter.filter_type) {
-	case TableFilterType::STRUCT_EXTRACT: {
-		auto &struct_filter = filter.Cast<StructFilter>();
-		auto &child_state = state.child_states[1 + struct_filter.child_idx]; // +1 for validity
-		auto &child_filter = struct_filter.child_filter;
-		return GetFilterScanCount(child_state, *child_filter);
-	}
-	case TableFilterType::CONJUNCTION_AND: {
-		auto &conjunction_state = filter.Cast<ConjunctionAndFilter>();
-		idx_t max_count = 0;
-		for (auto &child_filter : conjunction_state.child_filters) {
-			max_count = std::max(GetFilterScanCount(state, *child_filter), max_count);
-		}
-		return max_count;
-	}
-	case TableFilterType::CONJUNCTION_OR: {
-		auto &conjunction_state = filter.Cast<ConjunctionOrFilter>();
-		idx_t max_count = 0;
-		for (auto &child_filter : conjunction_state.child_filters) {
-			max_count = std::max(GetFilterScanCount(state, *child_filter), max_count);
-		}
-		return max_count;
-	}
-	case TableFilterType::IS_NULL:
-	case TableFilterType::IS_NOT_NULL:
-	case TableFilterType::CONSTANT_COMPARISON:
-		return state.current->start + state.current->count;
-	default: {
-		throw NotImplementedException("Unimplemented filter type for zonemap");
-	}
-	}
 }
 
 bool RowGroup::CheckZonemapSegments(CollectionScanState &state) {
-	auto &column_ids = state.GetColumnIds();
-	auto filters = state.GetFilters();
-	if (!filters) {
-		return true;
-	}
-	for (auto &entry : filters->filters) {
-		D_ASSERT(entry.first < column_ids.size());
-		auto column_idx = entry.first;
-		const auto &base_column_idx = column_ids[column_idx];
-		bool read_segment = GetColumn(base_column_idx).CheckZonemap(state.column_scans[column_idx], *entry.second);
-		if (!read_segment) {
+	auto &filters = state.GetFilterInfo();
+	optional_idx target_vector_index_max;
+	for (auto &entry : filters.GetFilterList()) {
+		if (entry.IsAlwaysTrue()) {
+			// filter is always true - avoid checking
+			continue;
+		}
+		auto column_idx = entry.scan_column_index;
+		auto base_column_idx = entry.table_column_index;
+		auto &filter = entry.filter;
 
-			idx_t target_row = GetFilterScanCount(state.column_scans[column_idx], *entry.second);
+		auto prune_result = GetColumn(base_column_idx).CheckZonemap(state.column_scans[column_idx], filter);
+		if (prune_result != FilterPropagateResult::FILTER_ALWAYS_FALSE) {
+			continue;
+		}
 
-			D_ASSERT(target_row >= this->start);
-			D_ASSERT(target_row <= this->start + this->count);
-			idx_t target_vector_index = (target_row - this->start) / STANDARD_VECTOR_SIZE;
-			if (state.vector_index == target_vector_index) {
-				// we can't skip any full vectors because this segment contains less than a full vector
-				// for now we just bail-out
-				// FIXME: we could check if we can ALSO skip the next segments, in which case skipping a full vector
-				// might be possible
-				// we don't care that much though, since a single segment that fits less than a full vector is
-				// exceedingly rare
-				return true;
-			}
-			while (state.vector_index < target_vector_index) {
-				NextVector(state);
-			}
-			return false;
+		// check zone map segment.
+		auto &column_scan_state = state.column_scans[column_idx];
+		auto current_segment = column_scan_state.current;
+		if (!current_segment) {
+			// no segment to skip
+			continue;
+		}
+		auto row_start = current_segment->GetRowStart();
+		idx_t target_row = row_start + current_segment->GetNode().count;
+		if (target_row >= state.max_row) {
+			target_row = state.max_row;
+		}
+		D_ASSERT(target_row >= row_start);
+		D_ASSERT(target_row <= row_start + this->count);
+		// current_segment->GetRowStart() is already row-group-relative, and state.vector_index uses the same
+		// coordinate space. Subtracting row_start here incorrectly makes the target segment-local.
+		idx_t target_vector_index = target_row / STANDARD_VECTOR_SIZE;
+
+		if (!target_vector_index_max.IsValid() || target_vector_index_max.GetIndex() < target_vector_index) {
+			target_vector_index_max = target_vector_index;
 		}
 	}
-
-	return true;
+	if (target_vector_index_max.IsValid()) {
+		if (state.vector_index == target_vector_index_max.GetIndex()) {
+			// we can't skip any full vectors because this segment contains less than a full vector
+			// for now we just bail-out
+			// FIXME: we could check if we can ALSO skip the next segments, in which case skipping a full vector
+			// might be possible
+			// we don't care that much though, since a single segment that fits less than a full vector is
+			// exceedingly rare
+			return true;
+		}
+		while (state.vector_index < target_vector_index_max.GetIndex()) {
+			NextVector(state);
+		}
+		return false;
+	} else {
+		return true;
+	}
 }
 
-template <TableScanType TYPE>
-void RowGroup::TemplatedScan(TransactionData transaction, CollectionScanState &state, DataChunk &result) {
-	const bool ALLOW_UPDATES = TYPE != TableScanType::TABLE_SCAN_COMMITTED_ROWS_DISALLOW_UPDATES &&
-	                           TYPE != TableScanType::TABLE_SCAN_COMMITTED_ROWS_OMIT_PERMANENTLY_DELETED;
-	auto table_filters = state.GetFilters();
+void RowGroup::Scan(ScanOptions options, CollectionScanState &state, DataChunk &result) {
 	const auto &column_ids = state.GetColumnIds();
-	auto adaptive_filter = state.GetAdaptiveFilter();
+	auto &filter_info = state.GetFilterInfo();
+	auto &transaction = options.transaction;
 	while (true) {
 		if (state.vector_index * STANDARD_VECTOR_SIZE >= state.max_row_group_row) {
 			// exceeded the amount of rows to scan
@@ -455,243 +758,290 @@ void RowGroup::TemplatedScan(TransactionData transaction, CollectionScanState &s
 		idx_t current_row = state.vector_index * STANDARD_VECTOR_SIZE;
 		auto max_count = MinValue<idx_t>(STANDARD_VECTOR_SIZE, state.max_row_group_row - current_row);
 
+		// check the sampling info if we have to sample this chunk
+		if (state.GetSamplingInfo().do_system_sample &&
+		    state.random.NextRandom() > state.GetSamplingInfo().sample_rate) {
+			NextVector(state);
+			continue;
+		}
+
 		//! first check the zonemap if we have to scan this partition
 		if (!CheckZonemapSegments(state)) {
 			continue;
 		}
+		auto &current_row_group = state.row_group->GetNode();
+
 		// second, scan the version chunk manager to figure out which tuples to load for this transaction
-		idx_t count;
-		SelectionVector valid_sel(STANDARD_VECTOR_SIZE);
-		if (TYPE == TableScanType::TABLE_SCAN_REGULAR) {
-			count = state.row_group->GetSelVector(transaction, state.vector_index, valid_sel, max_count);
-			if (count == 0) {
-				// nothing to scan for this vector, skip the entire vector
-				NextVector(state);
-				continue;
-			}
-		} else if (TYPE == TableScanType::TABLE_SCAN_COMMITTED_ROWS_OMIT_PERMANENTLY_DELETED) {
-			count = state.row_group->GetCommittedSelVector(transaction.start_time, transaction.transaction_id,
-			                                               state.vector_index, valid_sel, max_count);
-			if (count == 0) {
-				// nothing to scan for this vector, skip the entire vector
-				NextVector(state);
-				continue;
-			}
-		} else {
-			count = max_count;
+		idx_t count = current_row_group.GetSelVector(options, state.vector_index, state.valid_sel, max_count);
+		if (count == 0) {
+			// nothing to scan for this vector, skip the entire vector
+			NextVector(state);
+			continue;
 		}
-		if (count == max_count && !table_filters) {
+		state.rows_scanned += count;
+
+		auto &block_manager = GetBlockManager();
+		if (block_manager.Prefetch()) {
+			PrefetchState prefetch_state;
+			for (idx_t i = 0; i < column_ids.size(); i++) {
+				const auto &column = column_ids[i];
+				GetColumn(column).InitializePrefetch(prefetch_state, state.column_scans[i], max_count);
+			}
+			auto &buffer_manager = block_manager.buffer_manager;
+			buffer_manager.Prefetch(prefetch_state.blocks);
+		}
+
+		bool has_filters = filter_info.HasFilters();
+		if (count == max_count && !has_filters) {
 			// scan all vectors completely: full scan without deletions or table filters
 			for (idx_t i = 0; i < column_ids.size(); i++) {
 				const auto &column = column_ids[i];
-				if (column == COLUMN_IDENTIFIER_ROW_ID) {
-					// scan row id
-					D_ASSERT(result.data[i].GetType().InternalType() == ROW_TYPE);
-					result.data[i].Sequence(this->start + current_row, 1, count);
-				} else {
-					auto &col_data = GetColumn(column);
-					if (TYPE != TableScanType::TABLE_SCAN_REGULAR) {
-						col_data.ScanCommitted(state.vector_index, state.column_scans[i], result.data[i],
-						                       ALLOW_UPDATES);
-					} else {
-						col_data.Scan(transaction, state.vector_index, state.column_scans[i], result.data[i]);
-					}
-				}
+				auto &col_data = GetColumn(column);
+				state.column_scans[i].update_scan_type = options.update_type;
+				// pass max_count explicitly so we never read past the row count we captured at scan
+				// init time (concurrent inserts can grow the column past max_count)
+				col_data.Scan(transaction, state.vector_index, state.column_scans[i], result.data[i], max_count);
 			}
 		} else {
 			// partial scan: we have deletions or table filters
 			idx_t approved_tuple_count = count;
 			SelectionVector sel;
 			if (count != max_count) {
-				sel.Initialize(valid_sel);
+				sel.Initialize(state.valid_sel);
 			} else {
 				sel.Initialize(nullptr);
 			}
 			//! first, we scan the columns with filters, fetch their data and generate a selection vector.
 			//! get runtime statistics
-			auto start_time = high_resolution_clock::now();
-			if (table_filters) {
-				D_ASSERT(adaptive_filter);
-				D_ASSERT(ALLOW_UPDATES);
-				for (idx_t i = 0; i < table_filters->filters.size(); i++) {
-					auto tf_idx = adaptive_filter->permutation[i];
-					auto col_idx = column_ids[tf_idx];
-					auto &col_data = GetColumn(col_idx);
-					col_data.Select(transaction, state.vector_index, state.column_scans[tf_idx], result.data[tf_idx],
-					                sel, approved_tuple_count, *table_filters->filters[tf_idx]);
+			auto adaptive_filter = filter_info.GetAdaptiveFilter();
+			auto filter_state = filter_info.BeginFilter();
+			if (has_filters) {
+				auto &filter_list = filter_info.GetFilterList();
+				const auto &permutation = adaptive_filter->GetPermutation();
+				for (idx_t i = 0; i < filter_list.size(); i++) {
+					auto filter_idx = permutation[i];
+					auto &filter = filter_list[filter_idx];
+					if (filter.IsAlwaysTrue()) {
+						// this filter is always true - skip it
+						continue;
+					}
+					auto &table_filter_state = *filter.filter_state;
+
+					const auto scan_idx = filter.scan_column_index;
+					const auto column_idx = filter.table_column_index;
+
+					auto &result_vector = result.data[scan_idx];
+					if (approved_tuple_count == 0) {
+						auto &col_data = GetColumn(column_idx);
+						col_data.Skip(state.column_scans[scan_idx]);
+						continue;
+					}
+					auto &col_data = GetColumn(column_idx);
+					col_data.Filter(transaction, state.vector_index, state.column_scans[scan_idx], result_vector, sel,
+					                approved_tuple_count, filter.filter, table_filter_state);
 				}
-				for (auto &table_filter : table_filters->filters) {
-					result.data[table_filter.first].Slice(sel, approved_tuple_count);
+				for (auto &table_filter : filter_list) {
+					if (table_filter.IsAlwaysTrue()) {
+						continue;
+					}
+					result.data[table_filter.scan_column_index].Slice(sel, approved_tuple_count);
 				}
 			}
 			if (approved_tuple_count == 0) {
 				// all rows were filtered out by the table filters
-				// skip this vector in all the scans that were not scanned yet
-				D_ASSERT(table_filters);
+				D_ASSERT(has_filters);
 				result.Reset();
+				// skip this vector in all the scans that were not scanned yet
 				for (idx_t i = 0; i < column_ids.size(); i++) {
-					auto col_idx = column_ids[i];
-					if (col_idx == COLUMN_IDENTIFIER_ROW_ID) {
+					auto &col_idx = column_ids[i];
+					if (has_filters && filter_info.ColumnHasFilters(i)) {
 						continue;
 					}
-					if (table_filters->filters.find(i) == table_filters->filters.end()) {
-						auto &col_data = GetColumn(col_idx);
-						col_data.Skip(state.column_scans[i]);
-					}
+					auto &col_data = GetColumn(col_idx);
+					col_data.Skip(state.column_scans[i]);
 				}
+				filter_info.EndFilter(filter_state);
 				state.vector_index++;
 				continue;
 			}
 			//! Now we use the selection vector to fetch data for the other columns.
 			for (idx_t i = 0; i < column_ids.size(); i++) {
-				if (!table_filters || table_filters->filters.find(i) == table_filters->filters.end()) {
-					auto column = column_ids[i];
-					if (column == COLUMN_IDENTIFIER_ROW_ID) {
-						D_ASSERT(result.data[i].GetType().InternalType() == PhysicalType::INT64);
-						result.data[i].SetVectorType(VectorType::FLAT_VECTOR);
-						auto result_data = FlatVector::GetData<int64_t>(result.data[i]);
-						for (size_t sel_idx = 0; sel_idx < approved_tuple_count; sel_idx++) {
-							result_data[sel_idx] = this->start + current_row + sel.get_index(sel_idx);
-						}
-					} else {
-						auto &col_data = GetColumn(column);
-						if (TYPE == TableScanType::TABLE_SCAN_REGULAR) {
-							col_data.FilterScan(transaction, state.vector_index, state.column_scans[i], result.data[i],
-							                    sel, approved_tuple_count);
-						} else {
-							col_data.FilterScanCommitted(state.vector_index, state.column_scans[i], result.data[i], sel,
-							                             approved_tuple_count, ALLOW_UPDATES);
-						}
-					}
+				if (has_filters && filter_info.ColumnHasFilters(i)) {
+					// column has already been scanned as part of the filtering process
+					continue;
 				}
+				auto &column = column_ids[i];
+				auto &col_data = GetColumn(column);
+				state.column_scans[i].update_scan_type = options.update_type;
+				col_data.Select(transaction, state.vector_index, state.column_scans[i], result.data[i], sel,
+				                approved_tuple_count);
 			}
-			auto end_time = high_resolution_clock::now();
-			if (adaptive_filter && table_filters->filters.size() > 1) {
-				adaptive_filter->AdaptRuntimeStatistics(duration_cast<duration<double>>(end_time - start_time).count());
-			}
+			filter_info.EndFilter(filter_state);
+
 			D_ASSERT(approved_tuple_count > 0);
 			count = approved_tuple_count;
 		}
-		result.SetCardinality(count);
+		result.SetChildCardinality(count);
 		state.vector_index++;
 		break;
 	}
 }
 
-void RowGroup::Scan(TransactionData transaction, CollectionScanState &state, DataChunk &result) {
-	TemplatedScan<TableScanType::TABLE_SCAN_REGULAR>(transaction, state, result);
+ScanOptions::ScanOptions(TransactionData transaction) : transaction(transaction) {
 }
 
-void RowGroup::ScanCommitted(CollectionScanState &state, DataChunk &result, TableScanType type) {
+void RowGroup::Scan(CollectionScanState &state, DataChunk &result, TableScanType type) {
 	auto &transaction_manager = DuckTransactionManager::Get(GetCollection().GetAttached());
 
-	auto lowest_active_start = transaction_manager.LowestActiveStart();
-	auto lowest_active_id = transaction_manager.LowestActiveId();
-	TransactionData data(lowest_active_id, lowest_active_start);
+	transaction_t start_ts;
+	transaction_t transaction_id;
+	if (type == TableScanType::TABLE_SCAN_COMMITTED_ROWS) {
+		start_ts = transaction_manager.GetLastCommit() + 1;
+		transaction_id = MAX_TRANSACTION_ID;
+	} else {
+		start_ts = transaction_manager.LowestActiveStart();
+		transaction_id = transaction_manager.LowestActiveId();
+	}
+	TransactionData transaction(transaction_id, start_ts);
+
+	ScanOptions options(transaction);
+	options.insert_type = InsertedScanType::ALL_ROWS;
 	switch (type) {
+	case TableScanType::TABLE_SCAN_ALL_ROWS:
+		options.delete_type = DeletedScanType::INCLUDE_ALL_DELETED;
+		break;
+	case TableScanType::TABLE_SCAN_OMIT_PERMANENTLY_DELETED:
 	case TableScanType::TABLE_SCAN_COMMITTED_ROWS:
-		TemplatedScan<TableScanType::TABLE_SCAN_COMMITTED_ROWS>(data, state, result);
-		break;
-	case TableScanType::TABLE_SCAN_COMMITTED_ROWS_DISALLOW_UPDATES:
-		TemplatedScan<TableScanType::TABLE_SCAN_COMMITTED_ROWS_DISALLOW_UPDATES>(data, state, result);
-		break;
-	case TableScanType::TABLE_SCAN_COMMITTED_ROWS_OMIT_PERMANENTLY_DELETED:
-		TemplatedScan<TableScanType::TABLE_SCAN_COMMITTED_ROWS_OMIT_PERMANENTLY_DELETED>(data, state, result);
+		options.delete_type = DeletedScanType::OMIT_COMMITTED_DELETES;
+		options.update_type = UpdateScanType::DISALLOW_UPDATES;
 		break;
 	default:
 		throw InternalException("Unrecognized table scan type");
 	}
+	Scan(options, state, result);
 }
 
-shared_ptr<RowVersionManager> &RowGroup::GetVersionInfo() {
+optional_ptr<RowVersionManager> RowGroup::GetVersionInfo() {
 	if (!HasUnloadedDeletes()) {
 		// deletes are loaded - return the version info
 		return version_info;
 	}
 	lock_guard<mutex> lock(row_group_lock);
 	// double-check after obtaining the lock whether or not deletes are still not loaded to avoid double load
-	if (HasUnloadedDeletes()) {
-		// deletes are not loaded - reload
-		auto root_delete = deletes_pointers[0];
-		version_info = RowVersionManager::Deserialize(root_delete, GetBlockManager().GetMetadataManager(), start);
-		deletes_is_loaded = true;
+	if (!HasUnloadedDeletes()) {
+		return version_info;
 	}
+	D_ASSERT(!deletes_pointers.empty());
+	auto root_delete = deletes_pointers[0];
+	auto loaded_info = RowVersionManager::Deserialize(root_delete, GetBlockManager().GetMetadataManager());
+	SetVersionInfo(std::move(loaded_info));
+	deletes_is_loaded = true;
 	return version_info;
 }
 
-shared_ptr<RowVersionManager> &RowGroup::GetOrCreateVersionInfoPtr() {
-	auto vinfo = GetVersionInfo();
-	if (!vinfo) {
-		lock_guard<mutex> lock(row_group_lock);
-		if (!version_info) {
-			version_info = make_shared<RowVersionManager>(start);
-		}
+void RowGroup::SetVersionInfo(shared_ptr<RowVersionManager> version) {
+	owned_version_info = std::move(version);
+	version_info = owned_version_info.get();
+}
+
+shared_ptr<RowVersionManager> RowGroup::GetOrCreateVersionInfoInternal() {
+	// version info does not exist - need to create it
+	lock_guard<mutex> lock(row_group_lock);
+	if (!owned_version_info) {
+		auto &buffer_manager = GetBlockManager().GetBufferManager();
+		auto new_info = make_shared_ptr<RowVersionManager>(buffer_manager);
+		SetVersionInfo(std::move(new_info));
 	}
-	return version_info;
+	return owned_version_info;
+}
+
+shared_ptr<RowVersionManager> RowGroup::GetOrCreateVersionInfoPtr() {
+	auto vinfo = GetVersionInfo();
+	if (vinfo) {
+		// version info exists - return it directly
+		return owned_version_info;
+	}
+	return GetOrCreateVersionInfoInternal();
 }
 
 RowVersionManager &RowGroup::GetOrCreateVersionInfo() {
-	return *GetOrCreateVersionInfoPtr();
+	auto vinfo = GetVersionInfo();
+	if (vinfo) {
+		// version info exists - return it directly
+		return *vinfo;
+	}
+	return *GetOrCreateVersionInfoInternal();
 }
 
-idx_t RowGroup::GetSelVector(TransactionData transaction, idx_t vector_idx, SelectionVector &sel_vector,
-                             idx_t max_count) {
-	auto &vinfo = GetVersionInfo();
+optional_ptr<RowVersionManager> RowGroup::GetVersionInfoIfLoaded() const {
+	if (!HasUnloadedDeletes()) {
+		// deletes are loaded - return the version info
+		return version_info;
+	}
+	return nullptr;
+}
+
+idx_t RowGroup::GetSelVector(ScanOptions options, idx_t vector_idx, SelectionVector &sel_vector, idx_t max_count) {
+	if (options.insert_type == InsertedScanType::ALL_ROWS &&
+	    options.delete_type == DeletedScanType::INCLUDE_ALL_DELETED) {
+		return max_count;
+	}
+	auto vinfo = GetVersionInfo();
 	if (!vinfo) {
 		return max_count;
 	}
-	return vinfo->GetSelVector(transaction, vector_idx, sel_vector, max_count);
-}
-
-idx_t RowGroup::GetCommittedSelVector(transaction_t start_time, transaction_t transaction_id, idx_t vector_idx,
-                                      SelectionVector &sel_vector, idx_t max_count) {
-	auto &vinfo = GetVersionInfo();
-	if (!vinfo) {
-		return max_count;
-	}
-	return vinfo->GetCommittedSelVector(start_time, transaction_id, vector_idx, sel_vector, max_count);
+	return vinfo->GetSelVector(options, vector_idx, sel_vector, max_count);
 }
 
 bool RowGroup::Fetch(TransactionData transaction, idx_t row) {
-	D_ASSERT(row < this->count);
-	auto &vinfo = GetVersionInfo();
+	if (UnsafeNumericCast<idx_t>(row) > count) {
+		throw InternalException("RowGroup::Fetch - row_id out of range for row group");
+	}
+	auto vinfo = GetVersionInfo();
 	if (!vinfo) {
 		return true;
 	}
 	return vinfo->Fetch(transaction, row);
 }
 
-void RowGroup::FetchRow(TransactionData transaction, ColumnFetchState &state, const vector<column_t> &column_ids,
+void RowGroup::FetchRow(TransactionData transaction, ColumnFetchState &state, const vector<StorageIndex> &column_ids,
                         row_t row_id, DataChunk &result, idx_t result_idx) {
+	if (UnsafeNumericCast<idx_t>(row_id) > count) {
+		throw InternalException("RowGroup::FetchRow - row_id out of range for row group");
+	}
 	for (idx_t col_idx = 0; col_idx < column_ids.size(); col_idx++) {
-		auto column = column_ids[col_idx];
+		auto &column = column_ids[col_idx];
 		auto &result_vector = result.data[col_idx];
 		D_ASSERT(result_vector.GetVectorType() == VectorType::FLAT_VECTOR);
 		D_ASSERT(!FlatVector::IsNull(result_vector, result_idx));
-		if (column == COLUMN_IDENTIFIER_ROW_ID) {
-			// row id column: fill in the row ids
-			D_ASSERT(result_vector.GetType().InternalType() == PhysicalType::INT64);
-			result_vector.SetVectorType(VectorType::FLAT_VECTOR);
-			auto data = FlatVector::GetData<row_t>(result_vector);
-			data[result_idx] = row_id;
-		} else {
-			// regular column: fetch data from the base column
-			auto &col_data = GetColumn(column);
-			col_data.FetchRow(transaction, state, row_id, result_vector, result_idx);
-		}
+		// regular column: fetch data from the base column
+		auto &col_data = GetColumn(column);
+		col_data.FetchRow(transaction, state, column, row_id, result_vector, result_idx);
+	}
+}
+
+void RowGroup::SetCount(idx_t count) {
+	this->count = count;
+	lock_guard<mutex> guard(row_group_lock);
+	if (row_id_is_loaded) {
+		row_id_column_data->count = count;
+	}
+	if (row_number_is_loaded) {
+		row_number_column_data->count = count;
 	}
 }
 
 void RowGroup::AppendVersionInfo(TransactionData transaction, idx_t count) {
+	const idx_t row_group_size = GetRowGroupSize();
 	idx_t row_group_start = this->count.load();
 	idx_t row_group_end = row_group_start + count;
-	if (row_group_end > Storage::ROW_GROUP_SIZE) {
-		row_group_end = Storage::ROW_GROUP_SIZE;
+	if (row_group_end > row_group_size) {
+		row_group_end = row_group_size;
 	}
 	// create the version_info if it doesn't exist yet
 	auto &vinfo = GetOrCreateVersionInfo();
 	vinfo.AppendVersionInfo(transaction, count, row_group_start, row_group_end);
-	this->count = row_group_end;
+	SetCount(row_group_end);
 }
 
 void RowGroup::CommitAppend(transaction_t commit_id, idx_t row_group_start, idx_t count) {
@@ -699,14 +1049,24 @@ void RowGroup::CommitAppend(transaction_t commit_id, idx_t row_group_start, idx_
 	vinfo.CommitAppend(commit_id, row_group_start, count);
 }
 
-void RowGroup::RevertAppend(idx_t row_group_start) {
-	auto &vinfo = GetOrCreateVersionInfo();
-	vinfo.RevertAppend(row_group_start - this->start);
-	for (auto &column : columns) {
-		column->RevertAppend(row_group_start);
+void RowGroup::RevertAppend(idx_t new_count) {
+	if (new_count > this->count) {
+		throw InternalException("RowGroup::RevertAppend new_count out of range");
 	}
-	this->count = MinValue<idx_t>(row_group_start - this->start, this->count);
+	auto &vinfo = GetOrCreateVersionInfo();
+	vinfo.RevertAppend(new_count);
+	for (auto &column : GetColumns()) {
+		column->RevertAppend(UnsafeNumericCast<row_t>(new_count));
+	}
+	SetCount(new_count);
 	Verify();
+}
+
+RowGroupAppendState::RowGroupAppendState(TableAppendState &parent_p)
+    : parent(parent_p), row_group(nullptr), offset_in_row_group(0) {
+}
+
+RowGroupAppendState::~RowGroupAppendState() {
 }
 
 void RowGroup::InitializeAppend(RowGroupAppendState &append_state) {
@@ -732,96 +1092,230 @@ void RowGroup::Append(RowGroupAppendState &state, DataChunk &chunk, idx_t append
 	state.offset_in_row_group += append_count;
 }
 
-void RowGroup::Update(TransactionData transaction, DataChunk &update_chunk, row_t *ids, idx_t offset, idx_t count,
-                      const vector<PhysicalIndex> &column_ids) {
+void RowGroup::FinalizeAppend(RowGroupAppendState &state) {
+	auto &parent_stats = state.parent.stats;
+	if (parent_stats.Empty()) {
+		for (idx_t c = 0; c < GetColumnCount(); c++) {
+			auto &col_data = GetColumn(c);
+			col_data.FinalizeAppend(nullptr, state.states[c]);
+		}
+	} else {
+		auto stats_lock = parent_stats.GetLock();
+		for (idx_t c = 0; c < GetColumnCount(); c++) {
+			auto &col_data = GetColumn(c);
+			col_data.FinalizeAppend(parent_stats.GetStats(*stats_lock, c).Statistics(), state.states[c]);
+		}
+	}
+}
+
+void RowGroup::CleanupAppend(transaction_t lowest_transaction, idx_t start, idx_t count) {
+	auto &vinfo = GetOrCreateVersionInfo();
+	vinfo.CleanupAppend(lowest_transaction, start, count);
+}
+
+void RowGroup::Update(TransactionData transaction, DuckTableEntry &table_entry, DataChunk &update_chunk, row_t *ids,
+                      idx_t offset, idx_t count, const vector<PhysicalIndex> &column_ids, idx_t row_group_start) {
 #ifdef DEBUG
 	for (size_t i = offset; i < offset + count; i++) {
-		D_ASSERT(ids[i] >= row_t(this->start) && ids[i] < row_t(this->start + this->count));
+		D_ASSERT(ids[i] >= row_t(row_group_start) && ids[i] < row_t(row_group_start + this->count));
 	}
 #endif
 	for (idx_t i = 0; i < column_ids.size(); i++) {
 		auto column = column_ids[i];
-		D_ASSERT(column.index != COLUMN_IDENTIFIER_ROW_ID);
 		auto &col_data = GetColumn(column.index);
 		D_ASSERT(col_data.type.id() == update_chunk.data[i].GetType().id());
 		if (offset > 0) {
 			Vector sliced_vector(update_chunk.data[i], offset, offset + count);
-			sliced_vector.Flatten(count);
-			col_data.Update(transaction, column.index, sliced_vector, ids + offset, count);
+			sliced_vector.Flatten();
+			col_data.Update(transaction, table_entry, column.index, sliced_vector, ids + offset, count,
+			                row_group_start);
 		} else {
-			col_data.Update(transaction, column.index, update_chunk.data[i], ids, count);
+			col_data.Update(transaction, table_entry, column.index, update_chunk.data[i], ids, count, row_group_start);
 		}
 		MergeStatistics(column.index, *col_data.GetUpdateStatistics());
 	}
 }
 
-void RowGroup::UpdateColumn(TransactionData transaction, DataChunk &updates, Vector &row_ids,
-                            const vector<column_t> &column_path) {
+void RowGroup::UpdateColumn(TransactionData transaction, DuckTableEntry &table_entry, DataChunk &updates,
+                            Vector &row_ids, idx_t offset, idx_t count, const vector<column_t> &column_path,
+                            idx_t row_group_start) {
 	D_ASSERT(updates.ColumnCount() == 1);
-	auto ids = FlatVector::GetData<row_t>(row_ids);
+	auto ids = FlatVector::GetDataMutable<row_t>(row_ids);
 
 	auto primary_column_idx = column_path[0];
-	D_ASSERT(primary_column_idx != COLUMN_IDENTIFIER_ROW_ID);
 	D_ASSERT(primary_column_idx < columns.size());
 	auto &col_data = GetColumn(primary_column_idx);
-	col_data.UpdateColumn(transaction, column_path, updates.data[0], ids, updates.size(), 1);
+	idx_t depth = 1;
+	if (offset > 0) {
+		Vector sliced_vector(updates.data[0], offset, offset + count);
+		sliced_vector.Flatten();
+		col_data.UpdateColumn(transaction, table_entry, column_path, sliced_vector, ids + offset, count, depth,
+		                      row_group_start);
+	} else {
+		col_data.UpdateColumn(transaction, table_entry, column_path, updates.data[0], ids, count, depth,
+		                      row_group_start);
+	}
 	MergeStatistics(primary_column_idx, *col_data.GetUpdateStatistics());
 }
 
-unique_ptr<BaseStatistics> RowGroup::GetStatistics(idx_t column_idx) {
+unique_ptr<BaseStatistics> RowGroup::GetStatistics(idx_t column_idx) const {
+	StorageIndex storage_index(column_idx);
+	return GetStatistics(storage_index);
+}
+
+unique_ptr<BaseStatistics> RowGroup::GetStatistics(const StorageIndex &column_idx) const {
 	auto &col_data = GetColumn(column_idx);
-	lock_guard<mutex> slock(stats_lock);
-	return col_data.GetStatistics();
+	auto column_stats = col_data.GetStatistics();
+	if (!column_idx.IsPushdownExtract()) {
+		return column_stats;
+	}
+	return column_stats->PushdownExtract(column_idx.GetChildIndex(0));
 }
 
 void RowGroup::MergeStatistics(idx_t column_idx, const BaseStatistics &other) {
 	auto &col_data = GetColumn(column_idx);
-	lock_guard<mutex> slock(stats_lock);
 	col_data.MergeStatistics(other);
 }
 
 void RowGroup::MergeIntoStatistics(idx_t column_idx, BaseStatistics &other) {
 	auto &col_data = GetColumn(column_idx);
-	lock_guard<mutex> slock(stats_lock);
 	col_data.MergeIntoStatistics(other);
 }
 
-RowGroupWriteData RowGroup::WriteToDisk(PartialBlockManager &manager,
-                                        const vector<CompressionType> &compression_types) {
-	RowGroupWriteData result;
-	result.states.reserve(columns.size());
-	result.statistics.reserve(columns.size());
+void RowGroup::MergeIntoStatistics(TableStatistics &other) {
+	auto stats_lock = other.GetLock();
+	for (idx_t i = 0; i < columns.size(); i++) {
+		MergeIntoStatistics(i, other.GetStats(*stats_lock, i).Statistics());
+	}
+}
 
-	// Checkpoint the individual columns of the row group
-	// Here we're iterating over columns. Each column can have multiple segments.
+ColumnCheckpointInfo::ColumnCheckpointInfo(RowGroupWriteInfo &info, idx_t column_idx)
+    : column_idx(column_idx), info(info) {
+}
+
+RowGroupWriteInfo::RowGroupWriteInfo(PartialBlockManager &manager, const vector<CompressionType> &compression_types,
+                                     CheckpointOptions options_p)
+    : manager(manager), compression_types(compression_types), options(options_p) {
+}
+
+RowGroupWriteInfo::RowGroupWriteInfo(PartialBlockManager &manager, const vector<CompressionType> &compression_types,
+                                     vector<unique_ptr<PartialBlockManager>> &column_partial_block_managers_p)
+    : manager(manager), compression_types(compression_types), options(),
+      column_partial_block_managers(column_partial_block_managers_p) {
+}
+
+PartialBlockManager &RowGroupWriteInfo::GetPartialBlockManager(idx_t column_idx) {
+	if (column_partial_block_managers && !column_partial_block_managers->empty()) {
+		return *column_partial_block_managers->at(column_idx);
+	}
+	return manager;
+}
+
+PartialBlockManager &ColumnCheckpointInfo::GetPartialBlockManager() {
+	return info.GetPartialBlockManager(column_idx);
+}
+
+CompressionType ColumnCheckpointInfo::GetCompressionType() {
+	return info.compression_types[column_idx];
+}
+
+shared_ptr<ColumnData> RowGroup::CheckpointColumn(const RowGroup &row_group, idx_t column_idx, RowGroupWriteInfo &info,
+                                                  RowGroupWriteData &write_data) {
+	// if we are loading a column just to checkpoint we unload it post-checkpoint
+	auto keep_column_loaded = row_group.ColumnIsLoaded(column_idx);
+	auto &column = row_group.GetColumn(column_idx);
+	ColumnCheckpointInfo checkpoint_info(info, column_idx);
+	auto checkpoint_state = column.Checkpoint(row_group, checkpoint_info);
+
+	auto result_col = checkpoint_state->GetFinalResult();
+	// FIXME: we should get rid of the checkpoint state statistics - and instead use the stats in the ColumnData
+	// directly
+	auto stats = checkpoint_state->GetStatistics();
+	result_col->MergeStatistics(*stats);
+
+	write_data.statistics.push_back(stats->Copy());
+	write_data.states.push_back(std::move(checkpoint_state));
+	write_data.keep_column_loaded.push_back(keep_column_loaded);
+	return result_col;
+}
+
+vector<RowGroupWriteData> RowGroup::WriteToDisk(RowGroupWriteInfo &info,
+                                                const vector<const_reference<RowGroup>> &row_groups) {
+	vector<RowGroupWriteData> result;
+	if (row_groups.empty()) {
+		return result;
+	}
+
+	idx_t column_count = row_groups[0].get().GetColumnCount();
+	for (auto &row_group : row_groups) {
+		D_ASSERT(column_count == row_group.get().GetColumnCount());
+		RowGroupWriteData write_data;
+		write_data.states.reserve(column_count);
+		write_data.statistics.reserve(column_count);
+		result.push_back(std::move(write_data));
+	}
+
+	// Checkpoint the row groups
+
+	// In order to co-locate columns across different row groups, we write column-at-a-time
+	// i.e. we first write column #0 of all row groups, then column #1, ...
+
+	// Each column can have multiple segments.
 	// (Some columns will be wider than others, and require different numbers
 	// of blocks to encode.) Segments cannot span blocks.
 	//
 	// Some of these columns are composite (list, struct). The data is written
 	// first sequentially, and the pointers are written later, so that the
 	// pointers all end up densely packed, and thus more cache-friendly.
-	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
-		auto &column = GetColumn(column_idx);
-		ColumnCheckpointInfo checkpoint_info {compression_types[column_idx]};
-		auto checkpoint_state = column.Checkpoint(*this, manager, checkpoint_info);
-		D_ASSERT(checkpoint_state);
-
-		auto stats = checkpoint_state->GetStatistics();
-		D_ASSERT(stats);
-
-		result.statistics.push_back(stats->Copy());
-		result.states.push_back(std::move(checkpoint_state));
+	vector<vector<shared_ptr<ColumnData>>> result_columns;
+	result_columns.resize(row_groups.size());
+	for (idx_t column_idx = 0; column_idx < column_count; column_idx++) {
+		for (idx_t row_group_idx = 0; row_group_idx < row_groups.size(); row_group_idx++) {
+			auto &row_group = row_groups[row_group_idx].get();
+			result_columns[row_group_idx].emplace_back(
+			    CheckpointColumn(row_group, column_idx, info, result[row_group_idx]));
+		}
 	}
-	D_ASSERT(result.states.size() == result.statistics.size());
+
+	// create the row groups
+	for (idx_t row_group_idx = 0; row_group_idx < row_groups.size(); row_group_idx++) {
+		auto &row_group_write_data = result[row_group_idx];
+		auto &row_group = row_groups[row_group_idx].get();
+		auto result_row_group = make_shared_ptr<RowGroup>(row_group.GetCollection(), row_group.count);
+		result_row_group->columns = std::move(result_columns[row_group_idx]);
+		result_row_group->version_info = row_group.version_info.load();
+		result_row_group->owned_version_info = row_group.owned_version_info;
+
+		row_group_write_data.result_row_group = std::move(result_row_group);
+	}
+
 	return result;
 }
 
+RowGroupWriteData RowGroup::WriteToDisk(RowGroupWriteInfo &info) const {
+	vector<const_reference<RowGroup>> row_groups;
+	row_groups.push_back(*this);
+	auto result = WriteToDisk(info, row_groups);
+	return std::move(result[0]);
+}
+
 idx_t RowGroup::GetCommittedRowCount() {
-	auto &vinfo = GetVersionInfo();
+	auto vinfo = GetVersionInfo();
 	if (!vinfo) {
 		return count;
 	}
-	return count - vinfo->GetCommittedDeletedCount(count);
+	ScanOptions options(TransactionData(0, TRANSACTION_ID_START));
+	options.insert_type = InsertedScanType::ALL_ROWS;
+	options.delete_type = DeletedScanType::OMIT_COMMITTED_DELETES;
+	return vinfo->GetRowCount(options, count);
+}
+
+idx_t RowGroup::GetVisibleRowCount(TransactionData transaction) {
+	auto vinfo = GetVersionInfo();
+	if (!vinfo) {
+		return count;
+	}
+	return vinfo->GetRowCount(transaction, count);
 }
 
 bool RowGroup::HasUnloadedDeletes() const {
@@ -833,38 +1327,297 @@ bool RowGroup::HasUnloadedDeletes() const {
 	return !deletes_is_loaded;
 }
 
-RowGroupWriteData RowGroup::WriteToDisk(RowGroupWriter &writer) {
-	vector<CompressionType> compression_types;
-	compression_types.reserve(columns.size());
-	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
-		auto &column = GetColumn(column_idx);
-		if (column.count != this->count) {
-			throw InternalException("Corrupted in-memory column - column with index %llu has misaligned count (row "
-			                        "group has %llu rows, column has %llu)",
-			                        column_idx, this->count.load(), column.count);
-		}
-		compression_types.push_back(writer.GetColumnCompressionType(column_idx));
+PerColumnMetadataBlocks RowGroup::ComputePerColumnMetadataBlocks() const {
+	PerColumnMetadataBlocks result;
+	if (column_pointers.empty()) {
+		return result;
 	}
 
-	return WriteToDisk(writer.GetPartialBlockManager(), compression_types);
+	auto &metadata_manager = GetCollection().GetMetadataManager();
+	auto &types = GetCollection().GetTypes();
+
+	for (idx_t i = 0; i < column_pointers.size(); i++) {
+		auto &start = column_pointers[i];
+		vector<MetaBlockPointer> col_read_pointers;
+		MetadataReader col_reader(metadata_manager, start, &col_read_pointers);
+		ColumnData::Deserialize(GetBlockManager(), GetTableInfo(), i, col_reader, types[i]);
+		vector<idx_t> extra_blocks;
+		for (auto &ptr : col_read_pointers) {
+			if (ptr.block_pointer != start.block_pointer) {
+				extra_blocks.emplace_back(ptr.block_pointer);
+			}
+		}
+		result.AddColumn(i, extra_blocks);
+	}
+	return result;
+}
+
+const vector<MetaBlockPointer> &RowGroup::GetColumnStartPointers() const {
+	return column_pointers;
+}
+
+vector<MetaBlockPointer> RowGroup::GetExtraMetadataBlockPointers() const {
+	vector<MetaBlockPointer> extra_metadata_block_pointers;
+	if (has_per_column_metadata_blocks) {
+		per_column_metadata_blocks.ForEachBlock(
+		    [&](idx_t, idx_t block_id) { extra_metadata_block_pointers.emplace_back(block_id, 0); });
+	} else {
+		D_ASSERT(has_metadata_blocks);
+		extra_metadata_block_pointers.reserve(extra_metadata_blocks.size());
+		for (auto &block_pointer : extra_metadata_blocks) {
+			extra_metadata_block_pointers.emplace_back(block_pointer, 0);
+		}
+	}
+	return extra_metadata_block_pointers;
+}
+
+bool RowGroup::CanReuseMetadata(RowGroupWriter &writer) const {
+	if (!Settings::Get<ExperimentalMetadataReuseSetting>(writer.GetDatabase())) {
+		// disabled by configuration
+		return false;
+	}
+	if (column_pointers.empty()) {
+		// no existing metadata on disk - cannot re-use
+		return false;
+	}
+	auto &table_writer = writer.GetTableWriter();
+	if (table_writer.RequireLegacyStartRow() && table_writer.RowIdsChanged()) {
+		// row-ids changed and we are targeting an old storage version that requires "start_row" - cannot re-use
+		return false;
+	}
+	return true;
+}
+
+bool RowGroup::HasUnchangedColumns() const {
+	for (idx_t c = 0; c < columns.size(); c++) {
+		if (!ColumnIsLoaded(c)) {
+			return true;
+		}
+		if (!columns[c]->HasAnyChanges()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+RowGroupWriteData RowGroup::WriteToDisk(RowGroupWriter &writer) {
+	bool can_reuse_metadata = CanReuseMetadata(writer);
+	if (can_reuse_metadata && !HasChanges()) {
+		RowGroupWriteData result;
+		result.write_action = RowGroupWriteAction::REUSE_EXISTING_ROW_GROUP_METADATA;
+		if (GetCollection().SupportsPerColumnWrites()) {
+			if (has_per_column_metadata_blocks) {
+				return result;
+			}
+			per_column_metadata_blocks = ComputePerColumnMetadataBlocks();
+			has_per_column_metadata_blocks = true;
+			return result;
+		}
+
+		if (has_metadata_blocks) {
+			return result;
+		}
+
+		if (!has_per_column_metadata_blocks) {
+			auto meta_blocks = ComputePerColumnMetadataBlocks();
+
+			vector<idx_t> computed_extra_metadata_blocks;
+			meta_blocks.ForEachBlock(
+			    [&](idx_t, idx_t block_id) { computed_extra_metadata_blocks.emplace_back(block_id); });
+			extra_metadata_blocks = computed_extra_metadata_blocks;
+			has_metadata_blocks = true;
+			return result;
+		}
+
+		D_ASSERT(has_per_column_metadata_blocks && !GetCollection().SupportsPerColumnWrites());
+		// we loaded column-level metadata from disk, but don't support writing it anymore, so we need to fall back to a
+		// full checkpoint as we need to write out the metadata in a single go
+	}
+
+	// determine which columns can be reused
+	bool partial_reuse =
+	    can_reuse_metadata && has_per_column_metadata_blocks && GetCollection().SupportsPerColumnWrites();
+	auto &compression_types = writer.GetCompressionTypes();
+	RowGroupWriteData result;
+	if (partial_reuse) {
+		result.write_action = RowGroupWriteAction::PARTIALLY_REUSE_COLUMN_METADATA;
+	} else {
+		result.write_action = RowGroupWriteAction::FULLY_CHECKPOINT_ROW_GROUP;
+	}
+
+	auto result_row_group = make_shared_ptr<RowGroup>(GetCollection(), this->count);
+	result_row_group->columns.resize(GetColumnCount());
+	result_row_group->column_pointers.resize(GetColumnCount());
+	result_row_group->deletes_pointers = deletes_pointers;
+	result_row_group->deletes_is_loaded = deletes_is_loaded.load();
+	result_row_group->owned_version_info = owned_version_info;
+	result_row_group->version_info = version_info.load();
+	if (is_loaded) {
+		result_row_group->is_loaded = unique_ptr<atomic<bool>[]>(new atomic<bool>[GetColumnCount()]);
+		for (idx_t c = 0; c < GetColumnCount(); c++) {
+			result_row_group->is_loaded[c] = true;
+		}
+	}
+
+	RowGroupWriteInfo info(writer.GetPartialBlockManager(), compression_types, writer.GetCheckpointOptions());
+
+	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
+		bool column_has_changes = true;
+		if (partial_reuse) {
+			if (!ColumnIsLoaded(column_idx)) {
+				column_has_changes = false;
+			} else if (!columns[column_idx]->HasAnyChanges()) {
+				column_has_changes = false;
+			}
+		}
+
+		if (!column_has_changes) {
+			// reuse this column's metadata
+			result.states.push_back(nullptr);
+			result_row_group->column_pointers[column_idx] = column_pointers[column_idx];
+			result.keep_column_loaded.push_back(true);
+			// carry forward existing column data and statistics
+			if (!ColumnIsLoaded(column_idx)) {
+				result_row_group->columns[column_idx] = nullptr;
+				result_row_group->is_loaded[column_idx] = false;
+				// column not loaded - stats will be merged from previous table stats during Checkpoint
+				result.statistics.push_back(BaseStatistics::CreateEmpty(GetCollection().GetTypes()[column_idx]));
+			} else {
+				result_row_group->columns[column_idx] = columns[column_idx];
+				auto col_stats = columns[column_idx]->GetStatistics();
+				result.statistics.push_back(col_stats
+				                                ? std::move(*col_stats)
+				                                : BaseStatistics::CreateEmpty(GetCollection().GetTypes()[column_idx]));
+			}
+		} else {
+			// checkpoint this column
+			auto &column = GetColumn(column_idx);
+			if (column.count != this->count) {
+				throw InternalException("Corrupted in-memory column - column with index %llu has misaligned count "
+				                        "(row group has %llu rows, column has %llu)",
+				                        column_idx, this->count.load(), column.count.load());
+			}
+			result_row_group->columns[column_idx] = CheckpointColumn(*this, column_idx, info, result);
+		}
+	}
+
+	result.result_row_group = std::move(result_row_group);
+	return result;
+}
+
+void IncrementSegmentStart(PersistentColumnData &data, idx_t start_increment) {
+	for (auto &pointer : data.pointers) {
+		pointer.row_start += start_increment;
+	}
+	for (auto &child_column : data.child_columns) {
+		IncrementSegmentStart(child_column, start_increment);
+	}
 }
 
 RowGroupPointer RowGroup::Checkpoint(RowGroupWriteData write_data, RowGroupWriter &writer,
-                                     TableStatistics &global_stats) {
+                                     TableStatistics &global_stats, idx_t row_group_start) {
 	RowGroupPointer row_group_pointer;
 
-	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
-		global_stats.GetStats(column_idx).Statistics().Merge(write_data.statistics[column_idx]);
+	auto metadata_manager = writer.GetMetadataManager();
+	// construct the row group pointer and write the column meta data to disk
+	row_group_pointer.row_start = row_group_start;
+	row_group_pointer.tuple_count = count;
+	if (write_data.write_action == RowGroupWriteAction::REUSE_EXISTING_ROW_GROUP_METADATA) {
+		// we are re-using the previous metadata
+		row_group_pointer.data_pointers = column_pointers;
+		row_group_pointer.has_metadata_blocks = has_metadata_blocks;
+		row_group_pointer.extra_metadata_blocks = extra_metadata_blocks;
+		row_group_pointer.has_per_column_metadata_blocks = has_per_column_metadata_blocks;
+		row_group_pointer.per_column_metadata_blocks = per_column_metadata_blocks;
+		if (metadata_manager) {
+			row_group_pointer.deletes_pointers = CheckpointDeletes(writer);
+
+			vector<MetaBlockPointer> metadata_block_pointers_to_be_cleared;
+			if (has_per_column_metadata_blocks) {
+				per_column_metadata_blocks.ForEachBlock(
+				    [&](idx_t, idx_t block_id) { metadata_block_pointers_to_be_cleared.emplace_back(block_id, 0); });
+			} else {
+				metadata_block_pointers_to_be_cleared.reserve(extra_metadata_blocks.size());
+				for (auto &block_pointer : extra_metadata_blocks) {
+					metadata_block_pointers_to_be_cleared.emplace_back(block_pointer, 0);
+				}
+			}
+			metadata_manager->ClearModifiedBlocks(column_pointers);
+			metadata_manager->ClearModifiedBlocks(metadata_block_pointers_to_be_cleared);
+		}
+		// merge row group stats into the global stats
+		auto lock = global_stats.GetLock();
+		for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
+			if (!ColumnIsLoaded(column_idx) && collection.get().GetTypes()[column_idx].id() != LogicalTypeId::VARIANT) {
+				// column is not loaded from disk - don't load just to update stats
+				writer.SetHasUnloadedColumn(column_idx);
+				continue;
+			}
+			GetColumn(column_idx).MergeIntoStatistics(global_stats.GetStats(*lock, column_idx).Statistics());
+		}
+		return row_group_pointer;
+	}
+	// write path: write column metadata to disk (with optional per-column reuse)
+	D_ASSERT(write_data.states.size() == GetColumnCount());
+	vector<idx_t> reused_columns;
+
+	// merge stats
+	{
+		auto lock = global_stats.GetLock();
+		for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
+			bool is_reused = !write_data.states[column_idx];
+			if (is_reused) {
+				reused_columns.emplace_back(column_idx);
+				if (!ColumnIsLoaded(column_idx) &&
+				    collection.get().GetTypes()[column_idx].id() != LogicalTypeId::VARIANT) {
+					writer.SetHasUnloadedColumn(column_idx);
+					continue;
+				}
+				GetColumn(column_idx).MergeIntoStatistics(global_stats.GetStats(*lock, column_idx).Statistics());
+			} else {
+				global_stats.GetStats(*lock, column_idx).Statistics().Merge(write_data.statistics[column_idx]);
+			}
+		}
 	}
 
-	// construct the row group pointer and write the column meta data to disk
-	D_ASSERT(write_data.states.size() == columns.size());
-	row_group_pointer.row_start = start;
-	row_group_pointer.tuple_count = count;
-	for (auto &state : write_data.states) {
-		// get the current position of the table data writer
+	auto serialization_options = SerializationOptions(writer.GetAttachedDatabase());
+
+	// collect blocks that need to be preserved for reused columns
+	vector<MetaBlockPointer> reused_column_blocks;
+
+	vector<vector<idx_t>> extra_blocks_for_columns;
+	if (!reused_columns.empty()) {
+		extra_blocks_for_columns = per_column_metadata_blocks.GetBlocksForColumns(reused_columns);
+	}
+	idx_t reused_column_idx = 0;
+
+	for (idx_t column_idx = 0; column_idx < GetColumnCount(); column_idx++) {
+		bool is_reused = !write_data.states[column_idx];
+		if (is_reused) {
+			// reuse existing column pointer and per-column blocks
+			auto col_ptr = column_pointers[column_idx];
+			row_group_pointer.data_pointers.push_back(col_ptr);
+			auto &col_blocks = extra_blocks_for_columns[reused_column_idx];
+			row_group_pointer.per_column_metadata_blocks.AddColumn(column_idx, col_blocks);
+
+			// collect all blocks for this reused column for ClearModifiedBlocks
+			reused_column_blocks.push_back(col_ptr);
+			for (auto &block_id : col_blocks) {
+				reused_column_blocks.emplace_back(block_id, 0);
+			}
+			++reused_column_idx;
+			continue;
+		}
+		// write new metadata for this column
+		auto &state = write_data.states[column_idx];
+		D_ASSERT(state);
+
+		// track blocks written for this column
+		vector<MetaBlockPointer> col_written_blocks;
+		writer.StartWritingColumns(col_written_blocks);
+
 		auto &data_writer = writer.GetPayloadWriter();
-		auto pointer = data_writer.GetMetaBlockPointer();
+		auto pointer = writer.GetMetaBlockPointer();
 
 		// store the stats and the data pointers in the row group pointers
 		row_group_pointer.data_pointers.push_back(pointer);
@@ -873,35 +1626,140 @@ RowGroupPointer RowGroup::Checkpoint(RowGroupWriteData write_data, RowGroupWrite
 		//
 		// Just as above, the state can refer to many other states, so this
 		// can cascade recursively into more pointer writes.
-		BinarySerializer serializer(data_writer);
+		auto persistent_data = state->ToPersistentData();
+		// increment the "start" in all data pointers by the row group start
+		// FIXME: this is only necessary when targeting old serialization
+		IncrementSegmentStart(persistent_data, row_group_start);
+
+		BinarySerializer serializer(data_writer, serialization_options);
 		serializer.Begin();
-		state->WriteDataPointers(writer, serializer);
+		persistent_data.Serialize(serializer);
 		serializer.End();
+
+		writer.FinishWritingColumns();
+
+		// collect per-column extra blocks (excluding the start block)
+		vector<idx_t> col_extra_blocks;
+		for (auto &written_ptr : col_written_blocks) {
+			if (written_ptr.block_pointer != pointer.block_pointer) {
+				col_extra_blocks.push_back(written_ptr.block_pointer);
+			}
+		}
+		row_group_pointer.per_column_metadata_blocks.AddColumn(column_idx, col_extra_blocks);
 	}
-	row_group_pointer.deletes_pointers = CheckpointDeletes(writer.GetPayloadWriter().GetManager());
+
+	if (GetCollection().SupportsPerColumnWrites()) {
+		row_group_pointer.has_per_column_metadata_blocks = true; // blocks already populated above
+	} else {
+		row_group_pointer.has_metadata_blocks = true;
+		row_group_pointer.per_column_metadata_blocks.ForEachBlock(
+		    [&](idx_t, idx_t block_id) { row_group_pointer.extra_metadata_blocks.push_back(block_id); });
+		row_group_pointer.per_column_metadata_blocks = {};
+	}
+
+	if (metadata_manager) {
+		row_group_pointer.deletes_pointers = CheckpointDeletes(writer);
+		metadata_manager->ClearModifiedBlocks(reused_column_blocks);
+	}
+
+	// cache metadata pointers for future checkpoint reuse
+	column_pointers = row_group_pointer.data_pointers;
+	has_metadata_blocks = row_group_pointer.has_metadata_blocks;
+	extra_metadata_blocks = row_group_pointer.extra_metadata_blocks;
+	has_per_column_metadata_blocks = row_group_pointer.has_per_column_metadata_blocks;
+	per_column_metadata_blocks = row_group_pointer.per_column_metadata_blocks;
+
+	for (idx_t c = 0; c < columns.size(); c++) {
+		if (!write_data.keep_column_loaded[c]) {
+			UnloadColumn(c);
+		}
+	}
 	Verify();
 	return row_group_pointer;
 }
 
-vector<MetaBlockPointer> RowGroup::CheckpointDeletes(MetadataManager &manager) {
+bool RowGroup::HasChanges() const {
+	if (has_changes) {
+		return true;
+	}
+	auto version_info_loaded = version_info.load();
+	if (version_info_loaded && version_info_loaded->HasUnserializedChanges()) {
+		// we have deletes
+		return true;
+	}
+	// check if any of the columns have changes
+	// avoid loading unloaded columns - unloaded columns can never have changes
+	for (idx_t c = 0; c < columns.size(); c++) {
+		if (!ColumnIsLoaded(c)) {
+			continue;
+		}
+		if (columns[c]->HasAnyChanges()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool RowGroup::IsPersistent() const {
+	for (auto &column : columns) {
+		if (!column->IsPersistent()) {
+			// column is not persistent
+			return false;
+		}
+	}
+	return true;
+}
+
+PersistentRowGroupData RowGroup::SerializeRowGroupInfo(idx_t row_group_start) const {
+	// all columns are persistent - serialize
+	PersistentRowGroupData result;
+	for (auto &col : columns) {
+		result.column_data.push_back(col->Serialize());
+	}
+	result.start = row_group_start;
+	result.count = count;
+	return result;
+}
+
+vector<MetaBlockPointer> RowGroup::CheckpointDeletes(RowGroupWriter &writer) {
 	if (HasUnloadedDeletes()) {
 		// deletes were not loaded so they cannot be changed
 		// re-use them as-is
+		auto &manager = *writer.GetMetadataManager();
 		manager.ClearModifiedBlocks(deletes_pointers);
 		return deletes_pointers;
 	}
-	if (!version_info) {
+	auto vinfo = GetVersionInfo();
+	if (!vinfo) {
 		// no version information: write nothing
 		return vector<MetaBlockPointer>();
 	}
-	return version_info->Checkpoint(manager);
+	return vinfo->Checkpoint(writer);
 }
 
-void RowGroup::Serialize(RowGroupPointer &pointer, Serializer &serializer) {
+void RowGroup::Serialize(RowGroupPointer &pointer, Serializer &serializer, bool supports_per_column_writes) {
 	serializer.WriteProperty(100, "row_start", pointer.row_start);
 	serializer.WriteProperty(101, "tuple_count", pointer.tuple_count);
 	serializer.WriteProperty(102, "data_pointers", pointer.data_pointers);
 	serializer.WriteProperty(103, "delete_pointers", pointer.deletes_pointers);
+	if (serializer.ShouldSerialize(StorageVersion::V1_4_0) && !supports_per_column_writes) {
+		serializer.WriteProperty(104, "has_metadata_blocks", pointer.has_metadata_blocks);
+		serializer.WritePropertyWithDefault(105, "extra_metadata_blocks", pointer.extra_metadata_blocks);
+	}
+	if (supports_per_column_writes) {
+		D_ASSERT(serializer.ShouldSerialize(StorageVersion::V1_4_0));
+		if (!serializer.ShouldSerialize(StorageVersion::V2_0_0)) {
+			// also write legacy metadata blocks for v1.4 and v1.5
+			// TODO; serialiaztion version was 8, which points to v2.0, but comment implies v1.5
+			serializer.WriteProperty(104, "has_metadata_blocks", pointer.has_per_column_metadata_blocks);
+			vector<idx_t> extra_metadata_block_ids;
+			pointer.per_column_metadata_blocks.ForEachBlock(
+			    [&](idx_t, idx_t block_id) { extra_metadata_block_ids.push_back(block_id); });
+			serializer.WritePropertyWithDefault(105, "extra_metadata_blocks", extra_metadata_block_ids);
+		}
+		serializer.WriteProperty(106, "has_per_column_metadata_blocks", pointer.has_per_column_metadata_blocks);
+		serializer.WritePropertyWithDefault(107, "per_column_metadata_blocks", pointer.per_column_metadata_blocks.data);
+	}
 }
 
 RowGroupPointer RowGroup::Deserialize(Deserializer &deserializer) {
@@ -910,16 +1768,73 @@ RowGroupPointer RowGroup::Deserialize(Deserializer &deserializer) {
 	result.tuple_count = deserializer.ReadProperty<uint64_t>(101, "tuple_count");
 	result.data_pointers = deserializer.ReadProperty<vector<MetaBlockPointer>>(102, "data_pointers");
 	result.deletes_pointers = deserializer.ReadProperty<vector<MetaBlockPointer>>(103, "delete_pointers");
+	result.has_metadata_blocks = deserializer.ReadPropertyWithExplicitDefault<bool>(104, "has_metadata_blocks", false);
+	result.extra_metadata_blocks = deserializer.ReadPropertyWithDefault<vector<idx_t>>(105, "extra_metadata_blocks");
+	result.has_per_column_metadata_blocks =
+	    deserializer.ReadPropertyWithExplicitDefault<bool>(106, "has_per_column_metadata_blocks", false);
+	result.per_column_metadata_blocks = {
+	    deserializer.ReadPropertyWithDefault<vector<PerColumnMetadataBlock>>(107, "per_column_metadata_blocks")};
+	if (result.has_per_column_metadata_blocks) {
+		// per-column metadata supersedes legacy extra_metadata_blocks
+		result.has_metadata_blocks = false;
+		result.extra_metadata_blocks.clear();
+	}
+	return result;
+}
+
+//===--------------------------------------------------------------------===//
+// GetPartitionStats
+//===--------------------------------------------------------------------===//
+struct DuckDBPartitionRowGroup : public PartitionRowGroup {
+	explicit DuckDBPartitionRowGroup(shared_ptr<RowGroup> row_group_p, bool is_exact_p)
+	    : row_group(std::move(row_group_p)), is_exact(is_exact_p) {
+	}
+
+	shared_ptr<RowGroup> row_group;
+	const bool is_exact;
+
+	unique_ptr<BaseStatistics> GetColumnStatistics(const StorageIndex &storage_index) override {
+		return row_group->GetStatistics(storage_index);
+	}
+
+	bool MinMaxIsExact(const BaseStatistics &stats, const StorageIndex &) override {
+		if (!is_exact || row_group->HasChanges()) {
+			return false;
+		}
+		return true;
+	}
+};
+
+PartitionStatistics RowGroup::GetPartitionStats(SegmentNode<RowGroup> &row_group) {
+	auto &row_group_ref = row_group.GetNode();
+
+	PartitionStatistics result;
+	result.row_start = row_group.GetRowStart();
+	result.count = row_group_ref.count;
+	if (row_group_ref.HasUnloadedDeletes() || row_group_ref.GetVersionInfoIfLoaded()) {
+		// we have version info - approx count
+		result.count_type = CountType::COUNT_APPROXIMATE;
+		result.partition_row_group = make_shared_ptr<DuckDBPartitionRowGroup>(row_group.ReferenceNode(), false);
+	} else {
+		result.count_type = CountType::COUNT_EXACT;
+		result.partition_row_group = make_shared_ptr<DuckDBPartitionRowGroup>(row_group.ReferenceNode(), true);
+	}
+
 	return result;
 }
 
 //===--------------------------------------------------------------------===//
 // GetColumnSegmentInfo
 //===--------------------------------------------------------------------===//
-void RowGroup::GetColumnSegmentInfo(idx_t row_group_index, vector<ColumnSegmentInfo> &result) {
+void RowGroup::GetColumnSegmentInfo(const QueryContext &context, idx_t row_group_index,
+                                    vector<ColumnSegmentInfo> &result, const ColumnSegmentInfoScanOptions &options) {
 	for (idx_t col_idx = 0; col_idx < GetColumnCount(); col_idx++) {
+		if (options.loaded_segments_only && !ColumnIsLoaded(col_idx)) {
+			// column is not loaded - skip it
+			continue;
+		}
 		auto &col_data = GetColumn(col_idx);
-		col_data.GetColumnSegmentInfo(row_group_index, {col_idx}, result);
+		col_data.GetColumnSegmentInfo(context, row_group_index, {col_idx}, result, options);
 	}
 }
 
@@ -928,14 +1843,14 @@ void RowGroup::GetColumnSegmentInfo(idx_t row_group_index, vector<ColumnSegmentI
 //===--------------------------------------------------------------------===//
 class VersionDeleteState {
 public:
-	VersionDeleteState(RowGroup &info, TransactionData transaction, DataTable &table, idx_t base_row)
-	    : info(info), transaction(transaction), table(table), current_chunk(DConstants::INVALID_INDEX), count(0),
-	      base_row(base_row), delete_count(0) {
+	VersionDeleteState(RowGroup &info, TransactionData transaction, DuckTableEntry &table_entry, idx_t base_row)
+	    : info(info), transaction(transaction), table_entry(table_entry), current_chunk(DConstants::INVALID_INDEX),
+	      count(0), base_row(base_row), delete_count(0) {
 	}
 
 	RowGroup &info;
 	TransactionData transaction;
-	DataTable &table;
+	DuckTableEntry &table_entry;
 	idx_t current_chunk;
 	row_t rows[STANDARD_VECTOR_SIZE];
 	idx_t count;
@@ -948,14 +1863,15 @@ public:
 	void Flush();
 };
 
-idx_t RowGroup::Delete(TransactionData transaction, DataTable &table, row_t *ids, idx_t count) {
-	VersionDeleteState del_state(*this, transaction, table, this->start);
+idx_t RowGroup::Delete(TransactionData transaction, DuckTableEntry &table_entry, row_t *ids, idx_t count,
+                       idx_t row_group_start) {
+	VersionDeleteState del_state(*this, transaction, table_entry, row_group_start);
 
 	// obtain a write lock
 	for (idx_t i = 0; i < count; i++) {
 		D_ASSERT(ids[i] >= 0);
-		D_ASSERT(idx_t(ids[i]) >= this->start && idx_t(ids[i]) < this->start + this->count);
-		del_state.Delete(ids[i] - this->start);
+		D_ASSERT(idx_t(ids[i]) >= row_group_start && idx_t(ids[i]) < row_group_start + this->count);
+		del_state.Delete(ids[i] - UnsafeNumericCast<row_t>(row_group_start));
 	}
 	del_state.Flush();
 	return del_state.delete_count;
@@ -963,8 +1879,20 @@ idx_t RowGroup::Delete(TransactionData transaction, DataTable &table, row_t *ids
 
 void RowGroup::Verify() {
 #ifdef DEBUG
-	for (auto &column : GetColumns()) {
-		column->Verify(*this);
+	for (idx_t c = 0; c < columns.size(); c++) {
+		if (!ColumnIsLoaded(c)) {
+			continue;
+		}
+		if (columns[c]) {
+			columns[c]->Verify(*this);
+		}
+	}
+	lock_guard<mutex> guard(row_group_lock);
+	if (row_id_is_loaded) {
+		D_ASSERT(row_id_column_data->count == count);
+	}
+	if (row_number_is_loaded) {
+		D_ASSERT(row_number_column_data->count == count);
 	}
 #endif
 }
@@ -975,15 +1903,15 @@ idx_t RowGroup::DeleteRows(idx_t vector_idx, transaction_t transaction_id, row_t
 
 void VersionDeleteState::Delete(row_t row_id) {
 	D_ASSERT(row_id >= 0);
-	idx_t vector_idx = row_id / STANDARD_VECTOR_SIZE;
-	idx_t idx_in_vector = row_id - vector_idx * STANDARD_VECTOR_SIZE;
+	idx_t vector_idx = UnsafeNumericCast<idx_t>(row_id) / STANDARD_VECTOR_SIZE;
+	idx_t idx_in_vector = UnsafeNumericCast<idx_t>(row_id) - vector_idx * STANDARD_VECTOR_SIZE;
 	if (current_chunk != vector_idx) {
 		Flush();
 
 		current_chunk = vector_idx;
 		chunk_row = vector_idx * STANDARD_VECTOR_SIZE;
 	}
-	rows[count++] = idx_in_vector;
+	rows[count++] = UnsafeNumericCast<row_t>(idx_in_vector);
 }
 
 void VersionDeleteState::Flush() {
@@ -997,7 +1925,7 @@ void VersionDeleteState::Flush() {
 	delete_count += actual_delete_count;
 	if (transaction.transaction && actual_delete_count > 0) {
 		// now push the delete into the undo buffer, but only if any deletes were actually performed
-		transaction.transaction->PushDelete(table, info.GetOrCreateVersionInfo(), current_chunk, rows,
+		transaction.transaction->PushDelete(table_entry, info.GetOrCreateVersionInfo(), current_chunk, rows,
 		                                    actual_delete_count, base_row + chunk_row);
 	}
 	count = 0;

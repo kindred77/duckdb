@@ -9,7 +9,11 @@ statement ok
 PRAGMA threads=4
 
 statement ok
-SET temp_directory='__TEST_DIR__/temp.tmp'
+SET temp_directory='{TEST_DIR}/temp.tmp'
+
+# Force PhysicalAsOfJoin
+statement ok
+PRAGMA asof_loop_join_threshold = 0;
 
 query II
 WITH build AS (

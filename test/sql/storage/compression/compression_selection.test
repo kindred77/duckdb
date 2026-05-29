@@ -2,9 +2,11 @@
 # description: Test that the right scheme is chosen for the right data.
 # group: [compression]
 
+require no_latest_storage
+
 require vector_size 2048
 
-load __TEST_DIR__/test_compression_simple.db
+load {TEST_DIR}/test_compression_simple.db readwrite v1.0.0
 
 statement ok
 CREATE TABLE test_rle (a INTEGER);
@@ -53,8 +55,8 @@ SELECT compression FROM pragma_storage_info('test_dict') WHERE segment_type ILIK
 ----
 Dictionary
 
-# for small block sizes, this test will default to another compression function, as the bitpacking groups
-# no longer fit the blocks
+# This test defaults to another compression function for smaller block sizes,
+# because the bitpacking groups no longer fit the blocks.
 require block_size 262144
 
 # Bitpacking

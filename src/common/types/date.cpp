@@ -2,23 +2,20 @@
 #include "duckdb/common/types/timestamp.hpp"
 #include "duckdb/common/types/interval.hpp"
 #include "duckdb/common/types/cast_helpers.hpp"
-#include "duckdb/common/exception.hpp"
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/common/assert.hpp"
 #include "duckdb/common/operator/multiply.hpp"
 #include "duckdb/common/exception/conversion_exception.hpp"
-#include "duckdb/common/limits.hpp"
 #include <cstring>
 #include <cctype>
-#include <algorithm>
 
 namespace duckdb {
 
 static_assert(sizeof(date_t) == sizeof(int32_t), "date_t was padded");
 
-const char *Date::PINF = "infinity";  // NOLINT
-const char *Date::NINF = "-infinity"; // NOLINT
-const char *Date::EPOCH = "epoch";    // NOLINT
+const DateSpecial Date::PINF = {"infinity", 3};  // NOLINT
+const DateSpecial Date::NINF = {"-infinity", 4}; // NOLINT
+const DateSpecial Date::EPOCH = {"epoch", 5};    // NOLINT
 
 const string_t Date::MONTH_NAMES_ABBREVIATED[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -190,26 +187,28 @@ bool Date::ParseDoubleDigit(const char *buf, idx_t len, idx_t &pos, int32_t &res
 	return false;
 }
 
-bool Date::TryConvertDateSpecial(const char *buf, idx_t len, idx_t &pos, const char *special) {
+bool Date::TryConvertDateSpecial(const char *buf, idx_t len, idx_t &pos, const DateSpecial &s) {
 	auto p = pos;
+	auto special = s.str;
 	for (; p < len && *special; ++p) {
 		const auto s = *special++;
 		if (!s || StringUtil::CharacterToLower(buf[p]) != s) {
 			return false;
 		}
 	}
-	if (*special) {
+	if (*special && (p - pos) != s.abbr) {
 		return false;
 	}
 	pos = p;
 	return true;
 }
 
-bool Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result, bool &special, bool strict) {
+DateCastResult Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result, bool &special,
+                                    bool strict) {
 	special = false;
 	pos = 0;
 	if (len == 0) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	int32_t day = 0;
@@ -224,13 +223,13 @@ bool Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result
 	}
 
 	if (pos >= len) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 	if (buf[pos] == '-') {
 		yearneg = true;
 		pos++;
 		if (pos >= len) {
-			return false;
+			return DateCastResult::ERROR_INCORRECT_FORMAT;
 		}
 	}
 	if (!StringUtil::CharacterIsDigit(buf[pos])) {
@@ -240,57 +239,62 @@ bool Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result
 		} else if (TryConvertDateSpecial(buf, len, pos, EPOCH)) {
 			result = date_t::epoch();
 		} else {
-			return false;
+			return DateCastResult::ERROR_INCORRECT_FORMAT;
 		}
 		// skip trailing spaces - parsing must be strict here
 		while (pos < len && StringUtil::CharacterIsSpace(buf[pos])) {
 			pos++;
 		}
 		special = true;
-		return pos == len;
+		return (pos == len) ? DateCastResult::SUCCESS : DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 	// first parse the year
+	idx_t year_length = 0;
 	for (; pos < len && StringUtil::CharacterIsDigit(buf[pos]); pos++) {
 		if (year >= 100000000) {
-			return false;
+			return DateCastResult::ERROR_RANGE;
 		}
 		year = (buf[pos] - '0') + year * 10;
+		year_length++;
+	}
+	if (year_length < 2 && strict) {
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 	if (yearneg) {
 		year = -year;
 	}
 
 	if (pos >= len) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	// fetch the separator
 	sep = buf[pos++];
 	if (sep != ' ' && sep != '-' && sep != '/' && sep != '\\') {
 		// invalid separator
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	// parse the month
 	if (!Date::ParseDoubleDigit(buf, len, pos, month)) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	if (pos >= len) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	if (buf[pos++] != sep) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	if (pos >= len) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	// now parse the day
 	if (!Date::ParseDoubleDigit(buf, len, pos, day)) {
-		return false;
+		return DateCastResult::ERROR_INCORRECT_FORMAT;
 	}
 
 	// check for an optional trailing " (BC)""
@@ -298,7 +302,7 @@ bool Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result
 	    StringUtil::CharacterToLower(buf[pos + 2]) == 'b' && StringUtil::CharacterToLower(buf[pos + 3]) == 'c' &&
 	    buf[pos + 4] == ')') {
 		if (yearneg || year == 0) {
-			return false;
+			return DateCastResult::ERROR_INCORRECT_FORMAT;
 		}
 		year = -year + 1;
 		pos += 5;
@@ -307,39 +311,52 @@ bool Date::TryConvertDate(const char *buf, idx_t len, idx_t &pos, date_t &result
 	// in strict mode, check remaining string for non-space characters
 	if (strict) {
 		// skip trailing spaces
-		while (pos < len && StringUtil::CharacterIsSpace((unsigned char)buf[pos])) {
+		while (pos < len && StringUtil::CharacterIsSpace(buf[pos])) {
 			pos++;
 		}
 		// check position. if end was not reached, non-space chars remaining
 		if (pos < len) {
-			return false;
+			return DateCastResult::ERROR_INCORRECT_FORMAT;
 		}
 	} else {
 		// in non-strict mode, check for any direct trailing digits
-		if (pos < len && StringUtil::CharacterIsDigit((unsigned char)buf[pos])) {
-			return false;
+		if (pos < len && StringUtil::CharacterIsDigit(buf[pos])) {
+			return DateCastResult::ERROR_INCORRECT_FORMAT;
 		}
 	}
 
-	return Date::TryFromDate(year, month, day, result);
+	return Date::TryFromDate(year, month, day, result) ? DateCastResult::SUCCESS : DateCastResult::ERROR_RANGE;
 }
 
-string Date::ConversionError(const string &str) {
-	return StringUtil::Format("date field value out of range: \"%s\", "
+string Date::FormatError(const string &str) {
+	return StringUtil::Format("invalid date field format: \"%s\", "
 	                          "expected format is (YYYY-MM-DD)",
 	                          str);
 }
 
-string Date::ConversionError(string_t str) {
-	return ConversionError(str.GetString());
+string Date::RangeError(const string &str) {
+	return StringUtil::Format("date field value out of range: \"%s\"", str);
+}
+
+string Date::RangeError(string_t str) {
+	return RangeError(str.GetString());
+}
+
+string Date::FormatError(string_t str) {
+	return FormatError(str.GetString());
 }
 
 date_t Date::FromCString(const char *buf, idx_t len, bool strict) {
 	date_t result;
 	idx_t pos;
 	bool special = false;
-	if (!TryConvertDate(buf, len, pos, result, special, strict)) {
-		throw ConversionException(ConversionError(string(buf, len)));
+	switch (TryConvertDate(buf, len, pos, result, special, strict)) {
+	case DateCastResult::ERROR_INCORRECT_FORMAT:
+		throw ConversionException(FormatError(string(buf, len)));
+	case DateCastResult::ERROR_RANGE:
+		throw ConversionException(RangeError(string(buf, len)));
+	case DateCastResult::SUCCESS:
+		break;
 	}
 	return result;
 }
@@ -351,10 +368,8 @@ date_t Date::FromString(const string &str, bool strict) {
 string Date::ToString(date_t date) {
 	// PG displays temporal infinities in lowercase,
 	// but numerics in Titlecase.
-	if (date == date_t::infinity()) {
-		return PINF;
-	} else if (date == date_t::ninfinity()) {
-		return NINF;
+	if (!date.IsFinite()) {
+		return ToInfinity(date);
 	}
 	int32_t date_units[3];
 	idx_t year_length;
@@ -362,7 +377,7 @@ string Date::ToString(date_t date) {
 	Date::Convert(date, date_units[0], date_units[1], date_units[2]);
 
 	auto length = DateToStringCast::Length(date_units, year_length, add_bc);
-	auto buffer = make_unsafe_uniq_array<char>(length);
+	auto buffer = make_unsafe_uniq_array_uninitialized<char>(length);
 	DateToStringCast::Format(buffer.get(), date_units, year_length, add_bc);
 	return string(buffer.get(), length);
 }
@@ -450,22 +465,6 @@ int64_t Date::EpochMilliseconds(date_t date) {
 	return result;
 }
 
-int32_t Date::ExtractYear(date_t d, int32_t *last_year) {
-	auto n = d.days;
-	// cached look up: check if year of this date is the same as the last one we looked up
-	// note that this only works for years in the range [1970, 2370]
-	if (n >= Date::CUMULATIVE_YEAR_DAYS[*last_year] && n < Date::CUMULATIVE_YEAR_DAYS[*last_year + 1]) {
-		return Date::EPOCH_YEAR + *last_year;
-	}
-	int32_t year;
-	Date::ExtractYearOffset(n, year, *last_year);
-	return year;
-}
-
-int32_t Date::ExtractYear(timestamp_t ts, int32_t *last_year) {
-	return Date::ExtractYear(Timestamp::GetDate(ts), last_year);
-}
-
 int32_t Date::ExtractYear(date_t d) {
 	int32_t year, year_offset;
 	Date::ExtractYearOffset(d.days, year, year_offset);
@@ -515,10 +514,10 @@ int32_t Date::ExtractISODayOfTheWeek(date_t date) {
 	// 7  = 4
 	if (date.days < 0) {
 		// negative date: start off at 4 and cycle downwards
-		return (7 - ((-int64_t(date.days) + 3) % 7));
+		return UnsafeNumericCast<int32_t>((7 - ((-int64_t(date.days) + 3) % 7)));
 	} else {
 		// positive date: start off at 4 and cycle upwards
-		return ((int64_t(date.days) + 3) % 7) + 1;
+		return UnsafeNumericCast<int32_t>(((int64_t(date.days) + 3) % 7) + 1);
 	}
 }
 

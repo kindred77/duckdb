@@ -4,35 +4,111 @@
 
 namespace duckdb {
 
-PhysicalComparisonJoin::PhysicalComparisonJoin(LogicalOperator &op, PhysicalOperatorType type,
-                                               vector<JoinCondition> conditions_p, JoinType join_type,
-                                               idx_t estimated_cardinality)
-    : PhysicalJoin(op, type, join_type, estimated_cardinality) {
-	conditions.resize(conditions_p.size());
-	// we reorder conditions so the ones with COMPARE_EQUAL occur first
-	idx_t equal_position = 0;
-	idx_t other_position = conditions_p.size() - 1;
-	for (idx_t i = 0; i < conditions_p.size(); i++) {
-		if (conditions_p[i].comparison == ExpressionType::COMPARE_EQUAL ||
-		    conditions_p[i].comparison == ExpressionType::COMPARE_NOT_DISTINCT_FROM) {
-			// COMPARE_EQUAL and COMPARE_NOT_DISTINCT_FROM, move to the start
-			conditions[equal_position++] = std::move(conditions_p[i]);
+PhysicalComparisonJoin::PhysicalComparisonJoin(PhysicalPlan &physical_plan, LogicalOperator &op,
+                                               PhysicalOperatorType type, vector<JoinCondition> conditions_p,
+                                               JoinType join_type, idx_t estimated_cardinality)
+    : PhysicalJoin(physical_plan, op, type, join_type, estimated_cardinality) {
+	vector<JoinCondition> comparison_conditions;
+	vector<JoinCondition> arbitrary_conditions;
+
+	for (auto &cond : conditions_p) {
+		if (cond.IsComparison()) {
+			comparison_conditions.push_back(std::move(cond));
 		} else {
-			// other expression, move to the end
-			conditions[other_position--] = std::move(conditions_p[i]);
+			arbitrary_conditions.push_back(std::move(cond));
 		}
+	}
+	conditions = std::move(comparison_conditions);
+	ReorderConditions(conditions);
+
+	if (!arbitrary_conditions.empty()) {
+		predicate = JoinCondition::CreateExpression(std::move(arbitrary_conditions));
 	}
 }
 
-string PhysicalComparisonJoin::ParamsToString() const {
-	string extra_info = EnumUtil::ToString(join_type) + "\n";
-	for (auto &it : conditions) {
-		string op = ExpressionTypeToOperator(it.comparison);
-		extra_info += it.left->GetName() + " " + op + " " + it.right->GetName() + "\n";
+InsertionOrderPreservingMap<string> PhysicalComparisonJoin::ParamsToString() const {
+	InsertionOrderPreservingMap<string> result;
+	result["Join Type"] = EnumUtil::ToString(join_type);
+	string condition_info;
+	for (idx_t i = 0; i < conditions.size(); i++) {
+		auto &join_condition = conditions[i];
+		if (i > 0) {
+			condition_info += "\n";
+		}
+		D_ASSERT(join_condition.IsComparison());
+		condition_info += StringUtil::Format("%s %s %s", join_condition.GetLHS().GetName(),
+		                                     ExpressionTypeToOperator(join_condition.GetComparisonType()),
+		                                     join_condition.GetRHS().GetName());
 	}
-	extra_info += "\n[INFOSEPARATOR]\n";
-	extra_info += StringUtil::Format("EC: %llu\n", estimated_cardinality);
-	return extra_info;
+
+	if (predicate) {
+		if (!condition_info.empty()) {
+			condition_info += "\n";
+		}
+		condition_info += predicate->ToString();
+	}
+
+	result["Conditions"] = condition_info;
+	SetEstimatedCardinality(result, estimated_cardinality);
+	return result;
+}
+
+void PhysicalComparisonJoin::ReorderConditions(vector<JoinCondition> &conditions) {
+	// we reorder conditions so the ones with COMPARE_EQUAL occur first
+	// check if this is already the case
+	bool is_ordered = true;
+	bool seen_non_equal = false;
+	bool seen_non_comparison = false;
+
+	for (auto &cond : conditions) {
+		if (!cond.IsComparison()) {
+			seen_non_comparison = true;
+		} else if (cond.GetComparisonType() == ExpressionType::COMPARE_EQUAL ||
+		           cond.GetComparisonType() == ExpressionType::COMPARE_NOT_DISTINCT_FROM) {
+			if (seen_non_equal || seen_non_comparison) {
+				is_ordered = false;
+				break;
+			}
+		} else {
+			if (seen_non_comparison) {
+				is_ordered = false;
+				break;
+			}
+			seen_non_equal = true;
+		}
+	}
+
+	if (is_ordered) {
+		// no need to re-order
+		return;
+	}
+
+	vector<JoinCondition> equal_conditions;
+	vector<JoinCondition> non_equi_conditions;
+	vector<JoinCondition> arbitrary_conditions;
+
+	for (auto &cond : conditions) {
+		if (!cond.IsComparison()) {
+			arbitrary_conditions.push_back(std::move(cond));
+		} else if (cond.GetComparisonType() == ExpressionType::COMPARE_EQUAL ||
+		           cond.GetComparisonType() == ExpressionType::COMPARE_NOT_DISTINCT_FROM) {
+			equal_conditions.push_back(std::move(cond));
+		} else {
+			non_equi_conditions.push_back(std::move(cond));
+		}
+	}
+
+	conditions.clear();
+	// reconstruct the sorted conditions
+	for (auto &cond : equal_conditions) {
+		conditions.push_back(std::move(cond));
+	}
+	for (auto &cond : non_equi_conditions) {
+		conditions.push_back(std::move(cond));
+	}
+	for (auto &cond : arbitrary_conditions) {
+		conditions.push_back(std::move(cond));
+	}
 }
 
 void PhysicalComparisonJoin::ConstructEmptyJoinResult(JoinType join_type, bool has_null, DataChunk &input,
@@ -45,26 +121,27 @@ void PhysicalComparisonJoin::ConstructEmptyJoinResult(JoinType join_type, bool h
 		result.Reference(input);
 	} else if (join_type == JoinType::MARK) {
 		// MARK join with empty hash table
-		D_ASSERT(join_type == JoinType::MARK);
 		D_ASSERT(result.ColumnCount() == input.ColumnCount() + 1);
-		auto &result_vector = result.data.back();
-		D_ASSERT(result_vector.GetType() == LogicalType::BOOLEAN);
 		// for every data vector, we just reference the child chunk
 		result.SetCardinality(input);
 		for (idx_t i = 0; i < input.ColumnCount(); i++) {
 			result.data[i].Reference(input.data[i]);
 		}
+		auto &mark_vector = result.data.back();
+		D_ASSERT(mark_vector.GetType() == LogicalType::BOOLEAN);
 		// for the MARK vector:
 		// if the HT has no NULL values (i.e. empty result set), return a vector that has false for every input
 		// entry if the HT has NULL values (i.e. result set had values, but all were NULL), return a vector that
 		// has NULL for every input entry
 		if (!has_null) {
-			auto bool_result = FlatVector::GetData<bool>(result_vector);
+			auto mark_data = FlatVector::Writer<bool>(mark_vector, result.size());
 			for (idx_t i = 0; i < result.size(); i++) {
-				bool_result[i] = false;
+				mark_data.WriteValue(false);
 			}
+			FlatVector::SetSize(mark_vector, result.size());
 		} else {
-			FlatVector::Validity(result_vector).SetAllInvalid(result.size());
+			FlatVector::ValidityMutable(mark_vector).SetAllInvalid(result.size());
+			FlatVector::SetSize(mark_vector, result.size());
 		}
 	} else if (join_type == JoinType::LEFT || join_type == JoinType::OUTER || join_type == JoinType::SINGLE) {
 		// LEFT/FULL OUTER/SINGLE join and build side is empty
@@ -75,9 +152,9 @@ void PhysicalComparisonJoin::ConstructEmptyJoinResult(JoinType join_type, bool h
 		}
 		// for the RHS
 		for (idx_t k = input.ColumnCount(); k < result.ColumnCount(); k++) {
-			result.data[k].SetVectorType(VectorType::CONSTANT_VECTOR);
-			ConstantVector::SetNull(result.data[k], true);
+			ConstantVector::SetNull(result.data[k], count_t(input.size()));
 		}
 	}
 }
+
 } // namespace duckdb

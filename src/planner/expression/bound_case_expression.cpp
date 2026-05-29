@@ -9,7 +9,7 @@ BoundCaseExpression::BoundCaseExpression(LogicalType type)
 
 BoundCaseExpression::BoundCaseExpression(unique_ptr<Expression> when_expr, unique_ptr<Expression> then_expr,
                                          unique_ptr<Expression> else_expr_p)
-    : Expression(ExpressionType::CASE_EXPR, ExpressionClass::BOUND_CASE, then_expr->return_type),
+    : Expression(ExpressionType::CASE_EXPR, ExpressionClass::BOUND_CASE, then_expr->GetReturnType()),
       else_expr(std::move(else_expr_p)) {
 	BoundCaseCheck check;
 	check.when_expr = std::move(when_expr);
@@ -43,7 +43,7 @@ bool BoundCaseExpression::Equals(const BaseExpression &other_p) const {
 	return true;
 }
 
-unique_ptr<Expression> BoundCaseExpression::Copy() {
+unique_ptr<Expression> BoundCaseExpression::Copy() const {
 	auto new_case = make_uniq<BoundCaseExpression>(return_type);
 	for (auto &check : case_checks) {
 		BoundCaseCheck new_check;

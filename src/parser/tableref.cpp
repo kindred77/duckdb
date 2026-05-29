@@ -1,9 +1,8 @@
 #include "duckdb/parser/tableref.hpp"
 
 #include "duckdb/common/printer.hpp"
-#include "duckdb/parser/tableref/list.hpp"
-#include "duckdb/common/serializer/serializer.hpp"
-#include "duckdb/common/serializer/deserializer.hpp"
+#include "duckdb/parser/keyword_helper.hpp"
+#include "duckdb/common/enum_util.hpp"
 #include "duckdb/common/to_string.hpp"
 
 namespace duckdb {
@@ -13,7 +12,8 @@ string TableRef::BaseToString(string result) const {
 	return BaseToString(std::move(result), column_name_alias);
 }
 
-string TableRef::BaseToString(string result, const vector<string> &column_name_alias) const {
+string TableRef::AliasToString(const vector<string> &column_name_alias) const {
+	string result;
 	if (!alias.empty()) {
 		result += StringUtil::Format(" AS %s", SQLIdentifier(alias));
 	}
@@ -24,18 +24,28 @@ string TableRef::BaseToString(string result, const vector<string> &column_name_a
 			if (i > 0) {
 				result += ", ";
 			}
-			result += KeywordHelper::WriteOptionallyQuoted(column_name_alias[i]);
+			result += SQLIdentifier(column_name_alias[i]);
 		}
 		result += ")";
 	}
+	return result;
+}
+
+string TableRef::SampleToString() const {
+	string result;
 	if (sample) {
 		result += " TABLESAMPLE " + EnumUtil::ToString(sample->method);
 		result += "(" + sample->sample_size.ToString() + " " + string(sample->is_percentage ? "PERCENT" : "ROWS") + ")";
-		if (sample->seed >= 0) {
-			result += "REPEATABLE (" + to_string(sample->seed) + ")";
+		if (sample->seed.IsValid()) {
+			result += "REPEATABLE (" + to_string(sample->seed.GetIndex()) + ")";
 		}
 	}
+	return result;
+}
 
+string TableRef::BaseToString(string result, const vector<string> &column_name_alias) const {
+	result += AliasToString(column_name_alias);
+	result += SampleToString();
 	return result;
 }
 
@@ -48,6 +58,7 @@ void TableRef::CopyProperties(TableRef &target) const {
 	target.alias = alias;
 	target.query_location = query_location;
 	target.sample = sample ? sample->Copy() : nullptr;
+	target.external_dependency = external_dependency;
 }
 
 void TableRef::Print() {

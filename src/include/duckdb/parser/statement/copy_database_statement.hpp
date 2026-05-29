@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "duckdb/parser/parsed_data/copy_info.hpp"
-#include "duckdb/parser/query_node.hpp"
 #include "duckdb/parser/sql_statement.hpp"
 
 namespace duckdb {
@@ -27,13 +25,12 @@ public:
 	string to_database;
 	CopyDatabaseType copy_type;
 
-	string ToString() const override;
-
 protected:
 	CopyDatabaseStatement(const CopyDatabaseStatement &other);
 
 public:
 	DUCKDB_API unique_ptr<SQLStatement> Copy() const override;
+	string ToString() const override;
 
 private:
 };

@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include "duckdb/common/common.hpp"
 #include "duckdb/common/map.hpp"
 #include "duckdb/storage/storage_manager.hpp"
 #include "duckdb/storage/metadata/metadata_writer.hpp"
-#include "duckdb/storage/data_pointer.hpp"
 
 namespace duckdb {
 class DatabaseInstance;
@@ -60,8 +58,9 @@ struct PartialBlock {
 public:
 	//! Add regions that need zero-initialization to avoid leaking memory
 	void AddUninitializedRegion(const idx_t start, const idx_t end);
+	virtual void AddSegmentToTail(ColumnData &data, ColumnSegment &segment, uint32_t offset_in_block);
 	//! Flush the block to disk and zero-initialize any free space and uninitialized regions
-	virtual void Flush(const idx_t free_space_left) = 0;
+	virtual void Flush(QueryContext context, const idx_t free_space_left) = 0;
 	void FlushInternal(const idx_t free_space_left);
 	virtual void Merge(PartialBlock &other, idx_t offset, idx_t other_size) = 0;
 	virtual void Clear() = 0;
@@ -85,15 +84,13 @@ struct PartialBlockAllocation {
 	unique_ptr<PartialBlock> partial_block;
 };
 
-enum class CheckpointType { FULL_CHECKPOINT, APPEND_TO_TABLE };
+enum class PartialBlockType { FULL_CHECKPOINT, APPEND_TO_TABLE, IN_MEMORY_CHECKPOINT };
 
 //! Enables sharing blocks across some scope. Scope is whatever we want to share
 //! blocks across. It may be an entire checkpoint or just a single row group.
 //! In any case, they must share a block manager.
 class PartialBlockManager {
 public:
-	//! 20% free / 80% utilization
-	static constexpr const idx_t DEFAULT_MAX_PARTIAL_BLOCK_SIZE = Storage::BLOCK_SIZE / 5 * 4;
 	//! Max number of shared references to a block. No effective limit by default.
 	static constexpr const idx_t DEFAULT_MAX_USE_COUNT = 1u << 20;
 	//! No point letting map size grow unbounded. We'll drop blocks with the
@@ -101,8 +98,8 @@ public:
 	static constexpr const idx_t MAX_BLOCK_MAP_SIZE = 1u << 31;
 
 public:
-	PartialBlockManager(BlockManager &block_manager, CheckpointType checkpoint_type,
-	                    uint32_t max_partial_block_size = DEFAULT_MAX_PARTIAL_BLOCK_SIZE,
+	PartialBlockManager(QueryContext context, BlockManager &block_manager, PartialBlockType partial_block_type,
+	                    optional_idx max_partial_block_size = optional_idx(),
 	                    uint32_t max_use_count = DEFAULT_MAX_USE_COUNT);
 	virtual ~PartialBlockManager();
 
@@ -110,7 +107,7 @@ public:
 	PartialBlockAllocation GetBlockAllocation(uint32_t segment_size);
 
 	//! Register a partially filled block that is filled with "segment_size" entries
-	void RegisterPartialBlock(PartialBlockAllocation &&allocation);
+	void RegisterPartialBlock(PartialBlockAllocation allocation);
 
 	//! Clear remaining blocks without writing them to disk
 	void ClearBlocks();
@@ -124,20 +121,32 @@ public:
 	//! Flush any remaining partial blocks to disk
 	void FlushPartialBlocks();
 
+	unique_ptr<PartialBlock> CreatePartialBlock(ColumnData &data, ColumnSegment &segment, PartialBlockState state,
+	                                            BlockManager &block_manager);
+
 	unique_lock<mutex> GetLock() {
 		return unique_lock<mutex>(partial_block_lock);
 	}
+	block_id_t GetFreeBlockId();
+
+	//! Returns a reference to the underlying block manager.
+	BlockManager &GetBlockManager() const;
+	//! Returns the optional client context.
+	optional_ptr<ClientContext> GetClientContext() const;
 
 protected:
+	//! The optional client context in which we use the partial block manager.
+	//! The SingleFileCheckpointWriter contains a partial block manager, and the destructor of
+	//! AttachedDatabase invokes CreateCheckpoint with that checkpoint writer.
+	//! Thus, we're using the optional client context instead of a reference.
+	optional_ptr<ClientContext> context;
 	BlockManager &block_manager;
-	CheckpointType checkpoint_type;
+	PartialBlockType partial_block_type;
 	mutex partial_block_lock;
 	//! A map of (available space -> PartialBlock) for partially filled blocks
 	//! This is a multimap because there might be outstanding partial blocks with
 	//! the same amount of left-over space
 	multimap<idx_t, unique_ptr<PartialBlock>> partially_filled_blocks;
-	//! The set of written blocks
-	unordered_set<block_id_t> written_blocks;
 
 	//! The maximum size (in bytes) at which a partial block will be considered a partial block
 	uint32_t max_partial_block_size;
@@ -151,7 +160,6 @@ protected:
 	bool GetPartialBlock(idx_t segment_size, unique_ptr<PartialBlock> &state);
 
 	bool HasBlockAllocation(uint32_t segment_size);
-	void AddWrittenBlock(block_id_t block);
 };
 
 } // namespace duckdb

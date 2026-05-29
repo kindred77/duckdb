@@ -12,52 +12,42 @@
 #include "duckdb/common/vector.hpp"
 
 namespace duckdb {
-class ConjunctionFilter : public TableFilter {
+
+//! DEPRECATED - only preserved for backwards-compatible deserialization and expression conversion
+class LegacyConjunctionFilter : public TableFilter {
 public:
-	ConjunctionFilter(TableFilterType filter_type_p) : TableFilter(filter_type_p) {
+	explicit LegacyConjunctionFilter(TableFilterType filter_type_p) : TableFilter(filter_type_p) {
 	}
 
-	virtual ~ConjunctionFilter() {
+	~LegacyConjunctionFilter() override {
 	}
 
 	//! The filters of this conjunction
 	vector<unique_ptr<TableFilter>> child_filters;
-
-public:
-	virtual FilterPropagateResult CheckStatistics(BaseStatistics &stats) = 0;
-	virtual string ToString(const string &column_name) = 0;
-
-	virtual bool Equals(const TableFilter &other) const {
-		return TableFilter::Equals(other);
-	}
 };
 
-class ConjunctionOrFilter : public ConjunctionFilter {
+//! DEPRECATED - only preserved for backwards-compatible deserialization and expression conversion
+class LegacyConjunctionOrFilter : public LegacyConjunctionFilter {
 public:
-	static constexpr const TableFilterType TYPE = TableFilterType::CONJUNCTION_OR;
+	static constexpr const TableFilterType TYPE = TableFilterType::LEGACY_CONJUNCTION_OR;
 
 public:
-	ConjunctionOrFilter();
-
-public:
-	FilterPropagateResult CheckStatistics(BaseStatistics &stats) override;
-	string ToString(const string &column_name) override;
-	bool Equals(const TableFilter &other) const override;
+	LegacyConjunctionOrFilter();
+	unique_ptr<Expression> ToExpression(const Expression &column) const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<TableFilter> Deserialize(Deserializer &deserializer);
 };
 
-class ConjunctionAndFilter : public ConjunctionFilter {
+//! DEPRECATED - only preserved for backwards-compatible deserialization and expression conversion
+class LegacyConjunctionAndFilter : public LegacyConjunctionFilter {
 public:
-	static constexpr const TableFilterType TYPE = TableFilterType::CONJUNCTION_AND;
+	static constexpr const TableFilterType TYPE = TableFilterType::LEGACY_CONJUNCTION_AND;
 
 public:
-	ConjunctionAndFilter();
+	LegacyConjunctionAndFilter();
 
 public:
-	FilterPropagateResult CheckStatistics(BaseStatistics &stats) override;
-	string ToString(const string &column_name) override;
-	bool Equals(const TableFilter &other) const override;
+	unique_ptr<Expression> ToExpression(const Expression &column) const override;
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<TableFilter> Deserialize(Deserializer &deserializer);
 };

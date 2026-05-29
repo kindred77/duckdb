@@ -3,6 +3,7 @@
 #include "duckdb/common/numeric_utils.hpp"
 #include "duckdb/common/serializer/write_stream.hpp"
 #include "duckdb/common/serializer/read_stream.hpp"
+#include "duckdb/common/types/selection_vector.hpp"
 
 namespace duckdb {
 
@@ -12,12 +13,38 @@ ValidityData::ValidityData(const ValidityMask &original, idx_t count)
     : TemplatedValidityData(original.GetData(), count) {
 }
 
+void ValidityMask::Combine(const Vector &other, idx_t count) {
+	if (other.GetVectorType() == VectorType::FLAT_VECTOR) {
+		// combine validity masks directly
+		Combine(FlatVector::Validity(other), count);
+		return;
+	}
+	if (other.GetVectorType() == VectorType::CONSTANT_VECTOR) {
+		if (ConstantVector::IsNull(other)) {
+			// other is constant NULL - result is constant NULl
+			SetAllInvalid(count);
+		}
+		// other is not NULL - skip
+		return;
+	}
+	auto validity = other.Validity();
+	if (validity.CannotHaveNull()) {
+		// no NULL values - we can skip this
+		return;
+	}
+	for (idx_t r = 0; r < count; r++) {
+		if (!validity.IsValid(r)) {
+			SetInvalid(r);
+		}
+	}
+}
+
 void ValidityMask::Combine(const ValidityMask &other, idx_t count) {
-	if (other.AllValid()) {
+	if (other.CannotHaveNull()) {
 		// X & 1 = X
 		return;
 	}
-	if (AllValid()) {
+	if (CannotHaveNull()) {
 		// 1 & Y = Y
 		Initialize(other);
 		return;
@@ -50,11 +77,18 @@ string ValidityMask::ToString(idx_t count) const {
 	result += "]";
 	return result;
 }
+
+string ValidityMask::ToString() const {
+	return ValidityMask::ToString(capacity);
+}
 // LCOV_EXCL_STOP
 
-void ValidityMask::Resize(idx_t old_size, idx_t new_size) {
-	D_ASSERT(new_size >= old_size);
-	target_count = new_size;
+void ValidityMask::Resize(idx_t new_size) {
+	idx_t old_size = capacity;
+	if (new_size <= old_size) {
+		return;
+	}
+	capacity = new_size;
 	if (validity_mask) {
 		auto new_size_count = EntryCount(new_size);
 		auto old_size_count = EntryCount(old_size);
@@ -71,12 +105,12 @@ void ValidityMask::Resize(idx_t old_size, idx_t new_size) {
 	}
 }
 
-idx_t ValidityMask::TargetCount() {
-	return target_count;
+idx_t ValidityMask::Capacity() const {
+	return capacity;
 }
 
 void ValidityMask::Slice(const ValidityMask &other, idx_t source_offset, idx_t count) {
-	if (other.AllValid()) {
+	if (other.CannotHaveNull()) {
 		validity_mask = nullptr;
 		validity_data.reset();
 		return;
@@ -94,20 +128,62 @@ bool ValidityMask::IsAligned(idx_t count) {
 	return count % BITS_PER_VALUE == 0;
 }
 
+void ValidityMask::CopyRange(const ValidityMask &other, idx_t count) {
+	CopySel(other, *FlatVector::IncrementalSelectionVector(), 0, 0, count);
+}
+
+void ValidityMask::CopySel(const ValidityMask &other, const SelectionVector &sel, idx_t source_offset,
+                           idx_t target_offset, idx_t copy_count) {
+	if (!other.IsMaskSet() && !IsMaskSet()) {
+		// no need to copy anything if neither has any null values
+		return;
+	}
+
+	if (!sel.IsSet() && IsAligned(source_offset) && IsAligned(target_offset)) {
+		// common case where we are shifting into an aligned mask using a flat vector
+		SliceInPlace(other, target_offset, source_offset, copy_count);
+		return;
+	}
+	for (idx_t i = 0; i < copy_count; i++) {
+		auto source_idx = sel.get_index(source_offset + i);
+		Set(target_offset + i, other.RowIsValid(source_idx));
+	}
+}
+
 void ValidityMask::SliceInPlace(const ValidityMask &other, idx_t target_offset, idx_t source_offset, idx_t count) {
+	if (CannotHaveNull() && other.CannotHaveNull()) {
+		// Both validity masks are uninitialized, nothing to do
+		return;
+	}
 	EnsureWritable();
+	const idx_t ragged = count % BITS_PER_VALUE;
+	const idx_t entire_units = count / BITS_PER_VALUE;
 	if (IsAligned(source_offset) && IsAligned(target_offset)) {
 		auto target_validity = GetData();
 		auto source_validity = other.GetData();
 		auto source_offset_entries = EntryCount(source_offset);
 		auto target_offset_entries = EntryCount(target_offset);
-		memcpy(target_validity + target_offset_entries, source_validity + source_offset_entries,
-		       sizeof(validity_t) * EntryCount(count));
+		if (!source_validity) {
+			// if source has no validity mask - set all bytes to 1
+			memset(target_validity + target_offset_entries, 0xFF, sizeof(validity_t) * entire_units);
+		} else {
+			memcpy(target_validity + target_offset_entries, source_validity + source_offset_entries,
+			       sizeof(validity_t) * entire_units);
+		}
+		if (ragged) {
+			auto src_entry =
+			    source_validity ? source_validity[source_offset_entries + entire_units] : ValidityBuffer::MAX_ENTRY;
+			src_entry &= (ValidityBuffer::MAX_ENTRY >> (BITS_PER_VALUE - ragged));
+
+			target_validity += target_offset_entries + entire_units;
+			auto tgt_entry = *target_validity;
+			tgt_entry &= (ValidityBuffer::MAX_ENTRY << ragged);
+
+			*target_validity = tgt_entry | src_entry;
+		}
 		return;
 	} else if (IsAligned(target_offset)) {
 		//	Simple common case where we are shifting into an aligned mask (e.g., 0 in Slice above)
-		const idx_t entire_units = count / BITS_PER_VALUE;
-		const idx_t ragged = count % BITS_PER_VALUE;
 		const idx_t tail = source_offset % BITS_PER_VALUE;
 		const idx_t head = BITS_PER_VALUE - tail;
 		auto source_validity = other.GetData() + (source_offset / BITS_PER_VALUE);

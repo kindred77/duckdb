@@ -11,9 +11,9 @@
 #include "duckdb/common/enums/catalog_type.hpp"
 #include "duckdb/common/types/value.hpp"
 #include "duckdb/parser/parsed_data/alter_info.hpp"
-#include "duckdb/parser/qualified_name.hpp"
 
 namespace duckdb {
+class CatalogEntryRetriever;
 class ClientContext;
 class CatalogEntry;
 
@@ -35,9 +35,10 @@ public:
 	Value comment_value;
 
 public:
-	optional_ptr<CatalogEntry> TryResolveCatalogEntry(ClientContext &context);
+	optional_ptr<CatalogEntry> TryResolveCatalogEntry(CatalogEntryRetriever &retriever);
 	unique_ptr<AlterInfo> Copy() const override;
 	CatalogType GetCatalogType() const override;
+	string ToString() const override;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &deserializer);

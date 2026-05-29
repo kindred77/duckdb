@@ -10,7 +10,6 @@
 
 #include "duckdb/common/enums/join_type.hpp"
 #include "duckdb/common/enums/joinref_type.hpp"
-#include "duckdb/common/unordered_set.hpp"
 #include "duckdb/parser/parsed_expression.hpp"
 #include "duckdb/parser/tableref.hpp"
 #include "duckdb/common/vector.hpp"
@@ -39,6 +38,12 @@ public:
 	JoinRefType ref_type;
 	//! The set of USING columns (if any)
 	vector<string> using_columns;
+	//! Duplicate eliminated columns (if any)
+	vector<unique_ptr<ParsedExpression>> duplicate_eliminated_columns;
+	//! If we have duplicate eliminated columns if the delim is flipped
+	bool delim_flipped = false;
+	//! Whether or not this is an implicit cross join
+	bool is_implicit = false;
 
 public:
 	string ToString() const override;

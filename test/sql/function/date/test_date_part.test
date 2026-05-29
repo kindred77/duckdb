@@ -6,9 +6,6 @@ statement ok
 SET default_null_order='nulls_first';
 
 statement ok
-PRAGMA enable_verification
-
-statement ok
 CREATE TABLE dates(d DATE, s VARCHAR);
 
 statement ok
@@ -29,7 +26,7 @@ CREATE TABLE specifiers (specifier VARCHAR);
 foreach specifier era millennium century decade year quarter month day week weekday isodow dayofyear isoyear yearweek
 
 statement ok
-INSERT INTO specifiers VALUES ('${partcode}');
+INSERT INTO specifiers VALUES ('{partcode}');
 
 endloop
 
@@ -264,6 +261,14 @@ NULL
 NULL
 NULL
 
+# Cache upper bound
+query I
+select date_part('year', dt::DATE) * 10,
+from generate_series('2050-01-01'::date,'2051-12-31'::date,interval 1 day) t(dt)
+where dt = '2050-12-31';
+----
+20500
+
 #
 # Two-argument timezone
 #
@@ -413,7 +418,7 @@ date_part('quarter', DATE '1992-12-20')
 foreach partcode era millennium century decade year quarter month day week weekday isodow dayofyear isoyear yearweek julian
 
 query III
-SELECT d, DATE_PART('${partcode}', d) AS p, ${partcode}(d) AS f
+SELECT d, DATE_PART('{partcode}', d) AS p, {partcode}(d) AS f
 FROM dates
 WHERE p IS DISTINCT FROM f;
 ----
@@ -459,6 +464,18 @@ NULL	NULL
 2022-01-01	1640995200000
 infinity	NULL
 
+query II
+SELECT d, nanosecond(d) FROM dates ORDER BY ALL;
+----
+NULL	NULL
+-infinity	NULL
+0044-03-15 (BC)	0
+1992-01-01	0
+1992-03-03	0
+1992-05-05	0
+2022-01-01	0
+infinity	NULL
+
 #
 # Structs
 #
@@ -467,9 +484,9 @@ infinity	NULL
 foreach partcode era millennium century decade year quarter month day week weekday isodow doy isoyear yearweek
 
 query III
-SELECT d, DATE_PART('${partcode}', d) AS p, DATE_PART(['${partcode}'], d) AS st
+SELECT d, DATE_PART('{partcode}', d) AS p, DATE_PART(['{partcode}'], d) AS st
 FROM dates
-WHERE p IS DISTINCT FROM st['${partcode}'];
+WHERE p IS DISTINCT FROM st['{partcode}'];
 ----
 
 endloop
@@ -553,7 +570,7 @@ ORDER BY 1;
 foreach datepart hour minute second millisecond microsecond timezone timezone_hour timezone_minute
 
 statement error
-SELECT d, DATE_PART(['${datepart}'], d) AS parts
+SELECT d, DATE_PART(['{datepart}'], d) AS parts
 FROM dates
 ORDER BY 1;
 ----
@@ -578,7 +595,7 @@ foreach special infinity -infinity
 
 # Binary function
 query I
-SELECT DATE_PART(specifier, '${special}'::${datatype}) AS result
+SELECT DATE_PART(specifier, '{special}'::{datatype}) AS result
 FROM specifiers
 WHERE result IS NOT NULL
 ----
@@ -587,7 +604,7 @@ foreach unary year month day decade century millennium quarter dayofweek isodow 
 
 # Unary functions
 query I
-SELECT ${unary}('${special}'::${datatype});
+SELECT {unary}('{special}'::{datatype});
 ----
 NULL
 
@@ -595,7 +612,7 @@ endloop
 
 # Struct entries should be NULL
 query I
-SELECT DATE_PART(['year', 'month', 'day', 'epoch'], '${special}'::${datatype}) AS parts
+SELECT DATE_PART(['year', 'month', 'day', 'epoch'], '{special}'::{datatype}) AS parts
 ----
 {'year': NULL, 'month': NULL, 'day': NULL, 'epoch': NULL}
 

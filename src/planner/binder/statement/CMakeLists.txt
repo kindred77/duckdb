@@ -3,6 +3,7 @@ add_library_unity(
   OBJECT
   bind_attach.cpp
   bind_call.cpp
+  bind_connect.cpp
   bind_copy.cpp
   bind_copy_database.cpp
   bind_create.cpp
@@ -17,6 +18,7 @@ add_library_unity(
   bind_insert.cpp
   bind_load.cpp
   bind_logical_plan.cpp
+  bind_merge_into.cpp
   bind_pragma.cpp
   bind_prepare.cpp
   bind_relation.cpp
@@ -25,6 +27,7 @@ add_library_unity(
   bind_simple.cpp
   bind_summarize.cpp
   bind_update.cpp
+  bind_update_extensions.cpp
   bind_vacuum.cpp)
 set(ALL_OBJECT_FILES
     ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:duckdb_bind_statement>

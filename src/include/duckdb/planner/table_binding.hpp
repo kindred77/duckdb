@@ -14,6 +14,10 @@
 #include "duckdb/parser/parsed_expression.hpp"
 #include "duckdb/planner/expression_binder.hpp"
 #include "duckdb/catalog/catalog_entry/table_column_type.hpp"
+#include "duckdb/planner/binding_alias.hpp"
+#include "duckdb/common/column_index.hpp"
+#include "duckdb/common/table_column.hpp"
+#include "duckdb/planner/bound_statement.hpp"
 
 namespace duckdb {
 class BindContext;
@@ -23,30 +27,16 @@ class SubqueryRef;
 class LogicalGet;
 class TableCatalogEntry;
 class TableFunctionCatalogEntry;
-class BoundTableFunction;
 class StandardEntry;
 struct ColumnBinding;
 
-enum class BindingType { BASE, TABLE, DUMMY, CATALOG_ENTRY };
+enum class BindingType { BASE, TABLE, DUMMY, CATALOG_ENTRY, CTE };
 
 //! A Binding represents a binding to a table, table-producing function or subquery with a specified table index.
 struct Binding {
-	Binding(BindingType binding_type, const string &alias, vector<LogicalType> types, vector<string> names,
-	        idx_t index);
+	Binding(BindingType binding_type, BindingAlias alias, vector<LogicalType> types, vector<string> names,
+	        TableIndex index);
 	virtual ~Binding() = default;
-
-	//! The type of Binding
-	BindingType binding_type;
-	//! The alias of the binding
-	string alias;
-	//! The table index of the binding
-	idx_t index;
-	//! The types of the bound columns
-	vector<LogicalType> types;
-	//! Column names of the subquery
-	vector<string> names;
-	//! Name -> index for the names
-	case_insensitive_map_t<column_t> name_map;
 
 public:
 	bool TryGetBindingIndex(const string &column_name, column_t &column_index);
@@ -55,6 +45,18 @@ public:
 	virtual ErrorData ColumnNotFoundError(const string &column_name) const;
 	virtual BindResult Bind(ColumnRefExpression &colref, idx_t depth);
 	virtual optional_ptr<StandardEntry> GetStandardEntry();
+	string GetAlias() const;
+
+	BindingType GetBindingType();
+	const BindingAlias &GetBindingAlias();
+	TableIndex GetIndex();
+	const vector<LogicalType> &GetColumnTypes();
+	const vector<string> &GetColumnNames();
+	idx_t GetColumnCount();
+	void SetColumnType(idx_t col_idx, LogicalType type);
+
+	static BindingAlias GetAlias(const string &explicit_alias, const StandardEntry &entry);
+	static BindingAlias GetAlias(const string &explicit_alias, optional_ptr<StandardEntry> entry);
 
 public:
 	template <class TARGET>
@@ -72,6 +74,23 @@ public:
 		}
 		return reinterpret_cast<const TARGET &>(*this);
 	}
+
+protected:
+	void Initialize();
+
+protected:
+	//! The type of Binding
+	BindingType binding_type;
+	//! The alias of the binding
+	BindingAlias alias;
+	//! The table index of the binding
+	TableIndex index;
+	//! The types of the bound columns
+	vector<LogicalType> types;
+	//! Column names of the subquery
+	vector<string> names;
+	//! Name -> index for the names
+	case_insensitive_map_t<column_t> name_map;
 };
 
 struct EntryBinding : public Binding {
@@ -79,7 +98,7 @@ public:
 	static constexpr const BindingType TYPE = BindingType::CATALOG_ENTRY;
 
 public:
-	EntryBinding(const string &alias, vector<LogicalType> types, vector<string> names, idx_t index,
+	EntryBinding(const string &alias, vector<LogicalType> types, vector<string> names, TableIndex index,
 	             StandardEntry &entry);
 	StandardEntry &entry;
 
@@ -95,13 +114,15 @@ public:
 
 public:
 	TableBinding(const string &alias, vector<LogicalType> types, vector<string> names,
-	             vector<column_t> &bound_column_ids, optional_ptr<StandardEntry> entry, idx_t index,
-	             bool add_row_id = false);
+	             vector<ColumnIndex> &bound_column_ids, optional_ptr<StandardEntry> entry, TableIndex index,
+	             virtual_column_map_t virtual_columns);
 
 	//! A reference to the set of bound column ids
-	vector<column_t> &bound_column_ids;
+	vector<ColumnIndex> &bound_column_ids;
 	//! The underlying catalog entry (if any)
 	optional_ptr<StandardEntry> entry;
+	//! Virtual columns
+	virtual_column_map_t virtual_columns;
 
 public:
 	unique_ptr<ParsedExpression> ExpandGeneratedColumn(const string &column_name);
@@ -109,7 +130,7 @@ public:
 	optional_ptr<StandardEntry> GetStandardEntry() override;
 	ErrorData ColumnNotFoundError(const string &column_name) const override;
 	// These are columns that are present in the name_map, appearing in the order that they're bound
-	const vector<column_t> &GetBoundColumnIds() const;
+	const vector<ColumnIndex> &GetBoundColumnIds() const;
 
 protected:
 	ColumnBinding GetColumnBinding(column_t column_index);
@@ -133,12 +154,52 @@ public:
 
 public:
 	//! Binding macros
-	BindResult Bind(ColumnRefExpression &colref, idx_t depth) override;
+	BindResult Bind(ColumnRefExpression &col_ref, idx_t depth) override;
 	//! Binding lambdas
-	BindResult Bind(LambdaRefExpression &lambdaref, idx_t depth);
+	BindResult Bind(LambdaRefExpression &lambda_ref, idx_t depth);
 
-	//! Given the parameter colref, returns a copy of the argument that was supplied for this parameter
-	unique_ptr<ParsedExpression> ParamToArg(ColumnRefExpression &colref);
+	//! Returns a copy of the col_ref parameter as a parsed expression
+	unique_ptr<ParsedExpression> ParamToArg(ColumnRefExpression &col_ref);
+};
+
+enum class CTEType { CAN_BE_REFERENCED, CANNOT_BE_REFERENCED };
+struct CTEBinding;
+
+struct CTEBindState {
+	CTEBindState(Binder &parent_binder, QueryNode &cte_def, const vector<string> &aliases);
+	~CTEBindState();
+
+	Binder &parent_binder;
+	QueryNode &cte_def;
+	const vector<string> &aliases;
+	idx_t active_binder_count;
+	shared_ptr<Binder> query_binder;
+	BoundStatement query;
+	vector<string> names;
+	vector<LogicalType> types;
+
+public:
+	bool IsBound() const;
+	void Bind(CTEBinding &binding);
+};
+
+struct CTEBinding : public Binding {
+public:
+	static constexpr const BindingType TYPE = BindingType::CTE;
+
+public:
+	CTEBinding(BindingAlias alias, vector<LogicalType> types, vector<string> names, TableIndex index, CTEType type);
+	CTEBinding(BindingAlias alias, shared_ptr<CTEBindState> bind_state, TableIndex index);
+
+public:
+	bool CanBeReferenced() const;
+	bool IsReferenced() const;
+	void Reference();
+
+private:
+	CTEType cte_type;
+	idx_t reference_count;
+	shared_ptr<CTEBindState> bind_state;
 };
 
 } // namespace duckdb

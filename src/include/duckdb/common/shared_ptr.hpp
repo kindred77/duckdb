@@ -8,12 +8,7 @@
 
 #pragma once
 
-#include <memory>
-
-namespace duckdb {
-
-using std::make_shared;
-using std::shared_ptr;
-using std::weak_ptr;
-
-} // namespace duckdb
+#include "duckdb/common/compatible_with_ipp.hpp"
+#include "duckdb/common/shared_ptr_ipp.hpp"
+#include "duckdb/common/weak_ptr_ipp.hpp"
+#include "duckdb/common/enable_shared_from_this_ipp.hpp"

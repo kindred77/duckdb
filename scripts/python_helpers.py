@@ -1,10 +1,10 @@
-def open_utf8(fpath, flags):
+def open_utf8(fpath, flags, **kwargs):
     import sys
 
     if sys.version_info[0] < 3:
-        return open(fpath, flags)
+        return open(fpath, flags, **kwargs)
     else:
-        return open(fpath, flags, encoding="utf8")
+        return open(fpath, flags, encoding="utf8", **kwargs)
 
 
 def normalize_path(path):
@@ -17,7 +17,7 @@ def normalize_path(path):
         normed = map(lambda p: normalize(p), path)
         return list(normed)
 
-    if (isinstance, str):
+    if isinstance(path, str):
         return normalize(path)
 
     raise Exception("Can only be called with a str or list argument")

@@ -17,15 +17,15 @@ BoundLambdaRefExpression::BoundLambdaRefExpression(LogicalType type, ColumnBindi
     : BoundLambdaRefExpression(string(), std::move(type), binding, lambda_idx, depth) {
 }
 
-unique_ptr<Expression> BoundLambdaRefExpression::Copy() {
+unique_ptr<Expression> BoundLambdaRefExpression::Copy() const {
 	return make_uniq<BoundLambdaRefExpression>(alias, return_type, binding, lambda_idx, depth);
 }
 
 hash_t BoundLambdaRefExpression::Hash() const {
 	auto result = Expression::Hash();
 	result = CombineHash(result, duckdb::Hash<uint64_t>(lambda_idx));
-	result = CombineHash(result, duckdb::Hash<uint64_t>(binding.column_index));
-	result = CombineHash(result, duckdb::Hash<uint64_t>(binding.table_index));
+	result = CombineHash(result, duckdb::Hash<ProjectionIndex>(binding.column_index));
+	result = CombineHash(result, duckdb::Hash<TableIndex>(binding.table_index));
 	return CombineHash(result, duckdb::Hash<uint64_t>(depth));
 }
 
@@ -41,7 +41,7 @@ string BoundLambdaRefExpression::ToString() const {
 	if (!alias.empty()) {
 		return alias;
 	}
-	return "#[" + to_string(binding.table_index) + "." + to_string(binding.column_index) + "." + to_string(lambda_idx) +
-	       "]";
+	return "#[" + to_string(binding.table_index.index) + "." + to_string(binding.column_index) + "." +
+	       to_string(lambda_idx) + "]";
 }
 } // namespace duckdb

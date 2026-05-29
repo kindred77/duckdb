@@ -10,7 +10,7 @@ AggregateRelation::AggregateRelation(shared_ptr<Relation> child_p,
     : Relation(child_p->context, RelationType::AGGREGATE_RELATION), expressions(std::move(parsed_expressions)),
       child(std::move(child_p)) {
 	// bind the expressions
-	context.GetContext()->TryBindRelation(*this, this->columns);
+	TryBindRelation(columns);
 }
 
 AggregateRelation::AggregateRelation(shared_ptr<Relation> child_p,
@@ -18,7 +18,7 @@ AggregateRelation::AggregateRelation(shared_ptr<Relation> child_p,
     : Relation(child_p->context, RelationType::AGGREGATE_RELATION), expressions(std::move(parsed_expressions)),
       groups(std::move(groups_p)), child(std::move(child_p)) {
 	// bind the expressions
-	context.GetContext()->TryBindRelation(*this, this->columns);
+	Relation::TryBindRelation(columns);
 }
 
 AggregateRelation::AggregateRelation(shared_ptr<Relation> child_p,
@@ -31,12 +31,12 @@ AggregateRelation::AggregateRelation(shared_ptr<Relation> child_p,
 		GroupingSet grouping_set;
 		for (idx_t i = 0; i < groups_p.size(); i++) {
 			groups.group_expressions.push_back(std::move(groups_p[i]));
-			grouping_set.insert(i);
+			grouping_set.emplace(i);
 		}
 		groups.grouping_sets.push_back(std::move(grouping_set));
 	}
 	// bind the expressions
-	context.GetContext()->TryBindRelation(*this, this->columns);
+	TryBindRelation(columns);
 }
 
 unique_ptr<QueryNode> AggregateRelation::GetQueryNode() {

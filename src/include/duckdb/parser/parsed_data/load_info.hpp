@@ -12,7 +12,7 @@
 
 namespace duckdb {
 
-enum class LoadType : uint8_t { LOAD, INSTALL, FORCE_INSTALL };
+enum class LoadType : uint8_t { LOAD, INSTALL, FORCE_INSTALL, LOAD_AS };
 
 struct LoadInfo : public ParseInfo {
 public:
@@ -24,16 +24,14 @@ public:
 
 	string filename;
 	string repository;
+	bool repo_is_alias;
+	string version;
 	LoadType load_type;
+	string alias;
 
 public:
-	unique_ptr<LoadInfo> Copy() const {
-		auto result = make_uniq<LoadInfo>();
-		result->filename = filename;
-		result->repository = repository;
-		result->load_type = load_type;
-		return result;
-	}
+	unique_ptr<LoadInfo> Copy() const;
+	string ToString() const;
 
 	void Serialize(Serializer &serializer) const override;
 	static unique_ptr<ParseInfo> Deserialize(Deserializer &deserializer);

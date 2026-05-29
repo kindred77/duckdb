@@ -15,14 +15,14 @@ BoundColumnRefExpression::BoundColumnRefExpression(LogicalType type, ColumnBindi
     : BoundColumnRefExpression(string(), std::move(type), binding, depth) {
 }
 
-unique_ptr<Expression> BoundColumnRefExpression::Copy() {
+unique_ptr<Expression> BoundColumnRefExpression::Copy() const {
 	return make_uniq<BoundColumnRefExpression>(alias, return_type, binding, depth);
 }
 
 hash_t BoundColumnRefExpression::Hash() const {
 	auto result = Expression::Hash();
-	result = CombineHash(result, duckdb::Hash<uint64_t>(binding.column_index));
-	result = CombineHash(result, duckdb::Hash<uint64_t>(binding.table_index));
+	result = CombineHash(result, duckdb::Hash<ProjectionIndex>(binding.column_index));
+	result = CombineHash(result, duckdb::Hash<TableIndex>(binding.table_index));
 	return CombineHash(result, duckdb::Hash<uint64_t>(depth));
 }
 
@@ -37,7 +37,7 @@ bool BoundColumnRefExpression::Equals(const BaseExpression &other_p) const {
 string BoundColumnRefExpression::GetName() const {
 #ifdef DEBUG
 	if (DBConfigOptions::debug_print_bindings) {
-		return binding.ToString();
+		return StringUtil::Format("%s (%s)", binding.ToString(), return_type.ToString());
 	}
 #endif
 	return Expression::GetName();

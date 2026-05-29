@@ -25,7 +25,6 @@
 #endif
 
 using namespace duckdb;
-using namespace std;
 
 TEST_CASE("Test using a remote optimizer pass in case thats important to someone", "[extension]") {
 	pid_t pid = fork();
@@ -65,7 +64,7 @@ TEST_CASE("Test using a remote optimizer pass in case thats important to someone
 		}
 
 		DBConfig config;
-		config.options.allow_unsigned_extensions = true;
+		config.SetOptionByName("allow_unsigned_extensions", true);
 		DuckDB db2(nullptr, &config);
 		Connection con2(db2);
 		auto load_parquet = con2.Query("LOAD parquet");
@@ -105,7 +104,8 @@ TEST_CASE("Test using a remote optimizer pass in case thats important to someone
 			idx_t num_chunks = collection.ChunkCount();
 			REQUIRE(write(connfd, &num_chunks, sizeof(idx_t)) == sizeof(idx_t));
 			for (auto &chunk : collection.Chunks()) {
-				MemoryStream target;
+				Allocator allocator;
+				MemoryStream target(allocator);
 				BinarySerializer serializer(target);
 				serializer.Begin();
 				chunk.Serialize(serializer);
@@ -119,7 +119,7 @@ TEST_CASE("Test using a remote optimizer pass in case thats important to someone
 		exit(0);
 	} else if (pid > 0) { // parent process
 		DBConfig config;
-		config.options.allow_unsigned_extensions = true;
+		config.SetOptionByName("allow_unsigned_extensions", true);
 		DuckDB db1(nullptr, &config);
 		Connection con1(db1);
 		auto load_parquet = con1.Query("LOAD 'parquet'");

@@ -1,6 +1,8 @@
 #include "duckdb/optimizer/rule/like_optimizations.hpp"
 
 #include "duckdb/execution/expression_executor.hpp"
+#include "duckdb/function/scalar/string_functions.hpp"
+#include "duckdb/function/scalar/string_common.hpp"
 #include "duckdb/planner/expression/bound_function_expression.hpp"
 #include "duckdb/planner/expression/bound_constant_expression.hpp"
 #include "duckdb/planner/expression/bound_operator_expression.hpp"
@@ -106,7 +108,7 @@ unique_ptr<Expression> LikeOptimizationRule::Apply(LogicalOperator &op, vector<r
 	D_ASSERT(root.children.size() == 2);
 
 	if (constant_expr.value.IsNull()) {
-		return make_uniq<BoundConstantExpression>(Value(root.return_type));
+		return make_uniq<BoundConstantExpression>(Value(root.GetReturnType()));
 	}
 
 	// the constant_expr is a scalar expression that we have to fold
@@ -115,15 +117,15 @@ unique_ptr<Expression> LikeOptimizationRule::Apply(LogicalOperator &op, vector<r
 	}
 
 	auto constant_value = ExpressionExecutor::EvaluateScalar(GetContext(), constant_expr);
-	D_ASSERT(constant_value.type() == constant_expr.return_type);
+	D_ASSERT(constant_value.type() == constant_expr.GetReturnType());
 	auto &patt_str = StringValue::Get(constant_value);
 
-	bool is_not_like = root.function.name == "!~~";
+	bool is_not_like = root.function.GetName() == "!~~";
 	if (PatternIsConstant(patt_str)) {
 		// Pattern is constant
-		return make_uniq<BoundComparisonExpression>(is_not_like ? ExpressionType::COMPARE_NOTEQUAL
-		                                                        : ExpressionType::COMPARE_EQUAL,
-		                                            std::move(root.children[0]), std::move(root.children[1]));
+		return BoundComparisonExpression::Create(is_not_like ? ExpressionType::COMPARE_NOTEQUAL
+		                                                     : ExpressionType::COMPARE_EQUAL,
+		                                         std::move(root.children[0]), std::move(root.children[1]));
 	} else if (PatternIsPrefix(patt_str)) {
 		// Prefix LIKE pattern : [^%_]*[%]+, ignoring underscore
 		return ApplyRule(root, PrefixFun::GetFunction(), patt_str, is_not_like);
@@ -132,31 +134,28 @@ unique_ptr<Expression> LikeOptimizationRule::Apply(LogicalOperator &op, vector<r
 		return ApplyRule(root, SuffixFun::GetFunction(), patt_str, is_not_like);
 	} else if (PatternIsContains(patt_str)) {
 		// Contains LIKE pattern: [%]+[^%_]*[%]+, ignoring underscore
-		return ApplyRule(root, ContainsFun::GetFunction(), patt_str, is_not_like);
+		return ApplyRule(root, GetStringContains(), patt_str, is_not_like);
 	}
 	return nullptr;
 }
 
-unique_ptr<Expression> LikeOptimizationRule::ApplyRule(BoundFunctionExpression &expr, ScalarFunction function,
-                                                       string pattern, bool is_not_like) {
+unique_ptr<Expression> LikeOptimizationRule::ApplyRule(BoundFunctionExpression &expr, const ScalarFunction &function,
+                                                       string pattern, bool is_not_like) const {
 	// replace LIKE by an optimized function
-	unique_ptr<Expression> result;
-	auto new_function =
-	    make_uniq<BoundFunctionExpression>(expr.return_type, std::move(function), std::move(expr.children), nullptr);
+	auto result = function.Bind(GetContext(), std::move(expr.children));
 
 	// removing "%" from the pattern
 	pattern.erase(std::remove(pattern.begin(), pattern.end(), '%'), pattern.end());
 
-	new_function->children[1] = make_uniq<BoundConstantExpression>(Value(std::move(pattern)));
+	result->children[1] = make_uniq<BoundConstantExpression>(Value(std::move(pattern)));
 
-	result = std::move(new_function);
-	if (is_not_like) {
-		auto negation = make_uniq<BoundOperatorExpression>(ExpressionType::OPERATOR_NOT, LogicalType::BOOLEAN);
-		negation->children.push_back(std::move(result));
-		result = std::move(negation);
+	if (!is_not_like) {
+		return std::move(result);
 	}
 
-	return result;
+	auto negation = make_uniq<BoundOperatorExpression>(ExpressionType::OPERATOR_NOT, LogicalType::BOOLEAN);
+	negation->children.push_back(std::move(result));
+	return std::move(negation);
 }
 
 } // namespace duckdb

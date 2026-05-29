@@ -6,6 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
+//! NOTE: This file should not be included directly.
+//! NOTE: When included directly, this file produces 'unused static method' warnings/errors.
+//! NOTE: The methods in this file should be used through the TryCast:: methods defined in 'cast_operators.hpp'.
+
 #pragma once
 
 #include "duckdb/common/operator/cast_operators.hpp"
@@ -24,11 +28,13 @@ static bool TryCastWithOverflowCheck(SRC value, DST &result) {
 	if (!Value::IsFinite<SRC>(value)) {
 		return false;
 	}
+
+	// SRC and DST do not have the same sign.
 	if (NumericLimits<SRC>::IsSigned() != NumericLimits<DST>::IsSigned()) {
+		// SRC is signed.
 		if (NumericLimits<SRC>::IsSigned()) {
-			// signed to unsigned conversion
 			if (NumericLimits<SRC>::Digits() > NumericLimits<DST>::Digits()) {
-				if (value < 0 || value > (SRC)NumericLimits<DST>::Maximum()) {
+				if (value < 0 || value > static_cast<SRC>(NumericLimits<DST>::Maximum())) {
 					return false;
 				}
 			} else {
@@ -36,34 +42,33 @@ static bool TryCastWithOverflowCheck(SRC value, DST &result) {
 					return false;
 				}
 			}
-			result = (DST)value;
+			result = static_cast<DST>(value);
 			return true;
-		} else {
-			// unsigned to signed conversion
-			if (NumericLimits<SRC>::Digits() >= NumericLimits<DST>::Digits()) {
-				if (value <= (SRC)NumericLimits<DST>::Maximum()) {
-					result = (DST)value;
-					return true;
-				}
-				return false;
-			} else {
-				result = (DST)value;
+		}
+
+		// SRC is unsigned.
+		if (NumericLimits<SRC>::Digits() >= NumericLimits<DST>::Digits()) {
+			if (value <= static_cast<SRC>(NumericLimits<DST>::Maximum())) {
+				result = static_cast<DST>(value);
 				return true;
 			}
+			return false;
 		}
-	} else {
-		// same sign conversion
-		if (NumericLimits<DST>::Digits() >= NumericLimits<SRC>::Digits()) {
-			result = (DST)value;
-			return true;
-		} else {
-			if (value < SRC(NumericLimits<DST>::Minimum()) || value > SRC(NumericLimits<DST>::Maximum())) {
-				return false;
-			}
-			result = (DST)value;
-			return true;
-		}
+		result = static_cast<DST>(value);
+		return true;
 	}
+
+	// SRC and DST have the same sign.
+	if (NumericLimits<DST>::Digits() >= NumericLimits<SRC>::Digits()) {
+		result = static_cast<DST>(value);
+		return true;
+	}
+
+	if (value < SRC(NumericLimits<DST>::Minimum()) || value > SRC(NumericLimits<DST>::Maximum())) {
+		return false;
+	}
+	result = static_cast<DST>(value);
+	return true;
 }
 
 template <class SRC, class T>
@@ -75,7 +80,7 @@ bool TryCastWithOverflowCheckFloat(SRC value, T &result, SRC min, SRC max) {
 		return false;
 	}
 	// PG FLOAT => INT casts use statistical rounding.
-	result = std::nearbyint(value);
+	result = static_cast<T>(std::nearbyint(value));
 	return true;
 }
 
@@ -182,7 +187,7 @@ bool TryCastWithOverflowCheck(double input, float &result) {
 		return true;
 	}
 	auto res = float(input);
-	if (!Value::FloatIsFinite(input)) {
+	if (!Value::FloatIsFinite(res)) {
 		return false;
 	}
 	result = res;
@@ -583,21 +588,21 @@ bool TryCastWithOverflowCheck(double value, uhugeint_t &result) {
 
 struct NumericTryCastToBit {
 	template <class SRC>
-	static inline string_t Operation(SRC input, Vector &result) {
-		return StringVector::AddStringOrBlob(result, Bit::NumericToBit(input));
+	static inline string_t Operation(SRC input, StringHeap &heap) {
+		return heap.AddBlob(Bit::NumericToBit(input));
 	}
 };
 
 struct NumericTryCast {
 	template <class SRC, class DST>
-	static inline bool Operation(SRC input, DST &result, bool strict = false) {
+	static bool Operation(SRC input, DST &result, bool strict = false) {
 		return TryCastWithOverflowCheck(input, result);
 	}
 };
 
 struct NumericCast {
 	template <class SRC, class DST>
-	static inline DST Operation(SRC input) {
+	static DST Operation(SRC input) {
 		DST result;
 		if (!NumericTryCast::Operation(input, result)) {
 			throw InvalidInputException(CastExceptionText<SRC, DST>(input));

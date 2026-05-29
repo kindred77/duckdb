@@ -1,8 +1,6 @@
 #include "duckdb/parser/query_node/select_node.hpp"
 #include "duckdb/parser/expression_util.hpp"
-#include "duckdb/parser/keyword_helper.hpp"
 #include "duckdb/common/serializer/serializer.hpp"
-#include "duckdb/common/serializer/deserializer.hpp"
 
 namespace duckdb {
 
@@ -41,8 +39,8 @@ string SelectNode::ToString() const {
 			result += ", ";
 		}
 		result += select_list[i]->ToString();
-		if (!select_list[i]->alias.empty()) {
-			result += StringUtil::Format(" AS %s", SQLIdentifier(select_list[i]->alias));
+		if (!select_list[i]->GetAlias().empty()) {
+			result += StringUtil::Format(" AS %s", SQLIdentifier(select_list[i]->GetAlias()));
 		}
 	}
 	if (from_table && from_table->type != TableReferenceType::EMPTY_FROM) {
@@ -101,11 +99,12 @@ string SelectNode::ToString() const {
 			result += "%";
 		}
 		result += " (" + EnumUtil::ToString(sample->method);
-		if (sample->seed >= 0) {
-			result += ", " + std::to_string(sample->seed);
+		if (sample->seed.IsValid()) {
+			result += ", " + std::to_string(sample->seed.GetIndex());
 		}
 		result += ")";
 	}
+
 	return result + ResultModifiersToString();
 }
 

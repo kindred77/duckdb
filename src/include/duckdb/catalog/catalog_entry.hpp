@@ -18,15 +18,17 @@
 #include <memory>
 
 namespace duckdb {
-struct AlterInfo;
+
 class Catalog;
 class CatalogSet;
 class ClientContext;
+class Deserializer;
 class SchemaCatalogEntry;
 class Serializer;
-class Deserializer;
 class Value;
 
+struct AlterInfo;
+struct CatalogTransaction;
 struct CreateInfo;
 
 //! Abstract base class of an entry in the catalog
@@ -50,20 +52,27 @@ public:
 	bool temporary;
 	//! Whether or not the entry is an internal entry (cannot be deleted, not dumped, etc)
 	bool internal;
+	//! The name of the extension that registered this entry (empty for core entries)
+	string extension_name;
 	//! Timestamp at which the catalog entry was created
 	atomic<transaction_t> timestamp;
 	//! (optional) comment on this entry
 	Value comment;
+	//! (optional) extra data associated with this entry
+	InsertionOrderPreservingMap<string> tags;
 
 private:
 	//! Child entry
 	unique_ptr<CatalogEntry> child;
 	//! Parent entry (the node that dependents_map this node)
-	optional_ptr<CatalogEntry> parent;
+	atomic<CatalogEntry *> parent;
 
 public:
 	virtual unique_ptr<CatalogEntry> AlterEntry(ClientContext &context, AlterInfo &info);
+	virtual unique_ptr<CatalogEntry> AlterEntry(CatalogTransaction transaction, AlterInfo &info);
 	virtual void UndoAlter(ClientContext &context, AlterInfo &info);
+	virtual void Rollback(CatalogEntry &prev_entry);
+	virtual void OnDrop();
 
 	virtual unique_ptr<CatalogEntry> Copy(ClientContext &context) const;
 
@@ -77,7 +86,9 @@ public:
 	virtual string ToSQL() const;
 
 	virtual Catalog &ParentCatalog();
+	virtual const Catalog &ParentCatalog() const;
 	virtual SchemaCatalogEntry &ParentSchema();
+	virtual const SchemaCatalogEntry &ParentSchema() const;
 
 	virtual void Verify(Catalog &catalog);
 
@@ -91,6 +102,7 @@ public:
 	bool HasParent() const;
 	CatalogEntry &Child();
 	CatalogEntry &Parent();
+	const CatalogEntry &Parent() const;
 
 public:
 	template <class TARGET>
@@ -100,7 +112,7 @@ public:
 	}
 	template <class TARGET>
 	const TARGET &Cast() const {
-		D_ASSERT(dynamic_cast<const TARGET *>(this));
+		DynamicCastCheck<TARGET>(this);
 		return reinterpret_cast<const TARGET &>(*this);
 	}
 };
@@ -115,6 +127,9 @@ public:
 
 public:
 	Catalog &ParentCatalog() override {
+		return catalog;
+	}
+	const Catalog &ParentCatalog() const override {
 		return catalog;
 	}
 

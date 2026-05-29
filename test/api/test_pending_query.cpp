@@ -2,9 +2,9 @@
 #include "test_helpers.hpp"
 
 #include <thread>
+#include "duckdb/common/string_util.hpp"
 
 using namespace duckdb;
-using namespace std;
 
 TEST_CASE("Test Pending Query API", "[api][.]") {
 	DuckDB db;
@@ -105,6 +105,12 @@ TEST_CASE("Test Pending Query API", "[api][.]") {
 		result = con.Query("SELECT 42");
 		REQUIRE(CHECK_COLUMN(result, 0, {42}));
 	}
+	SECTION("Pending results errors as JSON") {
+		con.Query("SET errors_as_json = true;");
+		auto pending_query = con.PendingQuery("SELCT 32;");
+		REQUIRE(pending_query->HasError());
+		REQUIRE(duckdb::StringUtil::Contains(pending_query->GetError(), "SYNTAX_ERROR"));
+	}
 }
 
 static void parallel_pending_query(Connection *conn, bool *correct, size_t threadnr) {
@@ -132,9 +138,9 @@ TEST_CASE("Test parallel usage of pending query API", "[api][.]") {
 	REQUIRE_NO_FAIL(conn->Query("INSERT INTO integers VALUES (1), (2), (3), (NULL)"));
 
 	bool correct[20];
-	thread threads[20];
+	std::thread threads[20];
 	for (size_t i = 0; i < 20; i++) {
-		threads[i] = thread(parallel_pending_query, conn.get(), correct, i);
+		threads[i] = std::thread(parallel_pending_query, conn.get(), correct, i);
 	}
 	for (size_t i = 0; i < 20; i++) {
 		threads[i].join();

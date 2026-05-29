@@ -7,68 +7,31 @@
 //===----------------------------------------------------------------------===//
 #pragma once
 
-#include "duckdb/planner/column_binding_map.hpp"
-#include "duckdb/optimizer/join_order/query_graph.hpp"
-
+#include "duckdb/common/reference_map.hpp"
+#include "duckdb/optimizer/join_order/join_relation_set.hpp"
 #include "duckdb/optimizer/join_order/relation_statistics_helper.hpp"
 
 namespace duckdb {
 
-struct FilterInfo;
-
-struct RelationsToTDom {
-	//! column binding sets that are equivalent in a join plan.
-	//! if you have A.x = B.y and B.y = C.z, then one set is {A.x, B.y, C.z}.
-	column_binding_set_t equivalent_relations;
-	//!	the estimated total domains of the equivalent relations determined using HLL
-	idx_t tdom_hll;
-	//! the estimated total domains of each relation without using HLL
-	idx_t tdom_no_hll;
-	bool has_tdom_hll;
-	vector<FilterInfo *> filters;
-	vector<string> column_names;
-
-	RelationsToTDom(const column_binding_set_t &column_binding_set)
-	    : equivalent_relations(column_binding_set), tdom_hll(0), tdom_no_hll(NumericLimits<idx_t>::Maximum()),
-	      has_tdom_hll(false) {};
-};
-
-struct Subgraph2Denominator {
-	unordered_set<idx_t> relations;
-	double denom;
-
-	Subgraph2Denominator() : relations(), denom(1) {};
-};
-
-class CardinalityHelper {
-public:
-	CardinalityHelper() {
-	}
-	CardinalityHelper(double cardinality_before_filters, double filter_string)
-	    : cardinality_before_filters(cardinality_before_filters), filter_strength(filter_string) {};
-
-public:
-	double cardinality_before_filters;
-	double filter_strength;
-
-	vector<string> table_names_joined;
-	vector<string> column_names;
-};
+class FilterInfo;
+class JoinPredicateModel;
+struct CardinalityEstimatorState;
+struct CompositeJoinPairStats;
+struct DenomInfo;
+struct DenominatorState;
+struct FilterInfoWithTotalDomains;
+struct Subgraph2Denominator;
 
 class CardinalityEstimator {
 public:
-	explicit CardinalityEstimator() {};
-
-private:
-	vector<RelationsToTDom> relations_to_tdoms;
-	unordered_map<string, CardinalityHelper> relation_set_2_cardinality;
-	JoinRelationSetManager set_manager;
-	vector<RelationStats> relation_stats;
+	static constexpr double DEFAULT_SEMI_ANTI_SELECTIVITY = 5;
+	CardinalityEstimator(JoinRelationSetManager &set_manager, const JoinPredicateModel &predicate_model);
+	~CardinalityEstimator();
 
 public:
 	void RemoveEmptyTotalDomains();
 	void UpdateTotalDomains(optional_ptr<JoinRelationSet> set, RelationStats &stats);
-	void InitEquivalentRelations(const vector<unique_ptr<FilterInfo>> &filter_infos);
+	void InitEquivalentRelations();
 
 	void InitCardinalityEstimatorProps(optional_ptr<JoinRelationSet> set, RelationStats &stats);
 
@@ -78,18 +41,59 @@ public:
 	T EstimateCardinalityWithSet(JoinRelationSet &new_set);
 
 	//! used for debugging.
-	void AddRelationNamesToTdoms(vector<RelationStats> &stats);
-	void PrintRelationToTdomInfo();
+	void AddRelationNamesToRelationStats(vector<RelationStats> &stats);
+	void PrintRelationStats();
 
 private:
-	bool SingleColumnFilter(FilterInfo &filter_info);
-	vector<idx_t> DetermineMatchingEquivalentSets(FilterInfo *filter_info);
-	//! Given a filter, add the column bindings to the matching equivalent set at the index
-	//! given in matching equivalent sets.
-	//! If there are multiple equivalence sets, they are merged.
-	void AddToEquivalenceSets(FilterInfo *filter_info, vector<idx_t> matching_equivalent_sets);
-	void AddRelationTdom(FilterInfo &filter_info);
-	bool EmptyFilter(FilterInfo &filter_info);
+	double GetNumerator(JoinRelationSet &set);
+	DenomInfo GetDenominator(JoinRelationSet &set);
+	void ProcessDenominatorEdge(FilterInfoWithTotalDomains &edge, JoinRelationSet &requested_set,
+	                            DenominatorState &state);
+	void CreateDenominatorSubgraph(FilterInfoWithTotalDomains &edge, JoinRelationSet &edge_left_set,
+	                               JoinRelationSet &edge_right_set, DenominatorState &state);
+	void ExtendDenominatorSubgraph(idx_t subgraph_index, FilterInfoWithTotalDomains &edge,
+	                               JoinRelationSet &edge_left_set, JoinRelationSet &edge_right_set,
+	                               bool can_increment_existing_join, DenominatorState &state);
+	void MergeDenominatorSubgraphs(const vector<idx_t> &subgraph_connections, FilterInfoWithTotalDomains &edge,
+	                               DenominatorState &state);
+	void MergeDisconnectedDenominatorSubgraphs(DenominatorState &state);
+	void AddCrossProductRelations(JoinRelationSet &set, DenominatorState &state);
+	DenomInfo CreateDenominatorResult(JoinRelationSet &set, DenominatorState &state);
+	//! Applied outside the cardinality cache so stored values stay pre-OR.
+	double ApplyOrFilterSelectivities(JoinRelationSet &new_set, double cardinality) const;
+
+	bool SingleColumnFilter(const FilterInfo &filter_info);
+
+	//! Denom calculation
+	double CalculateUpdatedDenom(Subgraph2Denominator left, Subgraph2Denominator right,
+	                             FilterInfoWithTotalDomains &filter);
+	double CalculateInnerJoinDenom(double base_denom, FilterInfoWithTotalDomains &filter);
+	double CalculateLeftJoinDenom(Subgraph2Denominator &left, Subgraph2Denominator &right,
+	                              FilterInfoWithTotalDomains &filter);
+	double CalculateSemiAntiJoinDenom(double base_denom, Subgraph2Denominator &left, Subgraph2Denominator &right,
+	                                  FilterInfoWithTotalDomains &filter);
+	bool ApplyJoinIncrement(double &target_denom, FilterInfoWithTotalDomains &edge,
+	                        reference_map_t<JoinRelationSet, CompositeJoinPairStats> &inner_join_pair_stats,
+	                        reference_set_t<JoinRelationSet> &capped_join_pairs, JoinRelationSet &scope,
+	                        optional_ptr<JoinRelationSet> join_pair = nullptr);
+	bool ApplyJoinPairCap(double &target_denom, JoinRelationSet &join_pair,
+	                      reference_map_t<JoinRelationSet, CompositeJoinPairStats> &inner_join_pair_stats,
+	                      reference_set_t<JoinRelationSet> &capped_join_pairs);
+	bool ApplyCompositeJoinPairCaps(double &target_denom, JoinRelationSet &scope,
+	                                reference_map_t<JoinRelationSet, CompositeJoinPairStats> &inner_join_pair_stats,
+	                                reference_set_t<JoinRelationSet> &capped_join_pairs);
+	double GetJoinPairCap(JoinRelationSet &join_pair);
+
+	JoinRelationSet &UpdateNumeratorRelations(Subgraph2Denominator left, Subgraph2Denominator right,
+	                                          FilterInfoWithTotalDomains &filter);
+
+	void AddRelationStats(const FilterInfo &filter_info);
+	bool EmptyFilter(const FilterInfo &filter_info);
+
+private:
+	unique_ptr<CardinalityEstimatorState> state;
+	JoinRelationSetManager &set_manager;
+	const JoinPredicateModel &predicate_model;
 };
 
 } // namespace duckdb

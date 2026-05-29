@@ -1,4 +1,6 @@
 #include "duckdb/common/compressed_file_system.hpp"
+#include "duckdb/common/numeric_utils.hpp"
+#include "duckdb/main/client_context.hpp"
 
 namespace duckdb {
 
@@ -6,16 +8,30 @@ StreamWrapper::~StreamWrapper() {
 }
 
 CompressedFile::CompressedFile(CompressedFileSystem &fs, unique_ptr<FileHandle> child_handle_p, const string &path)
-    : FileHandle(fs, path), compressed_fs(fs), child_handle(std::move(child_handle_p)) {
-	D_ASSERT(child_handle->SeekPosition() == 0);
+    : FileHandle(fs, path, child_handle_p->GetFlags()), compressed_fs(fs), child_handle(std::move(child_handle_p)) {
 }
 
 CompressedFile::~CompressedFile() {
-	CompressedFile::Close();
+	try {
+		Close();
+	} catch (std::exception &ex) {
+		if (child_handle) {
+			// FIXME: Make any log context available here.
+			ErrorData data(ex);
+			try {
+				const auto logger = child_handle->logger;
+				if (logger) {
+					DUCKDB_LOG_ERROR(logger, "CompressedFile::~CompressedFile()\t\t" + data.Message());
+				}
+			} catch (...) { // NOLINT
+			}
+		}
+	} catch (...) { // NOLINT
+	}
 }
 
-void CompressedFile::Initialize(bool write) {
-	Close();
+void CompressedFile::Initialize(QueryContext context, bool write) {
+	Clear();
 
 	this->write = write;
 	stream_data.in_buf_size = compressed_fs.InBufferSize();
@@ -27,8 +43,14 @@ void CompressedFile::Initialize(bool write) {
 	stream_data.out_buff_start = stream_data.out_buff.get();
 	stream_data.out_buff_end = stream_data.out_buff.get();
 
+	current_position = 0;
+
 	stream_wrapper = compressed_fs.CreateStream();
-	stream_wrapper->Initialize(*this, write);
+	stream_wrapper->Initialize(context, *this, write);
+}
+
+idx_t CompressedFile::GetProgress() {
+	return current_position;
 }
 
 int64_t CompressedFile::ReadData(void *buffer, int64_t remaining) {
@@ -37,22 +59,24 @@ int64_t CompressedFile::ReadData(void *buffer, int64_t remaining) {
 		// first check if there are input bytes available in the output buffers
 		if (stream_data.out_buff_start != stream_data.out_buff_end) {
 			// there is! copy it into the output buffer
-			idx_t available = MinValue<idx_t>(remaining, stream_data.out_buff_end - stream_data.out_buff_start);
-			memcpy(data_ptr_t(buffer) + total_read, stream_data.out_buff_start, available);
+			auto available =
+			    MinValue<idx_t>(UnsafeNumericCast<idx_t>(remaining),
+			                    UnsafeNumericCast<idx_t>(stream_data.out_buff_end - stream_data.out_buff_start));
+			memcpy(static_cast<data_ptr_t>(buffer) + total_read, stream_data.out_buff_start, available);
 
 			// increment the total read variables as required
 			stream_data.out_buff_start += available;
 			total_read += available;
-			remaining -= available;
+			remaining = UnsafeNumericCast<int64_t>(UnsafeNumericCast<idx_t>(remaining) - available);
 			if (remaining == 0) {
 				// done! read enough
-				return total_read;
+				return UnsafeNumericCast<int64_t>(total_read);
 			}
 		}
 		if (!stream_wrapper) {
-			return total_read;
+			return UnsafeNumericCast<int64_t>(total_read);
 		}
-
+		current_position += static_cast<idx_t>(stream_data.in_buff_end - stream_data.in_buff_start);
 		// ran out of buffer: read more data from the child stream
 		stream_data.out_buff_start = stream_data.out_buff.get();
 		stream_data.out_buff_end = stream_data.out_buff.get();
@@ -63,10 +87,11 @@ int64_t CompressedFile::ReadData(void *buffer, int64_t remaining) {
 		if (stream_data.refresh && (stream_data.in_buff_end == stream_data.in_buff.get() + stream_data.in_buf_size)) {
 			auto bufrem = stream_data.in_buff_end - stream_data.in_buff_start;
 			// buffer not empty, move remaining bytes to the beginning
-			memmove(stream_data.in_buff.get(), stream_data.in_buff_start, bufrem);
+			memmove(stream_data.in_buff.get(), stream_data.in_buff_start, UnsafeNumericCast<size_t>(bufrem));
 			stream_data.in_buff_start = stream_data.in_buff.get();
 			// refill the rest of input buffer
-			auto sz = child_handle->Read(stream_data.in_buff_start + bufrem, stream_data.in_buf_size - bufrem);
+			auto sz = child_handle->Read(QueryContext(), stream_data.in_buff_start + bufrem,
+			                             stream_data.in_buf_size - UnsafeNumericCast<idx_t>(bufrem));
 			stream_data.in_buff_end = stream_data.in_buff_start + bufrem + sz;
 			if (sz <= 0) {
 				stream_wrapper.reset();
@@ -79,7 +104,7 @@ int64_t CompressedFile::ReadData(void *buffer, int64_t remaining) {
 			// empty input buffer: refill from the start
 			stream_data.in_buff_start = stream_data.in_buff.get();
 			stream_data.in_buff_end = stream_data.in_buff_start;
-			auto sz = child_handle->Read(stream_data.in_buff.get(), stream_data.in_buf_size);
+			auto sz = child_handle->Read(QueryContext(), stream_data.in_buff.get(), stream_data.in_buf_size);
 			if (sz <= 0) {
 				stream_wrapper.reset();
 				break;
@@ -92,7 +117,7 @@ int64_t CompressedFile::ReadData(void *buffer, int64_t remaining) {
 			stream_wrapper.reset();
 		}
 	}
-	return total_read;
+	return UnsafeNumericCast<int64_t>(total_read);
 }
 
 int64_t CompressedFile::WriteData(data_ptr_t buffer, int64_t nr_bytes) {
@@ -100,11 +125,15 @@ int64_t CompressedFile::WriteData(data_ptr_t buffer, int64_t nr_bytes) {
 	return nr_bytes;
 }
 
-void CompressedFile::Close() {
+// Clear does most of the heavy lifting of a close, but leaves the child_handle intact. Specifically it is separated out
+// to support upstream Reset() calls from the FileSystem, which should tear down / reset ephemeral state but leave
+// persistent state (child_handle) intact.
+void CompressedFile::Clear() {
 	if (stream_wrapper) {
 		stream_wrapper->Close();
 		stream_wrapper.reset();
 	}
+
 	stream_data.in_buff.reset();
 	stream_data.out_buff.reset();
 	stream_data.out_buff_start = nullptr;
@@ -114,6 +143,18 @@ void CompressedFile::Close() {
 	stream_data.in_buf_size = 0;
 	stream_data.out_buf_size = 0;
 	stream_data.refresh = false;
+}
+
+void CompressedFile::Close() {
+	// This can throw and halt close leaving child_handle dangling until destruction. Given the alternative of writing
+	// corrupted data that seems better than flushing data in an unknown state.
+	Clear();
+
+	// Then close out child_handle itself.
+	if (child_handle) {
+		child_handle->Close();
+		child_handle.reset();
+	}
 }
 
 int64_t CompressedFileSystem::Read(FileHandle &handle, void *buffer, int64_t nr_bytes) {
@@ -129,12 +170,12 @@ int64_t CompressedFileSystem::Write(FileHandle &handle, void *buffer, int64_t nr
 void CompressedFileSystem::Reset(FileHandle &handle) {
 	auto &compressed_file = handle.Cast<CompressedFile>();
 	compressed_file.child_handle->Reset();
-	compressed_file.Initialize(compressed_file.write);
+	compressed_file.Initialize(QueryContext(), compressed_file.write);
 }
 
 int64_t CompressedFileSystem::GetFileSize(FileHandle &handle) {
 	auto &compressed_file = handle.Cast<CompressedFile>();
-	return compressed_file.child_handle->GetFileSize();
+	return NumericCast<int64_t>(compressed_file.child_handle->GetFileSize());
 }
 
 bool CompressedFileSystem::OnDiskFile(FileHandle &handle) {

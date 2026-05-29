@@ -1,5 +1,6 @@
 #include "duckdb/parser/parsed_data/drop_info.hpp"
 #include "duckdb/parser/parsed_data/extra_drop_info.hpp"
+#include "duckdb/parser/tableref/basetableref.hpp"
 
 namespace duckdb {
 
@@ -14,6 +15,34 @@ DropInfo::DropInfo(const DropInfo &info)
 
 unique_ptr<DropInfo> DropInfo::Copy() const {
 	return make_uniq<DropInfo>(*this);
+}
+
+string DropInfo::ToString() const {
+	string result = "";
+	if (type == CatalogType::PREPARED_STATEMENT) {
+		result += "DEALLOCATE PREPARE ";
+		result += SQLIdentifier(name);
+	} else {
+		result += "DROP";
+		result += " " + ParseInfo::TypeToString(type);
+		if (if_not_found == OnEntryNotFound::RETURN_NULL) {
+			result += " IF EXISTS";
+		}
+		result += " ";
+		result += QualifierToString(catalog, schema, name);
+		if (type == CatalogType::TRIGGER_ENTRY && extra_drop_info) {
+			auto &trigger_info = extra_drop_info->Cast<ExtraDropTriggerInfo>();
+			if (trigger_info.base_table) {
+				result += " ON ";
+				result += trigger_info.base_table->Cast<BaseTableRef>().ToString();
+			}
+		}
+		if (cascade) {
+			result += " CASCADE";
+		}
+	}
+	result += ";";
+	return result;
 }
 
 } // namespace duckdb

@@ -7,9 +7,9 @@
 namespace duckdb {
 
 // Forward declaration to allow conversion between hugeint and uhugeint
-struct hugeint_t;
+struct hugeint_t; // NOLINT
 
-struct uhugeint_t {
+struct uhugeint_t { // NOLINT
 public:
 	uint64_t lower;
 	uint64_t upper;
@@ -79,3 +79,13 @@ public:
 };
 
 } // namespace duckdb
+
+namespace std {
+template <>
+struct hash<duckdb::uhugeint_t> {
+	size_t operator()(const duckdb::uhugeint_t &val) const {
+		using std::hash;
+		return hash<uint64_t> {}(val.upper) ^ hash<uint64_t> {}(val.lower);
+	}
+};
+} // namespace std

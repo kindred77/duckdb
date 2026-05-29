@@ -8,16 +8,14 @@
 
 #pragma once
 
-#include "duckdb/common/common.hpp"
-#include "duckdb/common/types.hpp"
 #include "duckdb/storage/statistics/base_statistics.hpp"
 
 namespace duckdb {
 
 class SegmentStatistics {
 public:
-	SegmentStatistics(LogicalType type);
-	SegmentStatistics(BaseStatistics statistics);
+	explicit SegmentStatistics(LogicalType type);
+	explicit SegmentStatistics(BaseStatistics statistics);
 
 	//! Type-specific statistics of the segment
 	BaseStatistics statistics;

@@ -1,33 +1,27 @@
 #include "duckdb/planner/filter/struct_filter.hpp"
-#include "duckdb/storage/statistics/base_statistics.hpp"
-#include "duckdb/storage/statistics/struct_stats.hpp"
-#include "duckdb/common/string_util.hpp"
+#include "duckdb/planner/filter/expression_filter.hpp"
+#include "duckdb/planner/expression/bound_constant_expression.hpp"
+#include "duckdb/planner/expression/bound_function_expression.hpp"
+#include "duckdb/function/scalar/nested_functions.hpp"
+#include "duckdb/function/scalar/struct_functions.hpp"
 
 namespace duckdb {
 
-StructFilter::StructFilter(idx_t child_idx_p, string child_name_p, unique_ptr<TableFilter> child_filter_p)
-    : TableFilter(TableFilterType::STRUCT_EXTRACT), child_idx(child_idx_p), child_name(std::move(child_name_p)),
+LegacyStructFilter::LegacyStructFilter(idx_t child_idx_p, string child_name_p, unique_ptr<TableFilter> child_filter_p)
+    : TableFilter(TableFilterType::LEGACY_STRUCT_EXTRACT), child_idx(child_idx_p), child_name(std::move(child_name_p)),
       child_filter(std::move(child_filter_p)) {
 }
 
-FilterPropagateResult StructFilter::CheckStatistics(BaseStatistics &stats) {
-	D_ASSERT(stats.GetType().id() == LogicalTypeId::STRUCT);
-	// Check the child statistics
-	auto &child_stats = StructStats::GetChildStats(stats, child_idx);
-	return child_filter->CheckStatistics(child_stats);
-}
+unique_ptr<Expression> LegacyStructFilter::ToExpression(const Expression &column) const {
+	vector<unique_ptr<Expression>> arguments;
+	arguments.push_back(column.Copy());
+	arguments.push_back(make_uniq<BoundConstantExpression>(Value::BIGINT(NumericCast<int64_t>(child_idx + 1))));
 
-string StructFilter::ToString(const string &column_name) {
-	return child_filter->ToString(column_name + "." + child_name);
-}
+	BoundScalarFunction bound_func(GetExtractAtFunction());
+	bound_func.SetReturnType(StructType::GetChildType(column.GetReturnType(), child_idx));
 
-bool StructFilter::Equals(const TableFilter &other_p) const {
-	if (!TableFilter::Equals(other_p)) {
-		return false;
-	}
-	auto &other = other_p.Cast<StructFilter>();
-	return other.child_idx == child_idx && StringUtil::CIEquals(other.child_name, child_name) &&
-	       other.child_filter->Equals(*child_filter);
+	auto child = make_uniq<BoundFunctionExpression>(std::move(bound_func), std::move(arguments),
+	                                                StructExtractAtFun::GetBindData(child_idx));
+	return child_filter->ToExpression(*child);
 }
-
 } // namespace duckdb

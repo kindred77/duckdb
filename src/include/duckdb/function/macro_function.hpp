@@ -17,7 +17,19 @@
 
 namespace duckdb {
 
+class ScalarMacroFunction;
+
 enum class MacroType : uint8_t { VOID_MACRO = 0, TABLE_MACRO = 1, SCALAR_MACRO = 2 };
+
+struct MacroBindResult {
+	explicit MacroBindResult(string error_p) : error(std::move(error_p)) {
+	}
+	explicit MacroBindResult(idx_t function_idx) : function_idx(function_idx) {
+	}
+
+	optional_idx function_idx;
+	string error;
+};
 
 class MacroFunction {
 public:
@@ -25,10 +37,12 @@ public:
 
 	//! The type
 	MacroType type;
-	//! The positional parameters
+	//! The parameters (ColumnRefExpression)
 	vector<unique_ptr<ParsedExpression>> parameters;
-	//! The default parameters and their associated values
-	case_insensitive_map_t<unique_ptr<ParsedExpression>> default_parameters;
+	//! The default values of the parameters
+	InsertionOrderPreservingMap<unique_ptr<ParsedExpression>> default_parameters;
+	//! The types of the parameters
+	vector<LogicalType> types;
 
 public:
 	virtual ~MacroFunction() {
@@ -38,12 +52,20 @@ public:
 
 	virtual unique_ptr<MacroFunction> Copy() const = 0;
 
-	static string ValidateArguments(MacroFunction &macro_function, const string &name,
-	                                FunctionExpression &function_expr,
-	                                vector<unique_ptr<ParsedExpression>> &positionals,
-	                                unordered_map<string, unique_ptr<ParsedExpression>> &defaults);
+	vector<unique_ptr<ParsedExpression>> GetPositionalParametersForSerialization(Serializer &serializer) const;
+	void FinalizeDeserialization();
 
-	virtual string ToSQL(const string &schema, const string &name) const;
+	static MacroBindResult BindMacroFunction(Binder &binder, const vector<unique_ptr<MacroFunction>> &macro_functions,
+	                                         const string &name, FunctionExpression &function_expr,
+	                                         vector<unique_ptr<ParsedExpression>> &positional_arguments,
+	                                         InsertionOrderPreservingMap<unique_ptr<ParsedExpression>> &named_arguments,
+	                                         idx_t depth);
+	static unique_ptr<DummyBinding>
+	CreateDummyBinding(const MacroFunction &macro_def, const string &name,
+	                   vector<unique_ptr<ParsedExpression>> &positional_arguments,
+	                   InsertionOrderPreservingMap<unique_ptr<ParsedExpression>> &named_arguments);
+
+	virtual string ToSQL() const;
 
 	virtual void Serialize(Serializer &serializer) const;
 	static unique_ptr<MacroFunction> Deserialize(Deserializer &deserializer);

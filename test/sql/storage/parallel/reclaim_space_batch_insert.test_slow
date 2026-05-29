@@ -1,16 +1,16 @@
 # name: test/sql/storage/parallel/reclaim_space_batch_insert.test_slow
-# description: Test space reclamation of optimistic writing with failures
+# description: Test space reclamation of optimistic writing with batch inserts and a primary key.
 # group: [parallel]
 
 require parquet
 
-load __TEST_DIR__/reclaim_space_batch_insert.db
+load {TEST_DIR}/reclaim_space_batch_insert.db
 
 statement ok
-COPY (FROM range(10000000) t(i)) TO '__TEST_DIR__/integers.parquet' (FORMAT PARQUET, ROW_GROUP_SIZE 200000);
+COPY (FROM range(10000000) t(i)) TO '{TEST_DIR}/integers.parquet' (FORMAT PARQUET, ROW_GROUP_SIZE 200000);
 
 statement ok
-CREATE VIEW integers AS FROM '__TEST_DIR__/integers.parquet';
+CREATE VIEW integers AS FROM '{TEST_DIR}/integers.parquet';
 
 statement ok
 CREATE TABLE integers2 (i INTEGER PRIMARY KEY);
@@ -21,22 +21,20 @@ INSERT INTO integers2 VALUES (9999999);
 statement error
 INSERT INTO integers2 SELECT * FROM integers;
 ----
-violates primary key constraint
+<REGEX>:Constraint Error.*violates primary key constraint.*
 
 statement ok
-CREATE TABLE block_count (count int);
+CREATE TABLE block_count (count INT);
 
-loop i 0 10
+loop i 0 20
 
-# conflict with base table data
 statement error
 INSERT INTO integers2 SELECT * FROM integers;
 ----
-violates primary key constraint
+<REGEX>:Constraint Error.*violates primary key constraint.*
 
-# conflict with transaction local data
 statement ok
-BEGIN TRANSACTION
+BEGIN;
 
 statement ok
 INSERT INTO integers2 VALUES (9999998);
@@ -44,34 +42,47 @@ INSERT INTO integers2 VALUES (9999998);
 statement error
 INSERT INTO integers2 SELECT * FROM integers WHERE i <= 9999998;
 ----
-PRIMARY KEY or UNIQUE constraint violated
+<REGEX>:Constraint Error.*PRIMARY KEY or UNIQUE constraint violation.*
 
 statement ok
 ROLLBACK
 
 query I
-SELECT COUNT(*) - ${i} FROM integers2;
+SELECT COUNT(*) - {i} FROM integers2;
 ----
 1
 
 statement ok
-INSERT INTO integers2 VALUES (10000000 + ${i});
+INSERT INTO integers2 VALUES (10000000 + {i});
 
 statement ok
 CHECKPOINT;
 
 statement ok
-INSERT INTO block_count SELECT total_blocks FROM pragma_database_size();
+INSERT INTO block_count
+SELECT total_blocks FROM pragma_database_size();
 
 query I
-SELECT COUNT(*) - ${i} FROM integers2;
+SELECT COUNT(*) - {i} FROM integers2;
 ----
 2
 
-# ensure there is a small diff between min and max block counts
+# Ensure there is only a small difference between the MIN and MAX block counts.
+# Example table contents for 16kB blocks:
+# count: 4766, 4788, 4846, 4749, 4770, 4730, 4711, 4732, 4751, 4711
+
 query I
-SELECT (MAX(count) - MIN(count)) < 20 FROM block_count;
+SELECT
+CASE WHEN (
+CASE WHEN
+get_block_size('reclaim_space_batch_insert') = 16384
+THEN (MAX(count / 100) - MIN(count / 100)) <= 4
+ELSE (MAX(count) - MIN(count)) <= 4
+END)
+THEN NULL
+ELSE {'max': MAX(COUNT), 'min': MIN(COUNT), 'list': LIST(COUNT)}
+END FROM block_count;
 ----
-true
+NULL
 
 endloop

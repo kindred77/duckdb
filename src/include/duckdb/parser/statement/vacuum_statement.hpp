@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "duckdb/parser/parsed_expression.hpp"
 #include "duckdb/parser/sql_statement.hpp"
 #include "duckdb/parser/parsed_data/vacuum_info.hpp"
 
@@ -28,6 +27,7 @@ protected:
 
 public:
 	unique_ptr<SQLStatement> Copy() const override;
+	string ToString() const override;
 };
 
 } // namespace duckdb

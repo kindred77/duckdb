@@ -11,10 +11,12 @@
 #include "duckdb/catalog/catalog.hpp"
 #include "duckdb/common/common.hpp"
 #include "duckdb/common/enums/logical_operator_type.hpp"
-#include "duckdb/optimizer/join_order/estimated_properties.hpp"
+#include "duckdb/common/enums/explain_format.hpp"
 #include "duckdb/planner/column_binding.hpp"
 #include "duckdb/planner/expression.hpp"
 #include "duckdb/planner/logical_operator_visitor.hpp"
+#include "duckdb/common/case_insensitive_map.hpp"
+#include "duckdb/common/insertion_order_preserving_map.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -43,22 +45,34 @@ public:
 
 public:
 	virtual vector<ColumnBinding> GetColumnBindings();
-	static vector<ColumnBinding> GenerateColumnBindings(idx_t table_idx, idx_t column_count);
-	static vector<LogicalType> MapTypes(const vector<LogicalType> &types, const vector<idx_t> &projection_map);
-	static vector<ColumnBinding> MapBindings(const vector<ColumnBinding> &types, const vector<idx_t> &projection_map);
+	virtual TableIndex GetRootIndex();
+	static string ColumnBindingsToString(const vector<ColumnBinding> &bindings);
+	void PrintColumnBindings();
+	static vector<ColumnBinding> GenerateColumnBindings(TableIndex table_idx, idx_t column_count);
+	static vector<LogicalType> MapTypes(const vector<LogicalType> &types,
+	                                    const vector<ProjectionIndex> &projection_map);
+	static vector<ColumnBinding> MapBindings(const vector<ColumnBinding> &types,
+	                                         const vector<ProjectionIndex> &projection_map);
 
 	//! Resolve the types of the logical operator and its children
 	void ResolveOperatorTypes();
 
+	//! Returns true if this operator or any of its descendants has side effects
+	//! (INSERT, UPDATE, DELETE, MERGE INTO). Used to prevent inlining or
+	//! elimination of DML CTEs.
+	bool HasSideEffects() const;
+
 	virtual string GetName() const;
-	virtual string ParamsToString() const;
-	virtual string ToString() const;
+	virtual InsertionOrderPreservingMap<string> ParamsToString() const;
+	virtual string ToString(ExplainFormat format = ExplainFormat::DEFAULT) const;
 	DUCKDB_API void Print();
 	//! Debug method: verify that the integrity of expressions & child nodes are maintained
 	virtual void Verify(ClientContext &context);
 
 	void AddChild(unique_ptr<LogicalOperator> child);
 	virtual idx_t EstimateCardinality(ClientContext &context);
+	void SetEstimatedCardinality(idx_t _estimated_cardinality);
+	void SetParamsEstimatedCardinality(InsertionOrderPreservingMap<string> &result) const;
 
 	virtual void Serialize(Serializer &serializer) const;
 	static unique_ptr<LogicalOperator> Deserialize(Deserializer &deserializer);
@@ -74,8 +88,12 @@ public:
 		return true;
 	};
 
+	virtual bool HasProjectionMap() const {
+		return false;
+	}
+
 	//! Returns the set of table indexes of this operator
-	virtual vector<idx_t> GetTableIndex() const;
+	virtual vector<TableIndex> GetTableIndex() const;
 
 protected:
 	//! Resolve types for this specific operator

@@ -4,17 +4,17 @@
 
 namespace duckdb {
 
-ArrowArrayScanState::ArrowArrayScanState(ArrowScanLocalState &state) : state(state) {
+ArrowArrayScanState::ArrowArrayScanState(ClientContext &context) : context(context) {
 	arrow_dictionary = nullptr;
 }
 
 ArrowArrayScanState &ArrowArrayScanState::GetChild(idx_t child_idx) {
 	auto it = children.find(child_idx);
 	if (it == children.end()) {
-		auto child_p = make_uniq<ArrowArrayScanState>(state);
+		auto child_p = make_uniq<ArrowArrayScanState>(context);
 		auto &child = *child_p;
 		child.owned_data = owned_data;
-		children.emplace(std::make_pair(child_idx, std::move(child_p)));
+		children.emplace(child_idx, std::move(child_p));
 		return child;
 	}
 	if (!it->second->owned_data) {
@@ -31,7 +31,7 @@ void ArrowArrayScanState::AddDictionary(unique_ptr<Vector> dictionary_p, ArrowAr
 	D_ASSERT(arrow_dict);
 	arrow_dictionary = arrow_dict;
 	// Make sure the data referenced by the dictionary stays alive
-	dictionary->GetBuffer()->SetAuxiliaryData(make_uniq<ArrowAuxiliaryData>(owned_data));
+	dictionary->BufferMutable().AddAuxiliaryData(make_uniq<ArrowAuxiliaryData>(owned_data));
 }
 
 bool ArrowArrayScanState::HasDictionary() const {

@@ -1,5 +1,5 @@
 # name: test/optimizer/regex_optimizer.test
-# description: Test Like Optimization Rules
+# description: Test Regex Optimization Rules
 # group: [optimizer]
 
 statement ok
@@ -62,7 +62,7 @@ INSERT INTO test VALUES ('aaa'), ('a.a'), ('baba'), ('abba'), ('a\.a'), ('a_a');
 query II
 explain analyze select regexp_matches(s, 'a.a', 's'), s from test;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%a_a%'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '%a_a%'\).*
 
 query I nosort
 select s from test where regexp_matches(s, 'a.a', 's');
@@ -76,7 +76,7 @@ a_a
 query II
 explain analyze SELECT regexp_matches(s, 'a.*a', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%a%a%'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '%a%a%'\).*
 
 query I nosort
 SELECT s FROM TEST where regexp_matches(s, 'a.*a', 's');
@@ -91,7 +91,7 @@ a_a
 query II
 explain analyze SELECT regexp_matches(s, '^a.*b$', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, 'a%b'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, 'a%b'\).*
 
 query I
 SELECT s FROM TEST where regexp_matches(s, '^a.*b$', 's');
@@ -164,22 +164,22 @@ analyzed_plan	<REGEX>:.*regexp_matches\(s, 'aaa.'\).*
 query II
 explain analyze SELECT regexp_matches(s, 'aaa.', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%aaa_%'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '%aaa_%'\).*
 
 query II
 explain analyze SELECT regexp_matches(s, '.aaa', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%_aaa%'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '%_aaa%'\).*
 
 query II
 explain analyze SELECT regexp_matches(s, '^.aaa', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '_aaa%'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '_aaa%'\).*
 
 query II
 explain analyze SELECT regexp_matches(s, '.aaa$', 's'), s FROM TEST;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%_aaa'\).*
+analyzed_plan	<REGEX>:.*"~~"\(s, '%_aaa'\).*
 
 query II
 explain analyze select regexp_matches(s, '.*green.*', 's'), s, from test;
@@ -189,7 +189,7 @@ analyzed_plan	<REGEX>:.*contains\(s, 'green'\).*
 query II
 explain analyze select regexp_matches(s, '.*special.*requests.*', 's'), s from test;
 ----
-analyzed_plan	<REGEX>:.*~~\(s, '%special%requests%'\).*
+analyzed_plan	<REGEX>:.*"~~".s, '%special%requests.*%.*
 
 statement ok
 DELETE from test;
@@ -228,3 +228,28 @@ statement error
 select count(s) from test where regexp_matches('aaa');
 ----
 Binder Error
+
+# Test regexp_matches with flags (like 'm') is properly optimized to contains
+statement ok
+DELETE FROM test;
+
+statement ok
+INSERT INTO test VALUES ('hello world'), ('test'), ('hello again');
+
+query II
+explain analyze SELECT s FROM test WHERE regexp_matches(s, 'hello', 'm');
+----
+analyzed_plan	<REGEX>:.*contains\(s, 'hello'\).*
+
+query I nosort
+SELECT s FROM test WHERE regexp_matches(s, 'hello', 'm');
+----
+hello world
+hello again
+
+# This used to trigger a debug assertion
+query I
+WITH fetch_schema AS (
+  SELECT s FROM test WHERE regexp_matches(s, 'hello', 'm')
+) SELECT * FROM fetch_schema LIMIT 0;
+----

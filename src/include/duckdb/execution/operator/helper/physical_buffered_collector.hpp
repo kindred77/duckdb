@@ -15,12 +15,12 @@ namespace duckdb {
 
 class PhysicalBufferedCollector : public PhysicalResultCollector {
 public:
-	PhysicalBufferedCollector(PreparedStatementData &data, bool parallel);
+	PhysicalBufferedCollector(PhysicalPlan &physical_plan, PreparedStatementData &data, bool parallel);
 
 	bool parallel;
 
 public:
-	unique_ptr<QueryResult> GetResult(GlobalSinkState &state) override;
+	unique_ptr<QueryResult> GetResult(GlobalSinkState &state) const override;
 
 public:
 	// Sink interface
@@ -32,6 +32,9 @@ public:
 
 	bool ParallelSink() const override;
 	bool SinkOrderDependent() const override;
+	bool IsStreaming() const override {
+		return true;
+	}
 };
 
 } // namespace duckdb

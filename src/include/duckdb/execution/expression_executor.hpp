@@ -13,6 +13,7 @@
 #include "duckdb/planner/bound_tokens.hpp"
 #include "duckdb/planner/expression.hpp"
 #include "duckdb/main/client_context.hpp"
+#include "duckdb/common/enums/debug_vector_verification.hpp"
 
 namespace duckdb {
 class Allocator;
@@ -20,8 +21,7 @@ class ExecutionContext;
 
 //! ExpressionExecutor is responsible for executing a set of expressions and storing the result in a data chunk
 class ExpressionExecutor {
-	friend class Index;
-	friend class CreateIndexLocalSinkState;
+	friend class BoundIndex;
 
 public:
 	DUCKDB_API explicit ExpressionExecutor(ClientContext &context);
@@ -39,10 +39,12 @@ public:
 public:
 	bool HasContext();
 	ClientContext &GetContext();
+	optional_ptr<ClientContext> GetContextPtr();
 	Allocator &GetAllocator();
 
 	//! Add an expression to the set of to-be-executed expressions of the executor
 	DUCKDB_API void AddExpression(const Expression &expr);
+	void ClearExpressions();
 
 	//! Execute the set of expressions with the given input chunk and store the result in the output chunk
 	DUCKDB_API void Execute(DataChunk *input, DataChunk &result);
@@ -62,6 +64,13 @@ public:
 	//! Execute the ExpressionExecutor and generate a selection vector from all true values in the result; this should
 	//! only be used with a single boolean expression
 	DUCKDB_API idx_t SelectExpression(DataChunk &input, SelectionVector &sel);
+
+	DUCKDB_API idx_t SelectExpression(DataChunk &input, SelectionVector &result_sel,
+	                                  optional_ptr<SelectionVector> current_sel, idx_t current_count);
+
+	DUCKDB_API idx_t SelectExpression(DataChunk &input, optional_ptr<SelectionVector> true_sel,
+	                                  optional_ptr<SelectionVector> false_sel,
+	                                  optional_ptr<SelectionVector> current_sel, idx_t current_count);
 
 	//! Execute the expression with index `expr_idx` and store the result in the result vector
 	DUCKDB_API void ExecuteExpression(idx_t expr_idx, Vector &result);
@@ -88,12 +97,8 @@ protected:
 
 	static unique_ptr<ExpressionState> InitializeState(const BoundReferenceExpression &expr,
 	                                                   ExpressionExecutorState &state);
-	static unique_ptr<ExpressionState> InitializeState(const BoundBetweenExpression &expr,
-	                                                   ExpressionExecutorState &state);
 	static unique_ptr<ExpressionState> InitializeState(const BoundCaseExpression &expr, ExpressionExecutorState &state);
 	static unique_ptr<ExpressionState> InitializeState(const BoundCastExpression &expr, ExpressionExecutorState &state);
-	static unique_ptr<ExpressionState> InitializeState(const BoundComparisonExpression &expr,
-	                                                   ExpressionExecutorState &state);
 	static unique_ptr<ExpressionState> InitializeState(const BoundConjunctionExpression &expr,
 	                                                   ExpressionExecutorState &state);
 	static unique_ptr<ExpressionState> InitializeState(const BoundConstantExpression &expr,
@@ -108,15 +113,11 @@ protected:
 	void Execute(const Expression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
 	             Vector &result);
 
-	void Execute(const BoundBetweenExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
-	             Vector &result);
 	void Execute(const BoundCaseExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
 	             Vector &result);
 	void Execute(const BoundCastExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
 	             Vector &result);
 
-	void Execute(const BoundComparisonExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
-	             Vector &result);
 	void Execute(const BoundConjunctionExpression &expr, ExpressionState *state, const SelectionVector *sel,
 	             idx_t count, Vector &result);
 	void Execute(const BoundConstantExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
@@ -137,27 +138,27 @@ protected:
 	idx_t DefaultSelect(const Expression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
 	                    SelectionVector *true_sel, SelectionVector *false_sel);
 
-	idx_t Select(const BoundBetweenExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
-	             SelectionVector *true_sel, SelectionVector *false_sel);
-	idx_t Select(const BoundComparisonExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
-	             SelectionVector *true_sel, SelectionVector *false_sel);
 	idx_t Select(const BoundConjunctionExpression &expr, ExpressionState *state, const SelectionVector *sel,
 	             idx_t count, SelectionVector *true_sel, SelectionVector *false_sel);
+	idx_t Select(const BoundFunctionExpression &expr, ExpressionState *state, const SelectionVector *sel, idx_t count,
+	             SelectionVector *true_sel, SelectionVector *false_sel);
 
 	//! Verify that the output of a step in the ExpressionExecutor is correct
 	void Verify(const Expression &expr, Vector &result, idx_t count);
 
-	void FillSwitch(Vector &vector, Vector &result, const SelectionVector &sel, sel_t count);
+	void FillSwitch(const Vector &vector, Vector &result, const SelectionVector &sel, sel_t count);
 
 private:
 	//! Client context
 	optional_ptr<ClientContext> context;
 	//! The states of the expression executor; this holds any intermediates and temporary states of expressions
 	vector<unique_ptr<ExpressionExecutorState>> states;
+	//! The vector verification (debug setting)
+	DebugVectorVerification debug_vector_verification = DebugVectorVerification::NONE;
 
 private:
 	// it is possible to create an expression executor without a ClientContext - but it should be avoided
 	DUCKDB_API ExpressionExecutor();
-	DUCKDB_API ExpressionExecutor(const vector<unique_ptr<Expression>> &exprs);
+	DUCKDB_API explicit ExpressionExecutor(const vector<unique_ptr<Expression>> &exprs);
 };
 } // namespace duckdb

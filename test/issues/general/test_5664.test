@@ -2,13 +2,11 @@
 # description: Issue 5664: Create type from non-existing type causes INTERNAL Error
 # group: [general]
 
-statement ok
-PRAGMA enable_verification
-
 # create a type with a non-existant type as source
 statement error
 CREATE TYPE alias as BLOBL;
 ----
+<REGEX>:Catalog Error.*Type.*does not exist.*
 
 statement ok
 CREATE TYPE a as BLOB;

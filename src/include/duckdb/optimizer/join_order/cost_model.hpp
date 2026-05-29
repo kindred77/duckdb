@@ -16,22 +16,18 @@ class QueryGraphManager;
 
 class CostModel {
 public:
-	CostModel(QueryGraphManager &query_graph_manager);
+	explicit CostModel(QueryGraphManager &query_graph_manager, CardinalityEstimator &cardinality_estimator);
+
+public:
+	//! Compute cost of a join relation set
+	double ComputeCost(DPJoinNode &left, DPJoinNode &right, JoinRelationSet &combination,
+	                   const vector<reference<NeighborInfo>> &possible_connections);
+	CardinalityEstimator &GetCardinalityEstimator();
 
 private:
 	//! query graph storing relation manager information
 	QueryGraphManager &query_graph_manager;
-
-public:
-	void InitCostModel();
-
-	//! Compute cost of a join relation set
-	double ComputeCost(JoinNode &left, JoinNode &right);
-
-	//! Cardinality Estimator used to calculate cost
-	CardinalityEstimator cardinality_estimator;
-
-private:
+	CardinalityEstimator &cardinality_estimator;
 };
 
 } // namespace duckdb

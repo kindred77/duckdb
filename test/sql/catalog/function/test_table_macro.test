@@ -3,10 +3,6 @@
 # group: [function]
 
 statement ok
-PRAGMA enable_verification
-
-
-statement ok
 CREATE TABLE test_tbl (id INT, name string);
 
 statement ok
@@ -70,7 +66,7 @@ CREATE  MACRO  xt_reg(cmp) as TABLE SELECT * FROM test_tbl WHERE regexp_matches(
 statement ok
 SELECT * FROM xt_reg('^m');
 
-# use regular macro for comparision
+# use regular macro for comparison
 statement ok
 CREATE MACRO   cmp(a,m) as regexp_matches(a,m) or a similar to m;
 

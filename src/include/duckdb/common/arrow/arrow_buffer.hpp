@@ -32,7 +32,7 @@ struct ArrowBuffer {
 	ArrowBuffer(const ArrowBuffer &other) = delete;
 	ArrowBuffer &operator=(const ArrowBuffer &) = delete;
 	//! enable move constructors
-	ArrowBuffer(ArrowBuffer &&other) noexcept {
+	ArrowBuffer(ArrowBuffer &&other) noexcept : count(0), capacity(0) {
 		std::swap(dataptr, other.dataptr);
 		std::swap(count, other.count);
 		std::swap(capacity, other.capacity);
@@ -65,6 +65,13 @@ struct ArrowBuffer {
 		count = bytes;
 	}
 
+	template <class T>
+	void push_back(T value) {
+		reserve(sizeof(T) * (count + 1));
+		reinterpret_cast<T *>(dataptr)[count] = value;
+		count++;
+	}
+
 	idx_t size() { // NOLINT
 		return count;
 	}
@@ -80,11 +87,16 @@ struct ArrowBuffer {
 
 private:
 	void ReserveInternal(idx_t bytes) {
+		data_ptr_t new_ptr;
 		if (dataptr) {
-			dataptr = data_ptr_cast(realloc(dataptr, bytes));
+			new_ptr = data_ptr_cast(realloc(dataptr, bytes));
 		} else {
-			dataptr = data_ptr_cast(malloc(bytes));
+			new_ptr = data_ptr_cast(malloc(bytes));
 		}
+		if (!new_ptr) {
+			throw OutOfMemoryException("ArrowBuffer: failed to allocate %llu bytes", bytes);
+		}
+		dataptr = new_ptr;
 		capacity = bytes;
 	}
 

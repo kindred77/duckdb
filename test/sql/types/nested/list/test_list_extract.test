@@ -2,9 +2,6 @@
 # description: Test scalar lists
 # group: [list]
 
-statement ok
-PRAGMA enable_verification
-
 query I
 SELECT LIST_EXTRACT(NULL, 1)
 ----
@@ -194,3 +191,40 @@ query I
 SELECT list_extract([1, 2, 3], -9223372036854775808);
 ----
 NULL
+
+statement ok
+CREATE TABLE list_array_table(a int[3][]);
+
+statement ok
+INSERT INTO list_array_table VALUES ([[1,2,3], NULL, [4,5,6]]);
+
+query I
+SELECT list_extract(a, 1) FROM list_array_table;
+----
+[1, 2, 3]
+
+query I
+SELECT list_extract(a, 2) FROM list_array_table;
+----
+NULL
+
+query I
+SELECT list_extract(a, 3) FROM list_array_table;
+----
+[4, 5, 6]
+
+query I
+SELECT list_extract(a, 4) FROM list_array_table;
+----
+NULL
+
+query I
+SELECT list_extract(a, -1) FROM list_array_table;
+----
+[4, 5, 6]
+
+query I
+SELECT list_extract(a, 0) FROM list_array_table;
+----
+NULL
+

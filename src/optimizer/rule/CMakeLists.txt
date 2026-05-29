@@ -7,15 +7,23 @@ add_library_unity(
   conjunction_simplification.cpp
   constant_folding.cpp
   date_part_simplification.cpp
+  date_trunc_simplification.cpp
+  distinct_aggregate_optimizer.cpp
   distributivity.cpp
   empty_needle_removal.cpp
   enum_comparison.cpp
   equal_or_null_simplification.cpp
-  move_constants.cpp
-  like_optimizations.cpp
   in_clause_simplification_rule.cpp
+  join_dependent_filter.cpp
+  like_optimizations.cpp
+  list_comprehension_rewrite.cpp
+  move_constants.cpp
   ordered_aggregate_optimizer.cpp
-  regex_optimizations.cpp)
+  predicate_factoring.cpp
+  regex_optimizations.cpp
+  timestamp_comparison.cpp
+  constant_order_normalization.cpp
+  contains_to_in_clause.cpp)
 set(ALL_OBJECT_FILES
     ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:duckdb_optimizer_rules>
     PARENT_SCOPE)

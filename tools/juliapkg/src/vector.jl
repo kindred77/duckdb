@@ -25,8 +25,12 @@ function get_validity(vector::Vec, size = VECTOR_SIZE)::ValidityMask
     return ValidityMask(validity_vector)
 end
 
-function all_valid(vector::Vec)::Bool
-    return duckdb_vector_get_validity(vector.handle) == C_NULL
+function all_valid(vector::Vec, size = VECTOR_SIZE)::Bool
+    validity_ptr = duckdb_vector_get_validity(vector.handle)
+    validity_ptr == C_NULL && return true
+    size_words = div(size, BITS_PER_VALUE, RoundUp)
+    validity_vector = unsafe_wrap(Vector{UInt64}, validity_ptr, size_words, own = false)
+    return all_valid(ValidityMask(validity_vector))
 end
 
 function list_child(vector::Vec)::Vec
@@ -35,6 +39,10 @@ end
 
 function list_size(vector::Vec)::UInt64
     return duckdb_list_vector_get_size(vector.handle)
+end
+
+function array_child(vector::Vec)::Vec
+    return Vec(duckdb_array_vector_get_child(vector.handle))
 end
 
 function struct_child(vector::Vec, index::UInt64)::Vec
@@ -51,4 +59,8 @@ end
 
 function assign_string_element(vector::Vec, index::Int64, str::AbstractString)
     return duckdb_vector_assign_string_element_len(vector.handle, index, str, sizeof(str))
+end
+
+function assign_string_element(vector::Vec, index::Int64, data::Vector{UInt8})
+    return duckdb_vector_assign_string_element_len(vector.handle, index, pointer(data), length(data))
 end

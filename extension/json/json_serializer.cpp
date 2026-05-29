@@ -171,13 +171,28 @@ void JsonSerializer::WriteValue(uhugeint_t value) {
 	stack.pop_back();
 }
 
+yyjson_mut_val *DoubleToJSONValue(yyjson_mut_doc *doc, double value) {
+	if (Value::FloatIsFinite(value)) {
+		// simple - finite json
+		return yyjson_mut_real(doc, value);
+	}
+	// represent infinities as strings
+	const char *str;
+	if (!Value::IsNan(value)) {
+		str = value < 0 ? "-Infinity" : "Infinity";
+	} else {
+		str = "NAN";
+	}
+	return yyjson_mut_raw(doc, str);
+}
+
 void JsonSerializer::WriteValue(float value) {
-	auto val = yyjson_mut_real(doc, value);
+	auto val = DoubleToJSONValue(doc, value);
 	PushValue(val);
 }
 
 void JsonSerializer::WriteValue(double value) {
-	auto val = yyjson_mut_real(doc, value);
+	auto val = DoubleToJSONValue(doc, value);
 	PushValue(val);
 }
 
@@ -211,7 +226,7 @@ void JsonSerializer::WriteValue(bool value) {
 }
 
 void JsonSerializer::WriteDataPtr(const_data_ptr_t ptr, idx_t count) {
-	auto blob = Blob::ToBlob(string_t(const_char_ptr_cast(ptr), count));
+	auto blob = Blob::ToString(string_t(const_char_ptr_cast(ptr), count));
 	auto val = yyjson_mut_strcpy(doc, blob.c_str());
 	PushValue(val);
 }

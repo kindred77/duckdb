@@ -9,6 +9,8 @@
 #pragma once
 
 #include "duckdb/planner/logical_operator_visitor.hpp"
+#include "duckdb/planner/logical_operator.hpp"
+#include "duckdb/common/optional_ptr.hpp"
 
 namespace duckdb {
 class ClientContext;
@@ -21,11 +23,13 @@ public:
 
 	ClientContext &context;
 	Optimizer &optimizer;
+	optional_ptr<LogicalOperator> current_op;
 	unique_ptr<LogicalOperator> root;
 
 public:
+	// Minimum number of values to use a hash join
+	static constexpr idx_t IN_CLAUSE_REWRITE_THRESHOLD = 6;
 	unique_ptr<LogicalOperator> Rewrite(unique_ptr<LogicalOperator> op);
-
 	unique_ptr<Expression> VisitReplace(BoundOperatorExpression &expr, unique_ptr<Expression> *expr_ptr) override;
 };
 
