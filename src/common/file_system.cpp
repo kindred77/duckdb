@@ -697,7 +697,7 @@ unique_ptr<MultiFileList> FileSystem::GlobFileList(const string &pattern, const 
 				return result;
 			}
 		}
-		if (input.behavior == FileGlobOptions::FALLBACK_GLOB || input.behavior == FileGlobOptions::DISALLOW_EMPTY) {
+		if (!input.AllowsEmpty()) {
 			throw IOException("No files found that match the pattern \"%s\"", pattern);
 		}
 	}
@@ -729,6 +729,10 @@ bool FileSystem::IsManuallySet() {
 	return false;
 }
 
+bool FileSystem::SupportsPositionalWrites(FileHandle &handle) {
+	return false;
+}
+
 unique_ptr<FileHandle> FileSystem::OpenCompressedFile(QueryContext context, unique_ptr<FileHandle> handle, bool write) {
 	throw NotImplementedException("%s: OpenCompressedFile is not implemented!", GetName());
 }
@@ -741,6 +745,10 @@ bool FileSystem::OnDiskFile(FileHandle &handle) {
 	throw NotImplementedException("%s: OnDiskFile is not implemented!", GetName());
 }
 // LCOV_EXCL_STOP
+
+bool FileSystem::TryGetNetworkThroughput(FileHandle &handle, NetworkThroughputEstimate &result) {
+	return false;
+}
 
 FileHandle::FileHandle(FileSystem &file_system, string path_p, FileOpenFlags flags)
     : file_system(file_system), path(std::move(path_p)), flags(flags) {
@@ -813,6 +821,10 @@ bool FileHandle::CanSeek() {
 	return file_system.CanSeek();
 }
 
+bool FileHandle::SupportsPositionalWrites() {
+	return file_system.SupportsPositionalWrites(*this);
+}
+
 FileCompressionType FileHandle::GetFileCompressionType() {
 	return FileCompressionType::UNCOMPRESSED;
 }
@@ -851,6 +863,10 @@ string FileHandle::ReadLine(QueryContext context) {
 
 bool FileHandle::OnDiskFile() {
 	return file_system.OnDiskFile(*this);
+}
+
+bool FileHandle::TryGetNetworkThroughput(NetworkThroughputEstimate &result) {
+	return file_system.TryGetNetworkThroughput(*this, result);
 }
 
 idx_t FileHandle::GetFileSize() {

@@ -357,7 +357,7 @@ struct ArrowBool8 {
 			result_data.WriteValue(source_ptr[i]);
 		}
 	}
-	static void DuckToArrow(ClientContext &context, Vector &source, Vector &result, idx_t count) {
+	static void DuckToArrow(ClientContext &context, const Vector &source, Vector &result, idx_t count) {
 		auto entries = source.Values<bool>();
 		auto result_data = FlatVector::Writer<int8_t>(result, count);
 		for (idx_t i = 0; i < count; i++) {
@@ -474,7 +474,6 @@ struct ArrowGeometry {
 
 				duckdb_yyjson::yyjson_doc_free(projjson_doc);
 			} else {
-				duckdb_yyjson::yyjson_mut_doc_free(doc);
 				throw SerializationException("Could not parse PROJJSON CRS for GeoArrow metadata");
 			}
 		} break;
@@ -523,6 +522,7 @@ struct ArrowGeometry {
 			duckdb_yyjson::yyjson_mut_doc_free(doc);
 			free(json_text);
 		} else {
+			duckdb_yyjson::yyjson_mut_doc_free(doc);
 			schema_metadata.AddOption(ArrowSchemaMetadata::ARROW_METADATA_KEY, "{}");
 		}
 
@@ -541,7 +541,7 @@ struct ArrowGeometry {
 		Geometry::FromBinary(source, result, count, true);
 	}
 
-	static void DuckToArrow(ClientContext &context, Vector &source, Vector &result, idx_t count) {
+	static void DuckToArrow(ClientContext &context, const Vector &source, Vector &result, idx_t count) {
 		Geometry::ToBinary(source, result);
 	}
 };
