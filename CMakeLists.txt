@@ -893,9 +893,13 @@ function(add_library_unity NAME MODE)
     enable_unity_build(${NAME} SRCS)
   endif()
   add_library(${NAME} OBJECT ${SRCS})
-  if(MSVC)
-    target_compile_options(${NAME} PRIVATE /bigobj)
-  endif()
+  #if(MSVC)
+  #  target_compile_options(${NAME} PRIVATE /bigobj)
+  #endif()
+  target_compile_options(${NAME} PRIVATE
+          $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+          $<$<CXX_COMPILER_ID:GNU>:-Wa,-mbig-obj>
+  )
 endfunction()
 
 function(disable_target_warnings NAME)
