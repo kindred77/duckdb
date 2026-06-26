@@ -1,0 +1,22 @@
+set(CASCADE_DEPENDENCIES
+    optimizer
+)
+
+add_library_unity(duckdb_cascade
+    OBJECT
+    cascade_optimizer.cpp
+    join_commutativity.cpp
+    join_implementation.cpp
+    memo.cpp
+    physical_types.cpp
+    rule.cpp
+    search.cpp
+)
+set(ALL_OBJECT_FILES
+     $<TARGET_OBJECTS:duckdb_cascade>
+    PARENT_SCOPE
+)
+set(ALL_DEPENDENCIES
+     duckdb_cascade
+    PARENT_SCOPE
+)
