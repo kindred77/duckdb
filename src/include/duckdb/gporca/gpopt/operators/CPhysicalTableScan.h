@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -52,10 +52,10 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *) const;
+	GP_BOOL Matches(COperator *) const;
 
 	// derive partition index map
 	virtual CPartIndexMap *

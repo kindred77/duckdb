@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -47,7 +47,7 @@ private:
 	IMDId *m_rel_mdid;
 
 	// is the index clustered
-	BOOL m_clustered;
+	GP_BOOL m_clustered;
 
 	// index type
 	IMDIndex::EmdindexType m_index_type;
@@ -72,7 +72,7 @@ private:
 	ULongPtrArray *m_level_with_default_part_array;
 
 	// is constraint unbounded
-	BOOL m_part_constraint_unbounded;
+	GP_BOOL m_part_constraint_unbounded;
 
 	// private copy ctor
 	CParseHandlerMDIndex(const CParseHandlerMDIndex &);

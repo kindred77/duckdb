@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -35,13 +35,13 @@ private:
 	COrderSpec *m_pos;
 
 	// global limit
-	BOOL m_fGlobal;
+	GP_BOOL m_fGlobal;
 
 	// does limit specify a number of rows?
-	BOOL m_fHasCount;
+	GP_BOOL m_fHasCount;
 
 	// the limit must be kept, even if it has no offset, nor count
-	BOOL m_top_limit_under_dml;
+	GP_BOOL m_top_limit_under_dml;
 
 	// private copy ctor
 	CLogicalLimit(const CLogicalLimit &);
@@ -49,8 +49,8 @@ private:
 public:
 	// ctors
 	explicit CLogicalLimit(CMemoryPool *mp);
-	CLogicalLimit(CMemoryPool *mp, COrderSpec *pos, BOOL fGlobal,
-				  BOOL fHasCount, BOOL fTopLimitUnderDML);
+	CLogicalLimit(CMemoryPool *mp, COrderSpec *pos, GP_BOOL fGlobal,
+				  GP_BOOL fHasCount, GP_BOOL fTopLimitUnderDML);
 
 	// dtor
 	virtual ~CLogicalLimit();
@@ -76,42 +76,42 @@ public:
 	}
 
 	// global limit
-	BOOL
+	GP_BOOL
 	FGlobal() const
 	{
 		return m_fGlobal;
 	}
 
 	// does limit specify a number of rows
-	BOOL
+	GP_BOOL
 	FHasCount() const
 	{
 		return m_fHasCount;
 	}
 
 	// must the limit be always kept
-	BOOL
+	GP_BOOL
 	IsTopLimitUnderDMLorCTAS() const
 	{
 		return m_top_limit_under_dml;
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// print
 	virtual IOstream &OsPrint(IOstream &os) const;
@@ -159,7 +159,7 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
-								 ULONG child_index) const;
+								 GP_ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations

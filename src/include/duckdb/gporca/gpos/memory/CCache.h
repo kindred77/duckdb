@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -74,8 +74,8 @@ class CCache
 
 public:
 	// type definition of key hashing and equality functions
-	typedef ULONG (*HashFuncPtr)(const K &);
-	typedef BOOL (*EqualFuncPtr)(const K &, const K &);
+	typedef GP_ULONG (*HashFuncPtr)(const K &);
+	typedef GP_BOOL (*EqualFuncPtr)(const K &, const K &);
 
 private:
 	typedef CCacheEntry<T, K> CCacheHashTableEntry;
@@ -92,7 +92,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// true if cache does not allow multiple objects with the same key
-	BOOL m_unique;
+	GP_BOOL m_unique;
 
 	// total size of the cache in bytes
 	ULLONG m_cache_size;
@@ -101,7 +101,7 @@ private:
 	ULLONG m_cache_quota;
 
 	// initial value of gclock counter for new entries
-	ULONG m_gclock_init_counter;
+	GP_ULONG m_gclock_init_counter;
 
 	// what percent of the cache size to evict
 	float m_eviction_factor;
@@ -110,7 +110,7 @@ private:
 	ULLONG m_eviction_counter;
 
 	// if the gclock hand was already advanced and therefore can serve the next entry
-	BOOL m_clock_hand_advanced;
+	GP_BOOL m_clock_hand_advanced;
 
 	// a pointer to key hashing function
 	HashFuncPtr m_hash_func;
@@ -236,7 +236,7 @@ private:
 		GPOS_ASSERT(EXPECTED_REF_COUNT_FOR_DELETE < entry->RefCount() &&
 					"Releasing entry for which CCacheEntry has the ownership");
 
-		BOOL deleted = false;
+		GP_BOOL deleted = false;
 
 		// scope for hashtable accessor
 		{
@@ -309,7 +309,7 @@ private:
 			// retryCount indicates the number of times we want to circle around the buckets.
 			// depending on our previous cursor position (e.g., may be at the very last bucket)
 			// we may end up circling 1 less time than the retry count
-			for (ULONG retry_count = 0; retry_count < m_gclock_init_counter + 1;
+			for (GP_ULONG retry_count = 0; retry_count < m_gclock_init_counter + 1;
 				 retry_count++)
 			{
 				total_freed = EvictEntriesOnePass(total_freed, num_to_free);
@@ -377,7 +377,7 @@ private:
 		{
 			m_clock_hand_advanced = false;
 			CCacheHashTableEntry *entry = NULL;
-			BOOL deleted = false;
+			GP_BOOL deleted = false;
 			// Scope for CCacheHashtableIterAccessor
 			{
 				CCacheHashtableIterAccessor acc(*m_clock_hand);
@@ -425,8 +425,8 @@ private:
 
 public:
 	// ctor
-	CCache(CMemoryPool *mp, BOOL unique, ULLONG cache_quota,
-		   ULONG g_clock_init_counter, HashFuncPtr hash_func,
+	CCache(CMemoryPool *mp, GP_BOOL unique, ULLONG cache_quota,
+		   GP_ULONG g_clock_init_counter, HashFuncPtr hash_func,
 		   EqualFuncPtr equal_func)
 		: m_mp(mp),
 		  m_unique(unique),
@@ -461,7 +461,7 @@ public:
 	}
 
 	// does cache allow duplicate keys?
-	BOOL
+	GP_BOOL
 	AllowsDuplicateKeys() const
 	{
 		return m_unique;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -90,10 +90,10 @@ IMDRelation::ColumnsToStr(CMemoryPool *mp, ULongPtrArray *colid_array)
 {
 	CWStringDynamic *str = GPOS_NEW(mp) CWStringDynamic(mp);
 
-	ULONG length = colid_array->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	GP_ULONG length = colid_array->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
-		ULONG id = *((*colid_array)[ul]);
+		GP_ULONG id = *((*colid_array)[ul]);
 		if (ul == length - 1)
 		{
 			// last element: do not print a comma
@@ -111,7 +111,7 @@ IMDRelation::ColumnsToStr(CMemoryPool *mp, ULongPtrArray *colid_array)
 }
 
 // check if index is partial given its mdid
-BOOL
+GP_BOOL
 IMDRelation::IsPartialIndex(IMDId *	 // mdid
 ) const
 {

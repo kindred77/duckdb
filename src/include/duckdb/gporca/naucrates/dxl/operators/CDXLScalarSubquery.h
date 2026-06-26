@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC, Corp.
 //
@@ -31,14 +31,14 @@ class CDXLScalarSubquery : public CDXLScalar
 {
 private:
 	// id of column computed by the subquery
-	ULONG m_colid;
+	GP_ULONG m_colid;
 
 	// private copy ctor
 	CDXLScalarSubquery(CDXLScalarSubquery &);
 
 public:
 	// ctor/dtor
-	CDXLScalarSubquery(CMemoryPool *mp, ULONG colid);
+	CDXLScalarSubquery(CMemoryPool *mp, GP_ULONG colid);
 
 	virtual ~CDXLScalarSubquery();
 
@@ -46,7 +46,7 @@ public:
 	Edxlopid GetDXLOperator() const;
 
 	// colid of subquery column
-	ULONG
+	GP_ULONG
 	GetColId() const
 	{
 		return m_colid;
@@ -69,7 +69,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -79,7 +79,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

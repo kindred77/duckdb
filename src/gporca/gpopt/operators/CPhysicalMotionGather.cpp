@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -82,7 +82,7 @@ CPhysicalMotionGather::~CPhysicalMotionGather()
 //		Match operators
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionGather::Matches(COperator *pop) const
 {
 	if (Eopid() != pop->Eopid())
@@ -105,9 +105,9 @@ CPhysicalMotionGather::Matches(COperator *pop) const
 //---------------------------------------------------------------------------
 CColRefSet *
 CPhysicalMotionGather::PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									CColRefSet *pcrsRequired, ULONG child_index,
+									CColRefSet *pcrsRequired, GP_ULONG child_index,
 									CDrvdPropArray *,  // pdrgpdpCtxt
-									ULONG			   // ulOptReq
+									GP_ULONG			   // ulOptReq
 )
 {
 	GPOS_ASSERT(0 == child_index);
@@ -130,10 +130,10 @@ CPhysicalMotionGather::PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 //		Check if required columns are included in output columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionGather::FProvidesReqdCols(CExpressionHandle &exprhdl,
 										 CColRefSet *pcrsRequired,
-										 ULONG	// ulOptReq
+										 GP_ULONG	// ulOptReq
 ) const
 {
 	return FUnaryProvidesReqdCols(exprhdl, pcrsRequired);
@@ -182,9 +182,9 @@ CPhysicalMotionGather::EpetOrder(CExpressionHandle &,  // exprhdl
 COrderSpec *
 CPhysicalMotionGather::PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								   COrderSpec *,  //posInput,
-								   ULONG child_index,
+								   GP_ULONG child_index,
 								   CDrvdPropArray *,  // pdrgpdpCtxt
-								   ULONG			  // ulOptReq
+								   GP_ULONG			  // ulOptReq
 ) const
 {
 	GPOS_ASSERT(0 == child_index);

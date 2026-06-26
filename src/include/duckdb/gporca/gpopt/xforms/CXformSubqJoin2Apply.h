@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -41,7 +41,7 @@ private:
 
 	// helper to transform function
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
-				   CExpression *pexpr, BOOL fEnforceCorrelatedApply) const;
+				   CExpression *pexpr, GP_BOOL fEnforceCorrelatedApply) const;
 
 	// collect subqueries that exclusively use outer/inner child
 	static void CollectSubqueries(CMemoryPool *mp, CExpression *pexpr,
@@ -56,7 +56,7 @@ private:
 	// push down subquery below join
 	static CExpression *PexprSubqueryPushDown(CMemoryPool *mp,
 											  CExpression *pexpr,
-											  BOOL fEnforceCorrelatedApply);
+											  GP_BOOL fEnforceCorrelatedApply);
 
 public:
 	// ctor

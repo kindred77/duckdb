@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 #ifndef GPOPT_CPhysicalUnionAllFactory_H
 #define GPOPT_CPhysicalUnionAllFactory_H
@@ -21,7 +21,7 @@ private:
 public:
 	CPhysicalUnionAllFactory(CLogicalUnionAll *popLogicalUnionAll);
 
-	CPhysicalUnionAll *PopPhysicalUnionAll(CMemoryPool *mp, BOOL fParallel);
+	CPhysicalUnionAll *PopPhysicalUnionAll(CMemoryPool *mp, GP_BOOL fParallel);
 };
 
 }  // namespace gpopt

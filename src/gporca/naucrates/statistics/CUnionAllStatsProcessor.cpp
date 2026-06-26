@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2018 Pivotal, Inc.
 //
@@ -35,7 +35,7 @@ CUnionAllStatsProcessor::CreateStatsForUnionAll(
 	// column ids on which widths are to be computed
 	UlongToDoubleMap *column_to_width_map = GPOS_NEW(mp) UlongToDoubleMap(mp);
 
-	BOOL is_empty_unionall =
+	GP_BOOL is_empty_unionall =
 		stats_first_child->IsEmpty() && stats_second_child->IsEmpty();
 	CColumnFactory *col_factory = COptCtxt::PoctxtFromTLS()->Pcf();
 	CDouble unionall_rows = CStatistics::MinRows;
@@ -47,12 +47,12 @@ CUnionAllStatsProcessor::CreateStatsForUnionAll(
 	}
 	else
 	{
-		const ULONG len = output_colids->Size();
-		for (ULONG ul = 0; ul < len; ul++)
+		const GP_ULONG len = output_colids->Size();
+		for (GP_ULONG ul = 0; ul < len; ul++)
 		{
-			ULONG output_colid = *(*output_colids)[ul];
-			ULONG first_child_colid = *(*first_child_colids)[ul];
-			ULONG second_child_colid = *(*second_child_colids)[ul];
+			GP_ULONG output_colid = *(*output_colids)[ul];
+			GP_ULONG first_child_colid = *(*first_child_colids)[ul];
+			GP_ULONG second_child_colid = *(*second_child_colids)[ul];
 
 			const CHistogram *first_child_histogram =
 				stats_first_child->GetHistogram(first_child_colid);
@@ -79,7 +79,7 @@ CUnionAllStatsProcessor::CreateStatsForUnionAll(
 
 				CHistogram *dummy_histogram = CHistogram::MakeDefaultHistogram(
 					mp, column_ref, false /* is_empty*/);
-				histograms_new->Insert(GPOS_NEW(mp) ULONG(output_colid),
+				histograms_new->Insert(GPOS_NEW(mp) GP_ULONG(output_colid),
 									   dummy_histogram);
 			}
 
@@ -87,7 +87,7 @@ CUnionAllStatsProcessor::CreateStatsForUnionAll(
 			const CDouble *col_width =
 				stats_first_child->GetWidth(first_child_colid);
 			GPOS_ASSERT(NULL != col_width);
-			column_to_width_map->Insert(GPOS_NEW(mp) ULONG(output_colid),
+			column_to_width_map->Insert(GPOS_NEW(mp) GP_ULONG(output_colid),
 										GPOS_NEW(mp) CDouble(*col_width));
 		}
 

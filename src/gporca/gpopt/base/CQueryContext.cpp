@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -34,7 +34,7 @@ FORCE_GENERATE_DBGSTR(CQueryContext);
 //---------------------------------------------------------------------------
 CQueryContext::CQueryContext(CMemoryPool *mp, CExpression *pexpr,
 							 CReqdPropPlan *prpp, CColRefArray *colref_array,
-							 CMDNameArray *pdrgpmdname, BOOL fDeriveStats)
+							 CMDNameArray *pdrgpmdname, GP_BOOL fDeriveStats)
 	: m_prpp(prpp),
 	  m_pdrgpcr(colref_array),
 	  m_pdrgpcrSystemCols(NULL),
@@ -48,7 +48,7 @@ CQueryContext::CQueryContext(CMemoryPool *mp, CExpression *pexpr,
 	GPOS_ASSERT(colref_array->Size() == pdrgpmdname->Size());
 
 #ifdef GPOS_DEBUG
-	const ULONG ulReqdColumns = m_pdrgpcr->Size();
+	const GP_ULONG ulReqdColumns = m_pdrgpcr->Size();
 #endif	//GPOS_DEBUG
 
 	// mark unused CTEs
@@ -140,8 +140,8 @@ CQueryContext::SetSystemCols(CMemoryPool *mp)
 	GPOS_ASSERT(NULL != m_pdrgpcr);
 
 	m_pdrgpcrSystemCols = GPOS_NEW(mp) CColRefArray(mp);
-	const ULONG ulReqdCols = m_pdrgpcr->Size();
-	for (ULONG ul = 0; ul < ulReqdCols; ul++)
+	const GP_ULONG ulReqdCols = m_pdrgpcr->Size();
+	for (GP_ULONG ul = 0; ul < ulReqdCols; ul++)
 	{
 		CColRef *colref = (*m_pdrgpcr)[ul];
 		if (colref->IsSystemCol())
@@ -164,7 +164,7 @@ CQueryContext::SetSystemCols(CMemoryPool *mp)
 CQueryContext *
 CQueryContext::PqcGenerate(CMemoryPool *mp, CExpression *pexpr,
 						   ULongPtrArray *pdrgpulQueryOutputColRefId,
-						   CMDNameArray *pdrgpmdname, BOOL fDeriveStats)
+						   CMDNameArray *pdrgpmdname, GP_BOOL fDeriveStats)
 {
 	GPOS_ASSERT(NULL != pexpr && NULL != pdrgpulQueryOutputColRefId);
 
@@ -176,10 +176,10 @@ CQueryContext::PqcGenerate(CMemoryPool *mp, CExpression *pexpr,
 	GPOS_ASSERT(NULL != col_factory);
 
 	// Collect required column references (colref_array)
-	const ULONG length = pdrgpulQueryOutputColRefId->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = pdrgpulQueryOutputColRefId->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
-		ULONG *pul = (*pdrgpulQueryOutputColRefId)[ul];
+		GP_ULONG *pul = (*pdrgpulQueryOutputColRefId)[ul];
 		GPOS_ASSERT(NULL != pul);
 
 		CColRef *colref = col_factory->LookupColRef(*pul);
@@ -211,7 +211,7 @@ CQueryContext::PqcGenerate(CMemoryPool *mp, CExpression *pexpr,
 
 	CDistributionSpec *pds = NULL;
 
-	BOOL fDML = CUtils::FLogicalDML(pexpr->Pop());
+	GP_BOOL fDML = CUtils::FLogicalDML(pexpr->Pop());
 	poptctxt->MarkDMLQuery(fDML);
 
 	// DML commands do not have distribution requirement. Otherwise the
@@ -290,8 +290,8 @@ CQueryContext::MapComputedToUsedCols(CColumnFactory *col_factory,
 	{
 		CExpression *pexprPrL = (*pexpr)[1];
 
-		const ULONG arity = pexprPrL->Arity();
-		for (ULONG ul = 0; ul < arity; ul++)
+		const GP_ULONG arity = pexprPrL->Arity();
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprPrEl = (*pexprPrL)[ul];
 			col_factory->AddComputedToUsedColsMap(pexprPrEl);
@@ -299,8 +299,8 @@ CQueryContext::MapComputedToUsedCols(CColumnFactory *col_factory,
 	}
 
 	// process children
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		MapComputedToUsedCols(col_factory, (*pexpr)[ul]);
 	}

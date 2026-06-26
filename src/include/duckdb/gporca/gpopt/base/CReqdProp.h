@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -89,14 +89,14 @@ public:
 	virtual ~CReqdProp();
 
 	// is it a relational property?
-	virtual BOOL
+	virtual GP_BOOL
 	FRelational() const
 	{
 		return false;
 	}
 
 	// is it a plan property?
-	virtual BOOL
+	virtual GP_BOOL
 	FPlan() const
 	{
 		return false;
@@ -104,8 +104,8 @@ public:
 
 	// required properties computation function
 	virtual void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdProp *prpInput, ULONG child_index,
-						 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) = 0;
+						 CReqdProp *prpInput, GP_ULONG child_index,
+						 CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) = 0;
 
 };	// class CReqdProp
 

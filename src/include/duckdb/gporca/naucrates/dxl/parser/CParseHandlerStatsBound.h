@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -41,7 +41,7 @@ private:
 	CDXLDatum *m_dxl_datum;
 
 	// is stats bound closed
-	BOOL m_is_stats_bound_closed;
+	GP_BOOL m_is_stats_bound_closed;
 
 	// private copy ctor
 	CParseHandlerStatsBound(const CParseHandlerStatsBound &);
@@ -77,7 +77,7 @@ public:
 	}
 
 	// is stats bound closed
-	BOOL
+	GP_BOOL
 	IsStatsBoundClosed() const
 	{
 		return m_is_stats_bound_closed;

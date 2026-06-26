@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2010 Greenplum, Inc.
 //
@@ -98,11 +98,11 @@ COstream::operator<<(const CHAR input_char)
 //		COstream::operator<<
 //
 //	@doc:
-//		write a ULONG with conversion
+//		write a GP_ULONG with conversion
 //
 //---------------------------------------------------------------------------
 IOstream &
-COstream::operator<<(ULONG input_ulong)
+COstream::operator<<(GP_ULONG input_ulong)
 {
 	switch (GetStreamManipulator())
 	{

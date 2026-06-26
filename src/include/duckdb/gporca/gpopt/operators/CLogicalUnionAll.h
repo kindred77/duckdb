@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -31,7 +31,7 @@ class CLogicalUnionAll : public CLogicalUnion
 private:
 	// if this union is needed for partial indexes then store the scan
 	// id, otherwise this will be gpos::ulong_max
-	ULONG m_ulScanIdPartialIndex;
+	GP_ULONG m_ulScanIdPartialIndex;
 
 	// private copy ctor
 	CLogicalUnionAll(const CLogicalUnionAll &);
@@ -42,7 +42,7 @@ public:
 
 	CLogicalUnionAll(CMemoryPool *mp, CColRefArray *pdrgpcrOutput,
 					 CColRef2dArray *pdrgpdrgpcrInput,
-					 ULONG ulScanIdPartialIndex = gpos::ulong_max);
+					 GP_ULONG ulScanIdPartialIndex = gpos::ulong_max);
 
 	// dtor
 	virtual ~CLogicalUnionAll();
@@ -63,21 +63,21 @@ public:
 
 	// if this union is needed for partial indexes then return the scan
 	// id, otherwise return gpos::ulong_max
-	ULONG
+	GP_ULONG
 	UlScanIdPartialIndex() const
 	{
 		return m_ulScanIdPartialIndex;
 	}
 
 	// is this unionall needed for a partial index
-	BOOL
+	GP_BOOL
 	IsPartialIndex() const
 	{
 		return (gpos::ulong_max > m_ulScanIdPartialIndex);
 	}
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -85,7 +85,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties

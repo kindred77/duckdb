@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -100,7 +100,7 @@ private:
 	CMaxCard m_maxcard;
 
 	// join depth (number of relations in underlying tree)
-	ULONG m_ulJoinDepth;
+	GP_ULONG m_ulJoinDepth;
 
 	// partition table consumers
 	CPartInfo *m_ppartinfo;
@@ -113,7 +113,7 @@ private:
 
 	// true if all logical operators in the group are of type CLogicalDynamicGet,
 	// and the dynamic get has partial indexes
-	BOOL m_fHasPartialIndexes;
+	GP_BOOL m_fHasPartialIndexes;
 
 	CTableDescriptor *m_table_descriptor;
 
@@ -122,7 +122,7 @@ private:
 
 	// helper for getting applicable FDs from child
 	static CFunctionalDependencyArray *DeriveChildFunctionalDependencies(
-		CMemoryPool *mp, ULONG child_index, CExpressionHandle &exprhdl);
+		CMemoryPool *mp, GP_ULONG child_index, CExpressionHandle &exprhdl);
 
 	// helper for creating local FDs
 	static CFunctionalDependencyArray *DeriveLocalFunctionalDependencies(
@@ -139,7 +139,7 @@ private:
 	// corresponding expression used to derive it, this MUST be set to true,
 	// since after the detachment, there will be no way to derive the
 	// properties once again.
-	BOOL m_is_complete;
+	GP_BOOL m_is_complete;
 
 protected:
 	// output columns
@@ -165,7 +165,7 @@ protected:
 	CMaxCard DeriveMaxCard(CExpressionHandle &);
 
 	// join depth
-	ULONG DeriveJoinDepth(CExpressionHandle &);
+	GP_ULONG DeriveJoinDepth(CExpressionHandle &);
 
 	// partition consumers
 	CPartInfo *DerivePartitionInfo(CExpressionHandle &);
@@ -177,7 +177,7 @@ protected:
 	CFunctionProp *DeriveFunctionProperties(CExpressionHandle &);
 
 	// has partial indexes
-	BOOL DeriveHasPartialIndexes(CExpressionHandle &);
+	GP_BOOL DeriveHasPartialIndexes(CExpressionHandle &);
 
 	CTableDescriptor *DeriveTableDescriptor(CExpressionHandle &);
 
@@ -195,7 +195,7 @@ public:
 		return EptRelational;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsComplete() const
 	{
 		return m_is_complete;
@@ -227,7 +227,7 @@ public:
 	CMaxCard GetMaxCard() const;
 
 	// join depth
-	ULONG GetJoinDepth() const;
+	GP_ULONG GetJoinDepth() const;
 
 	// partition consumers
 	CPartInfo *GetPartitionInfo() const;
@@ -239,7 +239,7 @@ public:
 	CFunctionProp *GetFunctionProperties() const;
 
 	// has partial indexes
-	BOOL HasPartialIndexes() const;
+	GP_BOOL HasPartialIndexes() const;
 
 	CTableDescriptor *GetTableDescriptor() const;
 
@@ -247,7 +247,7 @@ public:
 	static CDrvdPropRelational *GetRelationalProperties(CDrvdProp *pdp);
 
 	// check for satisfying required plan properties
-	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
+	virtual GP_BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

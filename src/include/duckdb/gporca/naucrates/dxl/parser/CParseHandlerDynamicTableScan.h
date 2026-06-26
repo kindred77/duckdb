@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -37,10 +37,10 @@ class CParseHandlerDynamicTableScan : public CParseHandlerPhysicalOp
 {
 private:
 	// the id of the partition index structure
-	ULONG m_part_index_id;
+	GP_ULONG m_part_index_id;
 
 	// printable partition index id
-	ULONG m_part_index_id_printable;
+	GP_ULONG m_part_index_id_printable;
 
 	// private copy ctor
 	CParseHandlerDynamicTableScan(const CParseHandlerDynamicTableScan &);

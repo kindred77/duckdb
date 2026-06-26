@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -77,7 +77,7 @@ public:
 	}
 
 	// return true if calling object's destructor is allowed
-	virtual BOOL
+	virtual GP_BOOL
 	Deletable() const
 	{
 		return true;

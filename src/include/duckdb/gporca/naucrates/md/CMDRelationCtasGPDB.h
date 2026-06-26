@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -60,10 +60,10 @@ private:
 	CMDName *m_mdname;
 
 	// is this a temporary relation
-	BOOL m_is_temp_table;
+	GP_BOOL m_is_temp_table;
 
 	// does this table have oids
-	BOOL m_has_oids;
+	GP_BOOL m_has_oids;
 
 	// storage type
 	Erelstoragetype m_rel_storage_type;
@@ -87,7 +87,7 @@ private:
 	ULongPtr2dArray *m_keyset_array;
 
 	// number of system columns
-	ULONG m_system_columns;
+	GP_ULONG m_system_columns;
 
 	// mapping of attribute number in the system catalog to the positions of
 	// the non dropped column in the metadata object
@@ -112,7 +112,7 @@ public:
 	// ctor
 	CMDRelationCtasGPDB(
 		CMemoryPool *mp, IMDId *mdid, CMDName *mdname_schema, CMDName *mdname,
-		BOOL fTemporary, BOOL fHasOids, Erelstoragetype rel_storage_type,
+		GP_BOOL fTemporary, GP_BOOL fHasOids, Erelstoragetype rel_storage_type,
 		Ereldistrpolicy rel_distr_policy, CMDColumnArray *mdcol_array,
 		ULongPtrArray *distr_col_array, IMdIdArray *distr_opfamilies,
 		IMdIdArray *distr_opclasses, ULongPtr2dArray *keyset_array,
@@ -142,14 +142,14 @@ public:
 	virtual Ereldistrpolicy GetRelDistribution() const;
 
 	// does this table have oids
-	virtual BOOL
+	virtual GP_BOOL
 	HasOids() const
 	{
 		return m_has_oids;
 	}
 
 	// is this a temp relation
-	virtual BOOL
+	virtual GP_BOOL
 	IsTemporary() const
 	{
 		return m_is_temp_table;
@@ -170,20 +170,20 @@ public:
 	}
 
 	// number of columns
-	virtual ULONG ColumnCount() const;
+	virtual GP_ULONG ColumnCount() const;
 
 	// width of a column with regards to the position
-	virtual DOUBLE ColWidth(ULONG pos) const;
+	virtual DOUBLE ColWidth(GP_ULONG pos) const;
 
 	// does relation have dropped columns
-	virtual BOOL
+	virtual GP_BOOL
 	HasDroppedColumns() const
 	{
 		return false;
 	}
 
 	// number of non-dropped columns
-	virtual ULONG
+	virtual GP_ULONG
 	NonDroppedColsCount() const
 	{
 		return ColumnCount();
@@ -197,42 +197,42 @@ public:
 	}
 
 	// number of system columns
-	virtual ULONG SystemColumnsCount() const;
+	virtual GP_ULONG SystemColumnsCount() const;
 
 	// retrieve the column at the given position
-	virtual const IMDColumn *GetMdCol(ULONG pos) const;
+	virtual const IMDColumn *GetMdCol(GP_ULONG pos) const;
 
 	// number of distribution columns
-	virtual ULONG DistrColumnCount() const;
+	virtual GP_ULONG DistrColumnCount() const;
 
 	// retrieve the column at the given position in the distribution columns list for the relation
-	virtual const IMDColumn *GetDistrColAt(ULONG pos) const;
+	virtual const IMDColumn *GetDistrColAt(GP_ULONG pos) const;
 
-	virtual IMDId *GetDistrOpfamilyAt(ULONG pos) const;
+	virtual IMDId *GetDistrOpfamilyAt(GP_ULONG pos) const;
 
 	// number of indices
-	virtual ULONG
+	virtual GP_ULONG
 	IndexCount() const
 	{
 		return 0;
 	}
 
 	// number of triggers
-	virtual ULONG
+	virtual GP_ULONG
 	TriggerCount() const
 	{
 		return 0;
 	}
 
 	// return the absolute position of the given attribute position excluding dropped columns
-	virtual ULONG
-	NonDroppedColAt(ULONG pos) const
+	virtual GP_ULONG
+	NonDroppedColAt(GP_ULONG pos) const
 	{
 		return pos;
 	}
 
 	// return the position of a column in the metadata object given the attribute number in the system catalog
-	virtual ULONG GetPosFromAttno(INT attno) const;
+	virtual GP_ULONG GetPosFromAttno(INT attno) const;
 
 	virtual IMdIdArray *
 	GetDistrOpClasses() const
@@ -241,7 +241,7 @@ public:
 	}
 
 	// retrieve the id of the metadata cache index at the given position
-	virtual IMDId *IndexMDidAt(ULONG  // pos
+	virtual IMDId *IndexMDidAt(GP_ULONG  // pos
 	) const
 	{
 		GPOS_ASSERT("CTAS tables have no indexes");
@@ -249,7 +249,7 @@ public:
 	}
 
 	// retrieve the id of the metadata cache trigger at the given position
-	virtual IMDId *TriggerMDidAt(ULONG	// pos
+	virtual IMDId *TriggerMDidAt(GP_ULONG	// pos
 	) const
 	{
 		GPOS_ASSERT("CTAS tables have no triggers");
@@ -260,14 +260,14 @@ public:
 	virtual void Serialize(gpdxl::CXMLSerializer *) const;
 
 	// number of check constraints
-	virtual ULONG
+	virtual GP_ULONG
 	CheckConstraintCount() const
 	{
 		return 0;
 	}
 
 	// retrieve the id of the check constraint cache at the given position
-	virtual IMDId *CheckConstraintMDidAt(ULONG	// pos
+	virtual IMDId *CheckConstraintMDidAt(GP_ULONG	// pos
 	) const
 	{
 		GPOS_ASSERT("CTAS tables have no constraints");

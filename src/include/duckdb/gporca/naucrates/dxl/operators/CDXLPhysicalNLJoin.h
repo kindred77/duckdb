@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -45,14 +45,14 @@ class CDXLPhysicalNLJoin : public CDXLPhysicalJoin
 private:
 	// flag to indicate whether operator is an index nested loops,
 	// i.e., inner side is an index scan that uses values from outer side
-	BOOL m_is_index_nlj;
+	GP_BOOL m_is_index_nlj;
 
 	// array holding nest params col references used for creating nestparam
 	// node during translation
 	CDXLColRefArray *m_nest_params_col_refs;
 
 	// if nest params are required to be parsed
-	BOOL m_nest_params_exists;
+	GP_BOOL m_nest_params_exists;
 
 	void SerializeNestLoopParamsToDXL(CXMLSerializer *pxmlser) const;
 
@@ -62,7 +62,7 @@ private:
 public:
 	// ctor/dtor
 	CDXLPhysicalNLJoin(CMemoryPool *mp, EdxlJoinType join_type,
-					   BOOL is_index_nlj, BOOL nest_params_exists);
+					   GP_BOOL is_index_nlj, GP_BOOL nest_params_exists);
 
 	~CDXLPhysicalNLJoin();
 
@@ -71,14 +71,14 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// is operator an index nested loops?
-	BOOL
+	GP_BOOL
 	IsIndexNLJ() const
 	{
 		return m_is_index_nlj;
 	}
 
 	// nest params exists for parsing
-	BOOL NestParamsExists() const;
+	GP_BOOL NestParamsExists() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -101,7 +101,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

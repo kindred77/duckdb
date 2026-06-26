@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -34,7 +34,7 @@ private:
 	CExpressionArray *m_pdrgpexpr;
 
 	// cursor for retrieval
-	ULONG m_ulExpr;
+	GP_ULONG m_ulExpr;
 
 	// private copy ctor
 	CXformResult(const CXformResult &);
@@ -62,7 +62,7 @@ public:
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;
 
-	ULONG
+	GP_ULONG
 	Size() const
 	{
 		return m_pdrgpexpr->Size();

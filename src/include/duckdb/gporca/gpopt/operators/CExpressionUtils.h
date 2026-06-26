@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -42,8 +42,8 @@ class CExpressionUtils
 private:
 	// unnest a given expression's child and append unnested nodes to given array
 	static void UnnestChild(CMemoryPool *mp, CExpression *pexpr,
-							ULONG UlChildIndex, BOOL fAnd, BOOL fOr,
-							BOOL fNotChildren, CExpressionArray *pdrgpexpr);
+							GP_ULONG UlChildIndex, GP_BOOL fAnd, GP_BOOL fOr,
+							GP_BOOL fNotChildren, CExpressionArray *pdrgpexpr);
 
 	// append the unnested children of given expression to given array
 	static void AppendChildren(CMemoryPool *mp, CExpression *pexpr,

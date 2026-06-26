@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Software Inc.
 //
@@ -30,11 +30,11 @@ private:
 	IMDId *m_mdid;
 
 	// is the index partial
-	BOOL m_is_partial;
+	GP_BOOL m_is_partial;
 
 public:
 	// ctor
-	CMDIndexInfo(IMDId *mdid, BOOL is_partial);
+	CMDIndexInfo(IMDId *mdid, GP_BOOL is_partial);
 
 	// dtor
 	virtual ~CMDIndexInfo();
@@ -43,7 +43,7 @@ public:
 	IMDId *MDId() const;
 
 	// is the index partial
-	BOOL IsPartial() const;
+	GP_BOOL IsPartial() const;
 
 	// serialize indexinfo in DXL format given a serializer object
 	virtual void Serialize(CXMLSerializer *) const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -171,12 +171,12 @@ CMDTypeBoolGPDB::GetMdidForAggType(EAggType agg_type) const
 //		CMDTypeBoolGPDB::GetDatum
 //
 //	@doc:
-//		Factory function for creating BOOL datums
+//		Factory function for creating GP_BOOL datums
 //
 //---------------------------------------------------------------------------
 IDatumBool *
-CMDTypeBoolGPDB::CreateBoolDatum(CMemoryPool *mp, BOOL bool_val,
-								 BOOL is_null) const
+CMDTypeBoolGPDB::CreateBoolDatum(CMemoryPool *mp, GP_BOOL bool_val,
+								 GP_BOOL is_null) const
 {
 	return GPOS_NEW(mp) CDatumBoolGPDB(m_mdid->Sysid(), bool_val, is_null);
 }
@@ -271,8 +271,8 @@ CMDTypeBoolGPDB::GetDatumForDXLDatum(CMemoryPool *mp,
 {
 	CDXLDatumBool *dxl_datum_bool =
 		CDXLDatumBool::Cast(const_cast<CDXLDatum *>(dxl_datum));
-	BOOL value = dxl_datum_bool->GetValue();
-	BOOL is_null = dxl_datum_bool->IsNull();
+	GP_BOOL value = dxl_datum_bool->GetValue();
+	GP_BOOL is_null = dxl_datum_bool->IsNull();
 
 	return GPOS_NEW(mp) CDatumBoolGPDB(m_mdid->Sysid(), value, is_null);
 }

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -27,9 +27,9 @@ using namespace gpmd;
 
 class IDatum;
 
-// hash map mapping ULONG -> Datum
-typedef CHashMap<ULONG, IDatum, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupRelease<IDatum> >
+// hash map mapping GP_ULONG -> Datum
+typedef CHashMap<GP_ULONG, IDatum, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupRelease<IDatum> >
 	UlongToIDatumMap;
 
 //---------------------------------------------------------------------------
@@ -67,41 +67,41 @@ public:
 	}
 
 	// accessor of size
-	virtual ULONG Size() const = 0;
+	virtual GP_ULONG Size() const = 0;
 
 	// is datum null?
-	virtual BOOL IsNull() const = 0;
+	virtual GP_BOOL IsNull() const = 0;
 
 	// return string representation
 	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const = 0;
 
 	// hash function
-	virtual ULONG HashValue() const = 0;
+	virtual GP_ULONG HashValue() const = 0;
 
 	// Match function on datums
-	virtual BOOL Matches(const IDatum *) const = 0;
+	virtual GP_BOOL Matches(const IDatum *) const = 0;
 
 	// create a copy of the datum
 	virtual IDatum *MakeCopy(CMemoryPool *mp) const = 0;
 
 	// stats greater than
-	virtual BOOL
+	virtual GP_BOOL
 	StatsAreGreaterThan(const IDatum *datum) const
 	{
-		BOOL stats_are_comparable = datum->StatsAreComparable(this);
+		GP_BOOL stats_are_comparable = datum->StatsAreComparable(this);
 		GPOS_ASSERT(stats_are_comparable &&
 					"Invalid invocation of StatsAreGreaterThan");
 		return stats_are_comparable && datum->StatsAreLessThan(this);
 	}
 
 	// does the datum need to be padded before statistical derivation
-	virtual BOOL NeedsPadding() const = 0;
+	virtual GP_BOOL NeedsPadding() const = 0;
 
 	// return the padded datum
-	virtual IDatum *MakePaddedDatum(CMemoryPool *mp, ULONG col_len) const = 0;
+	virtual IDatum *MakePaddedDatum(CMemoryPool *mp, GP_ULONG col_len) const = 0;
 
 	// does datum support like predicate
-	virtual BOOL SupportsLikePredicate() const = 0;
+	virtual GP_BOOL SupportsLikePredicate() const = 0;
 
 	// return the default scale factor of like predicate
 	virtual CDouble GetLikePredicateScaleFactor() const = 0;
@@ -110,29 +110,29 @@ public:
 	virtual const BYTE *GetByteArrayValue() const = 0;
 
 	// is datum mappable to a base type for statistics purposes
-	virtual BOOL
+	virtual GP_BOOL
 	StatsMappable()
 	{
 		return this->StatsAreComparable(this);
 	}
 
 	// can datum be mapped to a double
-	virtual BOOL IsDatumMappableToDouble() const = 0;
+	virtual GP_BOOL IsDatumMappableToDouble() const = 0;
 
 	// map to double for statistics computation
 	virtual CDouble GetDoubleMapping() const = 0;
 
 	// can datum be mapped to LINT
-	virtual BOOL IsDatumMappableToLINT() const = 0;
+	virtual GP_BOOL IsDatumMappableToLINT() const = 0;
 
 	// map to LINT for statistics computation
 	virtual LINT GetLINTMapping() const = 0;
 
 	// equality based on mapping to LINT or CDouble
-	virtual BOOL StatsAreEqual(const IDatum *datum) const;
+	virtual GP_BOOL StatsAreEqual(const IDatum *datum) const;
 
 	// stats less than
-	virtual BOOL StatsAreLessThan(const IDatum *datum) const;
+	virtual GP_BOOL StatsAreLessThan(const IDatum *datum) const;
 
 	// distance function
 	virtual CDouble GetStatsDistanceFrom(const IDatum *datum) const;
@@ -141,7 +141,7 @@ public:
 	CDouble GetValAsDouble() const;
 
 	// check if the given pair of datums are stats comparable
-	virtual BOOL StatsAreComparable(const IDatum *datum) const;
+	virtual GP_BOOL StatsAreComparable(const IDatum *datum) const;
 
 };	// class IDatum
 

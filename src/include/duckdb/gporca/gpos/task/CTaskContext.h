@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -75,11 +75,11 @@ public:
 	}
 
 	// set trace flag
-	BOOL SetTrace(ULONG trace, BOOL val);
+	GP_BOOL SetTrace(GP_ULONG trace, GP_BOOL val);
 
 	// test if tracing on
-	inline BOOL
-	IsTraceSet(ULONG trace)
+	inline GP_BOOL
+	IsTraceSet(GP_ULONG trace)
 	{
 		return m_bitset->Get(trace);
 	}

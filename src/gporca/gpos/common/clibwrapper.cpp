@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -42,7 +42,7 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 void
-gpos::clib::USleep(ULONG usecs)
+gpos::clib::USleep(GP_ULONG usecs)
 {
 	GPOS_ASSERT(1000000 >= usecs);
 
@@ -294,7 +294,7 @@ gpos::clib::Getopt(INT argc, CHAR *const argv[], const CHAR *opt_string)
 //
 //---------------------------------------------------------------------------
 LINT
-gpos::clib::Strtol(const CHAR *val, CHAR **end, ULONG base)
+gpos::clib::Strtol(const CHAR *val, CHAR **end, GP_ULONG base)
 {
 	GPOS_ASSERT(NULL != val);
 	GPOS_ASSERT(0 == base || 2 == base || 10 == base || 16 == base);
@@ -311,7 +311,7 @@ gpos::clib::Strtol(const CHAR *val, CHAR **end, ULONG base)
 //
 //---------------------------------------------------------------------------
 LINT
-gpos::clib::Strtoll(const CHAR *val, CHAR **end, ULONG base)
+gpos::clib::Strtoll(const CHAR *val, CHAR **end, GP_ULONG base)
 {
 	GPOS_ASSERT(NULL != val);
 	GPOS_ASSERT(0 == base || 2 == base || 10 == base || 16 == base);
@@ -328,8 +328,8 @@ gpos::clib::Strtoll(const CHAR *val, CHAR **end, ULONG base)
 //
 //---------------------------------------------------------------------------
 thread_local std::mt19937 thread_local_engine;
-ULONG
-gpos::clib::Rand(ULONG *seed)
+GP_ULONG
+gpos::clib::Rand(GP_ULONG *seed)
 {
 	GPOS_ASSERT(NULL != seed);
 
@@ -337,7 +337,7 @@ gpos::clib::Rand(ULONG *seed)
 
 	//GPOS_ASSERT(res >= 0 && res <= RAND_MAX);
 
-	//return static_cast<ULONG>(res);
+	//return static_cast<GP_ULONG>(res);
 	if (seed != nullptr) {
 		thread_local_engine.seed(*seed);
 	}
@@ -450,12 +450,12 @@ gpos::clib::Strerror_r(INT errnum, CHAR *buf, SIZE_T buf_len)
 //		Calculate the length of a wide-character string
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 gpos::clib::Wcslen(const WCHAR *dest)
 {
 	GPOS_ASSERT(NULL != dest);
 
-	return (ULONG) wcslen(dest);
+	return (GP_ULONG) wcslen(dest);
 }
 
 
@@ -522,12 +522,12 @@ gpos::clib::Free(void *src)
 //		Calculate the length of a string
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 gpos::clib::Strlen(const CHAR *buf)
 {
 	GPOS_ASSERT(NULL != buf);
 
-	return (ULONG) strlen(buf);
+	return (GP_ULONG) strlen(buf);
 }
 
 
@@ -554,13 +554,13 @@ gpos::clib::Wctomb(CHAR *dest, WCHAR src)
 //		Convert a multibyte sequence to wide character array
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 gpos::clib::Mbstowcs(WCHAR *dest, const CHAR *src, SIZE_T len)
 {
 	GPOS_ASSERT(NULL != dest);
 	GPOS_ASSERT(NULL != src);
 
-	return (ULONG) mbstowcs(dest, src, len);
+	return (GP_ULONG) mbstowcs(dest, src, len);
 }
 
 

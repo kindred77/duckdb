@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -33,18 +33,18 @@ private:
 	IMDId *m_mdid;
 
 	// boolean value
-	BOOL m_value;
+	GP_BOOL m_value;
 
 	// is null
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// private copy ctor
 	CDatumBoolGPDB(const CDatumBoolGPDB &);
 
 public:
 	// ctors
-	CDatumBoolGPDB(CSystemId sysid, BOOL value, BOOL is_null = false);
-	CDatumBoolGPDB(IMDId *mdid, BOOL value, BOOL is_null = false);
+	CDatumBoolGPDB(CSystemId sysid, GP_BOOL value, GP_BOOL is_null = false);
+	CDatumBoolGPDB(IMDId *mdid, GP_BOOL value, GP_BOOL is_null = false);
 
 	// dtor
 	virtual ~CDatumBoolGPDB();
@@ -53,22 +53,22 @@ public:
 	virtual IMDId *MDId() const;
 
 	// accessor of boolean value
-	virtual BOOL GetValue() const;
+	virtual GP_BOOL GetValue() const;
 
 	// accessor of size
-	virtual ULONG Size() const;
+	virtual GP_ULONG Size() const;
 
 	// accessor of is null
-	virtual BOOL IsNull() const;
+	virtual GP_BOOL IsNull() const;
 
 	// return string representation
 	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function for datums
-	virtual BOOL Matches(const IDatum *) const;
+	virtual GP_BOOL Matches(const IDatum *) const;
 
 	// copy datum
 	virtual IDatum *MakeCopy(CMemoryPool *mp) const;

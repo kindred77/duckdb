@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -67,7 +67,7 @@ private:
 	CDXLBucketArray *m_dxl_stats_bucket_array;
 
 	// is column statistics missing in the database
-	BOOL m_is_col_stats_missing;
+	GP_BOOL m_is_col_stats_missing;
 
 	// DXL string for object
 	CWStringDynamic *m_dxl_str;
@@ -81,7 +81,7 @@ public:
 				 CMDName *mdname, CDouble width, CDouble null_freq,
 				 CDouble distinct_remaining, CDouble freq_remaining,
 				 CDXLBucketArray *dxl_stats_bucket_array,
-				 BOOL is_col_stats_missing);
+				 GP_BOOL is_col_stats_missing);
 
 	// dtor
 	virtual ~CDXLColStats();
@@ -96,7 +96,7 @@ public:
 	virtual const CWStringDynamic *GetStrRepr() const;
 
 	// number of buckets
-	virtual ULONG Buckets() const;
+	virtual GP_ULONG Buckets() const;
 
 	// width
 	virtual CDouble
@@ -127,14 +127,14 @@ public:
 	}
 
 	// is the column statistics missing in the database
-	BOOL
+	GP_BOOL
 	IsColStatsMissing() const
 	{
 		return m_is_col_stats_missing;
 	}
 
 	// get the bucket at the given position
-	virtual const CDXLBucket *GetDXLBucketAt(ULONG ul) const;
+	virtual const CDXLBucket *GetDXLBucketAt(GP_ULONG ul) const;
 
 	// serialize column stats in DXL format
 	virtual void Serialize(gpdxl::CXMLSerializer *) const;

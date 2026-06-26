@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -98,7 +98,7 @@ CMDIdRelStats::GetRelMdId() const
 //		Checks if the mdids are equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdRelStats::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidRelStats != mdid->MdidType())

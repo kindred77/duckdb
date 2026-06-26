@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -33,7 +33,7 @@ using namespace gpos;
 class CExpression;
 
 // type definition of plan checker
-typedef BOOL(FnPlanChecker)(CExpression *);
+typedef GP_BOOL(FnPlanChecker)(CExpression *);
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -126,10 +126,10 @@ private:
 	DOUBLE *m_pdY;
 
 	// size of fitted cost distribution
-	ULONG m_ulDistrSize;
+	GP_ULONG m_ulDistrSize;
 
 	// restrict plan sampling to plans satisfying required properties
-	BOOL m_fSampleValidPlans;
+	GP_BOOL m_fSampleValidPlans;
 
 	// plan checker function
 	FnPlanChecker *m_pfpc;
@@ -180,7 +180,7 @@ public:
 	}
 
 	// return number of created samples
-	ULONG
+	GP_ULONG
 	UlCreatedSamples() const
 	{
 		return m_pdrgpsp->Size();
@@ -202,7 +202,7 @@ public:
 
 	// return id of a plan sample
 	ULLONG
-	UllPlanSample(ULONG ulPos) const
+	UllPlanSample(GP_ULONG ulPos) const
 	{
 		return (*m_pdrgpsp)[ulPos]->GetPlanId();
 	}
@@ -223,42 +223,42 @@ public:
 
 	// return cost of a plan sample
 	CCost
-	CostPlanSample(ULONG ulPos) const
+	CostPlanSample(GP_ULONG ulPos) const
 	{
 		return (*m_pdrgpsp)[ulPos]->Cost();
 	}
 
 	// add a new plan to sample
-	BOOL FAddSample(ULLONG plan_id, CCost cost);
+	GP_BOOL FAddSample(ULLONG plan_id, CCost cost);
 
 	// clear samples
 	void ClearSamples();
 
 	// return x-value of cost distribution
-	CDouble DCostDistrX(ULONG ulPos) const;
+	CDouble DCostDistrX(GP_ULONG ulPos) const;
 
 	// return y-value of cost distribution
-	CDouble DCostDistrY(ULONG ulPos) const;
+	CDouble DCostDistrY(GP_ULONG ulPos) const;
 
 	// fit cost distribution on generated samples
 	void FitCostDistribution();
 
 	// return size of fitted cost distribution
-	ULONG
+	GP_ULONG
 	UlCostDistrSize() const
 	{
 		return m_ulDistrSize;
 	}
 
 	// is enumeration enabled?
-	BOOL
+	GP_BOOL
 	FEnumerate() const
 	{
 		return GPOS_FTRACE(EopttraceEnumeratePlans);
 	}
 
 	// is sampling enabled?
-	BOOL
+	GP_BOOL
 	FSample() const
 	{
 		return GPOS_FTRACE(EopttraceSamplePlans);
@@ -283,20 +283,20 @@ public:
 	// restrict sampling to plans satisfying required properties
 	// we need to change settings for testing
 	void
-	SetSampleValidPlans(BOOL fSampleValidPlans)
+	SetSampleValidPlans(GP_BOOL fSampleValidPlans)
 	{
 		m_fSampleValidPlans = fSampleValidPlans;
 	}
 
 	// return true if sampling can only generate valid plans
-	BOOL
+	GP_BOOL
 	FSampleValidPlans() const
 	{
 		return m_fSampleValidPlans;
 	}
 
 	// check given plan using PlanChecker function
-	BOOL
+	GP_BOOL
 	FCheckPlan(CExpression *pexpr) const
 	{
 		GPOS_ASSERT(NULL != pexpr);
@@ -310,12 +310,12 @@ public:
 	}
 
 	// dump samples to an output file
-	void DumpSamples(CWStringDynamic *str, ULONG ulSessionId,
-					 ULONG ulCommandId);
+	void DumpSamples(CWStringDynamic *str, GP_ULONG ulSessionId,
+					 GP_ULONG ulCommandId);
 
 	// dump fitted cost distribution to an output file
-	void DumpCostDistr(CWStringDynamic *str, ULONG ulSessionId,
-					   ULONG ulCommandId);
+	void DumpCostDistr(CWStringDynamic *str, GP_ULONG ulSessionId,
+					   GP_ULONG ulCommandId);
 
 	// print ids of plans in the generated sample
 	void PrintPlanSample() const;
@@ -323,8 +323,8 @@ public:
 	// compute Gaussian kernel density
 	static void GussianKernelDensity(DOUBLE *pdObervationX,
 									 DOUBLE *pdObervationY,
-									 ULONG ulObservations, DOUBLE *pdX,
-									 DOUBLE *pdY, ULONG size);
+									 GP_ULONG ulObservations, DOUBLE *pdX,
+									 DOUBLE *pdY, GP_ULONG size);
 
 	// generate default enumerator configurations
 	static CEnumeratorConfig *

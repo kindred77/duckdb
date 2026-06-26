@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -53,7 +53,7 @@ private:
 	CSyncHashtable<T, K> &m_ht;
 
 	// index of bucket to operate on
-	ULONG m_bucket_idx;
+	GP_ULONG m_bucket_idx;
 
 	// a slab of memory to manufacture an invalid element; we enforce
 	// memory alignment here to mimic allocation of a class object
@@ -113,7 +113,7 @@ private:
 	}
 
 	// a flag indicating if invalid element is currently in the hash table
-	BOOL m_invalid_elem_inserted;
+	GP_BOOL m_invalid_elem_inserted;
 
 public:
 	// ctor
@@ -145,7 +145,7 @@ public:
 	}
 
 	// advances iterator
-	BOOL
+	GP_BOOL
 	Advance()
 	{
 		GPOS_ASSERT(m_bucket_idx < m_ht.m_nbuckets &&

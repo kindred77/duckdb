@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -32,11 +32,11 @@ private:
 public:
 	// ctor
 	CPhysicalMultiExternalScan(CMemoryPool *mp, IMdIdArray *part_mdids,
-							   BOOL is_partial, CTableDescriptor *ptabdesc,
-							   ULONG ulOriginOpId, const CName *pnameAlias,
-							   ULONG scan_id, CColRefArray *pdrgpcrOutput,
+							   GP_BOOL is_partial, CTableDescriptor *ptabdesc,
+							   GP_ULONG ulOriginOpId, const CName *pnameAlias,
+							   GP_ULONG scan_id, CColRefArray *pdrgpcrOutput,
 							   CColRef2dArray *pdrgpdrgpcrParts,
-							   ULONG ulSecondaryScanId,
+							   GP_ULONG ulSecondaryScanId,
 							   CPartConstraint *ppartcnstr,
 							   CPartConstraint *ppartcnstrRel);
 
@@ -63,7 +63,7 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// statistics derivation during costing
 	virtual IStatistics *

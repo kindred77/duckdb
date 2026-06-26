@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal, Inc.
 //
@@ -36,7 +36,7 @@ private:
 		CExpression *endOfNodesToInsertAboveIndexGet,
 		CTableDescriptor *ptabdescInner, CLogicalDynamicGet *popDynamicGet,
 		CColRefSet *pcrsScalarExpr, CColRefSet *outer_refs,
-		CColRefSet *pcrsReqd, ULONG ulIndices, CXformResult *pxfres) const;
+		CColRefSet *pcrsReqd, GP_ULONG ulIndices, CXformResult *pxfres) const;
 
 	// helper to add IndexApply expression to given xform results container
 	// for homogeneous b-tree indexes
@@ -80,7 +80,7 @@ private:
 	// partition constraint
 	CExpression *PexprJoinOverCTEConsumer(
 		CMemoryPool *mp, COperator *joinOp, CLogicalDynamicGet *popDynamicGet,
-		ULONG ulCTEId, CExpression *pexprScalar,
+		GP_ULONG ulCTEId, CExpression *pexprScalar,
 		CColRefArray *pdrgpcrDynamicGet, CPartConstraint *ppartcnstr,
 		CColRefArray *pdrgpcrOuter, CColRefArray *pdrgpcrOuterNew) const;
 
@@ -90,7 +90,7 @@ private:
 		CMemoryPool *mp, COperator *joinOp, CLogicalDynamicGet *popDynamicGet,
 		CExpressionArray *pdrgpexprIndex, CExpressionArray *pdrgpexprResidual,
 		CColRefArray *pdrgpcrIndexGet, const IMDIndex *pmdindex,
-		const IMDRelation *pmdrel, BOOL fFirst, ULONG ulCTEId,
+		const IMDRelation *pmdrel, GP_BOOL fFirst, GP_ULONG ulCTEId,
 		CPartConstraint *ppartcnstr, CColRefSet *outer_refs,
 		CColRefArray *pdrgpcrOuter, CColRefArray *pdrgpcrOuterNew,
 		CColRefArray *pdrgpcrOuterRefsInScan,
@@ -102,19 +102,19 @@ private:
 										CColRefArray *pdrgpcrRightSchema,
 										CExpression *pexprLeftChild,
 										CExpression *pexprRightChild,
-										ULONG scan_id) const;
+										GP_ULONG scan_id) const;
 
 	//	construct a CTE Anchor over the given UnionAll and adds it to the given
 	//	Xform result
 	void AddUnionPlanForPartialIndexes(CMemoryPool *mp,
 									   CLogicalDynamicGet *popDynamicGet,
-									   ULONG ulCTEId, CExpression *pexprUnion,
+									   GP_ULONG ulCTEId, CExpression *pexprUnion,
 									   CExpression *pexprScalar,
 									   CXformResult *pxfres) const;
 
 protected:
 	// is the logical join that is being transformed an outer join?
-	BOOL m_fOuterJoin;
+	GP_BOOL m_fOuterJoin;
 
 	// helper to add IndexApply expression to given xform results container
 	// for homogeneous indexes

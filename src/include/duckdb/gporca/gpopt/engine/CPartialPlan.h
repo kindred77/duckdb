@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -52,7 +52,7 @@ private:
 	CCostContext *m_pccChild;
 
 	// index of known child plan
-	ULONG m_ulChildIndex;
+	GP_ULONG m_ulChildIndex;
 
 	// private copy ctor
 	CPartialPlan(const CPartialPlan &);
@@ -68,7 +68,7 @@ private:
 public:
 	// ctor
 	CPartialPlan(CGroupExpression *pgexpr, CReqdPropPlan *prpp,
-				 CCostContext *pccChild, ULONG child_index);
+				 CCostContext *pccChild, GP_ULONG child_index);
 
 	// dtor
 	virtual ~CPartialPlan();
@@ -95,7 +95,7 @@ public:
 	}
 
 	// child index accessor
-	ULONG
+	GP_ULONG
 	UlChildIndex() const
 	{
 		return m_ulChildIndex;
@@ -105,10 +105,10 @@ public:
 	CCost CostCompute(CMemoryPool *mp);
 
 	// hash function used for cost bounding
-	static ULONG HashValue(const CPartialPlan *ppp);
+	static GP_ULONG HashValue(const CPartialPlan *ppp);
 
 	// equality function used for for cost bounding
-	static BOOL Equals(const CPartialPlan *pppFst, const CPartialPlan *pppSnd);
+	static GP_BOOL Equals(const CPartialPlan *pppFst, const CPartialPlan *pppSnd);
 
 };	// class CPartialPlan
 }  // namespace gpopt

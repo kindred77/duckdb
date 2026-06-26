@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -54,7 +54,7 @@ public:
 
 	// factory function for INT8 datums
 	virtual IDatumInt8 *CreateInt8Datum(CMemoryPool *mp, LINT value,
-										BOOL is_null) const = 0;
+										GP_BOOL is_null) const = 0;
 };
 
 }  // namespace gpmd

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -36,7 +36,7 @@ class CParseHandlerStatsDerivedColumn : public CParseHandlerBase
 {
 private:
 	// column id
-	ULONG m_colid;
+	GP_ULONG m_colid;
 
 	// width
 	CDouble m_width;

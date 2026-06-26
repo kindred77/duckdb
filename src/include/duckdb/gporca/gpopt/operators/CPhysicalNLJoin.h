@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -37,8 +37,8 @@ protected:
 	// spec for the children of a nested loop join
 	CPartitionPropagationSpec *PppsRequiredNLJoinChild(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 public:
 	// ctor
@@ -53,32 +53,32 @@ public:
 
 	// compute required sort order of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posInput, ULONG child_index,
+									COrderSpec *posInput, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const;
+											GP_ULONG ulOptReq) const;
 
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(CMemoryPool *mp,
 									 CExpressionHandle &exprhdl,
 									 CColRefSet *pcrsRequired,
-									 ULONG child_index,
+									 GP_ULONG child_index,
 									 CDrvdPropArray *,	// pdrgpdpCtxt
-									 ULONG				// ulOptReq
+									 GP_ULONG				// ulOptReq
 	);
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *
 	PppsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				 CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-				 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq)
+				 CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+				 CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq)
 	{
 		GPOS_ASSERT(ulOptReq < UlPartPropagateRequests());
 
@@ -99,7 +99,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// return true if operator is a correlated NL Join
-	virtual BOOL
+	virtual GP_BOOL
 	FCorrelated() const
 	{
 		return false;

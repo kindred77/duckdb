@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -24,7 +24,7 @@ using namespace gpos;
 //		ctor
 //
 //---------------------------------------------------------------------------
-CAutoTimer::CAutoTimer(const CHAR *sz, BOOL fPrint)
+CAutoTimer::CAutoTimer(const CHAR *sz, GP_BOOL fPrint)
 	: m_timer_text_label(sz), m_print_text_label(fPrint)
 {
 	GPOS_ASSERT(NULL != sz);
@@ -46,7 +46,7 @@ CAutoTimer::~CAutoTimer() throw()
 		// suspend cancellation - destructors should not throw
 		CAutoSuspendAbort asa;
 
-		ULONG ulElapsedTimeMS = m_clock.ElapsedMS();
+		GP_ULONG ulElapsedTimeMS = m_clock.ElapsedMS();
 
 		GPOS_TRACE_FORMAT("timer:%s: %dms", m_timer_text_label,
 						  ulElapsedTimeMS);

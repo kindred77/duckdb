@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal Inc.
 //
@@ -86,7 +86,7 @@ public:
 		}
 
 		// the risk of errors in cardinality estimation
-		ULONG
+		GP_ULONG
 		StatsEstimationRisk() const
 		{
 			return m_pstats->StatsEstimationRisk();
@@ -112,7 +112,7 @@ public:
 	{
 	private:
 		// number of children excluding scalar children
-		ULONG m_ulChildren;
+		GP_ULONG m_ulChildren;
 
 		// stats of the root
 		CCostingStats *m_pcstats;
@@ -143,7 +143,7 @@ public:
 
 	public:
 		// ctor
-		SCostingInfo(CMemoryPool *mp, ULONG ulChildren, CCostingStats *pcstats)
+		SCostingInfo(CMemoryPool *mp, GP_ULONG ulChildren, CCostingStats *pcstats)
 			: m_ulChildren(ulChildren),
 			  m_pcstats(pcstats),
 			  m_rows(0),
@@ -165,7 +165,7 @@ public:
 				m_pdrgstatsChildren =
 					GPOS_NEW_ARRAY(mp, CCostingStats *, ulChildren);
 
-				for (ULONG ul = 0; ul < m_ulChildren; ul++)
+				for (GP_ULONG ul = 0; ul < m_ulChildren; ul++)
 				{
 					m_pdrgstatsChildren[ul] = NULL;
 				}
@@ -180,7 +180,7 @@ public:
 			GPOS_DELETE_ARRAY(m_pdRebindsChildren);
 			GPOS_DELETE_ARRAY(m_pdCostChildren);
 
-			for (ULONG ul = 0; ul < m_ulChildren; ul++)
+			for (GP_ULONG ul = 0; ul < m_ulChildren; ul++)
 			{
 				CRefCount::SafeRelease(m_pdrgstatsChildren[ul]);
 			}
@@ -190,7 +190,7 @@ public:
 		}
 
 		// children accessor
-		ULONG
+		GP_ULONG
 		ChildCount() const
 		{
 			return m_ulChildren;
@@ -253,7 +253,7 @@ public:
 
 		// child rows setter
 		void
-		SetChildRows(ULONG ulPos, DOUBLE dRowsChild)
+		SetChildRows(GP_ULONG ulPos, DOUBLE dRowsChild)
 		{
 			GPOS_ASSERT(0 <= dRowsChild);
 			GPOS_ASSERT(ulPos < m_ulChildren);
@@ -270,7 +270,7 @@ public:
 
 		// child width setter
 		void
-		SetChildWidth(ULONG ulPos, DOUBLE dWidthChild)
+		SetChildWidth(GP_ULONG ulPos, DOUBLE dWidthChild)
 		{
 			GPOS_ASSERT(0 <= dWidthChild);
 			GPOS_ASSERT(ulPos < m_ulChildren);
@@ -287,7 +287,7 @@ public:
 
 		// child rebinds setter
 		void
-		SetChildRebinds(ULONG ulPos, DOUBLE dRebindsChild)
+		SetChildRebinds(GP_ULONG ulPos, DOUBLE dRebindsChild)
 		{
 			GPOS_ASSERT(GPOPT_DEFAULT_REBINDS <= dRebindsChild);
 			GPOS_ASSERT(ulPos < m_ulChildren);
@@ -304,7 +304,7 @@ public:
 
 		// child cost setter
 		void
-		SetChildCost(ULONG ulPos, DOUBLE dCostChild)
+		SetChildCost(GP_ULONG ulPos, DOUBLE dCostChild)
 		{
 			GPOS_ASSERT(0 <= dCostChild);
 			GPOS_ASSERT(ulPos < m_ulChildren);
@@ -314,7 +314,7 @@ public:
 
 		// child stats setter
 		void
-		SetChildStats(ULONG ulPos, CCostingStats *child_stats)
+		SetChildStats(GP_ULONG ulPos, CCostingStats *child_stats)
 		{
 			m_pdrgstatsChildren[ulPos] = child_stats;
 		}
@@ -328,7 +328,7 @@ public:
 
 		// return additional child statistics
 		CCostingStats *
-		Pcstats(ULONG child_index) const
+		Pcstats(GP_ULONG child_index) const
 		{
 			return m_pdrgstatsChildren[child_index];
 		}
@@ -336,7 +336,7 @@ public:
 	};	// struct SCostingInfo
 
 	// return number of hosts (nodes) that store data
-	virtual ULONG UlHosts() const = 0;
+	virtual GP_ULONG UlHosts() const = 0;
 
 	// return number of rows per host
 	virtual CDouble DRowsPerHost(CDouble dRowsTotal) const = 0;

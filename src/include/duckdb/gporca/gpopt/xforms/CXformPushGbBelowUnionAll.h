@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -48,7 +48,7 @@ public:
 	}
 
 	// Compatibility function
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return ExfPushGbBelowUnionAll != exfid;

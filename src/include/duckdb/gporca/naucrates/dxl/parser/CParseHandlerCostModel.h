@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -36,7 +36,7 @@ class CParseHandlerCostModel : public CParseHandlerBase
 {
 private:
 	ICostModel::ECostModelType m_cost_model_type;
-	ULONG m_num_of_segments;
+	GP_ULONG m_num_of_segments;
 	// cost model
 	ICostModel *m_cost_model;
 

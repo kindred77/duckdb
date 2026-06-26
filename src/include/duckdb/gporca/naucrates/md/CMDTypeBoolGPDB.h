@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -6,7 +6,7 @@
 //		CMDTypeBoolGPDB.h
 //
 //	@doc:
-//		Class for representing BOOL types in GPDB
+//		Class for representing GP_BOOL types in GPDB
 //---------------------------------------------------------------------------
 
 
@@ -55,7 +55,7 @@ using namespace gpnaucrates;
 //		CMDTypeBoolGPDB
 //
 //	@doc:
-//		Class for representing BOOL types in GPDB
+//		Class for representing GP_BOOL types in GPDB
 //
 //---------------------------------------------------------------------------
 class CMDTypeBoolGPDB : public IMDTypeBool
@@ -132,28 +132,28 @@ public:
 	virtual CMDName Mdname() const;
 
 	// is type redistributable
-	virtual BOOL
+	virtual GP_BOOL
 	IsRedistributable() const
 	{
 		return true;
 	}
 
 	// is type fixed length
-	virtual BOOL
+	virtual GP_BOOL
 	IsFixedLength() const
 	{
 		return true;
 	}
 
 	// is type composite
-	virtual BOOL
+	virtual GP_BOOL
 	IsComposite() const
 	{
 		return false;
 	}
 
 	// type length
-	virtual ULONG
+	virtual GP_ULONG
 	Length() const
 	{
 		return GPDB_BOOL_LENGTH;
@@ -167,7 +167,7 @@ public:
 	}
 
 	// is type passed by value
-	virtual BOOL
+	virtual GP_BOOL
 	IsPassedByValue() const
 	{
 		return true;
@@ -186,14 +186,14 @@ public:
 	virtual IMDId *GetMdidForAggType(EAggType agg_type) const;
 
 	// is type hashable
-	virtual BOOL
+	virtual GP_BOOL
 	IsHashable() const
 	{
 		return true;
 	}
 
 	// is type merge joinable
-	virtual BOOL
+	virtual GP_BOOL
 	IsMergeJoinable() const
 	{
 		return true;
@@ -221,8 +221,8 @@ public:
 	}
 
 	// factory method for creating constants
-	virtual IDatumBool *CreateBoolDatum(CMemoryPool *mp, BOOL fValue,
-										BOOL is_null) const;
+	virtual IDatumBool *CreateBoolDatum(CMemoryPool *mp, GP_BOOL fValue,
+										GP_BOOL is_null) const;
 
 	// create typed datum from DXL datum
 	virtual IDatum *GetDatumForDXLDatum(CMemoryPool *mp,

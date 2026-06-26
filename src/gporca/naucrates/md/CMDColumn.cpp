@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -28,8 +28,8 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CMDColumn::CMDColumn(CMDName *mdname, INT attrnum, IMDId *mdid_type,
-					 INT type_modifier, BOOL is_nullable, BOOL is_dropped,
-					 CDXLNode *dxl_dafault_value, ULONG length)
+					 INT type_modifier, GP_BOOL is_nullable, GP_BOOL is_dropped,
+					 CDXLNode *dxl_dafault_value, GP_ULONG length)
 	: m_mdname(mdname),
 	  m_attno(attrnum),
 	  m_mdid_type(mdid_type),
@@ -113,7 +113,7 @@ CMDColumn::TypeModifier() const
 //		Returns whether NULLs are allowed for this column
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDColumn::IsNullable() const
 {
 	return m_is_nullable;
@@ -127,7 +127,7 @@ CMDColumn::IsNullable() const
 //		Returns whether column is dropped
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDColumn::IsDropped() const
 {
 	return m_is_dropped;

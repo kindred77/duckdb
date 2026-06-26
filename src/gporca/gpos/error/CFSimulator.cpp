@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -55,7 +55,7 @@ CFSimulator::AddTracker(CStackTracker::SStackKey key)
 		GPOS_NEW(m_mp) CStackTracker(m_mp, m_resolution, key);
 
 	// assume somebody overtook
-	BOOL overtaken = true;
+	GP_BOOL overtaken = true;
 
 	// scope for accessor
 	{
@@ -88,19 +88,19 @@ CFSimulator::AddTracker(CStackTracker::SStackKey key)
 //		Determine if stack is unknown so far and, if so, add to repository
 //
 //---------------------------------------------------------------------------
-BOOL
-CFSimulator::NewStack(ULONG major, ULONG minor)
+GP_BOOL
+CFSimulator::NewStack(GP_ULONG major, GP_ULONG minor)
 {
 	// hash stack
 	CStackDescriptor stack_desc;
 	stack_desc.BackTrace();
-	ULONG hash = stack_desc.HashValue();
+	GP_ULONG hash = stack_desc.HashValue();
 
 	CStackTracker::SStackKey key(major, minor);
 
 	// attempt direct lookup; if we don't have a tracker yet, we
 	// need to retry exactly once
-	for (ULONG i = 0; i < 2; i++)
+	for (GP_ULONG i = 0; i < 2; i++)
 	{
 		// scope for hashtable access
 		{
@@ -175,7 +175,7 @@ CFSimulator::Shutdown()
 //		ctor
 //
 //---------------------------------------------------------------------------
-CFSimulator::CStackTracker::CStackTracker(CMemoryPool *mp, ULONG resolution,
+CFSimulator::CStackTracker::CStackTracker(CMemoryPool *mp, GP_ULONG resolution,
 										  SStackKey key)
 	: m_key(key), m_bit_vector(NULL)
 {
@@ -192,8 +192,8 @@ CFSimulator::CStackTracker::CStackTracker(CMemoryPool *mp, ULONG resolution,
 //		Test and set a given bit in the bit vector
 //
 //---------------------------------------------------------------------------
-BOOL
-CFSimulator::CStackTracker::ExchangeSet(ULONG bit)
+GP_BOOL
+CFSimulator::CStackTracker::ExchangeSet(GP_ULONG bit)
 {
 	return m_bit_vector->ExchangeSet(bit);
 }
@@ -207,7 +207,7 @@ CFSimulator::CStackTracker::ExchangeSet(ULONG bit)
 //		ctor
 //
 //---------------------------------------------------------------------------
-CFSimulator::CFSimulator(CMemoryPool *mp, ULONG resolution)
+CFSimulator::CFSimulator(CMemoryPool *mp, GP_ULONG resolution)
 	: m_mp(mp), m_resolution(resolution)
 {
 	// setup init table

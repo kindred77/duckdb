@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -49,7 +49,7 @@ public:
 	virtual gpdxl::CDXLNode *EvaluateExpr(const gpdxl::CDXLNode *pdxlnExpr) = 0;
 
 	// returns true iff the evaluator can evaluate constant expressions without subqueries
-	virtual gpos::BOOL FCanEvalExpressions() = 0;
+	virtual gpos::GP_BOOL FCanEvalExpressions() = 0;
 };
 }  // namespace gpopt
 

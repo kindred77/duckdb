@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -38,7 +38,7 @@ private:
 	// return the column reference set of included / key columns
 	CColRefSet *GetColRefSet(CMemoryPool *mp, gpopt::CLogicalGet *popGet,
 							 const IMDIndex *pmdindex,
-							 BOOL fIncludedColumns) const;
+							 GP_BOOL fIncludedColumns) const;
 
 	// create an index get plan when applicable
 	void CreatePartialIndexGetPlan(CMemoryPool *mp, CExpression *pexpr,

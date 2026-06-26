@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -59,7 +59,7 @@ private:
 	INT m_type;
 
 	// is trigger enabled
-	BOOL m_is_enabled;
+	GP_BOOL m_is_enabled;
 
 	// private copy ctor
 	CMDTriggerGPDB(const CMDTriggerGPDB &);
@@ -68,7 +68,7 @@ public:
 	// ctor
 	CMDTriggerGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 				   IMDId *rel_mdid, IMDId *mdid_func, INT type,
-				   BOOL is_enabled);
+				   GP_BOOL is_enabled);
 
 	// dtor
 	~CMDTriggerGPDB();
@@ -109,22 +109,22 @@ public:
 	}
 
 	// does trigger execute on a row-level
-	virtual BOOL ExecutesOnRowLevel() const;
+	virtual GP_BOOL ExecutesOnRowLevel() const;
 
 	// is this a before trigger
-	virtual BOOL IsBefore() const;
+	virtual GP_BOOL IsBefore() const;
 
 	// is this an insert trigger
-	virtual BOOL IsInsert() const;
+	virtual GP_BOOL IsInsert() const;
 
 	// is this a delete trigger
-	virtual BOOL IsDelete() const;
+	virtual GP_BOOL IsDelete() const;
 
 	// is this an update trigger
-	virtual BOOL IsUpdate() const;
+	virtual GP_BOOL IsUpdate() const;
 
 	// is trigger enabled
-	virtual BOOL
+	virtual GP_BOOL
 	IsEnabled() const
 	{
 		return m_is_enabled;

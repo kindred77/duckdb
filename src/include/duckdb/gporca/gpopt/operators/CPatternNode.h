@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 // Greenplum Database
 // Copyright (c) 2020 VMware and affiliates, Inc.
 //
@@ -53,7 +53,7 @@ public:
 	}
 
 	// match function
-	BOOL
+	GP_BOOL
 	Matches(COperator *pop) const
 	{
 		return Eopid() == pop->Eopid() &&
@@ -61,7 +61,7 @@ public:
 	}
 
 	// check if operator is a pattern leaf
-	virtual BOOL
+	virtual GP_BOOL
 	FLeaf() const
 	{
 		return false;
@@ -91,7 +91,7 @@ public:
 		return "CPatternNode";
 	}
 
-	BOOL
+	GP_BOOL
 	MatchesOperator(enum COperator::EOperatorId opid)
 	{
 		switch (m_match)

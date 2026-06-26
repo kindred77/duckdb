@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC CORP.
 //
@@ -74,7 +74,7 @@ public:
 #ifdef GPOS_DEBUG
 
 	// is it a scalar property context?
-	virtual BOOL
+	virtual GP_BOOL
 	FScalar() const
 	{
 		return true;

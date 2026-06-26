@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -48,7 +48,7 @@ private:
 	CDXLColDescrArray *m_dxl_column_descr_array;
 
 	// id of user the table needs to be accessed with
-	ULONG m_execute_as_user_id;
+	GP_ULONG m_execute_as_user_id;
 
 	// private copy ctor
 	CDXLTableDescr(const CDXLTableDescr &);
@@ -58,7 +58,7 @@ private:
 public:
 	// ctor/dtor
 	CDXLTableDescr(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-				   ULONG ulExecuteAsUser);
+				   GP_ULONG ulExecuteAsUser);
 
 	virtual ~CDXLTableDescr();
 
@@ -74,13 +74,13 @@ public:
 	IMDId *MDId() const;
 
 	// table arity
-	ULONG Arity() const;
+	GP_ULONG Arity() const;
 
 	// user id
-	ULONG GetExecuteAsUserId() const;
+	GP_ULONG GetExecuteAsUserId() const;
 
 	// get the column descriptor at the given position
-	const CDXLColDescr *GetColumnDescrAt(ULONG idx) const;
+	const CDXLColDescr *GetColumnDescrAt(GP_ULONG idx) const;
 
 	// serialize to dxl format
 	void SerializeToDXL(CXMLSerializer *xml_serializer) const;

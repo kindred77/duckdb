@@ -1,4 +1,4 @@
-
+﻿
 //---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
@@ -47,10 +47,10 @@ class CList
 
 private:
 	// offest of link element
-	ULONG m_offset;
+	GP_ULONG m_offset;
 
 	// size
-	ULONG m_size;
+	GP_ULONG m_size;
 
 	// head element
 	T *m_head;
@@ -82,7 +82,7 @@ public:
 
 	// init function to facilitate arrays
 	void
-	Init(ULONG offset)
+	Init(GP_ULONG offset)
 	{
 		GPOS_ASSERT(MAX_ALIGNED(offset));
 		m_offset = offset;
@@ -285,14 +285,14 @@ public:
 	}
 
 	// get size
-	ULONG
+	GP_ULONG
 	Size() const
 	{
 		return m_size;
 	}
 
 	// check if empty
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return NULL == First();
@@ -322,7 +322,7 @@ public:
 	IOstream &
 	OsPrint(IOstream &os) const
 	{
-		ULONG c = 0;
+		GP_ULONG c = 0;
 
 		T *t = First();
 

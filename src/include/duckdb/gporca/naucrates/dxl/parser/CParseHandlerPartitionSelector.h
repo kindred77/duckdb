@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -37,10 +37,10 @@ private:
 	IMDId *m_rel_mdid;
 
 	// number of partitioning levels
-	ULONG m_num_of_part_levels;
+	GP_ULONG m_num_of_part_levels;
 
 	// scan id
-	ULONG m_scan_id;
+	GP_ULONG m_scan_id;
 
 	// private copy ctor
 	CParseHandlerPartitionSelector(const CParseHandlerPartitionSelector &);

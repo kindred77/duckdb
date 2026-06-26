@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2015 Pivotal Inc.
 //
@@ -73,7 +73,7 @@ public:
 	void Transform(CXformContext *, CXformResult *, CExpression *) const;
 
 	// return true if xform should be applied only once
-	virtual BOOL IsApplyOnce();
+	virtual GP_BOOL IsApplyOnce();
 
 };	// class CXformGbAggWithMDQA2Join
 

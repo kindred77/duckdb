@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -57,7 +57,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// number of jobs in each pool
-	const ULONG m_ulJobs;
+	const GP_ULONG m_ulJobs;
 
 	// container for testing jobs
 	CSyncPool<CJobTest> *m_pspjTest;
@@ -124,7 +124,7 @@ private:
 
 public:
 	// ctor
-	CJobFactory(CMemoryPool *mp, ULONG ulJobs);
+	CJobFactory(CMemoryPool *mp, GP_ULONG ulJobs);
 
 	// dtor
 	~CJobFactory();

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -54,8 +54,8 @@ using namespace gpopt;
 // |      estCompleted       |
 // +-------------------------+
 //
-const CJobGroupExpressionImplementation::EEvent
-	rgeev[CJobGroupExpressionImplementation::estSentinel]
+static const CJobGroupExpressionImplementation::EEvent
+	rgeevExprImpl[CJobGroupExpressionImplementation::estSentinel]
 		 [CJobGroupExpressionImplementation::estSentinel] = {
 			 {// estInitialized
 			  CJobGroupExpressionImplementation::eevImplementingChildren,
@@ -141,7 +141,7 @@ CJobGroupExpressionImplementation::Init(CGroupExpression *pgexpr)
 	CJobGroupExpression::Init(pgexpr);
 	GPOS_ASSERT(pgexpr->Pop()->FLogical());
 
-	m_jsm.Init(rgeev
+	m_jsm.Init(rgeevExprImpl
 #ifdef GPOS_DEBUG
 			   ,
 			   rgwszStates, rgwszEvents
@@ -200,9 +200,9 @@ CJobGroupExpressionImplementation::ScheduleChildGroupsJobs(
 {
 	GPOS_ASSERT(!FChildrenScheduled());
 
-	ULONG arity = m_pgexpr->Arity();
+	GP_ULONG arity = m_pgexpr->Arity();
 
-	for (ULONG i = 0; i < arity; i++)
+	for (GP_ULONG i = 0; i < arity; i++)
 	{
 		CJobGroupImplementation::ScheduleJob(psc, (*(m_pgexpr))[i], this);
 	}
@@ -295,7 +295,7 @@ CJobGroupExpressionImplementation::EevtFinalize(CSchedulerContext *,  //psc
 //		Main job function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupExpressionImplementation::FExecute(CSchedulerContext *psc)
 {
 	GPOS_ASSERT(FInit());

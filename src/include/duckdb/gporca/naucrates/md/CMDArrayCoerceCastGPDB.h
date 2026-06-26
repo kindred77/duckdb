@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Software, Inc.
 //
@@ -33,7 +33,7 @@ private:
 	INT m_type_modifier;
 
 	// is explicit
-	BOOL m_is_explicit;
+	GP_BOOL m_is_explicit;
 
 	// CoercionForm
 	EdxlCoercionForm m_dxl_coerce_format;
@@ -48,9 +48,9 @@ public:
 	// ctor
 	CMDArrayCoerceCastGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 						   IMDId *mdid_src, IMDId *mdid_dest,
-						   BOOL is_binary_coercible, IMDId *mdid_cast_func,
+						   GP_BOOL is_binary_coercible, IMDId *mdid_cast_func,
 						   EmdCoercepathType path_type, INT type_modifier,
-						   BOOL is_explicit, EdxlCoercionForm dxl_coerce_format,
+						   GP_BOOL is_explicit, EdxlCoercionForm dxl_coerce_format,
 						   INT location);
 
 	// dtor
@@ -66,7 +66,7 @@ public:
 	// return type modifier
 	virtual INT TypeModifier() const;
 
-	virtual BOOL IsExplicit() const;
+	virtual GP_BOOL IsExplicit() const;
 
 	// return coercion form
 	virtual EdxlCoercionForm GetCoercionForm() const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -141,7 +141,7 @@ CRange::~CRange()
 //		Is this range disjoint from the given range and to its left
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FDisjointLeft(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -174,7 +174,7 @@ CRange::FDisjointLeft(CRange *prange)
 //		Does this range contain the given range
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::Contains(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -190,7 +190,7 @@ CRange::Contains(CRange *prange)
 //		Does this range overlap only the left end of the given range
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FOverlapsLeft(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -207,7 +207,7 @@ CRange::FOverlapsLeft(CRange *prange)
 //		Does this range overlap only the right end of the given range
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FOverlapsRight(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -228,7 +228,7 @@ CRange::FOverlapsRight(CRange *prange)
 //			(-inf, inf)(8, inf)	false
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FUpperBoundEqualsLowerBound(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -256,7 +256,7 @@ CRange::FUpperBoundEqualsLowerBound(CRange *prange)
 //		Does this range start with or before the given range
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FStartsWithOrBefore(CRange *prange)
 {
 	if (FStartsBefore(prange))
@@ -287,7 +287,7 @@ CRange::FStartsWithOrBefore(CRange *prange)
 //		Does this range start before the given range starts
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FStartsBefore(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -321,7 +321,7 @@ CRange::FStartsBefore(CRange *prange)
 //		Does this range end after the given range ends
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FEndsAfter(CRange *prange)
 {
 	GPOS_ASSERT(NULL != prange);
@@ -356,7 +356,7 @@ CRange::FEndsAfter(CRange *prange)
 //		Does this range end with or after the given range
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FEndsWithOrAfter(CRange *prange)
 {
 	if (FEndsAfter(prange))
@@ -387,7 +387,7 @@ CRange::FEndsWithOrAfter(CRange *prange)
 //		Is the range a point
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRange::FPoint() const
 {
 	return (EriIncluded == m_eriLeft && EriIncluded == m_eriRight &&

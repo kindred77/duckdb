@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -35,10 +35,10 @@ class CParseHandlerLogicalUpdate : public CParseHandlerLogicalOp
 {
 private:
 	// ctid column id
-	ULONG m_ctid_colid;
+	GP_ULONG m_ctid_colid;
 
 	// segmentId column id
-	ULONG m_segid_colid;
+	GP_ULONG m_segid_colid;
 
 	// delete col ids
 	ULongPtrArray *m_deletion_colid_array;
@@ -47,10 +47,10 @@ private:
 	ULongPtrArray *m_insert_colid_array;
 
 	// does update preserve oids
-	BOOL m_preserve_oids;
+	GP_BOOL m_preserve_oids;
 
 	// tuple oid column id
-	ULONG m_tuple_oid_col_oid;
+	GP_ULONG m_tuple_oid_col_oid;
 
 	// private copy ctor
 	CParseHandlerLogicalUpdate(const CParseHandlerLogicalUpdate &);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -56,7 +56,7 @@ ILogger::~ILogger()
 //
 //---------------------------------------------------------------------------
 void
-ILogger::Warning(const CHAR *filename, ULONG line, ULONG major, ULONG minor...)
+ILogger::Warning(const CHAR *filename, GP_ULONG line, GP_ULONG major, GP_ULONG minor...)
 {
 	GPOS_CHECK_ABORT;
 
@@ -106,7 +106,7 @@ ILogger::Warning(const CHAR *filename, ULONG line, ULONG major, ULONG minor...)
 //
 //---------------------------------------------------------------------------
 void
-ILogger::Trace(const CHAR *filename, ULONG line, BOOL is_err, const WCHAR *msg)
+ILogger::Trace(const CHAR *filename, GP_ULONG line, GP_BOOL is_err, const WCHAR *msg)
 {
 	GPOS_CHECK_ABORT;
 
@@ -123,7 +123,7 @@ ILogger::Trace(const CHAR *filename, ULONG line, BOOL is_err, const WCHAR *msg)
 //
 //---------------------------------------------------------------------------
 void
-ILogger::TraceFormat(const CHAR *filename, ULONG line, BOOL is_err,
+ILogger::TraceFormat(const CHAR *filename, GP_ULONG line, GP_BOOL is_err,
 					 const WCHAR *format, ...)
 {
 	GPOS_CHECK_ABORT;
@@ -155,8 +155,8 @@ ILogger::TraceFormat(const CHAR *filename, ULONG line, BOOL is_err,
 //
 //---------------------------------------------------------------------------
 void
-ILogger::LogTask(const WCHAR *msg, ULONG severity, BOOL is_err,
-				 const CHAR *filename, ULONG line)
+ILogger::LogTask(const WCHAR *msg, GP_ULONG severity, GP_BOOL is_err,
+				 const CHAR *filename, GP_ULONG line)
 {
 	CLogger *log = NULL;
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -44,7 +44,7 @@ class CDXLPhysicalMergeJoin : public CDXLPhysicalJoin
 {
 private:
 	// true if outer relation has unique values for the merge key
-	BOOL m_is_unique_outer;
+	GP_BOOL m_is_unique_outer;
 
 	// private copy ctor
 	CDXLPhysicalMergeJoin(const CDXLPhysicalMergeJoin &);
@@ -52,7 +52,7 @@ private:
 public:
 	// ctor
 	CDXLPhysicalMergeJoin(CMemoryPool *mp, EdxlJoinType join_type,
-						  BOOL is_unique_outer);
+						  GP_BOOL is_unique_outer);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
@@ -75,7 +75,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

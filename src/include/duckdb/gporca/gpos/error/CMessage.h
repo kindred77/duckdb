@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -39,22 +39,22 @@ class CMessage : public DbgPrintMixin<CMessage>
 {
 private:
 	// severity
-	ULONG m_severity;
+	GP_ULONG m_severity;
 
 	// format string
 	const WCHAR *m_fmt;
 
 	// length of format string
-	ULONG m_fmt_len;
+	GP_ULONG m_fmt_len;
 
 	// number of parameters
-	ULONG m_num_params;
+	GP_ULONG m_num_params;
 
 	// comment string
 	const WCHAR *m_comment;
 
 	// length of commen string
-	ULONG m_comment_len;
+	GP_ULONG m_comment_len;
 
 public:
 	// exception carries error number/identification
@@ -64,8 +64,8 @@ public:
 	// as soon as available
 	//
 	// ctor
-	CMessage(CException exc, ULONG severity, const WCHAR *fmt, ULONG fmt_len,
-			 ULONG num_params, const WCHAR *comment, ULONG comment_len);
+	CMessage(CException exc, GP_ULONG severity, const WCHAR *fmt, GP_ULONG fmt_len,
+			 GP_ULONG num_params, const WCHAR *comment, GP_ULONG comment_len);
 
 	// copy ctor
 	CMessage(const CMessage &);
@@ -74,7 +74,7 @@ public:
 	void Format(CWStringStatic *buf, VA_LIST) const;
 
 	// severity accessor
-	ULONG
+	GP_ULONG
 	GetSeverity() const
 	{
 		return m_severity;
@@ -84,10 +84,10 @@ public:
 	SLink m_link;
 
 	// access a message by index
-	static CMessage *GetMessage(ULONG index);
+	static CMessage *GetMessage(GP_ULONG index);
 
 	// format an error message
-	static void FormatMessage(CWStringStatic *str, ULONG major, ULONG minor,
+	static void FormatMessage(CWStringStatic *str, GP_ULONG major, GP_ULONG minor,
 							  ...);
 
 #ifdef GPOS_DEBUG

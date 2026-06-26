@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,7 +29,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CDXLStatsDerivedColumn::CDXLStatsDerivedColumn(
-	ULONG colid, CDouble width, CDouble null_freq, CDouble distinct_remaining,
+	GP_ULONG colid, CDouble width, CDouble null_freq, CDouble distinct_remaining,
 	CDouble freq_remaining, CDXLBucketArray *dxl_stats_bucket_array)
 	: m_colid(colid),
 	  m_width(width),
@@ -100,8 +100,8 @@ CDXLStatsDerivedColumn::Serialize(CXMLSerializer *xml_serializer) const
 		CDXLTokens::GetDXLTokenStr(EdxltokenColFreqRemain), m_freq_remaining);
 
 
-	const ULONG num_of_buckets = m_dxl_stats_bucket_array->Size();
-	for (ULONG ul = 0; ul < num_of_buckets; ul++)
+	const GP_ULONG num_of_buckets = m_dxl_stats_bucket_array->Size();
+	for (GP_ULONG ul = 0; ul < num_of_buckets; ul++)
 	{
 		GPOS_CHECK_ABORT;
 
@@ -133,8 +133,8 @@ CDXLStatsDerivedColumn::DebugPrint(IOstream &os) const
 	os << "Width : " << m_width;
 	os << std::endl;
 
-	const ULONG num_of_buckets = m_dxl_stats_bucket_array->Size();
-	for (ULONG ul = 0; ul < num_of_buckets; ul++)
+	const GP_ULONG num_of_buckets = m_dxl_stats_bucket_array->Size();
+	for (GP_ULONG ul = 0; ul < num_of_buckets; ul++)
 	{
 		const CDXLBucket *dxl_bucket = (*m_dxl_stats_bucket_array)[ul];
 		dxl_bucket->DebugPrint(os);

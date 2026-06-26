@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -33,9 +33,9 @@ CMDScalarOpGPDB::CMDScalarOpGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname, IMDId *mdid_type_left,
 	IMDId *mdid_type_right, IMDId *result_type_mdid, IMDId *mdid_func,
 	IMDId *mdid_commute_opr, IMDId *m_mdid_inverse_opr,
-	IMDType::ECmpType cmp_type, BOOL returns_null_on_null_input,
+	IMDType::ECmpType cmp_type, GP_BOOL returns_null_on_null_input,
 	IMdIdArray *mdid_opfamilies_array, IMDId *mdid_hash_opfamily,
-	IMDId *mdid_legacy_hash_opfamily, BOOL is_ndv_preserving)
+	IMDId *mdid_legacy_hash_opfamily, GP_BOOL is_ndv_preserving)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),
@@ -204,7 +204,7 @@ CMDScalarOpGPDB::GetInverseOpMdid() const
 //		Is this an equality operator
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDScalarOpGPDB::IsEqualityOp() const
 {
 	return IMDType::EcmptEq == m_comparision_type;
@@ -221,14 +221,14 @@ CMDScalarOpGPDB::IsEqualityOp() const
 //		the implementation in GPDB returns what STRICT property states
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDScalarOpGPDB::ReturnsNullOnNullInput() const
 {
 	return m_returns_null_on_null_input;
 }
 
 
-BOOL
+GP_BOOL
 CMDScalarOpGPDB::IsNDVPreserving() const
 {
 	return m_is_ndv_preserving;
@@ -291,7 +291,7 @@ CMDScalarOpGPDB::Serialize(CXMLSerializer *xml_serializer) const
 							m_mdid_commute_opr,	  m_mdid_inverse_opr,
 							m_mdid_hash_opfamily, m_mdid_legacy_hash_opfamily};
 
-	for (ULONG ul = 0; ul < GPOS_ARRAY_SIZE(dxl_token_array); ul++)
+	for (GP_ULONG ul = 0; ul < GPOS_ARRAY_SIZE(dxl_token_array); ul++)
 	{
 		SerializeMDIdAsElem(xml_serializer,
 							CDXLTokens::GetDXLTokenStr(dxl_token_array[ul]),
@@ -321,7 +321,7 @@ CMDScalarOpGPDB::Serialize(CXMLSerializer *xml_serializer) const
 //		Number of opfamilies this operator belongs to
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDScalarOpGPDB::OpfamiliesCount() const
 {
 	return m_mdid_opfamilies_array->Size();
@@ -336,7 +336,7 @@ CMDScalarOpGPDB::OpfamiliesCount() const
 //
 //---------------------------------------------------------------------------
 IMDId *
-CMDScalarOpGPDB::OpfamilyMdidAt(ULONG pos) const
+CMDScalarOpGPDB::OpfamilyMdidAt(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos < m_mdid_opfamilies_array->Size());
 

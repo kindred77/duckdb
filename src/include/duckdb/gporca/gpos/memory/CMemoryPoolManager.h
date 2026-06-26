@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -54,7 +54,7 @@ private:
 	CMemoryPool *m_global_memory_pool;
 
 	// are allocations using global new operator allowed?
-	BOOL m_allow_global_new;
+	GP_BOOL m_allow_global_new;
 
 	// hash table to maintain created pools
 	CSyncHashtable<CMemoryPool, ULONG_PTR> *m_ht_all_pools;
@@ -158,7 +158,7 @@ public:
 	}
 
 	// are allocations using global new operator allowed?
-	BOOL
+	GP_BOOL
 	IsGlobalNewAllowed() const
 	{
 		return m_allow_global_new;
@@ -185,7 +185,7 @@ public:
 	virtual void DeleteImpl(void *ptr, CMemoryPool::EAllocationType eat);
 
 	// get user requested size of allocation
-	virtual ULONG UserSizeOfAlloc(const void *ptr);
+	virtual GP_ULONG UserSizeOfAlloc(const void *ptr);
 
 	// initialize global instance
 	static GPOS_RESULT Init();

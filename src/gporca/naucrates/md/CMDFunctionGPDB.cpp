@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -31,10 +31,10 @@ using namespace gpdxl;
 //---------------------------------------------------------------------------
 CMDFunctionGPDB::CMDFunctionGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 								 IMDId *result_type_mdid,
-								 IMdIdArray *mdid_array, BOOL ReturnsSet,
+								 IMdIdArray *mdid_array, GP_BOOL ReturnsSet,
 								 EFuncStbl func_stability,
-								 EFuncDataAcc func_data_access, BOOL is_strict,
-								 BOOL is_ndv_preserving, BOOL is_allowed_for_PS)
+								 EFuncDataAcc func_data_access, GP_BOOL is_strict,
+								 GP_BOOL is_ndv_preserving, GP_BOOL is_allowed_for_PS)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),
@@ -162,7 +162,7 @@ CMDFunctionGPDB::OutputArgTypesMdidArray() const
 //		Returns whether function result is a set
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDFunctionGPDB::ReturnsSet() const
 {
 	return m_returns_set;
@@ -182,8 +182,8 @@ CMDFunctionGPDB::GetOutputArgTypeArrayStr() const
 	GPOS_ASSERT(NULL != m_mdid_types_array);
 	CWStringDynamic *str = GPOS_NEW(m_mp) CWStringDynamic(m_mp);
 
-	const ULONG len = m_mdid_types_array->Size();
-	for (ULONG ul = 0; ul < len; ul++)
+	const GP_ULONG len = m_mdid_types_array->Size();
+	for (GP_ULONG ul = 0; ul < len; ul++)
 	{
 		IMDId *mdid = (*m_mdid_types_array)[ul];
 		if (ul == len - 1)

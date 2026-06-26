@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -108,11 +108,11 @@ public:
 	virtual CPropSpec *Pps() const = 0;
 
 	// hash function
-	virtual ULONG HashValue() const = 0;
+	virtual GP_ULONG HashValue() const = 0;
 
 	// check if operator requires an enforcer under given enforceable property
 	// based on the derived enforcing type
-	static BOOL
+	static GP_BOOL
 	FEnforce(EPropEnforcingType epet)
 	{
 		return CEnfdProp::EpetOptional == epet ||
@@ -121,7 +121,7 @@ public:
 
 	// check if operator requires optimization under given enforceable property
 	// based on the derived enforcing type
-	static BOOL
+	static GP_BOOL
 	FOptimize(EPropEnforcingType epet)
 	{
 		return CEnfdProp::EpetOptional == epet ||

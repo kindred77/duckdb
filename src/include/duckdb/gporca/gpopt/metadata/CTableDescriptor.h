@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -74,7 +74,7 @@ private:
 	// 1. in hawq 2.0, some hash distributed tables need to be considered as random,
 	//	  depending on its bucket number
 	// 2. for a partitioned table, it may contain a part with a different distribution
-	BOOL m_convert_hash_to_random;
+	GP_BOOL m_convert_hash_to_random;
 
 	// indexes of partition columns for partitioned tables
 	ULongPtrArray *m_pdrgpulPart;
@@ -83,27 +83,27 @@ private:
 	CBitSetArray *m_pdrgpbsKeys;
 
 	// number of leaf partitions
-	ULONG m_num_of_partitions;
+	GP_ULONG m_num_of_partitions;
 
 	// id of user the table needs to be accessed with
-	ULONG m_execute_as_user_id;
+	GP_ULONG m_execute_as_user_id;
 
 	// if true, it means this descriptor has partial indexes
-	BOOL m_fHasPartialIndexes;
+	GP_BOOL m_fHasPartialIndexes;
 
 	// private copy ctor
 	CTableDescriptor(const CTableDescriptor &);
 
 	// returns true if this table descriptor has partial indexes
-	BOOL FDescriptorWithPartialIndexes();
+	GP_BOOL FDescriptorWithPartialIndexes();
 
 public:
 	// ctor
 	CTableDescriptor(CMemoryPool *, IMDId *mdid, const CName &,
-					 BOOL convert_hash_to_random,
+					 GP_BOOL convert_hash_to_random,
 					 IMDRelation::Ereldistrpolicy rel_distr_policy,
 					 IMDRelation::Erelstoragetype erelstoragetype,
-					 ULONG ulExecuteAsUser);
+					 GP_ULONG ulExecuteAsUser);
 
 	// dtor
 	virtual ~CTableDescriptor();
@@ -112,17 +112,17 @@ public:
 	void AddColumn(CColumnDescriptor *);
 
 	// add the column at the specified position to the list of distribution columns
-	void AddDistributionColumn(ULONG ulPos, IMDId *opfamily);
+	void AddDistributionColumn(GP_ULONG ulPos, IMDId *opfamily);
 
 	// add the column at the specified position to the list of partition columns
-	void AddPartitionColumn(ULONG ulPos);
+	void AddPartitionColumn(GP_ULONG ulPos);
 
 	// add a keyset
-	BOOL FAddKeySet(CBitSet *pbs);
+	GP_BOOL FAddKeySet(CBitSet *pbs);
 
 	// accessors
-	ULONG ColumnCount() const;
-	const CColumnDescriptor *Pcoldesc(ULONG) const;
+	GP_ULONG ColumnCount() const;
+	const CColumnDescriptor *Pcoldesc(GP_ULONG) const;
 
 	// mdid accessor
 	IMDId *
@@ -139,14 +139,14 @@ public:
 	}
 
 	// execute as user accessor
-	ULONG
+	GP_ULONG
 	GetExecuteAsUserId() const
 	{
 		return m_execute_as_user_id;
 	}
 
 	// return the position of a particular attribute (identified by attno)
-	ULONG GetAttributePosition(INT attno) const;
+	GP_ULONG GetAttributePosition(INT attno) const;
 
 	// column descriptor accessor
 	CColumnDescriptorArray *
@@ -184,7 +184,7 @@ public:
 	}
 
 	// return the number of leaf partitions
-	ULONG PartitionCount() const;
+	GP_ULONG PartitionCount() const;
 
 	// distribution policy
 	IMDRelation::Ereldistrpolicy
@@ -200,7 +200,7 @@ public:
 		return m_erelstoragetype;
 	}
 
-	BOOL
+	GP_BOOL
 	IsPartitioned() const
 	{
 		return 0 < m_pdrgpulPart->Size();
@@ -209,7 +209,7 @@ public:
 	// true iff a hash distributed table needs to be considered as random;
 	// this happens for when we are in phase 1 of a gpexpand or (for GPDB 5X)
 	// when we have a mix of hash-distributed and random distributed partitions
-	BOOL
+	GP_BOOL
 	ConvertHashToRandom() const
 	{
 		return m_convert_hash_to_random;
@@ -217,22 +217,22 @@ public:
 
 	// helper function for finding the index of a column descriptor in
 	// an array of column descriptors
-	ULONG UlPos(const CColumnDescriptor *,
+	GP_ULONG UlPos(const CColumnDescriptor *,
 				const CColumnDescriptorArray *) const;
 
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// returns number of indices
-	ULONG IndexCount();
+	GP_ULONG IndexCount();
 
 	// true iff this table has partial indexes
-	BOOL
+	GP_BOOL
 	HasPartialIndexes() const
 	{
 		return m_fHasPartialIndexes;
 	}
 
-	BOOL
+	GP_BOOL
 	IsAORowOrColTable() const
 	{
 		return m_erelstoragetype == IMDRelation::ErelstorageAppendOnlyCols ||

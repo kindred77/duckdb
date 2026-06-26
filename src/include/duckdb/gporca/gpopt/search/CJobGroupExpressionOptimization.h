@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -79,7 +79,7 @@ private:
 	COptimizationContext *m_poc;
 
 	// optimization request number
-	ULONG m_ulOptReq;
+	GP_ULONG m_ulOptReq;
 
 	// array of child groups optimization contexts
 	COptimizationContextArray *m_pdrgpoc;
@@ -94,22 +94,22 @@ private:
 	CPhysical::EChildExecOrder m_eceo;
 
 	// counter of next child group to be optimized
-	ULONG m_ulChildIndex;
+	GP_ULONG m_ulChildIndex;
 
 	// number of children
-	ULONG m_ulArity;
+	GP_ULONG m_ulArity;
 
 	// flag to indicate if optimizing a child has failed
-	BOOL m_fChildOptimizationFailed;
+	GP_BOOL m_fChildOptimizationFailed;
 
 	// flag to indicate if current job optimizes a Sequence operator that captures a CTE
-	BOOL m_fOptimizeCTESequence;
+	GP_BOOL m_fOptimizeCTESequence;
 
 	// plan properties required from CTE producer based on consumer derived plan properties
 	CReqdPropPlan *m_prppCTEProducer;
 
 	// flag to indicate if a child job for optimizing CTE has been scheduled
-	BOOL m_fScheduledCTEOptimization;
+	GP_BOOL m_fScheduledCTEOptimization;
 
 	// a handle object for required plan properties computation
 	CExpressionHandle *m_pexprhdlPlan;
@@ -145,10 +145,10 @@ private:
 	static EEvent EevtFinalize(CSchedulerContext *psc, CJob *pj);
 
 	// schedule a new group expression optimization job for CTE optimization
-	static BOOL FScheduleCTEOptimization(CSchedulerContext *psc,
+	static GP_BOOL FScheduleCTEOptimization(CSchedulerContext *psc,
 										 CGroupExpression *pgexpr,
 										 COptimizationContext *poc,
-										 ULONG ulOptReq, CJob *pjParent);
+										 GP_ULONG ulOptReq, CJob *pjParent);
 
 protected:
 	// schedule transformation jobs for applicable xforms
@@ -171,18 +171,18 @@ public:
 
 	// initialize job
 	void Init(CGroupExpression *pgexpr, COptimizationContext *poc,
-			  ULONG ulOptReq, CReqdPropPlan *prppCTEProducer = NULL);
+			  GP_ULONG ulOptReq, CReqdPropPlan *prppCTEProducer = NULL);
 
 	// cleanup internal state
 	virtual void Cleanup();
 
 	// schedule a new group expression optimization job
 	static void ScheduleJob(CSchedulerContext *psc, CGroupExpression *pgexpr,
-							COptimizationContext *poc, ULONG ulOptReq,
+							COptimizationContext *poc, GP_ULONG ulOptReq,
 							CJob *pjParent);
 
 	// job's function
-	BOOL FExecute(CSchedulerContext *psc);
+	GP_BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
@@ -201,7 +201,7 @@ public:
 
 	// compute unreachable states
 	void
-	Unreachable(CMemoryPool *mp, EState **ppestate, ULONG *pulSize) const
+	Unreachable(CMemoryPool *mp, EState **ppestate, GP_ULONG *pulSize) const
 	{
 		m_jsm.Unreachable(mp, ppestate, pulSize);
 	}

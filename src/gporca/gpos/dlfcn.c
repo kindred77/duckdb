@@ -1,3 +1,7 @@
+﻿#ifdef _WIN32
+#include <windows.h>
+#endif
+
 /*
  * dlfcn-win32
  * Copyright (c) 2007 Ramiro Polla

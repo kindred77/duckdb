@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -23,7 +23,7 @@ using namespace gpopt;
 FORCE_GENERATE_DBGSTR(COperator);
 
 // generate unique operator ids
-ULONG COperator::m_aulOpIdCounter(0);
+GP_ULONG COperator::m_aulOpIdCounter(0);
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -48,12 +48,12 @@ COperator::COperator(CMemoryPool *mp)
 //		default hash function based on operator ID
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 COperator::HashValue() const
 {
-	ULONG ulEopid = (ULONG) Eopid();
+	GP_ULONG ulEopid = (GP_ULONG) Eopid();
 
-	return gpos::HashValue<ULONG>(&ulEopid);
+	return gpos::HashValue<GP_ULONG>(&ulEopid);
 }
 
 
@@ -86,8 +86,8 @@ COperator::EfsDeriveFromChildren(CExpressionHandle &exprhdl,
 {
 	IMDFunction::EFuncStbl efs = efsDefault;
 
-	const ULONG arity = exprhdl.Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = exprhdl.Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		IMDFunction::EFuncStbl efsChild = exprhdl.PfpChild(ul)->Efs();
 		if (efsChild > efs)
@@ -110,7 +110,7 @@ COperator::EfsDeriveFromChildren(CExpressionHandle &exprhdl,
 CFunctionProp *
 COperator::PfpDeriveFromChildren(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 IMDFunction::EFuncStbl efsDefault,
-								 BOOL fHasVolatileFunctionScan, BOOL fScan)
+								 GP_BOOL fHasVolatileFunctionScan, GP_BOOL fScan)
 {
 	IMDFunction::EFuncStbl efs = EfsDeriveFromChildren(exprhdl, efsDefault);
 

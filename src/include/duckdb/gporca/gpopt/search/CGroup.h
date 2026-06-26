@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC Corp.
 //
@@ -129,7 +129,7 @@ private:
 		CCostContext *m_pccParent;
 
 		// index used when treating current group as a child of group expression
-		ULONG m_ulChildIndex;
+		GP_ULONG m_ulChildIndex;
 
 		// optimization context used to locate group expressions in
 		// current group to be linked with parent group expression
@@ -137,25 +137,25 @@ private:
 
 	public:
 		// ctor
-		SContextLink(CCostContext *pccParent, ULONG child_index,
+		SContextLink(CCostContext *pccParent, GP_ULONG child_index,
 					 COptimizationContext *poc);
 
 		// dtor
 		virtual ~SContextLink();
 
 		// hash function
-		static ULONG HashValue(const SContextLink *pclink);
+		static GP_ULONG HashValue(const SContextLink *pclink);
 
 		// equality function
-		static BOOL Equals(const SContextLink *pclink1,
+		static GP_BOOL Equals(const SContextLink *pclink1,
 						   const SContextLink *pclink2);
 
 	};	// struct SContextLink
 
 	// map of processed links in TreeMap structure
-	typedef CHashMap<SContextLink, BOOL, SContextLink::HashValue,
+	typedef CHashMap<SContextLink, GP_BOOL, SContextLink::HashValue,
 					 SContextLink::Equals, CleanupDelete<SContextLink>,
-					 CleanupDelete<BOOL> >
+					 CleanupDelete<GP_BOOL> >
 		LinkMap;
 
 	// map of computed stats objects during costing
@@ -169,10 +169,10 @@ private:
 	CMemoryPool *m_mp;
 
 	// id is used when printing memo contents
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// true if group hold scalar expressions
-	BOOL m_fScalar;
+	GP_BOOL m_fScalar;
 
 	// join keys for outer child (only for scalar groups) (used by hash & merge joins)
 	CExpressionArray *m_pdrgpexprJoinKeysOuter;
@@ -199,7 +199,7 @@ private:
 	CExpression *m_pexprScalarRep;
 
 	// scalar expression above is exactly the same as the scalar expr in the group
-	BOOL m_pexprScalarRepIsExact;
+	GP_BOOL m_pexprScalarRepIsExact;
 
 	// dummy cost context used in scalar groups for plan enumeration
 	CCostContext *m_pccDummy;
@@ -218,7 +218,7 @@ private:
 	ShtOC m_sht;
 
 	// number of group expressions
-	ULONG m_ulGExprs;
+	GP_ULONG m_ulGExprs;
 
 	// map of cost lower bounds
 	ReqdPropPlanToCostMap *m_pcostmap;
@@ -233,13 +233,13 @@ private:
 	EOptimizationLevel m_eolMax;
 
 	// were new logical operators added to the group?
-	BOOL m_fHasNewLogicalOperators;
+	GP_BOOL m_fHasNewLogicalOperators;
 
 	// the id of the CTE producer (if any)
-	ULONG m_ulCTEProducerId;
+	GP_ULONG m_ulCTEProducerId;
 
 	// does the group have any CTE consumer
-	BOOL m_fCTEConsumer;
+	GP_BOOL m_fCTEConsumer;
 
 	// exploration job queue
 	CJobQueue m_jqExploration;
@@ -263,7 +263,7 @@ private:
 	// the following functions are only accessed through group proxy
 
 	// setter of group id
-	void SetId(ULONG id);
+	void SetId(GP_ULONG id);
 
 	// setter of group state
 	void SetState(EState estNewState);
@@ -292,7 +292,7 @@ private:
 	CGroupExpression *PgexprNext(CGroupExpression *pgexpr);
 
 	// return true if first promise is better than second promise
-	BOOL FBetterPromise(CMemoryPool *mp, CLogical::EStatPromise espFst,
+	GP_BOOL FBetterPromise(CMemoryPool *mp, CLogical::EStatPromise espFst,
 						CGroupExpression *pgexprFst,
 						CLogical::EStatPromise espSnd,
 						CGroupExpression *pgexprSnd) const;
@@ -303,7 +303,7 @@ private:
 									 CGroupExpression *pgexpr,
 									 CReqdPropRelational *prprel,
 									 IStatisticsArray *stats_ctxt,
-									 BOOL fDeriveChildStats);
+									 GP_BOOL fDeriveChildStats);
 
 	// reset computed stats
 	void ResetStats();
@@ -311,7 +311,7 @@ private:
 	// helper function to add links in child groups
 	void RecursiveBuildTreeMap(
 		CMemoryPool *mp, COptimizationContext *poc, CCostContext *pccParent,
-		CGroupExpression *pgexprCurrent, ULONG child_index,
+		CGroupExpression *pgexprCurrent, GP_ULONG child_index,
 		CTreeMap<CCostContext, CExpression, CDrvdPropCtxtPlan,
 				 CCostContext::HashValue, CCostContext::Equals> *ptmap);
 
@@ -335,13 +335,13 @@ private:
 
 public:
 	// ctor
-	CGroup(CMemoryPool *mp, BOOL fScalar = false);
+	CGroup(CMemoryPool *mp, GP_BOOL fScalar = false);
 
 	// dtor
 	~CGroup();
 
 	// id accessor
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
@@ -358,7 +358,7 @@ public:
 	IStatistics *Pstats() const;
 
 	// attempt initializing stats with the given stat object
-	BOOL FInitStats(IStatistics *stats);
+	GP_BOOL FInitStats(IStatistics *stats);
 
 	// append given stats object to group stats
 	void AppendStats(CMemoryPool *mp, IStatistics *stats);
@@ -371,7 +371,7 @@ public:
 	}
 
 	// does group hold scalar expressions ?
-	BOOL
+	GP_BOOL
 	FScalar() const
 	{
 		return m_fScalar;
@@ -406,7 +406,7 @@ public:
 	}
 
 	// is the value returned by PexprScalarRep() exact?
-	BOOL
+	GP_BOOL
 	FScalarRepIsExact() const
 	{
 		return m_pexprScalarRepIsExact;
@@ -422,10 +422,10 @@ public:
 	}
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// number of group expressions accessor
-	ULONG
+	GP_ULONG
 	UlGExprs() const
 	{
 		return m_ulGExprs;
@@ -453,28 +453,28 @@ public:
 	}
 
 	// has group been explored?
-	BOOL
+	GP_BOOL
 	FExplored() const
 	{
 		return estExplored <= m_estate;
 	}
 
 	// has group been implemented?
-	BOOL
+	GP_BOOL
 	FImplemented() const
 	{
 		return estImplemented <= m_estate;
 	}
 
 	// has group been optimized?
-	BOOL
+	GP_BOOL
 	FOptimized() const
 	{
 		return estOptimized <= m_estate;
 	}
 
 	// were new logical operators added to the group?
-	BOOL
+	GP_BOOL
 	FHasNewLogicalOperators() const
 	{
 		return m_fHasNewLogicalOperators;
@@ -491,16 +491,16 @@ public:
 	void ResetGroupState();
 
 	// Check if we need to reset computed stats
-	BOOL FResetStats();
+	GP_BOOL FResetStats();
 
 	// returns true if stats can be derived on this group
-	BOOL FStatsDerivable(CMemoryPool *mp);
+	GP_BOOL FStatsDerivable(CMemoryPool *mp);
 
 	// reset group job queues
 	void ResetGroupJobQueues();
 
 	// check if group has duplicates
-	BOOL
+	GP_BOOL
 	FDuplicateGroup() const
 	{
 		return NULL != m_pgroupDuplicate;
@@ -525,14 +525,14 @@ public:
 
 	// lookup a given context in contexts hash table
 	COptimizationContext *PocLookup(CMemoryPool *mp, CReqdPropPlan *prpp,
-									ULONG ulSearchStageIndex);
+									GP_ULONG ulSearchStageIndex);
 
 	// lookup the best context across all stages for the given required properties
-	COptimizationContext *PocLookupBest(CMemoryPool *mp, ULONG ulSearchStages,
+	COptimizationContext *PocLookupBest(CMemoryPool *mp, GP_ULONG ulSearchStages,
 										CReqdPropPlan *prpp);
 
 	// find a context by id
-	COptimizationContext *Ppoc(ULONG id) const;
+	COptimizationContext *Ppoc(GP_ULONG id) const;
 
 	// insert given context into contexts hash table
 	COptimizationContext *PocInsert(COptimizationContext *poc);
@@ -550,21 +550,21 @@ public:
 	void CreateDummyCostContext();
 
 	// return the CTE producer ID in the group (if any)
-	ULONG
+	GP_ULONG
 	UlCTEProducerId() const
 	{
 		return m_ulCTEProducerId;
 	}
 
 	// check if there are any CTE producers in the group
-	BOOL
+	GP_BOOL
 	FHasCTEProducer() const
 	{
 		return (gpos::ulong_max != m_ulCTEProducerId);
 	}
 
 	// check if there are any CTE consumers in the group
-	BOOL
+	GP_BOOL
 	FHasAnyCTEConsumer() const
 	{
 		return m_fCTEConsumer;
@@ -583,7 +583,7 @@ public:
 	// link parent group expression to group members
 	void BuildTreeMap(
 		CMemoryPool *mp, COptimizationContext *poc, CCostContext *pccParent,
-		ULONG child_index,
+		GP_ULONG child_index,
 		CTreeMap<CCostContext, CExpression, CDrvdPropCtxtPlan,
 				 CCostContext::HashValue, CCostContext::Equals> *ptmap);
 
@@ -602,15 +602,15 @@ public:
 	CCost CostLowerBound(CMemoryPool *mp, CReqdPropPlan *prppInput);
 
 	// matching of pairs of arrays of groups
-	static BOOL FMatchGroups(CGroupArray *pdrgpgroupFst,
+	static GP_BOOL FMatchGroups(CGroupArray *pdrgpgroupFst,
 							 CGroupArray *pdrgpgroupSnd);
 
 	// matching of pairs of arrays of groups while skipping scalar groups
-	static BOOL FMatchNonScalarGroups(CGroupArray *pdrgpgroupFst,
+	static GP_BOOL FMatchNonScalarGroups(CGroupArray *pdrgpgroupFst,
 									  CGroupArray *pdrgpgroupSnd);
 
 	// determine if a pair of groups are duplicates
-	static BOOL FDuplicateGroups(CGroup *pgroupFst, CGroup *pgroupSnd);
+	static GP_BOOL FDuplicateGroups(CGroup *pgroupFst, CGroup *pgroupSnd);
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -39,10 +39,10 @@ private:
 	IMDId *m_mdid_type;
 
 	// was the arg child seen
-	BOOL m_arg_processed;
+	GP_BOOL m_arg_processed;
 
 	// was the default value seen
-	BOOL m_default_val_processed;
+	GP_BOOL m_default_val_processed;
 
 	// private copy ctor
 	CParseHandlerScalarSwitch(const CParseHandlerScalarSwitch &);

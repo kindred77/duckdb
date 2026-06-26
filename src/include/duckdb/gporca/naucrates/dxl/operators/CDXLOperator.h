@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -247,7 +247,7 @@ public:
 	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const = 0;
 
 	// check if given column is defined by operator
-	virtual BOOL IsColDefined(ULONG	 // colid
+	virtual GP_BOOL IsColDefined(GP_ULONG	 // colid
 	) const
 	{
 		// by default, operator does not define columns
@@ -263,7 +263,7 @@ public:
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
 	virtual void AssertValid(const CDXLNode *,
-							 BOOL validate_children) const = 0;
+							 GP_BOOL validate_children) const = 0;
 #endif	// GPOS_DEBUG
 };
 

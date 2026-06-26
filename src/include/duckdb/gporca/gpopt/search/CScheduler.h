@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008-2011 Greenplum, Inc.
 //
@@ -73,7 +73,7 @@ private:
 	struct SJobLink
 	{
 		// link id, set by sync set
-		ULONG m_id;
+		GP_ULONG m_id;
 
 		// pointer to job
 		CJob *m_pj;
@@ -118,14 +118,14 @@ private:
 
 	// flag indicating if scheduler keeps track
 	// of running and suspended jobs
-	const BOOL m_fTrackingJobs;
+	const GP_BOOL m_fTrackingJobs;
 #endif	// GPOS_DEBUG
 
 	// keep executing jobs (if any)
 	void ExecuteJobs(CSchedulerContext *psc);
 
 	// process job execution results
-	void ProcessJobResult(CJob *pj, CSchedulerContext *psc, BOOL fCompleted);
+	void ProcessJobResult(CJob *pj, CSchedulerContext *psc, GP_BOOL fCompleted);
 
 	// retrieve next job to run
 	CJob *PjRetrieve();
@@ -137,16 +137,16 @@ private:
 	void PreExecute(CJob *pj);
 
 	// execute job
-	BOOL FExecute(CJob *pj, CSchedulerContext *psc);
+	GP_BOOL FExecute(CJob *pj, CSchedulerContext *psc);
 
 	// process job execution outcome
-	EJobResult EjrPostExecute(CJob *pj, BOOL fCompleted);
+	EJobResult EjrPostExecute(CJob *pj, GP_BOOL fCompleted);
 
 	// resume parent job
 	void ResumeParent(CJob *pj);
 
 	// check if all jobs have completed
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return (0 == m_ulpTotal);
@@ -157,10 +157,10 @@ private:
 
 public:
 	// ctor
-	CScheduler(CMemoryPool *mp, ULONG ulJobs
+	CScheduler(CMemoryPool *mp, GP_ULONG ulJobs
 #ifdef GPOS_DEBUG
 			   ,
-			   BOOL fTrackingJobs = true
+			   GP_BOOL fTrackingJobs = true
 #endif	// GPOS_DEBUG
 	);
 
@@ -190,7 +190,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// get flag for tracking jobs
-	BOOL
+	GP_BOOL
 	FTrackingJobs() const
 	{
 		return m_fTrackingJobs;

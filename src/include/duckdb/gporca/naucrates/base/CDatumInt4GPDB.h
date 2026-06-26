@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -36,15 +36,15 @@ private:
 	INT m_val;
 
 	// is null
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// private copy ctor
 	CDatumInt4GPDB(const CDatumInt4GPDB &);
 
 public:
 	// ctors
-	CDatumInt4GPDB(CSystemId sysid, INT val, BOOL is_null = false);
-	CDatumInt4GPDB(IMDId *mdid, INT val, BOOL is_null = false);
+	CDatumInt4GPDB(CSystemId sysid, INT val, GP_BOOL is_null = false);
+	CDatumInt4GPDB(IMDId *mdid, INT val, GP_BOOL is_null = false);
 
 	// dtor
 	virtual ~CDatumInt4GPDB();
@@ -53,22 +53,22 @@ public:
 	virtual IMDId *MDId() const;
 
 	// accessor of size
-	virtual ULONG Size() const;
+	virtual GP_ULONG Size() const;
 
 	// accessor of integer value
 	virtual INT Value() const;
 
 	// accessor of is null
-	virtual BOOL IsNull() const;
+	virtual GP_BOOL IsNull() const;
 
 	// return string representation
 	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function for datums
-	virtual BOOL Matches(const IDatum *) const;
+	virtual GP_BOOL Matches(const IDatum *) const;
 
 	// copy datum
 	virtual IDatum *MakeCopy(CMemoryPool *mp) const;

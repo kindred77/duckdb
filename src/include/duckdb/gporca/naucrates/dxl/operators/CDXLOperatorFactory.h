@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -67,7 +67,7 @@ class CDXLDatum;
 
 // shorthand for functions for translating a DXL datum
 typedef CDXLDatum *(PfPdxldatum)(CDXLMemoryManager *, const Attributes &,
-								 Edxltoken, IMDId *, BOOL);
+								 Edxltoken, IMDId *, GP_BOOL);
 
 //---------------------------------------------------------------------------
 //	@class:
@@ -89,7 +89,7 @@ private:
 	// parses a byte array representation of the datum
 	static BYTE *GetByteArray(CDXLMemoryManager *dxl_memory_manager,
 							  const Attributes &attrs, Edxltoken target_elem,
-							  ULONG *length);
+							  GP_ULONG *length);
 
 public:
 	// pair of oid for datums and the factory function
@@ -102,43 +102,43 @@ public:
 	static CDXLDatum *GetDatumOid(CDXLMemoryManager *dxl_memory_manager,
 								  const Attributes &attrs,
 								  Edxltoken target_elem, IMDId *mdid,
-								  BOOL is_const_null);
+								  GP_BOOL is_const_null);
 
 	static CDXLDatum *GetDatumInt2(CDXLMemoryManager *dxl_memory_manager,
 								   const Attributes &attrs,
 								   Edxltoken target_elem, IMDId *mdid,
-								   BOOL is_const_null);
+								   GP_BOOL is_const_null);
 
 	static CDXLDatum *GetDatumInt4(CDXLMemoryManager *dxl_memory_manager,
 								   const Attributes &attrs,
 								   Edxltoken target_elem, IMDId *mdid,
-								   BOOL is_const_null);
+								   GP_BOOL is_const_null);
 
 	static CDXLDatum *GetDatumInt8(CDXLMemoryManager *dxl_memory_manager,
 								   const Attributes &attrs,
 								   Edxltoken target_elem, IMDId *mdid,
-								   BOOL is_const_null);
+								   GP_BOOL is_const_null);
 
 	static CDXLDatum *GetDatumBool(CDXLMemoryManager *dxl_memory_manager,
 								   const Attributes &attrs,
 								   Edxltoken target_elem, IMDId *mdid,
-								   BOOL is_const_null);
+								   GP_BOOL is_const_null);
 
 	// parse a dxl datum of type generic
 	static CDXLDatum *GetDatumGeneric(CDXLMemoryManager *dxl_memory_manager,
 									  const Attributes &attrs,
 									  Edxltoken target_elem, IMDId *mdid,
-									  BOOL is_const_null);
+									  GP_BOOL is_const_null);
 
 	// parse a dxl datum of types that need double mapping
 	static CDXLDatum *GetDatumStatsDoubleMappable(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attrs,
-		Edxltoken target_elem, IMDId *mdid, BOOL is_const_null);
+		Edxltoken target_elem, IMDId *mdid, GP_BOOL is_const_null);
 
 	// parse a dxl datum of types that need lint mapping
 	static CDXLDatum *GetDatumStatsLintMappable(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attrs,
-		Edxltoken target_elem, IMDId *mdid, BOOL is_const_null);
+		Edxltoken target_elem, IMDId *mdid, GP_BOOL is_const_null);
 
 	// create a table scan operator
 	static CDXLPhysical *MakeDXLTblScan(CDXLMemoryManager *dxl_memory_manager,
@@ -244,7 +244,7 @@ public:
 
 	// create a NullTest
 	static CDXLScalar *MakeDXLNullTest(CDXLMemoryManager *dxl_memory_manager,
-									   const BOOL);
+									   const GP_BOOL);
 
 	// create a cast
 	static CDXLScalar *MakeDXLCast(CDXLMemoryManager *dxl_memory_manager,
@@ -332,7 +332,7 @@ public:
 								const Attributes &attrs);
 
 	// parse a grouping column id
-	static ULONG ParseGroupingColId(CDXLMemoryManager *dxl_memory_manager,
+	static GP_ULONG ParseGroupingColId(CDXLMemoryManager *dxl_memory_manager,
 									const Attributes &attrs);
 
 	// extracts the value for the given attribute.
@@ -341,11 +341,11 @@ public:
 	static const XMLCh *ExtractAttrValue(const Attributes &,
 										 Edxltoken target_attr,
 										 Edxltoken target_elem,
-										 BOOL is_optional = false);
+										 GP_BOOL is_optional = false);
 
 	// extracts the boolean value for the given attribute
 	// will raise an exception if value cannot be converted to a boolean
-	static BOOL ConvertAttrValueToBool(CDXLMemoryManager *dxl_memory_manager,
+	static GP_BOOL ConvertAttrValueToBool(CDXLMemoryManager *dxl_memory_manager,
 									   const XMLCh *xml_val,
 									   Edxltoken target_attr,
 									   Edxltoken target_elem);
@@ -359,7 +359,7 @@ public:
 	// extracts the LINT value for the given attribute
 	static LINT ExtractConvertAttrValueToLint(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		LINT default_value = 0);
 
 	// converts the XMLCh into CDouble
@@ -372,9 +372,9 @@ public:
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
 		Edxltoken target_attr, Edxltoken target_elem);
 
-	// converts the XMLCh into ULONG. Will raise an exception if the
-	// argument cannot be converted to ULONG
-	static ULONG ConvertAttrValueToUlong(CDXLMemoryManager *dxl_memory_manager,
+	// converts the XMLCh into GP_ULONG. Will raise an exception if the
+	// argument cannot be converted to GP_ULONG
+	static GP_ULONG ConvertAttrValueToUlong(CDXLMemoryManager *dxl_memory_manager,
 										 const XMLCh *xml_val,
 										 Edxltoken target_attr,
 										 Edxltoken target_elem);
@@ -396,7 +396,7 @@ public:
 	// will raise an exception if the argument cannot be converted to INT
 	static INT ExtractConvertAttrValueToInt(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		INT default_val = 0);
 
 	// converts the XMLCh into short int. Will raise an exception if the
@@ -409,7 +409,7 @@ public:
 	// will raise an exception if the argument cannot be converted to short int
 	static SINT ExtractConvertAttrValueToShortInt(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		SINT default_val = 0);
 
 	// converts the XMLCh into char. Will raise an exception if the
@@ -430,19 +430,19 @@ public:
 	// will raise an exception if the argument cannot be converted to OID
 	static OID ExtractConvertAttrValueToOid(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		OID OidDefaultValue = 0);
 
 	// parse a bool value from the value for a given attribute
-	static BOOL ExtractConvertAttrValueToBool(
+	static GP_BOOL ExtractConvertAttrValueToBool(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
-		BOOL default_value = false);
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
+		GP_BOOL default_value = false);
 
 	// parse a string value from the value for a given attribute
 	static CHAR *ExtractConvertAttrValueToSz(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		CHAR *default_value = NULL);
 
 	// parse a string value from the value for a given attribute
@@ -456,24 +456,24 @@ public:
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
 		Edxltoken target_attr, Edxltoken target_elem);
 
-	// parse a ULONG value from the value for a given attribute
-	// will raise an exception if the argument cannot be converted to ULONG
-	static ULONG ExtractConvertAttrValueToUlong(
+	// parse a GP_ULONG value from the value for a given attribute
+	// will raise an exception if the argument cannot be converted to GP_ULONG
+	static GP_ULONG ExtractConvertAttrValueToUlong(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
-		ULONG default_value = 0);
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
+		GP_ULONG default_value = 0);
 
 	// parse a ULLONG value from the value for a given attribute
 	// will raise an exception if the argument cannot be converted to ULLONG
 	static ULLONG ExtractConvertAttrValueToUllong(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		ULLONG default_value = 0);
 
 	// parse an mdid object from the given attributes
 	static IMDId *ExtractConvertAttrValueToMdId(
 		CDXLMemoryManager *dxl_memory_manager, const Attributes &attr,
-		Edxltoken target_attr, Edxltoken target_elem, BOOL is_optional = false,
+		Edxltoken target_attr, Edxltoken target_elem, GP_BOOL is_optional = false,
 		IMDId *default_val = NULL);
 
 	// parse an mdid object from an XMLCh
@@ -547,7 +547,7 @@ public:
 							const XMLCh *xmlszUl, Edxltoken target_attr,
 							Edxltoken target_elem)
 	{
-		return ExtractIntsToArray<ULONG, CleanupDelete,
+		return ExtractIntsToArray<GP_ULONG, CleanupDelete,
 								  ConvertAttrValueToUlong>(
 			dxl_memory_manager, xmlszUl, target_attr, target_elem);
 	}
@@ -655,9 +655,9 @@ CDXLOperatorFactory::ExtractIntsToArray(CDXLMemoryManager *dxl_memory_manager,
 
 	XMLStringTokenizer mdid_components(mdid_list_xml,
 									   CDXLTokens::XmlstrToken(EdxltokenComma));
-	const ULONG num_tokens = mdid_components.countTokens();
+	const GP_ULONG num_tokens = mdid_components.countTokens();
 
-	for (ULONG ul = 0; ul < num_tokens; ul++)
+	for (GP_ULONG ul = 0; ul < num_tokens; ul++)
 	{
 		XMLCh *xmlszNext = mdid_components.nextToken();
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp
 //
@@ -25,13 +25,13 @@ using namespace gpos;
 //		Wall-clock time in micro-seconds since object construction
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CWallClock::ElapsedUS() const
 {
 	timeval time;
 	syslib::GetTimeOfDay(&time, NULL /*timezone*/);
 
-	ULONG diff = (ULONG)(((time.tv_sec - m_time.tv_sec) * GPOS_USEC_IN_SEC) +
+	GP_ULONG diff = (GP_ULONG)(((time.tv_sec - m_time.tv_sec) * GPOS_USEC_IN_SEC) +
 						 (time.tv_usec - m_time.tv_usec));
 
 	return diff;

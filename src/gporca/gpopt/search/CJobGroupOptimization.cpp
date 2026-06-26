@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,8 +58,8 @@ using namespace gpopt;
 //                      |         estCompleted         | <+
 //                      +------------------------------+
 //
-const CJobGroupOptimization::EEvent
-	rgeev[CJobGroupOptimization::estSentinel]
+static const CJobGroupOptimization::EEvent
+	rgeevGroupOpt[CJobGroupOptimization::estSentinel]
 		 [CJobGroupOptimization::estSentinel] = {
 			 {// estInitialized
 			  CJobGroupOptimization::eevImplementing,
@@ -149,7 +149,7 @@ CJobGroupOptimization::Init(
 	GPOS_ASSERT(pgroup == poc->Pgroup());
 
 	CJobGroup::Init(pgroup);
-	m_jsm.Init(rgeev
+	m_jsm.Init(rgeevGroupOpt
 #ifdef GPOS_DEBUG
 			   ,
 			   rgwszStates, rgwszEvents
@@ -187,7 +187,7 @@ CJobGroupOptimization::Init(
 //		the function returns true if it could schedule any new jobs
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupOptimization::FScheduleGroupExpressions(CSchedulerContext *psc)
 {
 	CGroupExpression *pgexprLast = m_pgexprLastScheduled;
@@ -202,9 +202,9 @@ CJobGroupOptimization::FScheduleGroupExpressions(CSchedulerContext *psc)
 		if (psc->Peng()->FOptimizeChild(m_pgexprOrigin, pgexpr, m_poc,
 										EolCurrent()))
 		{
-			const ULONG ulOptRequests =
+			const GP_ULONG ulOptRequests =
 				CPhysical::PopConvert(pgexpr->Pop())->UlOptRequests();
-			for (ULONG ul = 0; ul < ulOptRequests; ul++)
+			for (GP_ULONG ul = 0; ul < ulOptRequests; ul++)
 			{
 				// schedule an optimization job for each request
 				CJobGroupExpressionOptimization::ScheduleJob(psc, pgexpr, m_poc,
@@ -220,7 +220,7 @@ CJobGroupOptimization::FScheduleGroupExpressions(CSchedulerContext *psc)
 		}
 	}
 
-	BOOL fNewJobs = (m_pgexprLastScheduled != pgexprLast);
+	GP_BOOL fNewJobs = (m_pgexprLastScheduled != pgexprLast);
 
 	// set last scheduled expression
 	m_pgexprLastScheduled = pgexprLast;
@@ -338,7 +338,7 @@ CJobGroupOptimization::EevtCompleteOptimization(CSchedulerContext *,  // psc
 //		Main job function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupOptimization::FExecute(CSchedulerContext *psc)
 {
 	GPOS_ASSERT(FInit());

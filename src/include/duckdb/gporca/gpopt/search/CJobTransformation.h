@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -86,7 +86,7 @@ public:
 							CXform *pxform, CJob *pjParent);
 
 	// job's main function
-	virtual BOOL FExecute(CSchedulerContext *psc);
+	virtual GP_BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
@@ -105,7 +105,7 @@ public:
 
 	// compute unreachable states
 	void
-	Unreachable(CMemoryPool *mp, EState **ppestate, ULONG *pulSize) const
+	Unreachable(CMemoryPool *mp, EState **ppestate, GP_ULONG *pulSize) const
 	{
 		m_jsm.Unreachable(mp, ppestate, pulSize);
 	}

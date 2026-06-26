@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CColConstraintsHashMapper.h"
@@ -23,9 +23,9 @@ PhmcolconstrSingleColConstr(CMemoryPool *mp, CConstraintArray *drgPcnstr)
 	ColRefToConstraintArrayMap *phmcolconstr =
 		GPOS_NEW(mp) ColRefToConstraintArrayMap(mp);
 
-	const ULONG length = arpdrgpcnstr->Size();
+	const GP_ULONG length = arpdrgpcnstr->Size();
 
-	for (ULONG ul = 0; ul < length; ul++)
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		CConstraint *pcnstrChild = (*arpdrgpcnstr)[ul];
 		CColRefSet *pcrs = pcnstrChild->PcrsUsed();

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2014 Pivotal Inc.
 //
@@ -42,11 +42,11 @@ public:
 		IMdIdArray *m_oid_pair;
 
 		// true if both sides of the predicate are distribution keys
-		BOOL m_dist_keys;
+		GP_BOOL m_dist_keys;
 
 		//ctor
 		SJoinCondition(CDouble scale_factor, IMdIdArray *mdid_pair,
-					   BOOL both_dist_keys)
+					   GP_BOOL both_dist_keys)
 			: m_scale_factor(scale_factor),
 			  m_oid_pair(mdid_pair),
 			  m_dist_keys(both_dist_keys)
@@ -61,14 +61,14 @@ public:
 		// We hash/compare the pointer rather than the contents of the IMdId, as we want to discern between different instances of IMdIds.
 		// For example, when performing a self join, the underlying tables will have different IMdId pointers, but the same contents.
 		// We treat them as different instances and assume independence to calculate the correct join cardinality.
-		static ULONG
+		static GP_ULONG
 		HashValue(const IMdIdArray *oid_pair)
 		{
 			return CombineHashes(gpos::HashPtr<IMDId>((*oid_pair)[0]),
 								 gpos::HashPtr<IMDId>((*oid_pair)[1]));
 		}
 
-		static BOOL
+		static GP_BOOL
 		Equals(const IMdIdArray *first, const IMdIdArray *second)
 		{
 			return ((*first)[0] == (*second)[0]) &&
@@ -106,19 +106,19 @@ public:
 
 	// return scaling factor of the join predicate after apply damping
 	static CDouble DampedJoinScaleFactor(const CStatisticsConfig *stats_config,
-										 ULONG num_columns);
+										 GP_ULONG num_columns);
 
 	// return scaling factor of the filter after apply damping
 	static CDouble DampedFilterScaleFactor(
-		const CStatisticsConfig *stats_config, ULONG num_columns);
+		const CStatisticsConfig *stats_config, GP_ULONG num_columns);
 
 	// return scaling factor of the group by predicate after apply damping
 	static CDouble DampedGroupByScaleFactor(
-		const CStatisticsConfig *stats_config, ULONG num_columns);
+		const CStatisticsConfig *stats_config, GP_ULONG num_columns);
 
 	// sort the array of scaling factor
 	static void SortScalingFactor(CDoubleArray *scale_factors,
-								  BOOL is_descending);
+								  GP_BOOL is_descending);
 
 	// calculate the cumulative scaling factor for conjunction after applying damping multiplier
 	static CDouble CalcScaleFactorCumulativeConj(
@@ -140,7 +140,7 @@ public:
 
 	// helper function for double comparison
 	static INT DoubleCmpFunc(const CDouble *double_data1,
-							 const CDouble *double_data2, BOOL is_descending);
+							 const CDouble *double_data2, GP_BOOL is_descending);
 
 	// default scaling factor of LIKE predicate
 	static const CDouble DDefaultScaleFactorLike;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -49,10 +49,10 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// number of window specs
-	ULONG NumOfWindowSpecs() const;
+	GP_ULONG NumOfWindowSpecs() const;
 
 	// return the window key at a given position
-	CDXLWindowSpec *GetWindowKeyAt(ULONG idx) const;
+	CDXLWindowSpec *GetWindowKeyAt(GP_ULONG idx) const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -71,7 +71,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -105,8 +105,8 @@ CMDRequest::Serialize(CXMLSerializer *xml_serializer)
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenMDRequest));
 
-	const ULONG ulMdids = m_mdid_array->Size();
-	for (ULONG ul = 0; ul < ulMdids; ul++)
+	const GP_ULONG ulMdids = m_mdid_array->Size();
+	for (GP_ULONG ul = 0; ul < ulMdids; ul++)
 	{
 		IMDId *mdid = (*m_mdid_array)[ul];
 		xml_serializer->OpenElement(
@@ -119,8 +119,8 @@ CMDRequest::Serialize(CXMLSerializer *xml_serializer)
 			CDXLTokens::GetDXLTokenStr(EdxltokenMdid));
 	}
 
-	const ULONG requests = m_mdtype_request_array->Size();
-	for (ULONG ul = 0; ul < requests; ul++)
+	const GP_ULONG requests = m_mdtype_request_array->Size();
+	for (GP_ULONG ul = 0; ul < requests; ul++)
 	{
 		SMDTypeRequest *md_type_request = (*m_mdtype_request_array)[ul];
 		xml_serializer->OpenElement(

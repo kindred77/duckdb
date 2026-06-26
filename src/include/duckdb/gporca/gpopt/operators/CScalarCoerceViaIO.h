@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -66,10 +66,10 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return false;

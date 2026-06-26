@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -6,7 +6,7 @@
 //		CIdGenerator.h
 //
 //	@doc:
-//		Class providing methods for a ULONG counter
+//		Class providing methods for a GP_ULONG counter
 //
 //	@owner:
 //
@@ -29,12 +29,12 @@ using namespace gpos;
 class CIdGenerator
 {
 private:
-	ULONG id;
+	GP_ULONG id;
 
 public:
-	explicit CIdGenerator(ULONG);
-	ULONG next_id();
-	ULONG current_id();
+	explicit CIdGenerator(GP_ULONG);
+	GP_ULONG next_id();
+	GP_ULONG current_id();
 };
 }  // namespace gpdxl
 #endif	// GPDXL_CIdGenerator_H

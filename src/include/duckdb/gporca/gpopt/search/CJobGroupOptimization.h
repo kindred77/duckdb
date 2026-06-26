@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -124,7 +124,7 @@ public:
 	}
 
 	// schedule optimization jobs for of all new group expressions
-	virtual BOOL FScheduleGroupExpressions(CSchedulerContext *psc);
+	virtual GP_BOOL FScheduleGroupExpressions(CSchedulerContext *psc);
 
 	// schedule a new group optimization job
 	static void ScheduleJob(CSchedulerContext *psc, CGroup *pgroup,
@@ -132,7 +132,7 @@ public:
 							COptimizationContext *poc, CJob *pjParent);
 
 	// job's function
-	virtual BOOL FExecute(CSchedulerContext *psc);
+	virtual GP_BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 
@@ -151,7 +151,7 @@ public:
 
 	// compute unreachable states
 	void
-	Unreachable(CMemoryPool *mp, EState **ppestate, ULONG *pulSize) const
+	Unreachable(CMemoryPool *mp, EState **ppestate, GP_ULONG *pulSize) const
 	{
 		m_jsm.Unreachable(mp, ppestate, pulSize);
 	}

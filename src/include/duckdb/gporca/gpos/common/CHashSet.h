@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2015 Pivotal, Inc.
 //
@@ -29,8 +29,8 @@
 namespace gpos
 {
 // fwd declaration
-template <class T, ULONG (*HashFn)(const T *),
-		  BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
+template <class T, GP_ULONG (*HashFn)(const T *),
+		  GP_BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
 class CHashSetIter;
 
 //---------------------------------------------------------------------------
@@ -41,8 +41,8 @@ class CHashSetIter;
 //		Hash set
 //
 //---------------------------------------------------------------------------
-template <class T, ULONG (*HashFn)(const T *),
-		  BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
+template <class T, GP_ULONG (*HashFn)(const T *),
+		  GP_BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
 class CHashSet : public CRefCount
 {
 	// fwd declaration
@@ -64,14 +64,14 @@ private:
 		T *m_value;
 
 		// does hash set element own object?
-		BOOL m_owns_object;
+		GP_BOOL m_owns_object;
 
 		// private copy ctor
 		CHashSetElem(const CHashSetElem &);
 
 	public:
 		// ctor
-		CHashSetElem(T *value, BOOL fOwn) : m_value(value), m_owns_object(fOwn)
+		CHashSetElem(T *value, GP_BOOL fOwn) : m_value(value), m_owns_object(fOwn)
 		{
 			GPOS_ASSERT(NULL != value);
 		}
@@ -95,7 +95,7 @@ private:
 		}
 
 		// equality operator
-		BOOL
+		GP_BOOL
 		operator==(const CHashSetElem &hse) const
 		{
 			return EqFn(m_value, hse.m_value);
@@ -106,10 +106,10 @@ private:
 	CMemoryPool *m_mp;
 
 	// number of hash chains
-	ULONG m_num_chains;
+	GP_ULONG m_num_chains;
 
 	// total number of entries
-	ULONG m_size;
+	GP_ULONG m_size;
 
 	// each hash chain is an array of hashset elements
 	typedef CDynamicPtrArray<CHashSetElem, CleanupDelete> HashSetElemArray;
@@ -138,7 +138,7 @@ private:
 	void
 	Clear()
 	{
-		for (ULONG i = 0; i < m_filled_chains->Size(); i++)
+		for (GP_ULONG i = 0; i < m_filled_chains->Size(); i++)
 		{
 			// release each hash chain
 			m_chains[*(*m_filled_chains)[i]]->Release();
@@ -165,7 +165,7 @@ private:
 
 public:
 	// ctor
-	CHashSet<T, HashFn, EqFn, CleanupFn>(CMemoryPool *mp, ULONG size = 127)
+	CHashSet<T, HashFn, EqFn, CleanupFn>(CMemoryPool *mp, GP_ULONG size = 127)
 		: m_mp(mp),
 		  m_num_chains(size),
 		  m_size(0),
@@ -190,7 +190,7 @@ public:
 	}
 
 	// insert an element if not present
-	BOOL
+	GP_BOOL
 	Insert(T *value)
 	{
 		if (Contains(value))
@@ -216,7 +216,7 @@ public:
 	}
 
 	// lookup element
-	BOOL
+	GP_BOOL
 	Contains(const T *value) const
 	{
 		CHashSetElem hse(const_cast<T *>(value), false /*fOwn*/);
@@ -232,7 +232,7 @@ public:
 	}
 
 	// return number of map entries
-	ULONG
+	GP_ULONG
 	Size() const
 	{
 		return m_size;

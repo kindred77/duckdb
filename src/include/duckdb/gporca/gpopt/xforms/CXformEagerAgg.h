@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 
 //  Greenplum Database
 //  Copyright (C) 2018 Pivotal Inc.
@@ -56,7 +56,7 @@ public:
 	}
 
 	// compatibility function for eager aggregation
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfEagerAgg != exfid) &&
@@ -72,7 +72,7 @@ public:
 				   CExpression *expr) const;
 
 	// return true if xform should be applied only once
-	virtual BOOL
+	virtual GP_BOOL
 	IsApplyOnce()
 	{
 		return true;
@@ -83,10 +83,10 @@ private:
 	CXformEagerAgg(const CXformEagerAgg &);
 
 	// check if transform can be applied
-	BOOL CanApplyTransform(CExpression *agg_expr) const;
+	GP_BOOL CanApplyTransform(CExpression *agg_expr) const;
 
 	// is this aggregate supported for push down?
-	BOOL CanPushAggBelowJoin(CExpression *scalar_agg_func_expr) const;
+	GP_BOOL CanPushAggBelowJoin(CExpression *scalar_agg_func_expr) const;
 
 	// generate project lists for the lower and upper aggregates
 	// from all the original aggregates
@@ -104,7 +104,7 @@ private:
 		CMemoryPool *mp,  // memory pool
 		IMDId *agg_mdid,  // original global aggregate function
 		CWStringConst *agg_name, CExpressionArray *agg_arg_array,
-		BOOL is_distinct,
+		GP_BOOL is_distinct,
 		CExpression **
 			lower_proj_elem_expr  // output project element of the new lower aggregate
 	) const;
@@ -114,7 +114,7 @@ private:
 		CMemoryPool *mp,  // memory pool
 		IMDId *agg_mdid,  // aggregate mdid to create
 		CWStringConst *agg_name, CColRef *lower_colref, CColRef *output_colref,
-		BOOL is_distinct,
+		GP_BOOL is_distinct,
 		CExpression **
 			upper_proj_elem_expr  // output project element of the new upper aggregate
 	) const;

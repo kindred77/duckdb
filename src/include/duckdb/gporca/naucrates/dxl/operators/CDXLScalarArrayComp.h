@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -58,7 +58,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	//accessors
-	BOOL HasBoolResult() const;
+	GP_BOOL HasBoolResult() const;
 	EdxlArrayCompType GetDXLArrayCmpType() const;
 
 	// serialize operator in DXL format
@@ -76,7 +76,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -86,7 +86,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

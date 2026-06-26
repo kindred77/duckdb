@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -25,13 +25,13 @@ using namespace gpos;
 //		User time in micro-seconds since object construction
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CTimerUser::ElapsedUS() const
 {
 	RUSAGE rusage;
 	syslib::GetRusage(&rusage);
 
-	ULONG diff = (ULONG)(((rusage.ru_utime.tv_sec - m_rusage.ru_utime.tv_sec) *
+	GP_ULONG diff = (GP_ULONG)(((rusage.ru_utime.tv_sec - m_rusage.ru_utime.tv_sec) *
 						  GPOS_USEC_IN_SEC) +
 						 (rusage.ru_utime.tv_usec - m_rusage.ru_utime.tv_usec));
 

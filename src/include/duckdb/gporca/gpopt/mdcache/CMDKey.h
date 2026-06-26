@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -57,17 +57,17 @@ public:
 	}
 
 	// equality function
-	BOOL Equals(const CMDKey &mdkey) const;
+	GP_BOOL Equals(const CMDKey &mdkey) const;
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 
 	// equality function for using MD keys in a cache
-	static BOOL FEqualMDKey(CMDKey *const &pvLeft, CMDKey *const &pvRight);
+	static GP_BOOL FEqualMDKey(CMDKey *const &pvLeft, CMDKey *const &pvRight);
 
 	// hash function for using MD keys in a cache
-	static ULONG UlHashMDKey(CMDKey *const &pv);
+	static GP_ULONG UlHashMDKey(CMDKey *const &pv);
 };
 }  // namespace gpopt
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -29,11 +29,11 @@ CMDRelationExternalGPDB::CMDRelationExternalGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 	Ereldistrpolicy rel_distr_policy, CMDColumnArray *mdcol_array,
 	ULongPtrArray *distr_col_array, IMdIdArray *distr_opfamilies,
-	BOOL convert_hash_to_random, ULongPtr2dArray *keyset_array,
+	GP_BOOL convert_hash_to_random, ULongPtr2dArray *keyset_array,
 	CMDIndexInfoArray *md_index_info_array, IMdIdArray *mdid_triggers_array,
 	IMdIdArray *mdid_check_constraint_array,
 	IMDPartConstraint *mdpart_constraint, INT reject_limit,
-	BOOL is_reject_limit_in_rows, IMDId *mdid_fmt_err_table)
+	GP_BOOL is_reject_limit_in_rows, IMDId *mdid_fmt_err_table)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),
@@ -73,13 +73,13 @@ CMDRelationExternalGPDB::CMDRelationExternalGPDB(
 	m_nondrop_col_pos_array = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
 	m_col_width_array = GPOS_NEW(mp) CDoubleArray(mp);
 
-	ULONG ulPosNonDropped = 0;
-	const ULONG arity = mdcol_array->Size();
-	for (ULONG ul = 0; ul < arity; ul++)
+	GP_ULONG ulPosNonDropped = 0;
+	const GP_ULONG arity = mdcol_array->Size();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		IMDColumn *pmdcol = (*mdcol_array)[ul];
 
-		BOOL isSystemCol = pmdcol->IsSystemColumn();
+		GP_BOOL isSystemCol = pmdcol->IsSystemColumn();
 		if (isSystemCol)
 		{
 			m_system_columns++;
@@ -93,17 +93,17 @@ CMDRelationExternalGPDB::CMDRelationExternalGPDB(
 		{
 			if (!isSystemCol)
 			{
-				m_nondrop_col_pos_array->Append(GPOS_NEW(m_mp) ULONG(ul));
+				m_nondrop_col_pos_array->Append(GPOS_NEW(m_mp) GP_ULONG(ul));
 			}
 
 			(void) m_colpos_nondrop_colpos_map->Insert(
-				GPOS_NEW(m_mp) ULONG(ul),
-				GPOS_NEW(m_mp) ULONG(ulPosNonDropped));
+				GPOS_NEW(m_mp) GP_ULONG(ul),
+				GPOS_NEW(m_mp) GP_ULONG(ulPosNonDropped));
 			ulPosNonDropped++;
 		}
 
 		(void) m_attrno_nondrop_col_pos_map->Insert(
-			GPOS_NEW(m_mp) INT(pmdcol->AttrNum()), GPOS_NEW(m_mp) ULONG(ul));
+			GPOS_NEW(m_mp) INT(pmdcol->AttrNum()), GPOS_NEW(m_mp) GP_ULONG(ul));
 		m_col_width_array->Append(GPOS_NEW(mp) CDouble(pmdcol->Length()));
 	}
 	m_dxl_str = CDXLUtils::SerializeMDObj(
@@ -189,7 +189,7 @@ CMDRelationExternalGPDB::GetRelDistribution() const
 //		Returns the number of columns of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::ColumnCount() const
 {
 	GPOS_ASSERT(NULL != m_md_col_array);
@@ -199,7 +199,7 @@ CMDRelationExternalGPDB::ColumnCount() const
 
 // Return the width of a column with regards to the position
 DOUBLE
-CMDRelationExternalGPDB::ColWidth(ULONG pos) const
+CMDRelationExternalGPDB::ColWidth(GP_ULONG pos) const
 {
 	return (*m_col_width_array)[pos]->Get();
 }
@@ -212,7 +212,7 @@ CMDRelationExternalGPDB::ColWidth(ULONG pos) const
 //		Does relation have dropped columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDRelationExternalGPDB::HasDroppedColumns() const
 {
 	return 0 < m_dropped_cols;
@@ -226,7 +226,7 @@ CMDRelationExternalGPDB::HasDroppedColumns() const
 //		Number of non-dropped columns
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::NonDroppedColsCount() const
 {
 	return ColumnCount() - m_dropped_cols;
@@ -240,7 +240,7 @@ CMDRelationExternalGPDB::NonDroppedColsCount() const
 //		Returns the number of system columns of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::SystemColumnsCount() const
 {
 	return m_system_columns;
@@ -269,8 +269,8 @@ CMDRelationExternalGPDB::NonDroppedColsArray() const
 //		dropped columns
 //
 //---------------------------------------------------------------------------
-ULONG
-CMDRelationExternalGPDB::NonDroppedColAt(ULONG pos) const
+GP_ULONG
+CMDRelationExternalGPDB::NonDroppedColAt(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos <= ColumnCount());
 
@@ -279,14 +279,14 @@ CMDRelationExternalGPDB::NonDroppedColAt(ULONG pos) const
 		return pos;
 	}
 
-	ULONG *pul = m_colpos_nondrop_colpos_map->Find(&pos);
+	GP_ULONG *pul = m_colpos_nondrop_colpos_map->Find(&pos);
 
 	GPOS_ASSERT(NULL != pul);
 	return *pul;
 }
 
 IMDId *
-CMDRelationExternalGPDB::GetDistrOpfamilyAt(ULONG pos) const
+CMDRelationExternalGPDB::GetDistrOpfamilyAt(GP_ULONG pos) const
 {
 	if (m_distr_opfamilies == NULL)
 	{
@@ -305,10 +305,10 @@ CMDRelationExternalGPDB::GetDistrOpfamilyAt(ULONG pos) const
 //		Return the position of a column in the metadata object given the
 //		attribute number in the system catalog
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::GetPosFromAttno(INT attno) const
 {
-	ULONG *pul = m_attrno_nondrop_col_pos_map->Find(&attno);
+	GP_ULONG *pul = m_attrno_nondrop_col_pos_map->Find(&attno);
 	GPOS_ASSERT(NULL != pul);
 
 	return *pul;
@@ -321,7 +321,7 @@ CMDRelationExternalGPDB::GetPosFromAttno(INT attno) const
 //	@doc:
 //		Return true if a hash distributed table needs to be considered as random during planning
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDRelationExternalGPDB::ConvertHashToRandom() const
 {
 	return m_convert_hash_to_random;
@@ -349,7 +349,7 @@ CMDRelationExternalGPDB::RejectLimit() const
 //		Is the reject limit in rows?
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDRelationExternalGPDB::IsRejectLimitInRows() const
 {
 	return m_is_rej_limit_in_rows;
@@ -377,7 +377,7 @@ CMDRelationExternalGPDB::GetFormatErrTableMdid() const
 //		Returns the number of key sets
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::KeySetCount() const
 {
 	return (m_keyset_array == NULL) ? 0 : m_keyset_array->Size();
@@ -392,7 +392,7 @@ CMDRelationExternalGPDB::KeySetCount() const
 //
 //---------------------------------------------------------------------------
 const ULongPtrArray *
-CMDRelationExternalGPDB::KeySetAt(ULONG pos) const
+CMDRelationExternalGPDB::KeySetAt(GP_ULONG pos) const
 {
 	GPOS_ASSERT(NULL != m_keyset_array);
 
@@ -407,7 +407,7 @@ CMDRelationExternalGPDB::KeySetAt(ULONG pos) const
 //		Returns the number of columns in the distribution column list of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::DistrColumnCount() const
 {
 	return (m_distr_col_array == NULL) ? 0 : m_distr_col_array->Size();
@@ -421,7 +421,7 @@ CMDRelationExternalGPDB::DistrColumnCount() const
 //		Returns the number of indices of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::IndexCount() const
 {
 	return m_mdindex_info_array->Size();
@@ -435,7 +435,7 @@ CMDRelationExternalGPDB::IndexCount() const
 //		Returns the number of triggers of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::TriggerCount() const
 {
 	return m_mdid_trigger_array->Size();
@@ -450,7 +450,7 @@ CMDRelationExternalGPDB::TriggerCount() const
 //
 //---------------------------------------------------------------------------
 const IMDColumn *
-CMDRelationExternalGPDB::GetMdCol(ULONG pos) const
+CMDRelationExternalGPDB::GetMdCol(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos < m_md_col_array->Size());
 
@@ -466,11 +466,11 @@ CMDRelationExternalGPDB::GetMdCol(ULONG pos) const
 //
 //---------------------------------------------------------------------------
 const IMDColumn *
-CMDRelationExternalGPDB::GetDistrColAt(ULONG pos) const
+CMDRelationExternalGPDB::GetDistrColAt(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos < m_distr_col_array->Size());
 
-	ULONG ulDistrKeyPos = (*(*m_distr_col_array)[pos]);
+	GP_ULONG ulDistrKeyPos = (*(*m_distr_col_array)[pos]);
 	return GetMdCol(ulDistrKeyPos);
 }
 
@@ -484,7 +484,7 @@ CMDRelationExternalGPDB::GetDistrColAt(ULONG pos) const
 //
 //---------------------------------------------------------------------------
 IMDId *
-CMDRelationExternalGPDB::IndexMDidAt(ULONG pos) const
+CMDRelationExternalGPDB::IndexMDidAt(GP_ULONG pos) const
 {
 	return (*m_mdindex_info_array)[pos]->MDId();
 }
@@ -498,7 +498,7 @@ CMDRelationExternalGPDB::IndexMDidAt(ULONG pos) const
 //
 //---------------------------------------------------------------------------
 IMDId *
-CMDRelationExternalGPDB::TriggerMDidAt(ULONG pos) const
+CMDRelationExternalGPDB::TriggerMDidAt(GP_ULONG pos) const
 {
 	return (*m_mdid_trigger_array)[pos];
 }
@@ -511,7 +511,7 @@ CMDRelationExternalGPDB::TriggerMDidAt(ULONG pos) const
 //		Returns the number of check constraints on this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationExternalGPDB::CheckConstraintCount() const
 {
 	return m_mdid_check_constraint_array->Size();
@@ -527,7 +527,7 @@ CMDRelationExternalGPDB::CheckConstraintCount() const
 //
 //---------------------------------------------------------------------------
 IMDId *
-CMDRelationExternalGPDB::CheckConstraintMDidAt(ULONG pos) const
+CMDRelationExternalGPDB::CheckConstraintMDidAt(GP_ULONG pos) const
 {
 	return (*m_mdid_check_constraint_array)[pos];
 }
@@ -611,7 +611,7 @@ CMDRelationExternalGPDB::Serialize(CXMLSerializer *xml_serializer) const
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenColumns));
-	for (ULONG ul = 0; ul < m_md_col_array->Size(); ul++)
+	for (GP_ULONG ul = 0; ul < m_md_col_array->Size(); ul++)
 	{
 		CMDColumn *pmdcol = (*m_md_col_array)[ul];
 		pmdcol->Serialize(xml_serializer);
@@ -625,8 +625,8 @@ CMDRelationExternalGPDB::Serialize(CXMLSerializer *xml_serializer) const
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenIndexInfoList));
-	const ULONG ulIndexes = m_mdindex_info_array->Size();
-	for (ULONG ul = 0; ul < ulIndexes; ul++)
+	const GP_ULONG ulIndexes = m_mdindex_info_array->Size();
+	for (GP_ULONG ul = 0; ul < ulIndexes; ul++)
 	{
 		CMDIndexInfo *pmdIndexInfo = (*m_mdindex_info_array)[ul];
 		pmdIndexInfo->Serialize(xml_serializer);
@@ -690,8 +690,8 @@ CMDRelationExternalGPDB::DebugPrint(IOstream &os) const
 	   << GetDistrPolicyStr(m_rel_distr_policy)->GetBuffer() << std::endl;
 
 	os << "Relation columns: " << std::endl;
-	const ULONG ulColumns = ColumnCount();
-	for (ULONG ul = 0; ul < ulColumns; ul++)
+	const GP_ULONG ulColumns = ColumnCount();
+	for (GP_ULONG ul = 0; ul < ulColumns; ul++)
 	{
 		const IMDColumn *pimdcol = GetMdCol(ul);
 		pimdcol->DebugPrint(os);
@@ -699,8 +699,8 @@ CMDRelationExternalGPDB::DebugPrint(IOstream &os) const
 	os << std::endl;
 
 	os << "Distributed by: ";
-	const ULONG ulDistrColumns = DistrColumnCount();
-	for (ULONG ul = 0; ul < ulDistrColumns; ul++)
+	const GP_ULONG ulDistrColumns = DistrColumnCount();
+	for (GP_ULONG ul = 0; ul < ulDistrColumns; ul++)
 	{
 		if (0 < ul)
 		{
@@ -714,8 +714,8 @@ CMDRelationExternalGPDB::DebugPrint(IOstream &os) const
 	os << std::endl;
 
 	os << "Index Info: ";
-	const ULONG ulIndexes = m_mdindex_info_array->Size();
-	for (ULONG ul = 0; ul < ulIndexes; ul++)
+	const GP_ULONG ulIndexes = m_mdindex_info_array->Size();
+	for (GP_ULONG ul = 0; ul < ulIndexes; ul++)
 	{
 		CMDIndexInfo *pmdIndexInfo = (*m_mdindex_info_array)[ul];
 		pmdIndexInfo->DebugPrint(os);

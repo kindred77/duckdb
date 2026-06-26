@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Inc.
 //
@@ -42,7 +42,7 @@ private:
 	IMDId *m_pmdidElementFunc;
 
 	// conversion semantics flag to pass to func
-	BOOL m_is_explicit;
+	GP_BOOL m_is_explicit;
 
 	// private copy ctor
 	CScalarArrayCoerceExpr(const CScalarArrayCoerceExpr &);
@@ -51,7 +51,7 @@ public:
 	// ctor
 	CScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *element_func,
 						   IMDId *result_type_mdid, INT type_modifier,
-						   BOOL is_explicit, ECoercionForm dxl_coerce_format,
+						   GP_BOOL is_explicit, ECoercionForm dxl_coerce_format,
 						   INT location);
 
 	// dtor
@@ -60,7 +60,7 @@ public:
 	// return metadata id of element coerce function
 	IMDId *PmdidElementFunc() const;
 
-	BOOL IsExplicit() const;
+	GP_BOOL IsExplicit() const;
 
 	virtual EOperatorId Eopid() const;
 
@@ -68,10 +68,10 @@ public:
 	virtual const CHAR *SzId() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const;
+	virtual GP_BOOL FInputOrderSensitive() const;
 
 	// conversion function
 	static CScalarArrayCoerceExpr *PopConvert(COperator *pop);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -50,10 +50,10 @@ protected:
 	const INT m_type_modifier;
 
 	// is the datum NULL
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// length
-	const ULONG m_length;
+	const GP_ULONG m_length;
 
 public:
 	// datum types
@@ -71,7 +71,7 @@ public:
 	};
 	// ctor
 	CDXLDatum(CMemoryPool *mp, IMDId *mdid_type, INT type_modifier,
-			  BOOL is_null, ULONG length);
+			  GP_BOOL is_null, GP_ULONG length);
 
 	// dtor
 	virtual ~CDXLDatum()
@@ -89,10 +89,10 @@ public:
 	INT TypeModifier() const;
 
 	// is datum NULL
-	virtual BOOL IsNull() const;
+	virtual GP_BOOL IsNull() const;
 
 	// byte array length
-	virtual ULONG Length() const;
+	virtual GP_ULONG Length() const;
 
 	// serialize the datum as the given element
 	virtual void Serialize(CXMLSerializer *xml_serializer,

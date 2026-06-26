@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //  Copyright (c) 2020 VMware, Inc.
 //
@@ -73,8 +73,8 @@ public:
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
@@ -82,8 +82,8 @@ public:
 
 	// compute required distribution of the n-th child
 	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CReqdPropPlan *prppInput, ULONG child_index,
-								   CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+								   CReqdPropPlan *prppInput, GP_ULONG child_index,
+								   CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 };	// class CPhysicalRightOuterHashJoin
 

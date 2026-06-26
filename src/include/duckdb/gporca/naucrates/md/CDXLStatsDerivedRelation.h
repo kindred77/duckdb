@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -43,7 +43,7 @@ private:
 	CDouble m_rows;
 
 	// flag to indicate if input relation is empty
-	BOOL m_empty;
+	GP_BOOL m_empty;
 
 	// array of derived column statistics
 	CDXLStatsDerivedColumnArray *m_dxl_stats_derived_col_array;
@@ -54,7 +54,7 @@ private:
 public:
 	// ctor
 	CDXLStatsDerivedRelation(
-		CDouble rows, BOOL is_empty,
+		CDouble rows, GP_BOOL is_empty,
 		CDXLStatsDerivedColumnArray *dxl_stats_derived_col_array);
 
 	// dtor
@@ -68,7 +68,7 @@ public:
 	}
 
 	// is statistics on an empty input
-	virtual BOOL
+	virtual GP_BOOL
 	IsEmpty() const
 	{
 		return m_empty;

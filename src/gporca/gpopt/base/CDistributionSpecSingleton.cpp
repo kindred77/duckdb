@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -56,7 +56,7 @@ CDistributionSpecSingleton::CDistributionSpecSingleton()
 //		Check if this distribution spec satisfies the given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecSingleton::FSatisfies(const CDistributionSpec *pds) const
 {
 	if (Matches(pds))

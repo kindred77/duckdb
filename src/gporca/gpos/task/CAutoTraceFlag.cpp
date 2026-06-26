@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -25,7 +25,7 @@ using namespace gpos;
 //		ctor
 //
 //---------------------------------------------------------------------------
-CAutoTraceFlag::CAutoTraceFlag(ULONG trace, BOOL orig)
+CAutoTraceFlag::CAutoTraceFlag(GP_ULONG trace, GP_BOOL orig)
 	: m_trace(trace), m_orig(false)
 {
 	GPOS_ASSERT(NULL != ITask::Self());

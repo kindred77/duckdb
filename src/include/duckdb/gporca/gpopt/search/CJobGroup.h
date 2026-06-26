@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,10 +65,10 @@ protected:
 	virtual CGroupExpression *PgexprFirstUnsched() = 0;
 
 	// schedule jobs for of all new group expressions
-	virtual BOOL FScheduleGroupExpressions(CSchedulerContext *psc) = 0;
+	virtual GP_BOOL FScheduleGroupExpressions(CSchedulerContext *psc) = 0;
 
 	// job's function
-	virtual BOOL FExecute(CSchedulerContext *psc) = 0;
+	virtual GP_BOOL FExecute(CSchedulerContext *psc) = 0;
 
 #ifdef GPOS_DEBUG
 

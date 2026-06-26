@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -49,7 +49,7 @@ public:
 	}
 
 	// Compatibility function
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return ExfAntiSemiJoinInnerJoinSwap != exfid;

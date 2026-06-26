@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -57,10 +57,10 @@ private:
 	IMdIdArray *m_distr_opclasses;
 
 	// is this a temporary table
-	BOOL m_is_temp_table;
+	GP_BOOL m_is_temp_table;
 
 	// does table have oids
-	BOOL m_has_oids;
+	GP_BOOL m_has_oids;
 
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
@@ -82,8 +82,8 @@ public:
 					 CDXLCtasStorageOptions *dxl_ctas_storage_options,
 					 IMDRelation::Ereldistrpolicy rel_distr_policy,
 					 ULongPtrArray *distr_column_pos_array,
-					 IMdIdArray *distr_opclasses, BOOL is_temporary,
-					 BOOL has_oids,
+					 IMdIdArray *distr_opclasses, GP_BOOL is_temporary,
+					 GP_BOOL has_oids,
 					 IMDRelation::Erelstoragetype rel_storage_type,
 					 ULongPtrArray *src_colids_array,
 					 IntPtrArray *vartypemod_array);
@@ -147,7 +147,7 @@ public:
 	}
 
 	// is temporary
-	BOOL
+	GP_BOOL
 	IsTemporary() const
 	{
 		return m_is_temp_table;
@@ -172,7 +172,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

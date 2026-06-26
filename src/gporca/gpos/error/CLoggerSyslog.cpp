@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -38,8 +38,8 @@ CLoggerSyslog CLoggerSyslog::m_alert_logger(NULL /*szName*/,
 //		Ctor - set executable name, initialization flags and message priority
 //
 //---------------------------------------------------------------------------
-CLoggerSyslog::CLoggerSyslog(const CHAR *proc_name, ULONG init_mask,
-							 ULONG message_priority)
+CLoggerSyslog::CLoggerSyslog(const CHAR *proc_name, GP_ULONG init_mask,
+							 GP_ULONG message_priority)
 	: m_proc_name(proc_name),
 	  m_init_mask(init_mask),
 	  m_message_priority(message_priority)
@@ -69,7 +69,7 @@ CLoggerSyslog::~CLoggerSyslog()
 //---------------------------------------------------------------------------
 void
 CLoggerSyslog::Write(const WCHAR *log_entry,
-					 ULONG	// severity
+					 GP_ULONG	// severity
 )
 {
 	CHAR *buffer = CLogger::Msg();

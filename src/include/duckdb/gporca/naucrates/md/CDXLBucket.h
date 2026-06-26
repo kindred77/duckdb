@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -50,10 +50,10 @@ private:
 	CDXLDatum *m_upper_bound_dxl_datum;
 
 	// is lower bound closed (i.e., the boundary point is included in the bucket)
-	BOOL m_is_lower_closed;
+	GP_BOOL m_is_lower_closed;
 
 	// is upper bound closed (i.e., the boundary point is included in the bucket)
-	BOOL m_is_upper_closed;
+	GP_BOOL m_is_upper_closed;
 
 	// frequency
 	CDouble m_frequency;
@@ -68,26 +68,26 @@ private:
 	void SerializeBoundaryValue(CXMLSerializer *xml_serializer,
 								const CWStringConst *elem_str,
 								CDXLDatum *dxl_datum,
-								BOOL is_bound_closed) const;
+								GP_BOOL is_bound_closed) const;
 
 public:
 	// ctor
 	CDXLBucket(CDXLDatum *dxl_datum_lower, CDXLDatum *dxl_datum_upper,
-			   BOOL is_lower_closed, BOOL is_upper_closed, CDouble frequency,
+			   GP_BOOL is_lower_closed, GP_BOOL is_upper_closed, CDouble frequency,
 			   CDouble distinct);
 
 	// dtor
 	virtual ~CDXLBucket();
 
 	// is lower bound closed
-	BOOL
+	GP_BOOL
 	IsLowerClosed() const
 	{
 		return m_is_lower_closed;
 	}
 
 	// is upper bound closed
-	BOOL
+	GP_BOOL
 	IsUpperClosed() const
 	{
 		return m_is_upper_closed;

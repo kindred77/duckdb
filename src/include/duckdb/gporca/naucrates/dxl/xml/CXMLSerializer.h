@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -45,19 +45,19 @@ private:
 	IOstream &m_os;
 
 	// should XML document be indented
-	BOOL m_indentation;
+	GP_BOOL m_indentation;
 
 	// stack of open elements
 	StrStack *m_strstackElems;
 
 	// denotes whether the last written tag is open and needs closing
-	BOOL m_fOpenTag;
+	GP_BOOL m_fOpenTag;
 
 	// level of nesting in the XML document (i.e. number of open XML tags)
-	ULONG m_ulLevel;
+	GP_ULONG m_ulLevel;
 
 	// steps since last check for aborts
-	ULONG m_iteration_since_last_abortcheck;
+	GP_ULONG m_iteration_since_last_abortcheck;
 
 	// private copy ctor
 	CXMLSerializer(const CXMLSerializer &);
@@ -70,7 +70,7 @@ private:
 
 public:
 	// ctor/dtor
-	CXMLSerializer(CMemoryPool *mp, IOstream &os, BOOL indentation = true)
+	CXMLSerializer(CMemoryPool *mp, IOstream &os, GP_BOOL indentation = true)
 		: m_mp(mp),
 		  m_os(os),
 		  m_indentation(indentation),
@@ -110,7 +110,7 @@ public:
 	void AddAttribute(const CWStringBase *pstrAttr, const CHAR *szValue);
 
 	// adds an unsigned integer-valued attribute
-	void AddAttribute(const CWStringBase *pstrAttr, ULONG ulValue);
+	void AddAttribute(const CWStringBase *pstrAttr, GP_ULONG ulValue);
 
 	// adds an unsigned long integer attribute
 	void AddAttribute(const CWStringBase *pstrAttr, ULLONG ullValue);
@@ -122,14 +122,14 @@ public:
 	void AddAttribute(const CWStringBase *pstrAttr, LINT value);
 
 	// adds a boolean attribute
-	void AddAttribute(const CWStringBase *pstrAttr, BOOL fValue);
+	void AddAttribute(const CWStringBase *pstrAttr, GP_BOOL fValue);
 
 	// add a double-valued attribute
 	void AddAttribute(const CWStringBase *pstrAttr, CDouble value);
 
 	// add a byte array attribute
-	void AddAttribute(const CWStringBase *pstrAttr, BOOL is_null,
-					  const BYTE *data, ULONG length);
+	void AddAttribute(const CWStringBase *pstrAttr, GP_BOOL is_null,
+					  const BYTE *data, GP_ULONG length);
 };
 
 }  // namespace gpdxl

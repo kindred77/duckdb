@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -51,7 +51,7 @@ private:
 	CXformSet *m_pxfsImplementation;
 
 	// ensure that xforms are inserted in order
-	ULONG m_lastAddedOrSkippedXformId;
+	GP_ULONG m_lastAddedOrSkippedXformId;
 
 	// global instance
 	static CXformFactory *m_pxff;
@@ -68,7 +68,7 @@ private:
 	// skip unused xforms that have been removed, preserving
 	// xform ids of the remaining ones
 	void
-	SkipUnused(ULONG numXformsToSkip)
+	SkipUnused(GP_ULONG numXformsToSkip)
 	{
 		m_lastAddedOrSkippedXformId += numXformsToSkip;
 	}
@@ -101,7 +101,7 @@ public:
 	}
 
 	// is this xform id still used?
-	BOOL IsXformIdUsed(CXform::EXformId exfid);
+	GP_BOOL IsXformIdUsed(CXform::EXformId exfid);
 
 	// global accessor
 	static CXformFactory *

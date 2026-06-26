@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -85,7 +85,7 @@ public:
 	}
 
 	// is this a contradiction
-	BOOL FContradiction() const;
+	GP_BOOL FContradiction() const;
 
 	// scalar expression on given column mapped from all constraints
 	// on its equivalent columns

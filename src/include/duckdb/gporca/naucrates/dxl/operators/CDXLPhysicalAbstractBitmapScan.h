@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -75,7 +75,7 @@ public:
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
 	virtual void AssertValid(const CDXLNode *node,
-							 BOOL validate_children) const;
+							 GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };		// class CDXLPhysicalAbstractBitmapScan
 }  // namespace gpdxl

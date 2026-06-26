@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -59,7 +59,7 @@ CConstraintNegation::~CConstraintNegation()
 //---------------------------------------------------------------------------
 CConstraint *
 CConstraintNegation::PcnstrCopyWithRemappedColumns(
-	CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist)
+	CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist)
 {
 	CConstraint *pcnstr =
 		m_pcnstr->PcnstrCopyWithRemappedColumns(mp, colref_mapping, must_exist);

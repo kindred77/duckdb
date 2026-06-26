@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -58,7 +58,7 @@ CDistributionSpecRouted::~CDistributionSpecRouted()
 //		Check if this distribution spec satisfies the given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecRouted::FSatisfies(const CDistributionSpec *pds) const
 {
 	if (Matches(pds))
@@ -86,9 +86,9 @@ CDistributionSpecRouted::FSatisfies(const CDistributionSpec *pds) const
 //---------------------------------------------------------------------------
 CDistributionSpec *
 CDistributionSpecRouted::PdsCopyWithRemappedColumns(
-	CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist)
+	CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist)
 {
-	ULONG id = m_pcrSegmentId->Id();
+	GP_ULONG id = m_pcrSegmentId->Id();
 	CColRef *pcrSegmentId = colref_mapping->Find(&id);
 	if (NULL == pcrSegmentId)
 	{
@@ -99,9 +99,9 @@ CDistributionSpecRouted::PdsCopyWithRemappedColumns(
 			pcrSegmentId = col_factory->PcrCopy(m_pcrSegmentId);
 
 #ifdef GPOS_DEBUG
-			BOOL result =
+			GP_BOOL result =
 #endif	// GPOS_DEBUG
-				colref_mapping->Insert(GPOS_NEW(mp) ULONG(id), pcrSegmentId);
+				colref_mapping->Insert(GPOS_NEW(mp) GP_ULONG(id), pcrSegmentId);
 			GPOS_ASSERT(result);
 		}
 		else
@@ -164,10 +164,10 @@ CDistributionSpecRouted::AppendEnforcers(CMemoryPool *mp,
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDistributionSpecRouted::HashValue() const
 {
-	return gpos::CombineHashes((ULONG) Edt(),
+	return gpos::CombineHashes((GP_ULONG) Edt(),
 							   gpos::HashPtr<CColRef>(m_pcrSegmentId));
 }
 
@@ -198,7 +198,7 @@ CDistributionSpecRouted::PcrsUsed(CMemoryPool *mp) const
 //		Match function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecRouted::Matches(const CDistributionSpec *pds) const
 {
 	if (Edt() != pds->Edt())

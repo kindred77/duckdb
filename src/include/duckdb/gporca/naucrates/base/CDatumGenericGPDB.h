@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -35,13 +35,13 @@ private:
 	CMemoryPool *m_mp;
 
 	// size in bytes
-	ULONG m_size;
+	GP_ULONG m_size;
 
 	// a pointer to datum value
 	BYTE *m_bytearray_value;
 
 	// is null
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// type information
 	IMDId *m_mdid;
@@ -63,7 +63,7 @@ private:
 public:
 	// ctor
 	CDatumGenericGPDB(CMemoryPool *mp, IMDId *mdid, INT type_modifier,
-					  const void *src, ULONG size, BOOL is_null,
+					  const void *src, GP_ULONG size, GP_BOOL is_null,
 					  LINT stats_comp_val_int, CDouble stats_comp_val_double);
 
 	// dtor
@@ -75,19 +75,19 @@ public:
 	virtual INT TypeModifier() const;
 
 	// accessor of size
-	virtual ULONG Size() const;
+	virtual GP_ULONG Size() const;
 
 	// accessor of is null
-	virtual BOOL IsNull() const;
+	virtual GP_BOOL IsNull() const;
 
 	// return string representation
 	virtual const CWStringConst *GetStrRepr(CMemoryPool *mp) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function for datums
-	virtual BOOL Matches(const IDatum *datum) const;
+	virtual GP_BOOL Matches(const IDatum *datum) const;
 
 	// copy datum
 	virtual IDatum *MakeCopy(CMemoryPool *mp) const;
@@ -96,12 +96,12 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// accessor to bytearray, creates a copy
-	virtual BYTE *MakeCopyOfValue(CMemoryPool *mp, ULONG *pulLength) const;
+	virtual BYTE *MakeCopyOfValue(CMemoryPool *mp, GP_ULONG *pulLength) const;
 
 	// statistics related APIs
 
 	// can datum be mapped to a double
-	virtual BOOL IsDatumMappableToDouble() const;
+	virtual GP_BOOL IsDatumMappableToDouble() const;
 
 	// map to double for stats computation
 	virtual CDouble
@@ -113,7 +113,7 @@ public:
 	}
 
 	// can datum be mapped to LINT
-	virtual BOOL IsDatumMappableToLINT() const;
+	virtual GP_BOOL IsDatumMappableToLINT() const;
 
 	// map to LINT for statistics computation
 	virtual LINT
@@ -128,16 +128,16 @@ public:
 	virtual const BYTE *GetByteArrayValue() const;
 
 	// stats equality
-	virtual BOOL StatsAreEqual(const IDatum *datum) const;
+	virtual GP_BOOL StatsAreEqual(const IDatum *datum) const;
 
 	// does the datum need to be padded before statistical derivation
-	virtual BOOL NeedsPadding() const;
+	virtual GP_BOOL NeedsPadding() const;
 
 	// return the padded datum
-	virtual IDatum *MakePaddedDatum(CMemoryPool *mp, ULONG col_len) const;
+	virtual IDatum *MakePaddedDatum(CMemoryPool *mp, GP_ULONG col_len) const;
 
 	// does datum support like predicate
-	virtual BOOL
+	virtual GP_BOOL
 	SupportsLikePredicate() const
 	{
 		return true;
@@ -148,7 +148,7 @@ public:
 
 	// default selectivity of the trailing wildcards
 	virtual CDouble GetTrailingWildcardSelectivity(const BYTE *pba,
-												   ULONG ulPos) const;
+												   GP_ULONG ulPos) const;
 
 	// selectivities needed for LIKE predicate statistics evaluation
 	static const CDouble DefaultFixedCharSelectivity;

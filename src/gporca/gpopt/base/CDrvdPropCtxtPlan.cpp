@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -31,7 +31,7 @@ using namespace gpopt;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CDrvdPropCtxtPlan::CDrvdPropCtxtPlan(CMemoryPool *mp, BOOL fUpdateCTEMap)
+CDrvdPropCtxtPlan::CDrvdPropCtxtPlan(CMemoryPool *mp, GP_BOOL fUpdateCTEMap)
 	: CDrvdPropCtxt(mp),
 	  m_phmulpdpCTEs(NULL),
 	  m_ulExpectedPartitionSelectors(0),
@@ -73,14 +73,14 @@ CDrvdPropCtxtPlan::PdpctxtCopy(CMemoryPool *mp) const
 	UlongToDrvdPropPlanMapIter hmulpdpiter(m_phmulpdpCTEs);
 	while (hmulpdpiter.Advance())
 	{
-		ULONG id = *(hmulpdpiter.Key());
+		GP_ULONG id = *(hmulpdpiter.Key());
 		CDrvdPropPlan *pdpplan =
 			const_cast<CDrvdPropPlan *>(hmulpdpiter.Value());
 		pdpplan->AddRef();
 #ifdef GPOS_DEBUG
-		BOOL fInserted =
+		GP_BOOL fInserted =
 #endif	// GPOS_DEBUG
-			pdpctxtplan->m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) ULONG(id),
+			pdpctxtplan->m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) GP_ULONG(id),
 												pdpplan);
 		GPOS_ASSERT(fInserted);
 	}
@@ -108,7 +108,7 @@ CDrvdPropCtxtPlan::AddProps(CDrvdProp *pdp)
 
 	CDrvdPropPlan *pdpplan = CDrvdPropPlan::Pdpplan(pdp);
 
-	ULONG ulProducerId = gpos::ulong_max;
+	GP_ULONG ulProducerId = gpos::ulong_max;
 	CDrvdPropPlan *pdpplanProducer =
 		pdpplan->GetCostModel()->PdpplanProducer(&ulProducerId);
 	if (NULL == pdpplanProducer)
@@ -120,9 +120,9 @@ CDrvdPropCtxtPlan::AddProps(CDrvdProp *pdp)
 	{
 		pdpplanProducer->AddRef();
 #ifdef GPOS_DEBUG
-		BOOL fInserted =
+		GP_BOOL fInserted =
 #endif	// GPOS_DEBUG
-			m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) ULONG(ulProducerId),
+			m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) GP_ULONG(ulProducerId),
 								   pdpplanProducer);
 		GPOS_ASSERT(fInserted);
 	}
@@ -144,7 +144,7 @@ CDrvdPropCtxtPlan::OsPrint(IOstream &os) const
 	UlongToDrvdPropPlanMapIter hmulpdpiter(m_phmulpdpCTEs);
 	while (hmulpdpiter.Advance())
 	{
-		ULONG id = *(hmulpdpiter.Key());
+		GP_ULONG id = *(hmulpdpiter.Key());
 		CDrvdPropPlan *pdpplan =
 			const_cast<CDrvdPropPlan *>(hmulpdpiter.Value());
 
@@ -164,7 +164,7 @@ CDrvdPropCtxtPlan::OsPrint(IOstream &os) const
 //
 //---------------------------------------------------------------------------
 CDrvdPropPlan *
-CDrvdPropCtxtPlan::PdpplanCTEProducer(ULONG ulCTEId) const
+CDrvdPropCtxtPlan::PdpplanCTEProducer(GP_ULONG ulCTEId) const
 {
 	GPOS_ASSERT(NULL != m_phmulpdpCTEs);
 
@@ -181,15 +181,15 @@ CDrvdPropCtxtPlan::PdpplanCTEProducer(ULONG ulCTEId) const
 //
 //---------------------------------------------------------------------------
 void
-CDrvdPropCtxtPlan::CopyCTEProducerProps(CDrvdPropPlan *pdpplan, ULONG ulCTEId)
+CDrvdPropCtxtPlan::CopyCTEProducerProps(CDrvdPropPlan *pdpplan, GP_ULONG ulCTEId)
 {
 	GPOS_ASSERT(NULL != pdpplan);
 
 	pdpplan->AddRef();
 #ifdef GPOS_DEBUG
-	BOOL fInserted =
+	GP_BOOL fInserted =
 #endif	// GPOS_DEBUG
-		m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) ULONG(ulCTEId), pdpplan);
+		m_phmulpdpCTEs->Insert(GPOS_NEW(m_mp) GP_ULONG(ulCTEId), pdpplan);
 	GPOS_ASSERT(fInserted);
 }
 
@@ -206,7 +206,7 @@ void
 CDrvdPropCtxtPlan::SetExpectedPartitionSelectors(COperator *pop,
 												 CCostContext *pcc)
 {
-	ULONG scan_id = 0;
+	GP_ULONG scan_id = 0;
 	if (CUtils::FPhysicalScan(pop) &&
 		CPhysicalScan::PopConvert(pop)->FDynamicScan())
 	{

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,7 +58,7 @@ CJobQueue::EjqrAdd(CJob *pj)
 			if (!m_fCompleted)
 			{
 				m_listjQueued.Append(pj);
-				BOOL fOwner = (pj == m_listjQueued.First());
+				GP_BOOL fOwner = (pj == m_listjQueued.First());
 
 				// first caller becomes the owner
 				if (fOwner)

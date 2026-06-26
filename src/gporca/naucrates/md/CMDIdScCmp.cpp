@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -124,7 +124,7 @@ CMDIdScCmp::GetRightMdid() const
 //		Computes the hash value for the metadata id
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIdScCmp::HashValue() const
 {
 	return gpos::CombineHashes(MdidType(),
@@ -140,7 +140,7 @@ CMDIdScCmp::HashValue() const
 //		Checks if the mdids are equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdScCmp::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidScCmp != mdid->MdidType())

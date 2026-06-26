@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -39,16 +39,16 @@ private:
 	CException m_exception;
 
 	// exception severity
-	ULONG m_severity;
+	GP_ULONG m_severity;
 
 	// flag to indicate if handled yet
-	BOOL m_pending;
+	GP_BOOL m_pending;
 
 	// flag to indicate if handled yet
-	BOOL m_rethrown;
+	GP_BOOL m_rethrown;
 
 	// flag to indicate that we are currently serializing this.
-	BOOL m_serializing;
+	GP_BOOL m_serializing;
 
 	// error message buffer
 	WCHAR m_error_msg[GPOS_ERROR_MESSAGE_BUFFER_SIZE];
@@ -151,7 +151,7 @@ public:
 	virtual void CopyPropErrCtxt(const IErrorContext *perrctxt);
 
 	// severity accessor
-	virtual ULONG
+	virtual GP_ULONG
 	GetSeverity() const
 	{
 		return m_severity;
@@ -159,7 +159,7 @@ public:
 
 	// set severity
 	virtual void
-	SetSev(ULONG severity)
+	SetSev(GP_ULONG severity)
 	{
 		m_severity = severity;
 	}
@@ -175,13 +175,13 @@ public:
 	// print errno message
 	virtual void AppendErrnoMsg();
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsPending() const
 	{
 		return m_pending;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsRethrown() const
 	{
 		return m_rethrown;

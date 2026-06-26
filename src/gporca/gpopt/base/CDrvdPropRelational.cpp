@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -145,13 +145,13 @@ CDrvdPropRelational::Derive(CMemoryPool *,	//mp,
 //		Check for satisfying required properties
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDrvdPropRelational::FSatisfies(const CReqdPropPlan *prpp) const
 {
 	GPOS_ASSERT(NULL != prpp);
 	GPOS_ASSERT(NULL != prpp->PcrsRequired());
 
-	BOOL fSatisfies = GetOutputColumns()->ContainsAll(prpp->PcrsRequired());
+	GP_BOOL fSatisfies = GetOutputColumns()->ContainsAll(prpp->PcrsRequired());
 
 	return fSatisfies;
 }
@@ -185,7 +185,7 @@ CDrvdPropRelational::GetRelationalProperties(CDrvdProp *pdp)
 //---------------------------------------------------------------------------
 CFunctionalDependencyArray *
 CDrvdPropRelational::DeriveChildFunctionalDependencies(
-	CMemoryPool *mp, ULONG child_index, CExpressionHandle &exprhdl)
+	CMemoryPool *mp, GP_ULONG child_index, CExpressionHandle &exprhdl)
 {
 	GPOS_ASSERT(child_index < exprhdl.Arity());
 	GPOS_ASSERT(!exprhdl.FScalarChild(child_index));
@@ -199,8 +199,8 @@ CDrvdPropRelational::DeriveChildFunctionalDependencies(
 	// collect child FD's that are applicable to the parent
 	CFunctionalDependencyArray *pdrgpfd =
 		GPOS_NEW(mp) CFunctionalDependencyArray(mp);
-	const ULONG size = pdrgpfdChild->Size();
-	for (ULONG ul = 0; ul < size; ul++)
+	const GP_ULONG size = pdrgpfdChild->Size();
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		CFunctionalDependency *pfd = (*pdrgpfdChild)[ul];
 
@@ -251,8 +251,8 @@ CDrvdPropRelational::DeriveLocalFunctionalDependencies(
 		return pdrgpfd;
 	}
 
-	ULONG ulKeys = pkc->Keys();
-	for (ULONG ul = 0; ul < ulKeys; ul++)
+	GP_ULONG ulKeys = pkc->Keys();
+	for (GP_ULONG ul = 0; ul < ulKeys; ul++)
 	{
 		CColRefArray *pdrgpcrKey = pkc->PdrgpcrKey(mp, ul);
 		CColRefSet *pcrsKey = GPOS_NEW(mp) CColRefSet(mp);
@@ -314,10 +314,10 @@ CDrvdPropRelational::OsPrint(IOstream &os) const
 
 	os << ", Constraint Property: [" << *GetPropertyConstraint() << "]";
 
-	const ULONG ulFDs = GetFunctionalDependencies()->Size();
+	const GP_ULONG ulFDs = GetFunctionalDependencies()->Size();
 
 	os << ", FDs: [";
-	for (ULONG ul = 0; ul < ulFDs; ul++)
+	for (GP_ULONG ul = 0; ul < ulFDs; ul++)
 	{
 		CFunctionalDependency *pfd = (*GetFunctionalDependencies())[ul];
 		os << *pfd;
@@ -464,10 +464,10 @@ CDrvdPropRelational::DeriveFunctionalDependencies(CExpressionHandle &exprhdl)
 	{
 		CFunctionalDependencyArray *pdrgpfd =
 			GPOS_NEW(m_mp) CFunctionalDependencyArray(m_mp);
-		const ULONG arity = exprhdl.Arity();
+		const GP_ULONG arity = exprhdl.Arity();
 
 		// collect applicable FD's from logical children
-		for (ULONG ul = 0; ul < arity; ul++)
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			if (!exprhdl.FScalarChild(ul))
 			{
@@ -512,14 +512,14 @@ CDrvdPropRelational::DeriveMaxCard(CExpressionHandle &exprhdl)
 }
 
 // join depth
-ULONG
+GP_ULONG
 CDrvdPropRelational::GetJoinDepth() const
 {
 	GPOS_RTL_ASSERT(IsComplete());
 	return m_ulJoinDepth;
 }
 
-ULONG
+GP_ULONG
 CDrvdPropRelational::DeriveJoinDepth(CExpressionHandle &exprhdl)
 {
 	if (!m_is_prop_derived->ExchangeSet(EdptJoinDepth))
@@ -594,14 +594,14 @@ CDrvdPropRelational::DeriveFunctionProperties(CExpressionHandle &exprhdl)
 }
 
 // has partial indexes
-BOOL
+GP_BOOL
 CDrvdPropRelational::HasPartialIndexes() const
 {
 	GPOS_RTL_ASSERT(IsComplete());
 	return m_fHasPartialIndexes;
 }
 
-BOOL
+GP_BOOL
 CDrvdPropRelational::DeriveHasPartialIndexes(CExpressionHandle &exprhdl)
 {
 	if (!m_is_prop_derived->ExchangeSet(EdptFHasPartialIndexes))

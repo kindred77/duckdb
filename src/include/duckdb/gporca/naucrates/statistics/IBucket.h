@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -54,7 +54,7 @@ public:
 	virtual CPoint *GetUpperBound() const = 0;
 
 	// is bucket singleton?
-	BOOL
+	GP_BOOL
 	IsSingleton() const
 	{
 		return GetLowerBound()->Equals(GetUpperBound());

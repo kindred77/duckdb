@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -86,15 +86,15 @@ private:
 	T m_val;
 
 	// true if this entry is marked for deletion
-	BOOL m_deleted;
+	GP_BOOL m_deleted;
 
 	// gclock counter; an entry is eligible for eviction if this
 	// counter drops to 0 and the entry is not pinned
-	ULONG m_g_clock_counter;
+	GP_ULONG m_g_clock_counter;
 
 public:
 	// ctor
-	CCacheEntry(CMemoryPool *mp, K key, T val, ULONG g_clock_counter)
+	CCacheEntry(CMemoryPool *mp, K key, T val, GP_ULONG g_clock_counter)
 		: m_mp(mp),
 		  m_val(val),
 		  m_deleted(false),
@@ -142,17 +142,17 @@ public:
 	}
 
 	// returns true if entry is marked as deleted
-	BOOL
+	GP_BOOL
 	IsMarkedForDeletion() const
 	{
 		return m_deleted;
 	}
 
 	// get value's ref-count
-	ULONG
+	GP_ULONG
 	RefCount() const
 	{
-		return (ULONG) ptr<T>()(m_val)->RefCount();
+		return (GP_ULONG) ptr<T>()(m_val)->RefCount();
 	}
 
 	// increments value's ref-count
@@ -171,7 +171,7 @@ public:
 
 	// sets the gclock counter for an entry; useful for updating counter upon access
 	void
-	SetGClockCounter(ULONG g_clock_counter)
+	SetGClockCounter(GP_ULONG g_clock_counter)
 	{
 		m_g_clock_counter = g_clock_counter;
 	}
@@ -184,7 +184,7 @@ public:
 	}
 
 	// returns the current value of the gclock counter
-	ULONG
+	GP_ULONG
 	GetGClockCounter()
 	{
 		return m_g_clock_counter;

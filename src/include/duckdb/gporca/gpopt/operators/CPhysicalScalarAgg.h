@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -39,9 +39,9 @@ public:
 	CPhysicalScalarAgg(
 		CMemoryPool *mp, CColRefArray *colref_array,
 		CColRefArray *pdrgpcrMinimal,  // minimal grouping columns based on FD's
-		COperator::EGbAggType egbaggtype, BOOL fGeneratesDuplicates,
-		CColRefArray *pdrgpcrArgDQA, BOOL fMultiStage, BOOL isAggFromSplitDQA,
-		CLogicalGbAgg::EAggStage aggStage, BOOL should_enforce_distribution);
+		COperator::EGbAggType egbaggtype, GP_BOOL fGeneratesDuplicates,
+		CColRefArray *pdrgpcrArgDQA, GP_BOOL fMultiStage, GP_BOOL isAggFromSplitDQA,
+		CLogicalGbAgg::EAggStage aggStage, GP_BOOL should_enforce_distribution);
 
 	// dtor
 	virtual ~CPhysicalScalarAgg();
@@ -67,9 +67,9 @@ public:
 
 	// compute required sort columns of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -61,7 +61,7 @@ CMDIdGPDBCtas::CMDIdGPDBCtas(const CMDIdGPDBCtas &mdid_source)
 //		of the same object
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdGPDBCtas::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidGPDBCtas != mdid->MdidType())
@@ -83,7 +83,7 @@ CMDIdGPDBCtas::Equals(const IMDId *mdid) const
 //		Is the mdid valid
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdGPDBCtas::IsValid() const
 {
 	return !Equals(&CMDIdGPDBCtas::m_mdid_invalid_key);

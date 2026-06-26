@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -46,7 +46,7 @@ private:
 	ULongPtr2dArray *m_input_colids_arrays;
 
 	// do the columns across inputs need to be casted
-	BOOL m_cast_across_input_req;
+	GP_BOOL m_cast_across_input_req;
 
 	// private copy ctor
 	CParseHandlerLogicalSetOp(const CParseHandlerLogicalSetOp &);

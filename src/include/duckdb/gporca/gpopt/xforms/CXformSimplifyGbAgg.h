@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -33,7 +33,7 @@ class CXformSimplifyGbAgg : public CXformExploration
 {
 private:
 	// helper to check if GbAgg can be transformed to a Select
-	static BOOL FDropGbAgg(CMemoryPool *mp, CExpression *pexpr,
+	static GP_BOOL FDropGbAgg(CMemoryPool *mp, CExpression *pexpr,
 						   CXformResult *pxfres);
 
 	// private copy ctor
@@ -63,7 +63,7 @@ public:
 	}
 
 	// Compatibility function for simplifying aggregates
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSimplifyGbAgg != exfid) &&

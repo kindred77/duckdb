@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -42,27 +42,27 @@ private:
 	INT m_iAttno;
 
 	// does column allow null values
-	BOOL m_is_nullable;
+	GP_BOOL m_is_nullable;
 
 	// id of the operator which is the source of this column reference
 	// not owned
-	ULONG m_ulSourceOpId;
+	GP_ULONG m_ulSourceOpId;
 
 	// is the column a distribution key
-	BOOL m_is_dist_col;
+	GP_BOOL m_is_dist_col;
 
 	// width of the column, for instance  char(10) column has width 10
-	ULONG m_width;
+	GP_ULONG m_width;
 
 public:
 	// ctors
-	CColRefTable(const CColumnDescriptor *pcd, ULONG id, const CName *pname,
-				 ULONG ulOpSource);
+	CColRefTable(const CColumnDescriptor *pcd, GP_ULONG id, const CName *pname,
+				 GP_ULONG ulOpSource);
 
 	CColRefTable(const IMDType *pmdtype, INT type_modifier, INT attno,
-				 BOOL is_nullable, ULONG id, const CName *pname,
-				 ULONG ulOpSource, BOOL is_dist_col,
-				 ULONG ulWidth = gpos::ulong_max);
+				 GP_BOOL is_nullable, GP_ULONG id, const CName *pname,
+				 GP_ULONG ulOpSource, GP_BOOL is_dist_col,
+				 GP_ULONG ulWidth = gpos::ulong_max);
 
 	// dtor
 	virtual ~CColRefTable();
@@ -82,14 +82,14 @@ public:
 	}
 
 	// does column allow null values?
-	BOOL
+	GP_BOOL
 	IsNullable() const
 	{
 		return m_is_nullable;
 	}
 
 	// is column a system column?
-	BOOL
+	GP_BOOL
 	IsSystemCol() const
 	{
 		// TODO-  04/13/2012, make this check system independent
@@ -98,21 +98,21 @@ public:
 	}
 
 	// is column a distribution column?
-	BOOL
+	GP_BOOL
 	IsDistCol() const
 	{
 		return m_is_dist_col;
 	}
 
 	// width of the column
-	ULONG
+	GP_ULONG
 	Width() const
 	{
 		return m_width;
 	}
 
 	// id of source operator
-	ULONG
+	GP_ULONG
 	UlSourceOpId() const
 	{
 		return m_ulSourceOpId;

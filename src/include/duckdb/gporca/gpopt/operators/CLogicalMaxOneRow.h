@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -59,14 +59,14 @@ public:
 	}
 
 	// match function;
-	virtual BOOL
+	virtual GP_BOOL
 	Matches(COperator *pop) const
 	{
 		return (Eopid() == pop->Eopid());
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return false;
@@ -76,14 +76,14 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	virtual GP_BOOL FCanPullProjectionsUp(GP_ULONG  //child_index
 	) const
 	{
 		return false;
@@ -142,7 +142,7 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
-								 ULONG child_index) const;
+								 GP_ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations

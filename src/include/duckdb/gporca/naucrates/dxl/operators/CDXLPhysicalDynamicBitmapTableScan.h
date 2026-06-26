@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -36,10 +36,10 @@ class CDXLPhysicalDynamicBitmapTableScan : public CDXLPhysicalAbstractBitmapScan
 {
 private:
 	// id of partition index structure
-	ULONG m_part_index_id;
+	GP_ULONG m_part_index_id;
 
 	// printable partition index id
-	ULONG m_part_index_id_printable;
+	GP_ULONG m_part_index_id_printable;
 
 	// private copy ctor
 	CDXLPhysicalDynamicBitmapTableScan(
@@ -49,8 +49,8 @@ public:
 	// ctor
 	CDXLPhysicalDynamicBitmapTableScan(CMemoryPool *mp,
 									   CDXLTableDescr *table_descr,
-									   ULONG part_idx_id,
-									   ULONG part_idx_id_printable)
+									   GP_ULONG part_idx_id,
+									   GP_ULONG part_idx_id_printable)
 		: CDXLPhysicalAbstractBitmapScan(mp, table_descr),
 		  m_part_index_id(part_idx_id),
 		  m_part_index_id_printable(part_idx_id_printable)
@@ -74,14 +74,14 @@ public:
 	virtual const CWStringConst *GetOpNameStr() const;
 
 	// partition index id
-	ULONG
+	GP_ULONG
 	GetPartIndexId() const
 	{
 		return m_part_index_id;
 	}
 
 	// printable partition index id
-	ULONG
+	GP_ULONG
 	GetPartIndexIdPrintable() const
 	{
 		return m_part_index_id_printable;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //      Greenplum Database
 //      Copyright (C) 2014 Pivotal Inc.
 //
@@ -72,7 +72,7 @@ public:
 	}
 
 	// check if the column is present
-	BOOL
+	GP_BOOL
 	IsPresent(const CColRef *column_ref) const
 	{
 		return m_column_refset->FMember(column_ref);

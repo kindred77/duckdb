@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,9 +42,9 @@ private:
 	CPartFilterMap *m_ppfm;
 
 	// check if given part index id needs to be enforced on top of the given expression
-	BOOL FRequiresPartitionPropagation(CMemoryPool *mp, CExpression *pexpr,
+	GP_BOOL FRequiresPartitionPropagation(CMemoryPool *mp, CExpression *pexpr,
 									   CExpressionHandle &exprhdl,
-									   ULONG part_idx_id) const;
+									   GP_ULONG part_idx_id) const;
 
 	// private copy ctor
 	CPartitionPropagationSpec(const CPartitionPropagationSpec &);
@@ -75,7 +75,7 @@ private:
 	CColRefSet *PcrsKeys(CMemoryPool *mp, CColRef2dArray *pdrgpdrgpcrKeys);
 
 	// return the filter expression for the given Scan Id
-	CExpression *PexprFilter(CMemoryPool *mp, ULONG scan_id);
+	CExpression *PexprFilter(CMemoryPool *mp, GP_ULONG scan_id);
 
 public:
 	// ctor
@@ -105,7 +105,7 @@ public:
 								 CExpression *pexpr);
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// extract columns used by the rewindability spec
 	virtual CColRefSet *
@@ -123,10 +123,10 @@ public:
 	}
 
 	// equality function
-	BOOL Matches(const CPartitionPropagationSpec *ppps) const;
+	GP_BOOL Matches(const CPartitionPropagationSpec *ppps) const;
 
 	// is partition propagation required
-	BOOL
+	GP_BOOL
 	FPartPropagationReqd() const
 	{
 		return m_ppim->FContainsUnresolvedZeroPropagators();

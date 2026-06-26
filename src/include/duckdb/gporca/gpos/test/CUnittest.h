@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -24,7 +24,7 @@
 #define GPOS_UNITTEST_EXT(x) \
 	gpos::CUnittest(#x, CUnittest::EttExtended, x::EresUnittest)
 
-// helper for subtest identified by ULONG parameter
+// helper for subtest identified by GP_ULONG parameter
 #define GPOS_UNITTEST_STD_SUBTEST(x, i) \
 	gpos::CUnittest(#x "_" #i, CUnittest::EttStandard, x::EresSubtest, i)
 
@@ -72,11 +72,11 @@ private:
 		void (*m_pfCleanup)();
 
 		// counter of nested calls to execute function
-		ULONG &m_ulNested;
+		GP_ULONG &m_ulNested;
 
 	public:
 		// ctor
-		CAutoConfig(void (*pfConfig)(), void (*pfCleanup)(), ULONG &ulNested)
+		CAutoConfig(void (*pfConfig)(), void (*pfCleanup)(), GP_ULONG &ulNested)
 			: m_pfCleanup(pfCleanup), m_ulNested(ulNested)
 		{
 			if (NULL != pfConfig && 0 == m_ulNested++)
@@ -105,25 +105,25 @@ private:
 	GPOS_RESULT (*m_pfunc)(void);
 
 	// subtest function
-	GPOS_RESULT (*m_pfuncSubtest)(ULONG);
-	ULONG m_ulSubtest;
+	GPOS_RESULT (*m_pfuncSubtest)(GP_ULONG);
+	GP_ULONG m_ulSubtest;
 
 
 	// flag whether to expect the test to throw
-	BOOL m_fExcep;
+	GP_BOOL m_fExcep;
 
 	// expected exception, if any
-	ULONG m_ulMajor;
-	ULONG m_ulMinor;
+	GP_ULONG m_ulMajor;
+	GP_ULONG m_ulMinor;
 
 	// array of unittests to execute
 	static CUnittest *m_rgut;
 
 	// number of unittests to execute
-	static ULONG m_ulTests;
+	static GP_ULONG m_ulTests;
 
 	// counter of nested calls to execute function
-	static ULONG m_ulNested;
+	static GP_ULONG m_ulNested;
 
 	// unittest configuration function; it's called before executing any unittest
 	static void (*m_pfConfig)();
@@ -135,7 +135,7 @@ private:
 	static GPOS_RESULT EresExecTest(const CUnittest &ut);
 
 	// check if exception was injected by simulation
-	static BOOL FSimulated(CException ex);
+	static GP_BOOL FSimulated(CException ex);
 
 	// top-level loop around execution of individual UT;
 	// used for exception simulation;
@@ -147,17 +147,17 @@ public:
 	CUnittest(const CHAR *szTitle, ETestType ett, GPOS_RESULT (*pfunc)(void));
 
 	CUnittest(const CHAR *szTitle, ETestType ett, GPOS_RESULT (*pfunc)(void),
-			  ULONG major, ULONG minor);
+			  GP_ULONG major, GP_ULONG minor);
 
 	CUnittest(const CHAR *szTitle, ETestType ett,
-			  GPOS_RESULT (*pfuncSubtest)(ULONG), ULONG ulSubtest);
+			  GPOS_RESULT (*pfuncSubtest)(GP_ULONG), GP_ULONG ulSubtest);
 
 	// copy ctor
 	CUnittest(const CUnittest &ut);
 
 	// determine whether this is expected to throw and if so whether the given exception is the right one
-	BOOL FThrows() const;
-	BOOL FThrows(ULONG major, ULONG minor) const;
+	GP_BOOL FThrows() const;
+	GP_BOOL FThrows(GP_ULONG major, GP_ULONG minor) const;
 
 	// test type
 	ETestType
@@ -167,7 +167,7 @@ public:
 	}
 
 	// check if title equals given string
-	BOOL Equals(CHAR *sz) const;
+	GP_BOOL Equals(CHAR *sz) const;
 
 	// find test with given attributes and add to list
 	static void FindTest(CBitVector &bv, ETestType ett, CHAR *szTestName);
@@ -179,26 +179,26 @@ public:
 	static ULLONG UllParsePlanId(const CHAR *szPlanId);
 
 	// get number of unittests
-	static ULONG
+	static GP_ULONG
 	UlTests()
 	{
 		return m_ulTests;
 	}
 
 	// driver routine for groups of UTs
-	static GPOS_RESULT EresExecute(const CUnittest *, const ULONG cSize);
+	static GPOS_RESULT EresExecute(const CUnittest *, const GP_ULONG cSize);
 
 	// driver routine; returns the number of failed tests
 	// (0 if all specified tests succeeded)
-	static ULONG Driver(CBitVector *pbv);
+	static GP_ULONG Driver(CBitVector *pbv);
 
 	// driver routine parsing input arguments; returns the
 	// number of failed tests (0 if all specified tests
 	// succeeded)
-	static ULONG Driver(CMainArgs *pma);
+	static GP_ULONG Driver(CMainArgs *pma);
 
 	// initialize unittest array
-	static void Init(CUnittest *rgut, ULONG ulUtCnt, void (*pfConfig)(),
+	static void Init(CUnittest *rgut, GP_ULONG ulUtCnt, void (*pfConfig)(),
 					 void (*pfCleanup)());
 
 };	// class CUnittest

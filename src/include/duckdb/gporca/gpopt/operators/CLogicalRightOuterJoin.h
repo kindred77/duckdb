@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //  Copyright (c) 2020 VMware, Inc.
 //
@@ -56,8 +56,8 @@ public:
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL
-	FCanPullProjectionsUp(ULONG child_index) const
+	virtual GP_BOOL
+	FCanPullProjectionsUp(GP_ULONG child_index) const
 	{
 		return (1 == child_index);
 	}

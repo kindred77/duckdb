@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,7 +29,7 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CMDPartConstraintGPDB::CMDPartConstraintGPDB(
 	CMemoryPool *mp, ULongPtrArray *level_with_default_part_array,
-	BOOL is_unbounded, CDXLNode *dxlnode)
+	GP_BOOL is_unbounded, CDXLNode *dxlnode)
 	: m_mp(mp),
 	  m_level_with_default_part_array(level_with_default_part_array),
 	  m_is_unbounded(is_unbounded),
@@ -95,7 +95,7 @@ CMDPartConstraintGPDB::GetDefaultPartsArray() const
 //		Is constraint unbounded
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDPartConstraintGPDB::IsConstraintUnbounded() const
 {
 	return m_is_unbounded;

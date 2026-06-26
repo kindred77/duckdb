@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -90,7 +90,7 @@ public:
 	}
 
 	// is this a temp relation
-	virtual BOOL IsTemporary() const = 0;
+	virtual GP_BOOL IsTemporary() const = 0;
 
 	// storage type (heap, appendonly, ...)
 	virtual Erelstoragetype RetrieveRelStorageType() const = 0;
@@ -99,90 +99,90 @@ public:
 	virtual Ereldistrpolicy GetRelDistribution() const = 0;
 
 	// number of columns
-	virtual ULONG ColumnCount() const = 0;
+	virtual GP_ULONG ColumnCount() const = 0;
 
 	// width of a column with regards to the position
-	virtual DOUBLE ColWidth(ULONG pos) const = 0;
+	virtual DOUBLE ColWidth(GP_ULONG pos) const = 0;
 
 	// does relation have dropped columns
-	virtual BOOL HasDroppedColumns() const = 0;
+	virtual GP_BOOL HasDroppedColumns() const = 0;
 
 	// number of non-dropped columns
-	virtual ULONG NonDroppedColsCount() const = 0;
+	virtual GP_ULONG NonDroppedColsCount() const = 0;
 
 	// return the position of the given attribute position excluding dropped columns
-	virtual ULONG NonDroppedColAt(ULONG pos) const = 0;
+	virtual GP_ULONG NonDroppedColAt(GP_ULONG pos) const = 0;
 
 	// return the position of a column in the metadata object given the attribute number in the system catalog
-	virtual ULONG GetPosFromAttno(INT attno) const = 0;
+	virtual GP_ULONG GetPosFromAttno(INT attno) const = 0;
 
 	// return the original positions of all the non-dropped columns
 	virtual ULongPtrArray *NonDroppedColsArray() const = 0;
 
 	// number of system columns
-	virtual ULONG SystemColumnsCount() const = 0;
+	virtual GP_ULONG SystemColumnsCount() const = 0;
 
 	// retrieve the column at the given position
-	virtual const IMDColumn *GetMdCol(ULONG pos) const = 0;
+	virtual const IMDColumn *GetMdCol(GP_ULONG pos) const = 0;
 
 	// number of key sets
-	virtual ULONG KeySetCount() const = 0;
+	virtual GP_ULONG KeySetCount() const = 0;
 
 	// key set at given position
-	virtual const ULongPtrArray *KeySetAt(ULONG pos) const = 0;
+	virtual const ULongPtrArray *KeySetAt(GP_ULONG pos) const = 0;
 
 	// number of distribution columns
-	virtual ULONG DistrColumnCount() const = 0;
+	virtual GP_ULONG DistrColumnCount() const = 0;
 
 	// retrieve the column at the given position in the distribution key for the relation
-	virtual const IMDColumn *GetDistrColAt(ULONG pos) const = 0;
+	virtual const IMDColumn *GetDistrColAt(GP_ULONG pos) const = 0;
 
-	virtual IMDId *GetDistrOpfamilyAt(ULONG pos) const = 0;
+	virtual IMDId *GetDistrOpfamilyAt(GP_ULONG pos) const = 0;
 
 	// return true if a hash distributed table needs to be considered as random
-	virtual BOOL ConvertHashToRandom() const = 0;
+	virtual GP_BOOL ConvertHashToRandom() const = 0;
 
 	// does this table have oids
-	virtual BOOL HasOids() const = 0;
+	virtual GP_BOOL HasOids() const = 0;
 
 	// is this a partitioned table
-	virtual BOOL IsPartitioned() const = 0;
+	virtual GP_BOOL IsPartitioned() const = 0;
 
 	// number of partition columns
-	virtual ULONG PartColumnCount() const = 0;
+	virtual GP_ULONG PartColumnCount() const = 0;
 
 	// number of partitions
-	virtual ULONG PartitionCount() const = 0;
+	virtual GP_ULONG PartitionCount() const = 0;
 
 	// retrieve the partition column at the given position
-	virtual const IMDColumn *PartColAt(ULONG pos) const = 0;
+	virtual const IMDColumn *PartColAt(GP_ULONG pos) const = 0;
 
 	// retrieve list of partition types
 	virtual CharPtrArray *GetPartitionTypes() const = 0;
 
 	// retrieve the partition type of the given partition level
-	virtual CHAR PartTypeAtLevel(ULONG pos) const = 0;
+	virtual CHAR PartTypeAtLevel(GP_ULONG pos) const = 0;
 
 	// number of indices
-	virtual ULONG IndexCount() const = 0;
+	virtual GP_ULONG IndexCount() const = 0;
 
 	// number of triggers
-	virtual ULONG TriggerCount() const = 0;
+	virtual GP_ULONG TriggerCount() const = 0;
 
 	// retrieve the id of the metadata cache index at the given position
-	virtual IMDId *IndexMDidAt(ULONG pos) const = 0;
+	virtual IMDId *IndexMDidAt(GP_ULONG pos) const = 0;
 
 	// check if index is partial given its mdid
-	virtual BOOL IsPartialIndex(IMDId *mdid) const;
+	virtual GP_BOOL IsPartialIndex(IMDId *mdid) const;
 
 	// retrieve the id of the metadata cache trigger at the given position
-	virtual IMDId *TriggerMDidAt(ULONG pos) const = 0;
+	virtual IMDId *TriggerMDidAt(GP_ULONG pos) const = 0;
 
 	// number of check constraints
-	virtual ULONG CheckConstraintCount() const = 0;
+	virtual GP_ULONG CheckConstraintCount() const = 0;
 
 	// retrieve the id of the check constraint cache at the given position
-	virtual IMDId *CheckConstraintMDidAt(ULONG pos) const = 0;
+	virtual IMDId *CheckConstraintMDidAt(GP_ULONG pos) const = 0;
 
 	// part constraint
 	virtual IMDPartConstraint *MDPartConstraint() const = 0;
@@ -195,7 +195,7 @@ public:
 	}
 
 	// contains any external partitions (for partitioned tables only)
-	BOOL
+	GP_BOOL
 	HasExternalPartitions() const
 	{
 		return (NULL != GetExternalPartitions() &&
@@ -210,7 +210,7 @@ public:
 	static const CWStringConst *GetStorageTypeStr(
 		IMDRelation::Erelstoragetype rel_storage_type);
 
-	BOOL
+	GP_BOOL
 	IsAORowOrColTable() const
 	{
 		Erelstoragetype st = RetrieveRelStorageType();

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -45,7 +45,7 @@ class CDXLPhysicalRedistributeMotion : public CDXLPhysicalMotion
 {
 private:
 	// is this a duplicate sensitive redistribute motion
-	BOOL m_is_duplicate_sensitive;
+	GP_BOOL m_is_duplicate_sensitive;
 
 	// private copy ctor
 	CDXLPhysicalRedistributeMotion(const CDXLPhysicalRedistributeMotion &);
@@ -54,21 +54,21 @@ private:
 public:
 	// ctor
 	CDXLPhysicalRedistributeMotion(CMemoryPool *mp,
-								   BOOL is_duplicate_sensitive);
+								   GP_BOOL is_duplicate_sensitive);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
 	const CWStringConst *GetOpNameStr() const;
 
 	// does motion remove duplicates
-	BOOL
+	GP_BOOL
 	IsDuplicateSensitive() const
 	{
 		return m_is_duplicate_sensitive;
 	}
 
 	// index of relational child node in the children array
-	virtual ULONG
+	virtual GP_ULONG
 	GetRelationChildIdx() const
 	{
 		return EdxlrmIndexChild;
@@ -92,7 +92,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

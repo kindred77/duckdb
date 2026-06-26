@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal Software, Inc.
 //
@@ -35,7 +35,7 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerNLJIndexParamList : public CParseHandlerBase
 {
 private:
-	BOOL m_is_param_list;
+	GP_BOOL m_is_param_list;
 
 	// array of outer column references
 	CDXLColRefArray *m_nest_params_colrefs_array;

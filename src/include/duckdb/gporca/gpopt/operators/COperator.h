@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009-2011 Greenplum, Inc.
 //
@@ -55,13 +55,13 @@ private:
 protected:
 	// operator id that is unique over all instances of all operator types
 	// for the current query
-	ULONG m_ulOpId;
+	GP_ULONG m_ulOpId;
 
 	// memory pool for internal allocations
 	CMemoryPool *m_mp;
 
 	// is pattern of xform
-	BOOL m_fPattern;
+	GP_BOOL m_fPattern;
 
 	// return an addref'ed copy of the operator
 	virtual COperator *PopCopyDefault();
@@ -73,11 +73,11 @@ protected:
 	// derive function properties from children
 	static CFunctionProp *PfpDeriveFromChildren(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		IMDFunction::EFuncStbl efsDefault, BOOL fHasVolatileFunctionScan,
-		BOOL fScan);
+		IMDFunction::EFuncStbl efsDefault, GP_BOOL fHasVolatileFunctionScan,
+		GP_BOOL fScan);
 
 	// generate unique operator ids
-	static ULONG m_aulOpIdCounter;
+	static GP_ULONG m_aulOpIdCounter;
 
 public:
 	// identification
@@ -292,7 +292,7 @@ public:
 	}
 
 	// the id of the operator
-	ULONG
+	GP_ULONG
 	UlOpId() const
 	{
 		return m_ulOpId;
@@ -307,42 +307,42 @@ public:
 	// the following functions check operator's type
 
 	// is operator logical?
-	virtual BOOL
+	virtual GP_BOOL
 	FLogical() const
 	{
 		return false;
 	}
 
 	// is operator physical?
-	virtual BOOL
+	virtual GP_BOOL
 	FPhysical() const
 	{
 		return false;
 	}
 
 	// is operator scalar?
-	virtual BOOL
+	virtual GP_BOOL
 	FScalar() const
 	{
 		return false;
 	}
 
 	// is operator pattern?
-	virtual BOOL
+	virtual GP_BOOL
 	FPattern() const
 	{
 		return false;
 	}
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const = 0;
+	virtual GP_BOOL FInputOrderSensitive() const = 0;
 
 	// match function;
 	// abstract to enforce an implementation for each new operator
-	virtual BOOL Matches(COperator *pop) const = 0;
+	virtual GP_BOOL Matches(COperator *pop) const = 0;
 
 	// create container for derived properties
 	virtual CDrvdProp *PdpCreate(CMemoryPool *mp) const = 0;
@@ -352,7 +352,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist) = 0;
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist) = 0;
 
 	// print
 	virtual IOstream &OsPrint(IOstream &os) const;

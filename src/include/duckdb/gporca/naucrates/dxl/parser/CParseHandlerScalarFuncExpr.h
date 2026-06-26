@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -36,7 +36,7 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarFuncExpr : public CParseHandlerScalarOp
 {
 private:
-	BOOL m_inside_func_expr;
+	GP_BOOL m_inside_func_expr;
 
 	// private copy ctor
 	CParseHandlerScalarFuncExpr(const CParseHandlerScalarFuncExpr &);

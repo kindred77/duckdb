@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -27,14 +27,14 @@ class CColRef;
 class CPartConstraint;
 
 // hash maps of part constraints indexed by part index id
-typedef CHashMap<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMap<GP_ULONG, CPartConstraint, gpos::HashValue<GP_ULONG>,
+				 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 				 CleanupRelease<CPartConstraint> >
 	UlongToPartConstraintMap;
 
 // map iterator
-typedef CHashMapIter<ULONG, CPartConstraint, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CPartConstraint, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CPartConstraint> >
 	UlongToPartConstraintMapIter;
 
@@ -56,13 +56,13 @@ private:
 	CBitSet *m_pbsDefaultParts;
 
 	// number of levels;
-	ULONG m_num_of_part_levels;
+	GP_ULONG m_num_of_part_levels;
 
 	// is constraint unbounded
-	BOOL m_is_unbounded;
+	GP_BOOL m_is_unbounded;
 
 	// is a dummy (not to be used) constraint
-	BOOL m_fUninterpreted;
+	GP_BOOL m_fUninterpreted;
 
 	// partition keys
 	CColRef2dArray *m_pdrgpdrgpcr;
@@ -75,17 +75,17 @@ private:
 
 #ifdef GPOS_DEBUG
 	// are all default partitions on all levels included
-	BOOL FAllDefaultPartsIncluded();
+	GP_BOOL FAllDefaultPartsIncluded();
 #endif	//GPOS_DEBUG
 
 	// does the current constraint overlap with given one at the given level
-	BOOL FOverlapLevel(CMemoryPool *mp, const CPartConstraint *ppartcnstr,
-					   ULONG ulLevel) const;
+	GP_BOOL FOverlapLevel(CMemoryPool *mp, const CPartConstraint *ppartcnstr,
+					   GP_ULONG ulLevel) const;
 
 	// check whether or not the current part constraint can be negated. A part
 	// constraint can be negated only if it has constraints on the first level
 	// since negation destroys the independence between the levels
-	BOOL FCanNegate() const;
+	GP_BOOL FCanNegate() const;
 
 	// construct the combined constraint
 	CConstraint *PcnstrBuildCombined(CMemoryPool *mp);
@@ -96,31 +96,31 @@ private:
 								 CConstraint *pcnstrSnd);
 
 	// check if two constaint maps have the same constraints
-	static BOOL FEqualConstrMaps(UlongToConstraintMap *phmulcnstrFst,
+	static GP_BOOL FEqualConstrMaps(UlongToConstraintMap *phmulcnstrFst,
 								 UlongToConstraintMap *phmulcnstrSnd,
-								 ULONG ulLevels);
+								 GP_ULONG ulLevels);
 
 	// check if it is possible to produce a disjunction of the two given part
 	// constraints. This is possible if the first ulLevels-1 have the same
 	// constraints and default flags for both part constraints
-	static BOOL FDisjunctionPossible(CPartConstraint *ppartcnstrFst,
+	static GP_BOOL FDisjunctionPossible(CPartConstraint *ppartcnstrFst,
 									 CPartConstraint *ppartcnstrSnd);
 
 public:
 	// ctors
 	CPartConstraint(CMemoryPool *mp, UlongToConstraintMap *phmulcnstr,
-					CBitSet *pbsDefaultParts, BOOL is_unbounded,
+					CBitSet *pbsDefaultParts, GP_BOOL is_unbounded,
 					CColRef2dArray *pdrgpdrgpcr);
 	CPartConstraint(CMemoryPool *mp, CConstraint *pcnstr,
-					BOOL fDefaultPartition, BOOL is_unbounded);
+					GP_BOOL fDefaultPartition, GP_BOOL is_unbounded);
 
-	CPartConstraint(BOOL fUninterpreted);
+	CPartConstraint(GP_BOOL fUninterpreted);
 
 	// dtor
 	virtual ~CPartConstraint();
 
 	// constraint at given level
-	CConstraint *Pcnstr(ULONG ulLevel) const;
+	CConstraint *Pcnstr(GP_ULONG ulLevel) const;
 
 	// combined constraint
 	CConstraint *
@@ -130,8 +130,8 @@ public:
 	}
 
 	// is default partition included on the given level
-	BOOL
-	IsDefaultPartition(ULONG ulLevel) const
+	GP_BOOL
+	IsDefaultPartition(GP_ULONG ulLevel) const
 	{
 		return m_pbsDefaultParts->Get(ulLevel);
 	}
@@ -144,23 +144,23 @@ public:
 	}
 
 	// is constraint unbounded
-	BOOL IsConstraintUnbounded() const;
+	GP_BOOL IsConstraintUnbounded() const;
 
 	// is constraint uninterpreted
-	BOOL
+	GP_BOOL
 	FUninterpreted() const
 	{
 		return m_fUninterpreted;
 	}
 
 	// are constraints equivalent
-	BOOL FEquivalent(const CPartConstraint *ppartcnstr) const;
+	GP_BOOL FEquivalent(const CPartConstraint *ppartcnstr) const;
 
 	// does constraint overlap with given constraint
-	BOOL FOverlap(CMemoryPool *mp, const CPartConstraint *ppartcnstr) const;
+	GP_BOOL FOverlap(CMemoryPool *mp, const CPartConstraint *ppartcnstr) const;
 
 	// does constraint subsume given one
-	BOOL FSubsume(const CPartConstraint *ppartcnstr) const;
+	GP_BOOL FSubsume(const CPartConstraint *ppartcnstr) const;
 
 	// return what remains of the current part constraint after taking out
 	// the given part constraint. Returns NULL is the difference cannot be
@@ -170,7 +170,7 @@ public:
 
 	// return a copy of the part constraint with remapped columns
 	CPartConstraint *PpartcnstrCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// print
 	virtual IOstream &OsPrint(IOstream &os) const;

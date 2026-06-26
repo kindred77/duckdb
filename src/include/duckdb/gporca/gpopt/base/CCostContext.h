@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -88,12 +88,12 @@ private:
 	CDrvdPropPlan *m_pdpplan;
 
 	// optimization request number
-	ULONG m_ulOptReq;
+	GP_ULONG m_ulOptReq;
 
 	// flag to indicate if cost context is pruned,
 	// a cost context is pruned during branch-and-bound search if there exists
 	// an equivalent context with better cost
-	BOOL m_fPruned;
+	GP_BOOL m_fPruned;
 
 	// stats of owner group expression
 	IStatistics *m_pstats;
@@ -109,7 +109,7 @@ private:
 	static void BreakCostTiesForJoinPlans(const CCostContext *pccFst,
 										  const CCostContext *pccSnd,
 										  CONST_COSTCTXT_PTR *ppccPrefered,
-										  BOOL *pfTiesResolved);
+										  GP_BOOL *pfTiesResolved);
 
 	// private copy ctor
 	CCostContext(const CCostContext &);
@@ -122,7 +122,7 @@ public:
 	SLink m_link;
 
 	// ctor
-	CCostContext(CMemoryPool *mp, COptimizationContext *poc, ULONG ulOptReq,
+	CCostContext(CMemoryPool *mp, COptimizationContext *poc, GP_ULONG ulOptReq,
 				 CGroupExpression *pgexpr);
 
 	// dtor
@@ -136,14 +136,14 @@ public:
 	}
 
 	// accessor of optimization request number
-	ULONG
+	GP_ULONG
 	UlOptReq() const
 	{
 		return m_ulOptReq;
 	}
 
 	// is context pruned based on cost comparison?
-	BOOL
+	GP_BOOL
 	FPruned() const
 	{
 		return m_fPruned;
@@ -201,10 +201,10 @@ public:
 	}
 
 	// check if we need to derive stats for this context
-	BOOL FNeedsNewStats() const;
+	GP_BOOL FNeedsNewStats() const;
 
 	// check if new stats were derived for this context
-	BOOL FOwnsStats() const;
+	GP_BOOL FOwnsStats() const;
 
 	// derived plan properties accessor
 	CDrvdPropPlan *
@@ -245,25 +245,25 @@ public:
 
 
 	// check validity by comparing derived and required properties
-	BOOL IsValid(CMemoryPool *mp);
+	GP_BOOL IsValid(CMemoryPool *mp);
 
 	// comparison operator
-	BOOL operator==(const CCostContext &cc) const;
+	GP_BOOL operator==(const CCostContext &cc) const;
 
 	// compute cost
 	CCost CostCompute(CMemoryPool *mp, CCostArray *pdrgpcostChildren);
 
 	// is current context better than the given equivalent context based on cost?
-	BOOL FBetterThan(const CCostContext *pcc) const;
+	GP_BOOL FBetterThan(const CCostContext *pcc) const;
 
 	// is this cost context of a two stage scalar DQA created by CXformSplitDQA
-	BOOL IsTwoStageScalarDQACostCtxt(const CCostContext *pcc) const;
+	GP_BOOL IsTwoStageScalarDQACostCtxt(const CCostContext *pcc) const;
 
 	// is this cost context of a three stage scalar DQA created by CXformSplitDQA
-	BOOL IsThreeStageScalarDQACostCtxt(const CCostContext *pcc) const;
+	GP_BOOL IsThreeStageScalarDQACostCtxt(const CCostContext *pcc) const;
 
 	// equality function
-	static BOOL
+	static GP_BOOL
 	Equals(const CCostContext &ccLeft, const CCostContext &ccRight)
 	{
 		// check if we are comparing against invalid context
@@ -278,21 +278,21 @@ public:
 	}
 
 	// equality function
-	static BOOL
+	static GP_BOOL
 	Equals(const CCostContext *pccLeft, const CCostContext *pccRight)
 	{
 		return Equals(*pccLeft, *pccRight);
 	}
 
 	// hash function
-	static ULONG
+	static GP_ULONG
 	HashValue(const CCostContext &cc)
 	{
 		return COptimizationContext::HashValue(*(cc.Poc()));
 	}
 
 	// hash function
-	static ULONG
+	static GP_ULONG
 	HashValue(const CCostContext *pcc)
 	{
 		return HashValue(*pcc);

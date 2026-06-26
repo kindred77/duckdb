@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -69,7 +69,7 @@ protected:
 	// output column generation given a list of column descriptors
 	CColRefArray *PdrgpcrCreateMapping(
 		CMemoryPool *mp, const CColumnDescriptorArray *pdrgpcoldesc,
-		ULONG ulOpSourceId, IMDId *mdid_table = NULL) const;
+		GP_ULONG ulOpSourceId, IMDId *mdid_table = NULL) const;
 
 	// initialize the array of partition columns
 	CColRef2dArray *PdrgpdrgpcrCreatePartCols(CMemoryPool *mp,
@@ -100,7 +100,7 @@ protected:
 										  CExpressionHandle &exprhdl,
 										  CColRefSet *pcrsInput,
 										  CColRefSet *pcrsUsed,
-										  ULONG child_index);
+										  GP_ULONG child_index);
 
 	// helper for common case of passing through required stat columns
 	static CColRefSet *PcrsStatsPassThru(CColRefSet *pcrsInput);
@@ -110,7 +110,7 @@ protected:
 
 	// shorthand to addref and pass through keys from n-th child
 	static CKeyCollection *PkcDeriveKeysPassThru(CExpressionHandle &exprhdl,
-												 ULONG ulInput);
+												 GP_ULONG ulInput);
 
 	// shorthand to combine keys from first n - 1 children
 	static CKeyCollection *PkcCombineKeys(CMemoryPool *mp,
@@ -140,7 +140,7 @@ protected:
 
 	// shorthand to addref and pass through constraint from a given child
 	static CPropConstraint *PpcDeriveConstraintPassThru(
-		CExpressionHandle &exprhdl, ULONG ulChild);
+		CExpressionHandle &exprhdl, GP_ULONG ulChild);
 
 	// derive constraint property only on the given columns
 	static CPropConstraint *PpcDeriveConstraintRestrict(
@@ -150,7 +150,7 @@ protected:
 	static CMaxCard MaxcardDef(CExpressionHandle &exprhdl);
 
 	// compute max card given scalar child and constraint property
-	static CMaxCard Maxcard(CExpressionHandle &exprhdl, ULONG ulScalarIndex,
+	static CMaxCard Maxcard(CExpressionHandle &exprhdl, GP_ULONG ulScalarIndex,
 							CMaxCard maxcard);
 
 	// compute order spec based on an index
@@ -175,7 +175,7 @@ public:
 	virtual ~CLogical();
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FLogical() const
 	{
 		GPOS_ASSERT(!FPhysical() && !FScalar() && !FPattern());
@@ -234,7 +234,7 @@ public:
 								   CExpressionHandle &exprhdl) const;
 
 	// derive join depth
-	virtual ULONG DeriveJoinDepth(CMemoryPool *mp,
+	virtual GP_ULONG DeriveJoinDepth(CMemoryPool *mp,
 								  CExpressionHandle &exprhdl) const;
 
 	// derive partition information
@@ -274,13 +274,13 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
-								 ULONG child_index) const = 0;
+								 GP_ULONG child_index) const = 0;
 
 	// compute partition predicate to pass down to n-th child
 	virtual CExpression *PexprPartPred(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
 									   CExpression *pexprInput,
-									   ULONG child_index) const;
+									   GP_ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
@@ -295,14 +295,14 @@ public:
 
 	// return true if operator can select a subset of input tuples based on some predicate,
 	// for example, a Join is a SelectionOp, but a Project is not
-	virtual BOOL
+	virtual GP_BOOL
 	FSelectionOp() const
 	{
 		return false;
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	virtual GP_BOOL FCanPullProjectionsUp(GP_ULONG  //child_index
 	) const
 	{
 		return true;

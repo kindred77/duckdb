@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -40,7 +40,7 @@ protected:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -51,7 +51,7 @@ public:
 	virtual CDistributionSpec *Pds() const = 0;
 
 	// check if optimization contexts is valid
-	virtual BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
+	virtual GP_BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
 							   COptimizationContextArray *pdrgpocChild) const;
 
 	//-------------------------------------------------------------------------------------
@@ -60,31 +60,31 @@ public:
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const;
+								  GP_ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(
 		CMemoryPool *mp,
 		CExpressionHandle &,   // exprhdl
 		CRewindabilitySpec *,  // prsRequired
-		ULONG,				   // child_index
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const;
+		GP_ULONG,				   // child_index
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) const;
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
@@ -133,7 +133,7 @@ public:
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL
+	virtual GP_BOOL
 	FPassThruStats() const
 	{
 		return true;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,7 +65,7 @@ public:
 		return "CScalarIsDistinctFrom";
 	}
 
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// conversion function
 	static CScalarIsDistinctFrom *PopConvert(COperator *pop);

@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CDistributionSpecStrictRandom_H
@@ -40,10 +40,10 @@ public:
 	}
 
 	// does this distribution match the given one
-	virtual BOOL Matches(const CDistributionSpec *pds) const;
+	virtual GP_BOOL Matches(const CDistributionSpec *pds) const;
 
 	// does this distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const;
 };	// class CDistributionSpecStrictRandom
 }  // namespace gpopt
 

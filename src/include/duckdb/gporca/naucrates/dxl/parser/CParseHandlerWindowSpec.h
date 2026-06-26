@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -45,7 +45,7 @@ private:
 	CMDName *m_mdname;
 
 	// does the window spec have a frame definition
-	BOOL m_has_window_frame;
+	GP_BOOL m_has_window_frame;
 
 	// private copy ctor
 	CParseHandlerWindowSpec(const CParseHandlerWindowSpec &);

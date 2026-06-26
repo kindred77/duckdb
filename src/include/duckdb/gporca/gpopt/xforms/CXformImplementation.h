@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -41,7 +41,7 @@ public:
 	virtual ~CXformImplementation();
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FImplementation() const
 	{
 		GPOS_ASSERT(!FSubstitution() && !FExploration());

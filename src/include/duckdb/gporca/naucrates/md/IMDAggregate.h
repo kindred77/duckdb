@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -49,14 +49,14 @@ public:
 	virtual IMDId *GetResultTypeMdid() const = 0;
 
 	// is aggregate ordered
-	virtual BOOL IsOrdered() const = 0;
+	virtual GP_BOOL IsOrdered() const = 0;
 
 	// is aggregate splittable
-	virtual BOOL IsSplittable() const = 0;
+	virtual GP_BOOL IsSplittable() const = 0;
 
 	virtual
 		// is aggregate hash capable
-		BOOL
+		GP_BOOL
 		IsHashAggCapable() const = 0;
 };
 }  // namespace gpmd

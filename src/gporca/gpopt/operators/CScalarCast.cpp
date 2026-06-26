@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -32,7 +32,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CScalarCast::CScalarCast(CMemoryPool *mp, IMDId *return_type_mdid,
-						 IMDId *mdid_func, BOOL is_binary_coercible)
+						 IMDId *mdid_func, GP_BOOL is_binary_coercible)
 	: CScalar(mp),
 	  m_return_type_mdid(return_type_mdid),
 	  m_func_mdid(mdid_func),
@@ -60,7 +60,7 @@ CScalarCast::CScalarCast(CMemoryPool *mp, IMDId *return_type_mdid,
 //		Match function on operator level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarCast::Matches(COperator *pop) const
 {
 	if (pop->Eopid() == Eopid())

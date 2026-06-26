@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Software, Inc.
 //
@@ -26,7 +26,7 @@ using namespace gpopt;
 using namespace gpmd;
 
 // is the given expression a binary coercible cast of a scalar identifier
-BOOL
+GP_BOOL
 CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr, CColRef *colref)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -44,7 +44,7 @@ CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr, CColRef *colref)
 }
 
 // is the given expression a binary coercible cast of a scalar identifier
-BOOL
+GP_BOOL
 CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -61,7 +61,7 @@ CCastUtils::FBinaryCoercibleCastedScId(CExpression *pexpr)
 }
 
 // is the given expression a binary coercible cast of a const
-BOOL
+GP_BOOL
 CCastUtils::FBinaryCoercibleCastedConst(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -85,8 +85,8 @@ CCastUtils::PcrExtractFromScIdOrCastScId(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
 
-	BOOL fScIdent = COperator::EopScalarIdent == pexpr->Pop()->Eopid();
-	BOOL fCastedScIdent = CScalarIdent::FCastedScId(pexpr);
+	GP_BOOL fScIdent = COperator::EopScalarIdent == pexpr->Pop()->Eopid();
+	GP_BOOL fCastedScIdent = CScalarIdent::FCastedScId(pexpr);
 
 	// col or cast(col)
 	if (!fScIdent && !fCastedScIdent)
@@ -151,7 +151,7 @@ CCastUtils::PexprCast(CMemoryPool *mp, CMDAccessor *md_accessor,
 }
 
 // check whether the given expression is a binary coercible cast of something
-BOOL
+GP_BOOL
 CCastUtils::FBinaryCoercibleCast(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -161,7 +161,7 @@ CCastUtils::FBinaryCoercibleCast(CExpression *pexpr)
 		   CScalarCast::PopConvert(pop)->IsBinaryCoercible();
 }
 
-BOOL
+GP_BOOL
 CCastUtils::FScalarCast(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -198,8 +198,8 @@ CCastUtils::PdrgpexprCastEquality(CMemoryPool *mp, CExpression *pexpr)
 	CExpressionArray *pdrgpexpr =
 		CPredicateUtils::PdrgpexprConjuncts(mp, pexpr);
 	CExpressionArray *pdrgpexprNew = GPOS_NEW(mp) CExpressionArray(mp);
-	const ULONG ulPreds = pdrgpexpr->Size();
-	for (ULONG ul = 0; ul < ulPreds; ul++)
+	const GP_ULONG ulPreds = pdrgpexpr->Size();
+	for (GP_ULONG ul = 0; ul < ulPreds; ul++)
 	{
 		CExpression *pexprPred = (*pdrgpexpr)[ul];
 		pexprPred->AddRef();
@@ -251,10 +251,10 @@ CCastUtils::PexprAddCast(CMemoryPool *mp, CExpression *pexprPred)
 
 	CExpression *pexprNewPred = NULL;
 
-	BOOL fTypesEqual = mdid_type_left->Equals(mdid_type_right);
-	BOOL fCastLtoR = CMDAccessorUtils::FCastExists(md_accessor, mdid_type_left,
+	GP_BOOL fTypesEqual = mdid_type_left->Equals(mdid_type_right);
+	GP_BOOL fCastLtoR = CMDAccessorUtils::FCastExists(md_accessor, mdid_type_left,
 												   mdid_type_right);
-	BOOL fCastRtoL = CMDAccessorUtils::FCastExists(md_accessor, mdid_type_right,
+	GP_BOOL fCastRtoL = CMDAccessorUtils::FCastExists(md_accessor, mdid_type_right,
 												   mdid_type_left);
 
 	if (fTypesEqual || !(fCastLtoR || fCastRtoL))

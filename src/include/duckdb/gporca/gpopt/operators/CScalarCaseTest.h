@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -66,19 +66,19 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const;
+	virtual GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();

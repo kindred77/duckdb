@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008, 2009 Greenplum, Inc.
 //
@@ -51,20 +51,20 @@ private:
 	ColRefToColRefSetMap *m_phmcrcrs;
 
 	// id counter
-	ULONG m_aul;
+	GP_ULONG m_aul;
 
 	// hash table
-	CSyncHashtable<CColRef, ULONG> m_sht;
+	CSyncHashtable<CColRef, GP_ULONG> m_sht;
 
 	// private copy ctor
 	CColumnFactory(const CColumnFactory &);
 
 	// implementation of factory methods
-	CColRef *PcrCreate(const IMDType *pmdtype, INT type_modifier, ULONG id,
+	CColRef *PcrCreate(const IMDType *pmdtype, INT type_modifier, GP_ULONG id,
 					   const CName &name);
-	CColRef *PcrCreate(const CColumnDescriptor *pcoldesc, ULONG id,
-					   const CName &name, ULONG ulOpSource,
-					   BOOL mark_as_used = true, IMDId *mdid_table = NULL);
+	CColRef *PcrCreate(const CColumnDescriptor *pcoldesc, GP_ULONG id,
+					   const CName &name, GP_ULONG ulOpSource,
+					   GP_BOOL mark_as_used = true, IMDId *mdid_table = NULL);
 
 public:
 	// ctor
@@ -85,13 +85,13 @@ public:
 
 	// create a column reference given its descriptor and name
 	CColRef *PcrCreate(const CColumnDescriptor *pcoldescr, const CName &name,
-					   ULONG ulOpSource, BOOL mark_as_used, IMDId *mdid_table);
+					   GP_ULONG ulOpSource, GP_BOOL mark_as_used, IMDId *mdid_table);
 
 	// create a column reference given its type, attno, nullability and name
 	CColRef *PcrCreate(const IMDType *pmdtype, INT type_modifier,
-					   IMDId *mdid_table, INT attno, BOOL is_nullable, ULONG id,
-					   const CName &name, ULONG ulOpSource, BOOL isDistCol,
-					   ULONG ulWidth = gpos::ulong_max);
+					   IMDId *mdid_table, INT attno, GP_BOOL is_nullable, GP_ULONG id,
+					   const CName &name, GP_ULONG ulOpSource, GP_BOOL isDistCol,
+					   GP_ULONG ulWidth = gpos::ulong_max);
 
 	// create a column reference with the same type as passed column reference
 	CColRef *
@@ -110,7 +110,7 @@ public:
 	CColRef *PcrCopy(const CColRef *colref);
 
 	// lookup by id
-	CColRef *LookupColRef(ULONG id);
+	CColRef *LookupColRef(GP_ULONG id);
 
 	// destructor
 	void Destroy(CColRef *);

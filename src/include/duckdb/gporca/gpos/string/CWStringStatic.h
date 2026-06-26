@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -34,7 +34,7 @@ class CWStringStatic : public CWString
 {
 private:
 	// buffer capacity
-	ULONG m_capacity;
+	GP_ULONG m_capacity;
 
 	// private copy ctor
 	CWStringStatic(const CWStringStatic &);
@@ -45,10 +45,10 @@ protected:
 
 public:
 	// ctor
-	CWStringStatic(WCHAR w_str_buffer[], ULONG capacity);
+	CWStringStatic(WCHAR w_str_buffer[], GP_ULONG capacity);
 
 	// ctor with string initialization
-	CWStringStatic(WCHAR w_str_buffer[], ULONG capacity,
+	CWStringStatic(WCHAR w_str_buffer[], GP_ULONG capacity,
 				   const WCHAR w_str_init[]);
 
 	// appends a string and replaces character with string

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -24,8 +24,8 @@ using namespace gpdxl;
 // ctor
 CMDArrayCoerceCastGPDB::CMDArrayCoerceCastGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname, IMDId *mdid_src,
-	IMDId *mdid_dest, BOOL is_binary_coercible, IMDId *mdid_cast_func,
-	EmdCoercepathType path_type, INT type_modifier, BOOL is_explicit,
+	IMDId *mdid_dest, GP_BOOL is_binary_coercible, IMDId *mdid_cast_func,
+	EmdCoercepathType path_type, INT type_modifier, GP_BOOL is_explicit,
 	EdxlCoercionForm dxl_coerce_format, INT location)
 	: CMDCastGPDB(mp, mdid, mdname, mdid_src, mdid_dest, is_binary_coercible,
 				  mdid_cast_func, path_type),
@@ -52,7 +52,7 @@ CMDArrayCoerceCastGPDB::TypeModifier() const
 }
 
 // return is explicit cast
-BOOL
+GP_BOOL
 CMDArrayCoerceCastGPDB::IsExplicit() const
 {
 	return m_is_explicit;
@@ -110,7 +110,7 @@ CMDArrayCoerceCastGPDB::Serialize(CXMLSerializer *xml_serializer) const
 		CDXLTokens::GetDXLTokenStr(EdxltokenIsExplicit), m_is_explicit);
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenCoercionForm),
-		(ULONG) m_dxl_coerce_format);
+		(GP_ULONG) m_dxl_coerce_format);
 	xml_serializer->AddAttribute(CDXLTokens::GetDXLTokenStr(EdxltokenLocation),
 								 m_location);
 

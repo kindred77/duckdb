@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -90,10 +90,10 @@ private:
 	CCost m_cost;
 
 	// id of origin group, used for debugging expressions extracted from memo
-	ULONG m_ulOriginGrpId;
+	GP_ULONG m_ulOriginGrpId;
 
 	// id of origin group expression, used for debugging expressions extracted from memo
-	ULONG m_ulOriginGrpExprId;
+	GP_ULONG m_ulOriginGrpExprId;
 
 	// get expression's derived property given its type
 	CDrvdProp *Pdp(const CDrvdProp::EPropType ept) const;
@@ -109,10 +109,10 @@ private:
 #endif	// GPOS_DEBUG
 
 	// check if the expression satisfies partition enforcer condition
-	BOOL FValidPartEnforcers(CDrvdPropCtxtPlan *pdpctxtplan);
+	GP_BOOL FValidPartEnforcers(CDrvdPropCtxtPlan *pdpctxtplan);
 
 	// check if the distributions of all children are compatible
-	BOOL FValidChildrenDistribution(CDrvdPropCtxtPlan *pdpctxtplan);
+	GP_BOOL FValidChildrenDistribution(CDrvdPropCtxtPlan *pdpctxtplan);
 
 	// copy group properties and stats to expression
 	void CopyGroupPropsAndStats(IStatistics *input_stats);
@@ -154,14 +154,14 @@ public:
 
 	// shorthand to access children
 	CExpression *
-	operator[](ULONG ulPos) const
+	operator[](GP_ULONG ulPos) const
 	{
 		GPOS_ASSERT(NULL != m_pdrgpexpr);
 		return (*m_pdrgpexpr)[ulPos];
 	};
 
 	// arity function
-	ULONG
+	GP_ULONG
 	Arity() const
 	{
 		return m_pdrgpexpr == NULL ? 0 : m_pdrgpexpr->Size();
@@ -241,35 +241,35 @@ public:
 	CReqdPropPlan *PrppCompute(CMemoryPool *mp, CReqdPropPlan *prppInput);
 
 	// check for outer references
-	BOOL HasOuterRefs();
+	GP_BOOL HasOuterRefs();
 
 	// print driver
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// print driver, customized for expressions
 	IOstream &OsPrintExpression(IOstream &os, const CPrintPrefix * = NULL,
-								BOOL fLast = true) const;
+								GP_BOOL fLast = true) const;
 
 	// match with group expression
-	BOOL FMatchPattern(CGroupExpression *pgexpr) const;
+	GP_BOOL FMatchPattern(CGroupExpression *pgexpr) const;
 
 	// return a copy of the expression with remapped columns
 	CExpression *PexprCopyWithRemappedColumns(CMemoryPool *mp,
 											  UlongToColRefMap *colref_mapping,
-											  BOOL must_exist) const;
+											  GP_BOOL must_exist) const;
 
 	// compare entire expression rooted here
-	BOOL Matches(CExpression *pexpr) const;
+	GP_BOOL Matches(CExpression *pexpr) const;
 
 #ifdef GPOS_DEBUG
 	// match against given pattern
-	BOOL FMatchPattern(CExpression *pexpr) const;
+	GP_BOOL FMatchPattern(CExpression *pexpr) const;
 
 	// match children against given pattern
-	BOOL FMatchPatternChildren(CExpression *pexpr) const;
+	GP_BOOL FMatchPatternChildren(CExpression *pexpr) const;
 
 	// compare entire expression rooted here
-	BOOL FMatchDebug(CExpression *pexpr) const;
+	GP_BOOL FMatchDebug(CExpression *pexpr) const;
 
 	// debug print; for interactive debugging sessions only
 	// prints expression properties as well
@@ -277,13 +277,13 @@ public:
 #endif	// GPOS_DEBUG
 
 	// check if the expression satisfies given required properties
-	BOOL FValidPlan(const CReqdPropPlan *prpp, CDrvdPropCtxtPlan *pdpctxtplan);
+	GP_BOOL FValidPlan(const CReqdPropPlan *prpp, CDrvdPropCtxtPlan *pdpctxtplan);
 
 	// static hash function
-	static ULONG HashValue(const CExpression *pexpr);
+	static GP_ULONG HashValue(const CExpression *pexpr);
 
 	// static hash function
-	static ULONG UlHashDedup(const CExpression *pexpr);
+	static GP_ULONG UlHashDedup(const CExpression *pexpr);
 
 	// rehydrate expression from a given cost context and child expressions
 	static CExpression *PexprRehydrate(CMemoryPool *mp, CCostContext *pcc,
@@ -298,26 +298,26 @@ public:
 	CKeyCollection *DeriveKeyCollection();
 	CPropConstraint *DerivePropertyConstraint();
 	CMaxCard DeriveMaxCard();
-	ULONG DeriveJoinDepth();
+	GP_ULONG DeriveJoinDepth();
 	CFunctionProp *DeriveFunctionProperties();
 	CFunctionalDependencyArray *DeriveFunctionalDependencies();
 	CPartInfo *DerivePartitionInfo();
-	BOOL DeriveHasPartialIndexes();
+	GP_BOOL DeriveHasPartialIndexes();
 	CTableDescriptor *DeriveTableDescriptor();
 
 	// Scalar property accessors - derived as needed
 	CColRefSet *DeriveDefinedColumns();
 	CColRefSet *DeriveUsedColumns();
 	CColRefSet *DeriveSetReturningFunctionColumns();
-	BOOL DeriveHasSubquery();
+	GP_BOOL DeriveHasSubquery();
 	CPartInfo *DeriveScalarPartitionInfo();
 	CFunctionProp *DeriveScalarFunctionProperties();
-	BOOL DeriveHasNonScalarFunction();
-	ULONG DeriveTotalDistinctAggs();
-	BOOL DeriveHasMultipleDistinctAggs();
-	BOOL DeriveHasScalarArrayCmp();
-	BOOL DeriveHasScalarFuncProject();
-	ULONG DeriveTotalOrderedAggs();
+	GP_BOOL DeriveHasNonScalarFunction();
+	GP_ULONG DeriveTotalDistinctAggs();
+	GP_BOOL DeriveHasMultipleDistinctAggs();
+	GP_BOOL DeriveHasScalarArrayCmp();
+	GP_BOOL DeriveHasScalarFuncProject();
+	GP_ULONG DeriveTotalOrderedAggs();
 
 };	// class CExpression
 
@@ -329,15 +329,15 @@ operator<<(IOstream &os, CExpression &expr)
 	return expr.OsPrint(os);
 }
 
-// hash map from ULONG to expression
-typedef CHashMap<ULONG, CExpression, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+// hash map from GP_ULONG to expression
+typedef CHashMap<GP_ULONG, CExpression, gpos::HashValue<GP_ULONG>,
+				 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 				 CleanupRelease<CExpression> >
 	UlongToExprMap;
 
 // map iterator
-typedef CHashMapIter<ULONG, CExpression, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CExpression, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CExpression> >
 	UlongToExprMapIter;
 

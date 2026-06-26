@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -98,9 +98,9 @@ public:
 						CDrvdPropCtxt *pdppropctxt) = 0;
 
 	// check for satisfying required plan properties
-	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const = 0;
+	virtual GP_BOOL FSatisfies(const CReqdPropPlan *prpp) const = 0;
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsComplete() const
 	{
 		return true;

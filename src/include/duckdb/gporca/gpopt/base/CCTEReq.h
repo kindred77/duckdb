@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -50,13 +50,13 @@ private:
 	{
 	private:
 		// cte id
-		ULONG m_id;
+		GP_ULONG m_id;
 
 		// cte type
 		CCTEMap::ECteType m_ect;
 
 		// is it required or optional
-		BOOL m_fRequired;
+		GP_BOOL m_fRequired;
 
 		// plan properties of corresponding producer
 		CDrvdPropPlan *m_pdpplan;
@@ -66,14 +66,14 @@ private:
 
 	public:
 		// ctor
-		CCTEReqEntry(ULONG id, CCTEMap::ECteType ect, BOOL fRequired,
+		CCTEReqEntry(GP_ULONG id, CCTEMap::ECteType ect, GP_BOOL fRequired,
 					 CDrvdPropPlan *pdpplan);
 
 		// dtor
 		virtual ~CCTEReqEntry();
 
 		// cte id
-		ULONG
+		GP_ULONG
 		Id() const
 		{
 			return m_id;
@@ -87,7 +87,7 @@ private:
 		}
 
 		// required flag
-		BOOL
+		GP_BOOL
 		FRequired() const
 		{
 			return m_fRequired;
@@ -101,10 +101,10 @@ private:
 		}
 
 		// hash function
-		ULONG HashValue() const;
+		GP_ULONG HashValue() const;
 
 		// equality function
-		BOOL Equals(CCTEReqEntry *pcre) const;
+		GP_BOOL Equals(CCTEReqEntry *pcre) const;
 
 		// print function
 		virtual IOstream &OsPrint(IOstream &os) const;
@@ -112,14 +112,14 @@ private:
 	};	// class CCTEReqEntry
 
 	// map CTE id to CTE Req entry
-	typedef CHashMap<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CCTEReqEntry, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CCTEReqEntry> >
 		UlongToCTEReqEntryMap;
 
 	// map iterator
-	typedef CHashMapIter<ULONG, CCTEReqEntry, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CCTEReqEntry, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupRelease<CCTEReqEntry> >
 		UlongToCTEReqEntryMapIter;
 
@@ -136,7 +136,7 @@ private:
 	CCTEReq(const CCTEReq &);
 
 	// lookup info for given cte id
-	CCTEReqEntry *PcreLookup(ULONG ulCteId) const;
+	CCTEReqEntry *PcreLookup(GP_ULONG ulCteId) const;
 
 public:
 	// ctor
@@ -153,18 +153,18 @@ public:
 	}
 
 	// return the CTE type associated with the given ID in the requirements
-	CCTEMap::ECteType Ect(const ULONG id) const;
+	CCTEMap::ECteType Ect(const GP_ULONG id) const;
 
 	// insert a new entry, no entry with the same id can already exist
-	void Insert(ULONG ulCteId, CCTEMap::ECteType ect, BOOL fRequired,
+	void Insert(GP_ULONG ulCteId, CCTEMap::ECteType ect, GP_BOOL fRequired,
 				CDrvdPropPlan *pdpplan);
 
 	// insert a new consumer entry with the given id. The plan properties are
 	// taken from the given context
-	void InsertConsumer(ULONG id, CDrvdPropArray *pdrgpdpCtxt);
+	void InsertConsumer(GP_ULONG id, CDrvdPropArray *pdrgpdpCtxt);
 
 	// check if two cte requirements are equal
-	BOOL
+	GP_BOOL
 	Equals(const CCTEReq *pcter) const
 	{
 		GPOS_ASSERT(NULL != pcter);
@@ -173,14 +173,14 @@ public:
 	}
 
 	// check if current requirement is a subset of the given one
-	BOOL FSubset(const CCTEReq *pcter) const;
+	GP_BOOL FSubset(const CCTEReq *pcter) const;
 
 	// check if the given CTE is in the requirements
-	BOOL FContainsRequirement(const ULONG id,
+	GP_BOOL FContainsRequirement(const GP_ULONG id,
 							  const CCTEMap::ECteType ect) const;
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// returns a new requirement containing unresolved CTE requirements given a derived CTE map
 	CCTEReq *PcterUnresolved(CMemoryPool *mp, CCTEMap *pcm);
@@ -194,7 +194,7 @@ public:
 	CCTEReq *PcterAllOptional(CMemoryPool *mp);
 
 	// lookup plan properties for given cte id
-	CDrvdPropPlan *Pdpplan(ULONG ulCteId) const;
+	CDrvdPropPlan *Pdpplan(GP_ULONG ulCteId) const;
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

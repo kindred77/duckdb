@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -64,7 +64,7 @@ public:
 	void Remove(CTaskLocalStorageObject *);
 
 	// equality function -- used for hashtable
-	static BOOL
+	static GP_BOOL
 	Equals(const CTaskLocalStorage::Etlsidx &idx,
 		   const CTaskLocalStorage::Etlsidx &idx_other)
 	{
@@ -72,11 +72,11 @@ public:
 	}
 
 	// hash function
-	static ULONG
+	static GP_ULONG
 	HashIdx(const CTaskLocalStorage::Etlsidx &idx)
 	{
 		// keys are unique
-		return static_cast<ULONG>(idx);
+		return static_cast<GP_ULONG>(idx);
 	}
 
 	// invalid Etlsidx

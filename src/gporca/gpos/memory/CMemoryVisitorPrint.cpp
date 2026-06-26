@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -65,14 +65,14 @@ CMemoryVisitorPrint::~CMemoryVisitorPrint()
 void
 CMemoryVisitorPrint::Visit(void *user_addr, SIZE_T user_size, void *total_addr,
 						   SIZE_T total_size, const CHAR *alloc_filename,
-						   const ULONG alloc_line, ULLONG alloc_seq_number,
+						   const GP_ULONG alloc_line, ULLONG alloc_seq_number,
 						   CStackDescriptor *stack_desc)
 {
 	m_os << COstream::EsmDec << "allocation sequence number "
 		 << alloc_seq_number << ","
-		 << " total size " << (ULONG) total_size << " bytes,"
+		 << " total size " << (GP_ULONG) total_size << " bytes,"
 		 << " base address " << total_addr << ","
-		 << " user size " << (ULONG) user_size << " bytes,"
+		 << " user size " << (GP_ULONG) user_size << " bytes,"
 		 << " user address " << user_addr << ","
 		 << " allocated by " << alloc_filename << ":" << alloc_line
 		 << std::endl;

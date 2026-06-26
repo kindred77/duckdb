@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CColConstraintsArrayMapper.h"
@@ -10,7 +10,7 @@ using namespace gpopt;
 CConstraintArray *
 CColConstraintsArrayMapper::PdrgPcnstrLookup(CColRef *colref)
 {
-	const BOOL fExclusive = true;
+	const GP_BOOL fExclusive = true;
 	return CConstraint::PdrgpcnstrOnColumn(m_mp, m_pdrgpcnstr, colref,
 										   fExclusive);
 }

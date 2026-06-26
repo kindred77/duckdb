@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -61,7 +61,7 @@ public:
 
 	// indexed access
 	inline T &
-	operator[](ULONG ulPos)
+	operator[](GP_ULONG ulPos)
 	{
 		return m_object_array[ulPos];
 	}

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -34,17 +34,17 @@ typedef CParseHandlerBase *(ParseHandlerOpCreatorFunc)(CMemoryPool *mp,
 // fwd decl
 class CDXLTokens;
 
-const ULONG HASH_MAP_SIZE = 128;
+const GP_ULONG HASH_MAP_SIZE = 128;
 
 // function for hashing xerces strings
-inline ULONG
+inline GP_ULONG
 GetHashXMLStr(const XMLCh *xml_str)
 {
-	return (ULONG) XMLString::hash(xml_str, HASH_MAP_SIZE);
+	return (GP_ULONG) XMLString::hash(xml_str, HASH_MAP_SIZE);
 }
 
 // function for equality on xerces strings
-inline BOOL
+inline GP_BOOL
 IsXMLStrEqual(const XMLCh *xml_str1, const XMLCh *xml_str2)
 {
 	return (0 == XMLString::compareString(xml_str1, xml_str2));

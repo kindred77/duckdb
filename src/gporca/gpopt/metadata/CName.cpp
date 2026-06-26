@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -46,7 +46,7 @@ CName::CName(CMemoryPool *mp, const CWStringBase *str)
 //		specified by the fOwnsMemory argument
 //
 //---------------------------------------------------------------------------
-CName::CName(const CWStringConst *str, BOOL fOwnsMemory)
+CName::CName(const CWStringConst *str, GP_BOOL fOwnsMemory)
 	: m_str_name(str), m_fDeepCopy(fOwnsMemory)
 {
 	GPOS_ASSERT(NULL != m_str_name);
@@ -154,7 +154,7 @@ CName::DeepCopy(CMemoryPool *mp, const CWStringConst *str)
 //		comparison of names
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CName::Equals(const CName &name) const
 {
 	return m_str_name->Equals((name.Pstr()));

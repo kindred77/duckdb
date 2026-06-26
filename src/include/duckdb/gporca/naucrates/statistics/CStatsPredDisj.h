@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -51,10 +51,10 @@ public:
 	}
 
 	// the column identifier on which the predicates are on
-	virtual ULONG GetColId() const;
+	virtual GP_ULONG GetColId() const;
 
 	// total number of predicates in the disjunction
-	ULONG
+	GP_ULONG
 	GetNumPreds() const
 	{
 		return m_disj_pred_stats_array->Size();
@@ -71,7 +71,7 @@ public:
 	void Sort() const;
 
 	// return the point filter at a particular position
-	CStatsPred *GetPredStats(ULONG pos) const;
+	CStatsPred *GetPredStats(GP_ULONG pos) const;
 
 	// filter type id
 	virtual EStatsPredType
@@ -81,7 +81,7 @@ public:
 	}
 
 	// return the column id of the filter based on the column ids of its child filters
-	static ULONG GetColId(const CStatsPredPtrArry *pdrgpstatspred);
+	static GP_ULONG GetColId(const CStatsPredPtrArry *pdrgpstatspred);
 
 	// conversion function
 	static CStatsPredDisj *

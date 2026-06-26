@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -41,24 +41,24 @@ class CDXLPhysicalAppend : public CDXLPhysical
 {
 private:
 	// is the append node used in an update/delete statement
-	BOOL m_used_in_upd_del;
+	GP_BOOL m_used_in_upd_del;
 
 	// TODO:  - Apr 12, 2011; find a better name (and comments) for this variable
-	BOOL m_is_zapped;
+	GP_BOOL m_is_zapped;
 
 	// private copy ctor
 	CDXLPhysicalAppend(const CDXLPhysicalAppend &);
 
 public:
 	// ctor/dtor
-	CDXLPhysicalAppend(CMemoryPool *mp, BOOL fIsTarget, BOOL fIsZapped);
+	CDXLPhysicalAppend(CMemoryPool *mp, GP_BOOL fIsTarget, GP_BOOL fIsZapped);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
 	const CWStringConst *GetOpNameStr() const;
 
-	BOOL IsUsedInUpdDel() const;
-	BOOL IsZapped() const;
+	GP_BOOL IsUsedInUpdDel() const;
+	GP_BOOL IsZapped() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -77,7 +77,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

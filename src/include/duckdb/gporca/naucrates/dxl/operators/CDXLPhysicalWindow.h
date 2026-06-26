@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -62,7 +62,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// number of partition columns
-	ULONG PartByColsCount() const;
+	GP_ULONG PartByColsCount() const;
 
 	// return partition columns
 	const ULongPtrArray *
@@ -72,10 +72,10 @@ public:
 	}
 
 	// number of window keys
-	ULONG WindowKeysCount() const;
+	GP_ULONG WindowKeysCount() const;
 
 	// return the window key at a given position
-	CDXLWindowKey *GetDXLWindowKeyAt(ULONG ulPos) const;
+	CDXLWindowKey *GetDXLWindowKeyAt(GP_ULONG ulPos) const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -94,7 +94,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

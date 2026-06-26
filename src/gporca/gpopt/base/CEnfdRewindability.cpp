@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -66,7 +66,7 @@ CEnfdRewindability::~CEnfdRewindability()
 //		specified matching type
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CEnfdRewindability::FCompatible(CRewindabilitySpec *prs) const
 {
 	GPOS_ASSERT(NULL != prs);
@@ -92,7 +92,7 @@ CEnfdRewindability::FCompatible(CRewindabilitySpec *prs) const
 // 		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CEnfdRewindability::HashValue() const
 {
 	return gpos::CombineHashes(m_erm + 1, m_prs->HashValue());
@@ -109,7 +109,7 @@ CEnfdRewindability::HashValue() const
 //---------------------------------------------------------------------------
 CEnfdProp::EPropEnforcingType
 CEnfdRewindability::Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
-						 BOOL fRewindabilityReqd) const
+						 GP_BOOL fRewindabilityReqd) const
 {
 	if (fRewindabilityReqd)
 	{

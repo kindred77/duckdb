@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -30,7 +30,7 @@ FORCE_GENERATE_DBGSTR(CColumnDescriptor);
 //---------------------------------------------------------------------------
 CColumnDescriptor::CColumnDescriptor(CMemoryPool *mp, const IMDType *pmdtype,
 									 INT type_modifier, const CName &name,
-									 INT attno, BOOL is_nullable, ULONG ulWidth)
+									 INT attno, GP_BOOL is_nullable, GP_ULONG ulWidth)
 	: m_pmdtype(pmdtype),
 	  m_type_modifier(type_modifier),
 	  m_name(mp, name),

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Software Inc.
 //
@@ -17,7 +17,7 @@ using namespace gpdxl;
 using namespace gpmd;
 
 // ctor
-CMDIndexInfo::CMDIndexInfo(IMDId *mdid, BOOL is_partial)
+CMDIndexInfo::CMDIndexInfo(IMDId *mdid, GP_BOOL is_partial)
 	: m_mdid(mdid), m_is_partial(is_partial)
 {
 	GPOS_ASSERT(mdid->IsValid());
@@ -37,7 +37,7 @@ CMDIndexInfo::MDId() const
 }
 
 // is the index partial
-BOOL
+GP_BOOL
 CMDIndexInfo::IsPartial() const
 {
 	return m_is_partial;

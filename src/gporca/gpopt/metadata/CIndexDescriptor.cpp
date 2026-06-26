@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -32,7 +32,7 @@ FORCE_GENERATE_DBGSTR(CIndexDescriptor);
 CIndexDescriptor::CIndexDescriptor(
 	CMemoryPool *mp, IMDId *pmdidIndex, const CName &name,
 	CColumnDescriptorArray *pdrgcoldescKeyCols,
-	CColumnDescriptorArray *pdrgcoldescIncludedCols, BOOL is_clustered,
+	CColumnDescriptorArray *pdrgcoldescIncludedCols, GP_BOOL is_clustered,
 	IMDIndex::EmdindexType index_type)
 	: m_pmdidIndex(pmdidIndex),
 	  m_name(mp, name),
@@ -71,7 +71,7 @@ CIndexDescriptor::~CIndexDescriptor()
 //		number of key columns
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CIndexDescriptor::Keys() const
 {
 	return m_pdrgpcoldescKeyCols->Size();
@@ -85,7 +85,7 @@ CIndexDescriptor::Keys() const
 //		Number of included columns
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CIndexDescriptor::UlIncludedColumns() const
 {
 	// array allocated in ctor
@@ -117,7 +117,7 @@ CIndexDescriptor::Pindexdesc(CMemoryPool *mp, const CTableDescriptor *ptabdesc,
 	CColumnDescriptorArray *pdrgcoldescKey =
 		GPOS_NEW(mp) CColumnDescriptorArray(mp);
 
-	for (ULONG ul = 0; ul < pmdindex->Keys(); ul++)
+	for (GP_ULONG ul = 0; ul < pmdindex->Keys(); ul++)
 	{
 		CColumnDescriptor *pcoldesc = (*pdrgpcoldesc)[ul];
 		pcoldesc->AddRef();
@@ -127,7 +127,7 @@ CIndexDescriptor::Pindexdesc(CMemoryPool *mp, const CTableDescriptor *ptabdesc,
 	// array of included column descriptors
 	CColumnDescriptorArray *pdrgcoldescIncluded =
 		GPOS_NEW(mp) CColumnDescriptorArray(mp);
-	for (ULONG ul = 0; ul < pmdindex->IncludedCols(); ul++)
+	for (GP_ULONG ul = 0; ul < pmdindex->IncludedCols(); ul++)
 	{
 		CColumnDescriptor *pcoldesc = (*pdrgpcoldesc)[ul];
 		pcoldesc->AddRef();
@@ -142,7 +142,7 @@ CIndexDescriptor::Pindexdesc(CMemoryPool *mp, const CTableDescriptor *ptabdesc,
 	return pindexdesc;
 }
 
-BOOL
+GP_BOOL
 CIndexDescriptor::SupportsIndexOnlyScan() const
 {
 	return m_index_type == IMDIndex::EmdindBtree;

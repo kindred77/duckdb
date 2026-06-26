@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -41,7 +41,7 @@ const CDouble CDatumGenericGPDB::DefaultCdbRolloffSelectivity(0.14);
 //---------------------------------------------------------------------------
 CDatumGenericGPDB::CDatumGenericGPDB(CMemoryPool *mp, IMDId *mdid,
 									 INT type_modifier, const void *src,
-									 ULONG size, BOOL is_null,
+									 GP_ULONG size, GP_BOOL is_null,
 									 LINT stats_comp_val_int,
 									 CDouble stats_comp_val_double)
 	: m_mp(mp),
@@ -89,7 +89,7 @@ CDatumGenericGPDB::~CDatumGenericGPDB()
 //		Accessor of is null
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::IsNull() const
 {
 	return m_is_null;
@@ -104,7 +104,7 @@ CDatumGenericGPDB::IsNull() const
 //		Accessor of size
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumGenericGPDB::Size() const
 {
 	return m_size;
@@ -140,19 +140,19 @@ CDatumGenericGPDB::TypeModifier() const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumGenericGPDB::HashValue() const
 {
-	ULONG hash = 0;
+	GP_ULONG hash = 0;
 	if (IsNull())
 	{
-		hash = gpos::HashValue<ULONG>(&hash);
+		hash = gpos::HashValue<GP_ULONG>(&hash);
 	}
 	else
 	{
 		hash = gpos::HashValue<BYTE>(&m_bytearray_value[0]);
-		ULONG size = Size();
-		for (ULONG i = 1; i < size; i++)
+		GP_ULONG size = Size();
+		for (GP_ULONG i = 1; i < size; i++)
 		{
 			hash = gpos::CombineHashes(
 				hash, gpos::HashValue<BYTE>(&m_bytearray_value[i]));
@@ -195,8 +195,8 @@ CDatumGenericGPDB::GetStrRepr(CMemoryPool *mp) const
 	}
 
 	// print hex representation of bytes
-	ULONG size = Size();
-	for (ULONG i = 0; i < size; i++)
+	GP_ULONG size = Size();
+	for (GP_ULONG i = 0; i < size; i++)
 	{
 		str.AppendFormat(GPOS_WSZ_LIT("%02X"), m_bytearray_value[i]);
 	}
@@ -212,7 +212,7 @@ CDatumGenericGPDB::GetStrRepr(CMemoryPool *mp) const
 //		Matches the values of datums
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::Matches(const IDatum *datum) const
 {
 	if (!datum->MDId()->Equals(m_mdid) || (datum->Size() != Size()))
@@ -286,7 +286,7 @@ CDatumGenericGPDB::OsPrint(IOstream &os) const
 //		For statistics computation, can this datum be mapped to a CDouble
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::IsDatumMappableToDouble() const
 {
 	return CMDTypeGenericGPDB::HasByte2DoubleMapping(this->MDId());
@@ -300,7 +300,7 @@ CDatumGenericGPDB::IsDatumMappableToDouble() const
 //		For statistics computation, can this datum be mapped to a LINT
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::IsDatumMappableToLINT() const
 {
 	if (NULL == m_cached_type)
@@ -332,7 +332,7 @@ CDatumGenericGPDB::GetByteArrayValue() const
 //		Are datums statistically equal?
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::StatsAreEqual(const IDatum *datum) const
 {
 	// if mapping exists, use that to compute equality
@@ -351,7 +351,7 @@ CDatumGenericGPDB::StatsAreEqual(const IDatum *datum) const
 	const CDatumGenericGPDB *datum_generic_gpdb =
 		dynamic_cast<const CDatumGenericGPDB *>(datum);
 
-	ULONG size = this->Size();
+	GP_ULONG size = this->Size();
 	if (size == datum_generic_gpdb->Size())
 	{
 		const BYTE *s1 = m_bytearray_value;
@@ -371,9 +371,9 @@ CDatumGenericGPDB::StatsAreEqual(const IDatum *datum) const
 //
 //---------------------------------------------------------------------------
 BYTE *
-CDatumGenericGPDB::MakeCopyOfValue(CMemoryPool *mp, ULONG *dest_length) const
+CDatumGenericGPDB::MakeCopyOfValue(CMemoryPool *mp, GP_ULONG *dest_length) const
 {
-	ULONG length = 0;
+	GP_ULONG length = 0;
 	BYTE *dest = NULL;
 
 	if (!IsNull())
@@ -397,7 +397,7 @@ CDatumGenericGPDB::MakeCopyOfValue(CMemoryPool *mp, ULONG *dest_length) const
 //		Does the datum need to be padded before statistical derivation
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumGenericGPDB::NeedsPadding() const
 {
 	return MDId()->Equals(&CMDIdGPDB::m_mdid_bpchar);
@@ -412,17 +412,17 @@ CDatumGenericGPDB::NeedsPadding() const
 //
 //---------------------------------------------------------------------------
 IDatum *
-CDatumGenericGPDB::MakePaddedDatum(CMemoryPool *mp, ULONG col_len) const
+CDatumGenericGPDB::MakePaddedDatum(CMemoryPool *mp, GP_ULONG col_len) const
 {
 	// in GPDB the first four bytes of the datum are used for the header
-	const ULONG adjusted_col_width = col_len + GPDB_DATUM_HDRSZ;
+	const GP_ULONG adjusted_col_width = col_len + GPDB_DATUM_HDRSZ;
 
 	if (this->IsNull() || (gpos::ulong_max == col_len))
 	{
 		return this->MakeCopy(mp);
 	}
 
-	const ULONG datum_len = this->Size();
+	const GP_ULONG datum_len = this->Size();
 	if (gpos::ulong_max != adjusted_col_width && datum_len < adjusted_col_width)
 	{
 		const BYTE *original = this->GetByteArrayValue();
@@ -467,10 +467,10 @@ CDatumGenericGPDB::GetLikePredicateScaleFactor() const
 		return CDouble(1.0);
 	}
 
-	const ULONG datum_len = this->Size();
+	const GP_ULONG datum_len = this->Size();
 	const BYTE *dest = this->GetByteArrayValue();
 
-	ULONG pos = 0;
+	GP_ULONG pos = 0;
 
 	// skip any leading %; it's already factored into initial selectivity (DDefaultScaleFactorLike).
 	// In GPDB the first four bytes of the datum are used for the header
@@ -531,13 +531,13 @@ CDatumGenericGPDB::GetLikePredicateScaleFactor() const
 //---------------------------------------------------------------------------
 CDouble
 CDatumGenericGPDB::GetTrailingWildcardSelectivity(const BYTE *dest,
-												  ULONG pos) const
+												  GP_ULONG pos) const
 {
 	GPOS_ASSERT(NULL != dest);
 
 	// If no trailing wildcard, reduce selectivity
-	BOOL wildcard = (0 < pos) && ('%' != dest[pos - 1]);
-	BOOL backslash = (2 <= pos) && ('\\' == dest[pos - 2]);
+	GP_BOOL wildcard = (0 < pos) && ('%' != dest[pos - 1]);
+	GP_BOOL backslash = (2 <= pos) && ('\\' == dest[pos - 2]);
 	if (wildcard || backslash)
 	{
 		return CDatumGenericGPDB::DefaultCdbRanchorSelectivity;

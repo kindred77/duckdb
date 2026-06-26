@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -57,7 +57,7 @@ public:
 	}
 
 	// Compatibility function for simplifying aggregates
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSimplifyProjectWithSubquery != exfid);
@@ -78,7 +78,7 @@ public:
 	}
 
 	// is transformation a subquery unnesting (Subquery To Apply) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FSubqueryUnnesting() const
 	{
 		return true;

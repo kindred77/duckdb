@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -54,7 +54,7 @@ public:
 
 	// factory function for INT2 datums
 	virtual IDatumInt2 *CreateInt2Datum(CMemoryPool *mp, SINT value,
-										BOOL is_null) const = 0;
+										GP_BOOL is_null) const = 0;
 };
 
 }  // namespace gpmd

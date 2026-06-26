@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -73,7 +73,7 @@ public:
 						IntPtrArray *output_segids_array);
 
 	// index of relational child node in the children array
-	virtual ULONG GetRelationChildIdx() const = 0;
+	virtual GP_ULONG GetRelationChildIdx() const = 0;
 
 	// conversion function
 	static CDXLPhysicalMotion *

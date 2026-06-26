@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -65,14 +65,14 @@ public:
 	GPOS_RESULT Cancel(CTask *task);
 
 	// get number of waiting tasks
-	ULONG
+	GP_ULONG
 	GetQueueSize()
 	{
 		return m_task_queue.Size();
 	}
 
 	// check if task queue is empty
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return m_task_queue.IsEmpty();

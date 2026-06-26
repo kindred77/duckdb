@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2012 EMC CORP.
 //
@@ -55,10 +55,10 @@ public:
 	void Add(CColRefSet *pcrs);
 
 	// check if set forms a key
-	BOOL FKey(const CColRefSet *pcrs, BOOL fExactMatch = true) const;
+	GP_BOOL FKey(const CColRefSet *pcrs, GP_BOOL fExactMatch = true) const;
 
 	// check if an array of columns constitutes a key
-	BOOL FKey(CMemoryPool *mp, const CColRefArray *colref_array) const;
+	GP_BOOL FKey(CMemoryPool *mp, const CColRefArray *colref_array) const;
 
 	// trim off non-key columns
 	CColRefArray *PdrgpcrTrim(CMemoryPool *mp,
@@ -71,13 +71,13 @@ public:
 	CColRefArray *PdrgpcrHashableKey(CMemoryPool *mp) const;
 
 	// extract key at given position
-	CColRefArray *PdrgpcrKey(CMemoryPool *mp, ULONG ul) const;
+	CColRefArray *PdrgpcrKey(CMemoryPool *mp, GP_ULONG ul) const;
 
 	// extract key at given position
-	CColRefSet *PcrsKey(CMemoryPool *mp, ULONG ul) const;
+	CColRefSet *PcrsKey(CMemoryPool *mp, GP_ULONG ul) const;
 
 	// number of keys
-	ULONG
+	GP_ULONG
 	Keys() const
 	{
 		return m_pdrgpcrs->Size();

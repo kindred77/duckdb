@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -67,7 +67,7 @@ private:
 	IMDId *m_resolved_rettype_mdid;
 
 	// Denotes whether it's agg(DISTINCT ...)
-	BOOL m_is_distinct;
+	GP_BOOL m_is_distinct;
 
 	// Denotes the MPP Stage
 	EdxlAggrefStage m_agg_stage;
@@ -83,7 +83,7 @@ private:
 public:
 	// ctor/dtor
 	CDXLScalarAggref(CMemoryPool *mp, IMDId *agg_mdid, IMDId *resolved_rettype,
-					 BOOL is_distinct, EdxlAggrefStage agg_stage,
+					 GP_BOOL is_distinct, EdxlAggrefStage agg_stage,
 					 EdxlAggrefKind aggkind, IMDId *gp_agg_mdid = NULL);
 
 	virtual ~CDXLScalarAggref();
@@ -103,7 +103,7 @@ public:
 
 	const CWStringConst *GetDXLStrAggKind() const;
 
-	BOOL IsDistinct() const;
+	GP_BOOL IsDistinct() const;
 
 	EdxlAggrefKind
 	GetAggKind() const
@@ -122,7 +122,7 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	void SerializeValuesListChildToDXL(CXMLSerializer *xml_serializer,
-									   const CDXLNode *dxlnode, ULONG index,
+									   const CDXLNode *dxlnode, GP_ULONG index,
 									   const CHAR *attr_name) const;
 
 	// conversion function
@@ -136,12 +136,12 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -62,11 +62,11 @@ void Print(WCHAR *wsz);
 IOstream &HexDump(IOstream &os, const void *pv, ULLONG size);
 
 // generic hash function for byte strings
-ULONG HashByteArray(const BYTE *, const ULONG);
+GP_ULONG HashByteArray(const BYTE *, const GP_ULONG);
 
 // generic hash function; by address
 template <class T>
-inline ULONG
+inline GP_ULONG
 HashValue(const T *pt)
 {
 	return HashByteArray((BYTE *) pt, GPOS_SIZEOF(T));
@@ -74,7 +74,7 @@ HashValue(const T *pt)
 
 // generic hash function for pointer types -- use e.g. when address is ID of object
 template <class T>
-inline ULONG
+inline GP_ULONG
 HashPtr(const T *pt)
 {
 	return HashByteArray((BYTE *) &pt, GPOS_SIZEOF(void *));
@@ -82,32 +82,32 @@ HashPtr(const T *pt)
 
 // equality function on pointers
 template <class T>
-inline BOOL
+inline GP_BOOL
 EqualPtr(const T *pt1, const T *pt2)
 {
 	return pt1 == pt2;
 }
 
 // hash function for ULONG_PTR
-inline ULONG
+inline GP_ULONG
 HashULongPtr(const ULONG_PTR &key)
 {
-	return (ULONG) key;
+	return (GP_ULONG) key;
 }
 
-// combine ULONG hashes
-ULONG CombineHashes(ULONG, ULONG);
+// combine GP_ULONG hashes
+GP_ULONG CombineHashes(GP_ULONG, GP_ULONG);
 
 // equality function, which uses the equality operator of the arguments type
 template <class T>
-inline BOOL
+inline GP_BOOL
 Equals(const T *pt1, const T *pt2)
 {
 	return *pt1 == *pt2;
 }
 
 // equality function for ULONG_PTR
-inline BOOL
+inline GP_BOOL
 EqualULongPtr(const ULONG_PTR &key_left, const ULONG_PTR &key_right)
 {
 	return key_left == key_right;
@@ -115,7 +115,7 @@ EqualULongPtr(const ULONG_PTR &key_left, const ULONG_PTR &key_right)
 
 // yield and sleep (time in muSec)
 // note that in some platforms the minimum sleep interval is 1ms
-void USleep(ULONG);
+void USleep(GP_ULONG);
 
 // add two unsigned long long values, throw an exception if overflow occurs
 ULLONG Add(ULLONG first, ULLONG second);

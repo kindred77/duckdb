@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -34,11 +34,11 @@ CConstraintConjunction::CConstraintConjunction(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pdrgpcnstr);
 	m_pdrgpcnstr = PdrgpcnstrFlatten(mp, pdrgpcnstr, EctConjunction);
 
-	const ULONG length = m_pdrgpcnstr->Size();
+	const GP_ULONG length = m_pdrgpcnstr->Size();
 	GPOS_ASSERT(0 < length);
 	m_pcrsUsed = GPOS_NEW(mp) CColRefSet(mp);
 
-	for (ULONG ul = 0; ul < length; ul++)
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		CConstraint *pcnstr = (*m_pdrgpcnstr)[ul];
 		m_pcrsUsed->Include(pcnstr->PcrsUsed());
@@ -70,13 +70,13 @@ CConstraintConjunction::~CConstraintConjunction()
 //		Check if this constraint is a contradiction
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CConstraintConjunction::FContradiction() const
 {
-	const ULONG length = m_pdrgpcnstr->Size();
+	const GP_ULONG length = m_pdrgpcnstr->Size();
 
-	BOOL fContradiction = false;
-	for (ULONG ul = 0; !fContradiction && ul < length; ul++)
+	GP_BOOL fContradiction = false;
+	for (GP_ULONG ul = 0; !fContradiction && ul < length; ul++)
 	{
 		fContradiction = (*m_pdrgpcnstr)[ul]->FContradiction();
 	}
@@ -92,7 +92,7 @@ CConstraintConjunction::FContradiction() const
 //		Check if there is a constraint on the given column
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CConstraintConjunction::FConstraint(const CColRef *colref) const
 {
 	CConstraintArray *pdrgpcnstrCol = m_phmcolconstr->Find(colref);
@@ -112,11 +112,11 @@ CConstraintConjunction::FConstraint(const CColRef *colref) const
 //---------------------------------------------------------------------------
 CConstraint *
 CConstraintConjunction::PcnstrCopyWithRemappedColumns(
-	CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist)
+	CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist)
 {
 	CConstraintArray *pdrgpcnstr = GPOS_NEW(mp) CConstraintArray(mp);
-	const ULONG length = m_pdrgpcnstr->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = m_pdrgpcnstr->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		CConstraint *pcnstr = (*m_pdrgpcnstr)[ul];
 		CConstraint *pcnstrCopy = pcnstr->PcnstrCopyWithRemappedColumns(
@@ -146,8 +146,8 @@ CConstraintConjunction::Pcnstr(CMemoryPool *mp, const CColRef *colref)
 
 	CConstraintArray *pdrgpcnstr = GPOS_NEW(mp) CConstraintArray(mp);
 
-	const ULONG length = pdrgpcnstrCol->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = pdrgpcnstrCol->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		// the part of the child that references this column
 		CConstraint *pcnstrCol = (*pdrgpcnstrCol)[ul]->Pcnstr(mp, colref);
@@ -173,11 +173,11 @@ CConstraintConjunction::Pcnstr(CMemoryPool *mp, const CColRef *colref)
 CConstraint *
 CConstraintConjunction::Pcnstr(CMemoryPool *mp, CColRefSet *pcrs)
 {
-	const ULONG length = m_pdrgpcnstr->Size();
+	const GP_ULONG length = m_pdrgpcnstr->Size();
 
 	CConstraintArray *pdrgpcnstr = GPOS_NEW(mp) CConstraintArray(mp);
 
-	for (ULONG ul = 0; ul < length; ul++)
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		CConstraint *pcnstr = (*m_pdrgpcnstr)[ul];
 		if (pcnstr->PcrsUsed()->IsDisjoint(pcrs))

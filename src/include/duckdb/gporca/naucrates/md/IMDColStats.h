@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -43,7 +43,7 @@ public:
 	}
 
 	// number of buckets
-	virtual ULONG Buckets() const = 0;
+	virtual GP_ULONG Buckets() const = 0;
 
 	// width
 	virtual CDouble Width() const = 0;
@@ -58,10 +58,10 @@ public:
 	virtual CDouble GetFreqRemain() const = 0;
 
 	// is the columns statistics missing in the database
-	virtual BOOL IsColStatsMissing() const = 0;
+	virtual GP_BOOL IsColStatsMissing() const = 0;
 
 	// get the bucket at the given position
-	virtual const CDXLBucket *GetDXLBucketAt(ULONG ul) const = 0;
+	virtual const CDXLBucket *GetDXLBucketAt(GP_ULONG ul) const = 0;
 };
 }  // namespace gpmd
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -44,9 +44,9 @@ private:
 
 public:
 	// ctors
-	CStatsPredUnsupported(ULONG colid,
+	CStatsPredUnsupported(GP_ULONG colid,
 						  CStatsPred::EStatsCmpType stats_pred_type);
-	CStatsPredUnsupported(ULONG colid,
+	CStatsPredUnsupported(GP_ULONG colid,
 						  CStatsPred::EStatsCmpType stats_pred_type,
 						  CDouble default_scale_factor);
 

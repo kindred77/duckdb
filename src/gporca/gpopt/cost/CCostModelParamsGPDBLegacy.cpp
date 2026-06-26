@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -53,7 +53,7 @@ const CDouble CCostModelParamsGPDBLegacy::DDefaultCostVal = 100.0;
 #define GPOPT_COSTPARAM_NAME_MAX_LENGTH 80
 
 // parameter names in the same order of param enumeration
-const CHAR rgszCostParamNames[CCostModelParamsGPDBLegacy::EcpSentinel]
+static const CHAR rgszCostParamNamesLegacy[CCostModelParamsGPDBLegacy::EcpSentinel]
 							 [GPOPT_COSTPARAM_NAME_MAX_LENGTH] = {
 								 "SeqIOBandwidth",	 "RandomIOBandwidth",
 								 "TupProcBandwidth", "TupUpdateBandwidth",
@@ -76,7 +76,7 @@ CCostModelParamsGPDBLegacy::CCostModelParamsGPDBLegacy(CMemoryPool *mp)
 {
 	GPOS_ASSERT(NULL != mp);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		m_rgpcp[ul] = NULL;
 	}
@@ -125,7 +125,7 @@ CCostModelParamsGPDBLegacy::CCostModelParamsGPDBLegacy(CMemoryPool *mp)
 //---------------------------------------------------------------------------
 CCostModelParamsGPDBLegacy::~CCostModelParamsGPDBLegacy()
 {
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		GPOS_DELETE(m_rgpcp[ul]);
 		m_rgpcp[ul] = NULL;
@@ -143,7 +143,7 @@ CCostModelParamsGPDBLegacy::~CCostModelParamsGPDBLegacy()
 //
 //---------------------------------------------------------------------------
 CCostModelParamsGPDBLegacy::SCostParam *
-CCostModelParamsGPDBLegacy::PcpLookup(ULONG id) const
+CCostModelParamsGPDBLegacy::PcpLookup(GP_ULONG id) const
 {
 	ECostParam ecp = (ECostParam) id;
 	GPOS_ASSERT(EcpSentinel > ecp);
@@ -166,9 +166,9 @@ CCostModelParamsGPDBLegacy::PcpLookup(const CHAR *szName) const
 {
 	GPOS_ASSERT(NULL != szName);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
-		if (0 == clib::Strcmp(szName, rgszCostParamNames[ul]))
+		if (0 == clib::Strcmp(szName, rgszCostParamNamesLegacy[ul]))
 		{
 			return PcpLookup((ECostParam) ul);
 		}
@@ -187,7 +187,7 @@ CCostModelParamsGPDBLegacy::PcpLookup(const CHAR *szName) const
 //
 //---------------------------------------------------------------------------
 void
-CCostModelParamsGPDBLegacy::SetParam(ULONG id, CDouble dVal,
+CCostModelParamsGPDBLegacy::SetParam(GP_ULONG id, CDouble dVal,
 									 CDouble dLowerBound, CDouble dUpperBound)
 {
 	ECostParam ecp = (ECostParam) id;
@@ -214,9 +214,9 @@ CCostModelParamsGPDBLegacy::SetParam(const CHAR *szName, CDouble dVal,
 {
 	GPOS_ASSERT(NULL != szName);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
-		if (0 == clib::Strcmp(szName, rgszCostParamNames[ul]))
+		if (0 == clib::Strcmp(szName, rgszCostParamNamesLegacy[ul]))
 		{
 			GPOS_DELETE(m_rgpcp[ul]);
 			m_rgpcp[ul] = NULL;
@@ -240,17 +240,17 @@ CCostModelParamsGPDBLegacy::SetParam(const CHAR *szName, CDouble dVal,
 IOstream &
 CCostModelParamsGPDBLegacy::OsPrint(IOstream &os) const
 {
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		SCostParam *pcp = PcpLookup((ECostParam) ul);
-		os << rgszCostParamNames[ul] << " : " << pcp->Get() << "  ["
+		os << rgszCostParamNamesLegacy[ul] << " : " << pcp->Get() << "  ["
 		   << pcp->GetLowerBoundVal() << "," << pcp->GetUpperBoundVal() << "]"
 		   << std::endl;
 	}
 	return os;
 }
 
-BOOL
+GP_BOOL
 CCostModelParamsGPDBLegacy::Equals(ICostModelParams *pcm) const
 {
 	CCostModelParamsGPDBLegacy *pcmgOther =
@@ -258,7 +258,7 @@ CCostModelParamsGPDBLegacy::Equals(ICostModelParams *pcm) const
 	if (NULL == pcmgOther)
 		return false;
 
-	for (ULONG ul = 0U; ul < GPOS_ARRAY_SIZE(m_rgpcp); ul++)
+	for (GP_ULONG ul = 0U; ul < GPOS_ARRAY_SIZE(m_rgpcp); ul++)
 	{
 		if (!m_rgpcp[ul]->Equals(pcmgOther->m_rgpcp[ul]))
 			return false;
@@ -268,11 +268,11 @@ CCostModelParamsGPDBLegacy::Equals(ICostModelParams *pcm) const
 }
 
 const CHAR *
-CCostModelParamsGPDBLegacy::SzNameLookup(ULONG id) const
+CCostModelParamsGPDBLegacy::SzNameLookup(GP_ULONG id) const
 {
 	ECostParam ecp = (ECostParam) id;
 	GPOS_ASSERT(EcpSentinel > ecp);
-	return rgszCostParamNames[ecp];
+	return rgszCostParamNamesLegacy[ecp];
 }
 
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Inc.
 //
@@ -33,7 +33,7 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 CScalarArrayCoerceExpr::CScalarArrayCoerceExpr(
 	CMemoryPool *mp, IMDId *element_func, IMDId *result_type_mdid,
-	INT type_modifier, BOOL is_explicit, ECoercionForm ecf, INT location)
+	INT type_modifier, GP_BOOL is_explicit, ECoercionForm ecf, INT location)
 	: CScalarCoerceBase(mp, result_type_mdid, type_modifier, ecf, location),
 	  m_pmdidElementFunc(element_func),
 	  m_is_explicit(is_explicit)
@@ -78,7 +78,7 @@ CScalarArrayCoerceExpr::PmdidElementFunc() const
 //		Conversion semantics flag to pass to func
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarArrayCoerceExpr::IsExplicit() const
 {
 	return m_is_explicit;
@@ -123,7 +123,7 @@ CScalarArrayCoerceExpr::SzId() const
 //		Match function on operator level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarArrayCoerceExpr::Matches(COperator *pop) const
 {
 	if (pop->Eopid() != Eopid())
@@ -149,7 +149,7 @@ CScalarArrayCoerceExpr::Matches(COperator *pop) const
 //		Sensitivity to order of inputs
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarArrayCoerceExpr::FInputOrderSensitive() const
 {
 	return false;

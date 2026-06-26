@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC, Corp.
 //
@@ -42,7 +42,7 @@ private:
 public:
 	// ctor
 	CDXLScalarSubqueryAll(CMemoryPool *mp, IMDId *scalar_op_mdid,
-						  CMDName *mdname, ULONG colid);
+						  CMDName *mdname, GP_ULONG colid);
 
 	// ident accessors
 	Edxlopid GetDXLOperator() const;
@@ -61,7 +61,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{

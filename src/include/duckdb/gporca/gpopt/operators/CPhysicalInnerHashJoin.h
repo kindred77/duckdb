@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -31,7 +31,7 @@ private:
 	// helper for computing a hashed distribution matching the given distribution
 	CDistributionSpecHashed *PdshashedCreateMatching(
 		CMemoryPool *mp, CDistributionSpecHashed *pdshashed,
-		ULONG ulSourceChild) const;
+		GP_ULONG ulSourceChild) const;
 
 	// helper for deriving hash join distribution from hashed children
 	CDistributionSpec *PdsDeriveFromHashedChildren(
@@ -93,8 +93,8 @@ public:
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 };	// class CPhysicalInnerHashJoin
 

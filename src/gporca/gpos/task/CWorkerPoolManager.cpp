@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -243,7 +243,7 @@ CWorkerPoolManager::Schedule(CTask *task)
 void
 CWorkerPoolManager::Cancel(CTaskId tid)
 {
-	BOOL is_queued = false;
+	GP_BOOL is_queued = false;
 
 	CTask *task = NULL;
 

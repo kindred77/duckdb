@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -35,12 +35,12 @@ private:
 	const CWStringConst *m_name;
 
 	// keep track of copy status
-	BOOL m_deep_copy;
+	GP_BOOL m_deep_copy;
 
 public:
 	// ctor/dtor
 	CMDName(CMemoryPool *mp, const CWStringBase *str);
-	CMDName(const CWStringConst *, BOOL fOwnsMemory = false);
+	CMDName(const CWStringConst *, GP_BOOL fOwnsMemory = false);
 
 	// shallow copy ctor
 	CMDName(const CMDName &);

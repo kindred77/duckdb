@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -76,7 +76,7 @@ public:
 	}
 
 	// match function
-	virtual BOOL
+	virtual GP_BOOL
 	Matches(COperator *pop) const
 	{
 		if (pop->Eopid() == Eopid())
@@ -92,9 +92,9 @@ public:
 	// distribution matching type
 	virtual CEnfdDistribution::EDistributionMatching
 	Edm(CReqdPropPlan *,   // prppInput
-		ULONG,			   // child_index
+		GP_ULONG,			   // child_index
 		CDrvdPropArray *,  //pdrgpdpCtxt
-		ULONG			   // ulOptReq
+		GP_ULONG			   // ulOptReq
 	)
 	{
 		return CEnfdDistribution::EdmSatisfy;
@@ -102,7 +102,7 @@ public:
 
 	virtual CEnfdDistribution *
 	Ped(CMemoryPool *mp, CExpressionHandle &exprhdl, CReqdPropPlan *prppInput,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq)
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq)
 	{
 		return PedCorrelatedJoin(mp, exprhdl, prppInput, child_index,
 								 pdrgpdpCtxt, ulOptReq);
@@ -113,9 +113,9 @@ public:
 	PdsRequired(CMemoryPool *,		  // mp
 				CExpressionHandle &,  // exprhdl,
 				CDistributionSpec *,  // pdsRequired,
-				ULONG,				  // child_index,
+				GP_ULONG,				  // child_index,
 				CDrvdPropArray *,	  // pdrgpdpCtxt,
-				ULONG				  //ulOptReq
+				GP_ULONG				  //ulOptReq
 	) const
 	{
 		GPOS_RAISE(
@@ -128,15 +128,15 @@ public:
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *
 	PrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				CRewindabilitySpec *prsRequired, ULONG child_index,
-				CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const
+				CRewindabilitySpec *prsRequired, GP_ULONG child_index,
+				CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) const
 	{
 		return PrsRequiredCorrelatedJoin(mp, exprhdl, prsRequired, child_index,
 										 pdrgpdpCtxt, ulOptReq);
 	}
 
 	// return true if operator is a correlated NL Join
-	virtual BOOL
+	virtual GP_BOOL
 	FCorrelated() const
 	{
 		return true;

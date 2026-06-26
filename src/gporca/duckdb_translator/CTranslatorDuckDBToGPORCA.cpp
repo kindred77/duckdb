@@ -1,4 +1,4 @@
-#include "duckdb_translator/CTranslatorDuckDBToGPORCA.h"
+﻿#include "duckdb_translator/CTranslatorDuckDBToGPORCA.h"
 #include "duckdb_translator/CLogicalGetDuckDB.h"
 
 #include "gpos/base.h"
@@ -39,9 +39,9 @@ CExpression *CTranslatorDuckDBToGPORCA::PexprLogicalGet(duckdb::LogicalOperator 
     
     // Convert table name
     const char *src = table_entry->name.c_str();
-    ULONG len = (ULONG)strlen(src);
+    GP_ULONG len = (GP_ULONG)strlen(src);
     WCHAR *wstr = GPOS_NEW_ARRAY(m_mp, WCHAR, len + 1);
-    for (ULONG i = 0; i < len; i++) wstr[i] = src[i];
+    for (GP_ULONG i = 0; i < len; i++) wstr[i] = src[i];
     wstr[len] = 0;
     
     CName *name = GPOS_NEW(m_mp) CName(m_mp, GPOS_NEW(m_mp) CWStringConst(wstr));
@@ -66,7 +66,7 @@ CExpression *CTranslatorDuckDBToGPORCA::PexprLogicalGet(duckdb::LogicalOperator 
     // Create column refs
     CColumnFactory *col_factory = COptCtxt::PoctxtFromTLS()->Pcf();
     CColRefArray *colrefs = GPOS_NEW(m_mp) CColRefArray(m_mp);
-    for (ULONG i = 0; i < ptabdesc->ColumnCount(); i++) {
+    for (GP_ULONG i = 0; i < ptabdesc->ColumnCount(); i++) {
         auto *coldesc = ptabdesc->Pcoldesc(i);
             // Use minimal PcrCreate (2-arg overload with type and mp)
             // For now just create the column ref with NULL type and use PcrCreate(mp, colref)

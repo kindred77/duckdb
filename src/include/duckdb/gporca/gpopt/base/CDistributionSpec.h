@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -81,14 +81,14 @@ public:
 	virtual EDistributionType Edt() const = 0;
 
 	// does this distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const = 0;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const = 0;
 
 	// default hash function for distribution spec
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
-		ULONG ulEdt = (ULONG) Edt();
-		return gpos::HashValue<ULONG>(&ulEdt);
+		GP_ULONG ulEdt = (GP_ULONG) Edt();
+		return gpos::HashValue<GP_ULONG>(&ulEdt);
 	}
 
 	// extract columns used by the distribution spec
@@ -107,21 +107,21 @@ public:
 	}
 
 	// return true if distribution spec can be required
-	virtual BOOL
+	virtual GP_BOOL
 	FRequirable() const
 	{
 		return true;
 	}
 
 	// return true if distribution spec can be derived
-	virtual BOOL
+	virtual GP_BOOL
 	FDerivable() const
 	{
 		return true;
 	}
 
 	// default match function for distribution specs
-	virtual BOOL
+	virtual GP_BOOL
 	Matches(const CDistributionSpec *pds) const
 	{
 		return Edt() == pds->Edt();
@@ -130,7 +130,7 @@ public:
 	// default implementation for all the classes inheriting from
 	// CDistributionSpec, if any class requires special Equals
 	// handling, they should override it.
-	virtual BOOL
+	virtual GP_BOOL
 	Equals(const CDistributionSpec *pds) const
 	{
 		return Matches(pds);
@@ -140,7 +140,7 @@ public:
 	virtual CDistributionSpec *
 	PdsCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		this->AddRef();
@@ -162,7 +162,7 @@ public:
 	virtual EDistributionPartitioningType Edpt() const = 0;
 
 	// check if the distribution spec is either a singleton or a strict singleton distribution
-	BOOL
+	GP_BOOL
 	FSingletonOrStrictSingleton() const
 	{
 		return CDistributionSpec::EdtSingleton == Edt() ||

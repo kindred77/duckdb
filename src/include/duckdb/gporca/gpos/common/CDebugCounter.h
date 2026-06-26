@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------
  *	Greenplum Database
  *	Copyright (c) 2019 Pivotal Software, Inc.
  *
@@ -142,8 +142,8 @@ class CDebugCounter
 		{
 		}
 
-		static ULONG HashValue(const SDebugCounterKey *key);
-		static BOOL
+		static GP_ULONG HashValue(const SDebugCounterKey *key);
+		static GP_BOOL
 		Equals(const SDebugCounterKey *first, const SDebugCounterKey *second)
 		{
 			return first->m_counter_name == second->m_counter_name;
@@ -176,7 +176,7 @@ class CDebugCounter
 		double m_counter_val_double;
 		// longs, in conjunction with a timer, are used for CPU timer measurements
 		ITimer *m_cpu_timer;
-		BOOL m_timer_is_running;
+		GP_BOOL m_timer_is_running;
 	};
 
 	// a hash table to store named counters
@@ -247,13 +247,13 @@ private:
 
 	// search for a counter by name and return
 	// allocated (existing or new) key and value structs
-	BOOL FindByName(const char *counter_name, SDebugCounterKey **key,
+	GP_BOOL FindByName(const char *counter_name, SDebugCounterKey **key,
 					SDebugCounterValue **val, enum ECounterType typ);
 
 	// insert or update a key value pair that was generated
 	// by FindByName()
 	void InsertOrUpdateCounter(SDebugCounterKey *key, SDebugCounterValue *val,
-							   BOOL update);
+							   GP_BOOL update);
 
 	CMemoryPool *m_mp;
 
@@ -261,19 +261,19 @@ private:
 	static CDebugCounter *m_instance;
 
 	// add a start marker to help finding events from one session
-	BOOL m_start_marker_has_been_logged;
+	GP_BOOL m_start_marker_has_been_logged;
 
 	// turn off debug counters triggered by internal calls
-	BOOL m_suppress_counting;
+	GP_BOOL m_suppress_counting;
 
 	// statement number, increased every time a SQL statement gets optimized by ORCA
-	ULONG m_qry_number;
+	GP_ULONG m_qry_number;
 
 	// optional query name, assigned by explaining or running a query of a special form,
 	// see above
 	std::string m_qry_name;
 	// is this statement a constant get to name the next query?
-	BOOL m_is_name_constant_get;
+	GP_BOOL m_is_name_constant_get;
 
 	// hash map, holding all the counter values for
 	// the current query

@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDatumSortedSet.h"
@@ -17,11 +17,11 @@ CDatumSortedSet::CDatumSortedSet(CMemoryPool *mp, CExpression *pexprArray,
 {
 	GPOS_ASSERT(COperator::EopScalarArray == pexprArray->Pop()->Eopid());
 
-	const ULONG ulArrayExprArity = CUtils::UlScalarArrayArity(pexprArray);
+	const GP_ULONG ulArrayExprArity = CUtils::UlScalarArrayArity(pexprArray);
 	GPOS_ASSERT(0 < ulArrayExprArity);
 
 	gpos::CAutoRef<IDatumArray> aprngdatum(GPOS_NEW(mp) IDatumArray(mp));
-	for (ULONG ul = 0; ul < ulArrayExprArity; ul++)
+	for (GP_ULONG ul = 0; ul < ulArrayExprArity; ul++)
 	{
 		CScalarConst *popScConst =
 			CUtils::PScalarArrayConstChildAt(pexprArray, ul);
@@ -39,11 +39,11 @@ CDatumSortedSet::CDatumSortedSet(CMemoryPool *mp, CExpression *pexprArray,
 	aprngdatum->Sort(&CUtils::IDatumCmp);
 
 	// de-duplicate
-	const ULONG ulRangeArrayArity = aprngdatum->Size();
+	const GP_ULONG ulRangeArrayArity = aprngdatum->Size();
 	IDatum *pdatumPrev = (*aprngdatum)[0];
 	pdatumPrev->AddRef();
 	Append(pdatumPrev);
-	for (ULONG ul = 1; ul < ulRangeArrayArity; ul++)
+	for (GP_ULONG ul = 1; ul < ulRangeArrayArity; ul++)
 	{
 		if (!pcomp->Equals((*aprngdatum)[ul], pdatumPrev))
 		{
@@ -54,7 +54,7 @@ CDatumSortedSet::CDatumSortedSet(CMemoryPool *mp, CExpression *pexprArray,
 	}
 }
 
-BOOL
+GP_BOOL
 CDatumSortedSet::FIncludesNull() const
 {
 	return m_fIncludesNull;

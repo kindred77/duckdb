@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -36,10 +36,10 @@ class CParseHandlerDynamicIndexScan : public CParseHandlerIndexScan
 {
 private:
 	// part index id
-	ULONG m_part_index_id;
+	GP_ULONG m_part_index_id;
 
 	// printable partition index id
-	ULONG m_part_index_id_printable;
+	GP_ULONG m_part_index_id_printable;
 
 	// private copy ctor
 	CParseHandlerDynamicIndexScan(const CParseHandlerDynamicIndexScan &);

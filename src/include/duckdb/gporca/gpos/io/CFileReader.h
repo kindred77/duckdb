@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -54,7 +54,7 @@ public:
 	ULLONG FileReadSize() const;
 
 	// open file for reading
-	void Open(const CHAR *file_path, const ULONG permission_bits = S_IRUSR);
+	void Open(const CHAR *file_path, const GP_ULONG permission_bits = S_IRUSR);
 
 	// close file
 	void Close();

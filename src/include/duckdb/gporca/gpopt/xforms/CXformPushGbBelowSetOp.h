@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -111,11 +111,11 @@ public:
 		CExpressionArray *pdrgpexprNewChildren =
 			GPOS_NEW(mp) CExpressionArray(mp);
 		CColRef2dArray *pdrgpdrgpcrNewInput = GPOS_NEW(mp) CColRef2dArray(mp);
-		const ULONG arity = pexprSetOp->Arity();
+		const GP_ULONG arity = pexprSetOp->Arity();
 
-		BOOL fNewChild = false;
+		GP_BOOL fNewChild = false;
 
-		for (ULONG ulChild = 0; ulChild < arity; ulChild++)
+		for (GP_ULONG ulChild = 0; ulChild < arity; ulChild++)
 		{
 			CExpression *pexprChild = (*pexprSetOp)[ulChild];
 			CColRefArray *pdrgpcrChild = (*pdrgpdrgpcrInput)[ulChild];

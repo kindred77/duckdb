@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -116,22 +116,22 @@ private:
 	EMotionHazardType m_motion_hazard;
 
 	// Is NL Join
-	BOOL m_origin_nl_join;
+	GP_BOOL m_origin_nl_join;
 
 public:
 	// ctor
 	explicit CRewindabilitySpec(ERewindabilityType rewindability_type,
 								EMotionHazardType motion_hazard,
-								BOOL origin_nl_join = false);
+								GP_BOOL origin_nl_join = false);
 
 	// dtor
 	virtual ~CRewindabilitySpec();
 
 	// check if rewindability specs match
-	BOOL Matches(const CRewindabilitySpec *prs) const;
+	GP_BOOL Matches(const CRewindabilitySpec *prs) const;
 
 	// check if rewindability spec satisfies a req'd rewindability spec
-	BOOL FSatisfies(const CRewindabilitySpec *prs) const;
+	GP_BOOL FSatisfies(const CRewindabilitySpec *prs) const;
 
 	// append enforcers to dynamic array for the given plan properties
 	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
@@ -140,7 +140,7 @@ public:
 								 CExpression *pexpr);
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// extract columns used by the rewindability spec
 	virtual CColRefSet *
@@ -172,31 +172,31 @@ public:
 		return m_motion_hazard;
 	}
 
-	BOOL
+	GP_BOOL
 	IsOriginNLJoin() const
 	{
 		return m_origin_nl_join;
 	}
 
-	BOOL
+	GP_BOOL
 	IsRewindable() const
 	{
 		return Ert() == ErtRewindable || Ert() == ErtMarkRestore;
 	}
 
-	BOOL
+	GP_BOOL
 	IsRescannable() const
 	{
 		return Ert() == ErtRescannable;
 	}
 
-	BOOL
+	GP_BOOL
 	IsCheckRequired() const
 	{
 		return Ert() != ErtNone;
 	}
 
-	BOOL
+	GP_BOOL
 	HasMotionHazard() const
 	{
 		return Emht() == EmhtMotion;

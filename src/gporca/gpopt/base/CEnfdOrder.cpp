@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -63,7 +63,7 @@ CEnfdOrder::~CEnfdOrder()
 //		order specification of this object for the specified matching type
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CEnfdOrder::FCompatible(COrderSpec *pos) const
 {
 	GPOS_ASSERT(NULL != pos);
@@ -89,7 +89,7 @@ CEnfdOrder::FCompatible(COrderSpec *pos) const
 // 		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CEnfdOrder::HashValue() const
 {
 	return gpos::CombineHashes(m_eom + 1, m_pos->HashValue());
@@ -106,7 +106,7 @@ CEnfdOrder::HashValue() const
 //---------------------------------------------------------------------------
 CEnfdProp::EPropEnforcingType
 CEnfdOrder::Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
-				 BOOL fOrderReqd) const
+				 GP_BOOL fOrderReqd) const
 {
 	if (fOrderReqd)
 	{

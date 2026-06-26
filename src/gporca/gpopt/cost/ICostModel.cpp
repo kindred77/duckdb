@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -52,8 +52,8 @@ ICostModel::SetParams(ICostModelParamsArray *pdrgpcp)
 	}
 
 	// overwrite default values of cost model parameters
-	const ULONG size = pdrgpcp->Size();
-	for (ULONG ul = 0; ul < size; ul++)
+	const GP_ULONG size = pdrgpcp->Size();
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		ICostModelParams::SCostParam *pcp = (*pdrgpcp)[ul];
 		GetCostModelParams()->SetParam(pcp->Id(), pcp->Get(),

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal Inc.
 //
@@ -47,7 +47,7 @@ private:
 
 	// true indicates m_dispatch_identifer_datum_array contains raw
 	// gp_segment_id values rather than hashable datums
-	BOOL m_dispatch_is_raw;
+	GP_BOOL m_dispatch_is_raw;
 
 	// private copy ctor
 	CParseHandlerDirectDispatchInfo(const CParseHandlerDirectDispatchInfo &);

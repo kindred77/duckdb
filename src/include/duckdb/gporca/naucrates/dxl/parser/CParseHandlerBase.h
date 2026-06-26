@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -90,7 +90,7 @@ protected:
 	};
 
 	// number of children
-	inline ULONG
+	inline GP_ULONG
 	Length() const
 	{
 		return m_parse_handler_base_array->Size();
@@ -98,7 +98,7 @@ protected:
 
 	// shorthand to access children
 	inline CParseHandlerBase *
-	operator[](ULONG idx) const
+	operator[](GP_ULONG idx) const
 	{
 		return (*m_parse_handler_base_array)[idx];
 	};

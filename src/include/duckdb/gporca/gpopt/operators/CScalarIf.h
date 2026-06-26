@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -45,8 +45,8 @@ private:
 	// metadata id in the catalog
 	IMDId *m_mdid_type;
 
-	// is operator return type BOOL?
-	BOOL m_fBoolReturnType;
+	// is operator return type GP_BOOL?
+	GP_BOOL m_fBoolReturnType;
 
 	// private copy ctor
 	CScalarIf(const CScalarIf &);
@@ -84,13 +84,13 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -100,7 +100,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();

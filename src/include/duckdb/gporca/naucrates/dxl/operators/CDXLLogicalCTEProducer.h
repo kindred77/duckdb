@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,7 +29,7 @@ class CDXLLogicalCTEProducer : public CDXLLogical
 {
 private:
 	// cte id
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// output column ids
 	ULongPtrArray *m_output_colids_array;
@@ -39,7 +39,7 @@ private:
 
 public:
 	// ctor
-	CDXLLogicalCTEProducer(CMemoryPool *mp, ULONG id,
+	CDXLLogicalCTEProducer(CMemoryPool *mp, GP_ULONG id,
 						   ULongPtrArray *output_colids_array);
 
 	// dtor
@@ -52,7 +52,7 @@ public:
 	virtual const CWStringConst *GetOpNameStr() const;
 
 	// cte identifier
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
@@ -71,7 +71,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

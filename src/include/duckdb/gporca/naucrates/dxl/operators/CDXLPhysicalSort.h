@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -47,17 +47,17 @@ private:
 	CDXLPhysicalSort(const CDXLPhysicalSort &);
 
 	// whether sort discards duplicates
-	BOOL m_discard_duplicates;
+	GP_BOOL m_discard_duplicates;
 
 
 public:
 	// ctor/dtor
-	CDXLPhysicalSort(CMemoryPool *mp, BOOL discard_duplicates);
+	CDXLPhysicalSort(CMemoryPool *mp, GP_BOOL discard_duplicates);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
 	const CWStringConst *GetOpNameStr() const;
-	BOOL FDiscardDuplicates() const;
+	GP_BOOL FDiscardDuplicates() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -76,7 +76,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

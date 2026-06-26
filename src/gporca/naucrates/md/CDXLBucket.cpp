@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,7 +29,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CDXLBucket::CDXLBucket(CDXLDatum *dxl_datum_lower, CDXLDatum *dxl_datum_upper,
-					   BOOL is_lower_closed, BOOL is_upper_closed,
+					   GP_BOOL is_lower_closed, GP_BOOL is_upper_closed,
 					   CDouble frequency, CDouble distinct)
 	: m_lower_bound_dxl_datum(dxl_datum_lower),
 	  m_upper_bound_dxl_datum(dxl_datum_upper),
@@ -163,7 +163,7 @@ void
 CDXLBucket::SerializeBoundaryValue(CXMLSerializer *xml_serializer,
 								   const CWStringConst *elem_str,
 								   CDXLDatum *dxl_datum,
-								   BOOL is_bound_closed) const
+								   GP_BOOL is_bound_closed) const
 {
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix), elem_str);

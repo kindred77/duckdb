@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -66,13 +66,13 @@ public:
 	}
 
 	// return the column descriptor at a given position
-	CDXLColDescr *GetColumnDescrAt(ULONG ul) const;
+	CDXLColDescr *GetColumnDescrAt(GP_ULONG ul) const;
 
 	// number of columns
-	ULONG Arity() const;
+	GP_ULONG Arity() const;
 
 	// number of constant tuples
-	ULONG
+	GP_ULONG
 	GetConstTupleCount() const
 	{
 		return m_const_tuples_datum_array->Size();
@@ -80,7 +80,7 @@ public:
 
 	// return the const tuple (datum array) at a given position
 	const CDXLDatumArray *
-	GetConstTupleDatumArrayAt(ULONG ulTuplePos) const
+	GetConstTupleDatumArrayAt(GP_ULONG ulTuplePos) const
 	{
 		return (*m_const_tuples_datum_array)[ulTuplePos];
 	}
@@ -90,7 +90,7 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	// check if given column is defined by operator
-	virtual BOOL IsColDefined(ULONG colid) const;
+	virtual GP_BOOL IsColDefined(GP_ULONG colid) const;
 
 	// conversion function
 	static CDXLLogicalConstTable *
@@ -105,7 +105,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -74,7 +74,7 @@ CEnfdDistribution::~CEnfdDistribution()
 //		distribution specification of this object for the specified matching type
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CEnfdDistribution::FCompatible(CDistributionSpec *pds) const
 {
 	GPOS_ASSERT(NULL != pds);
@@ -111,7 +111,7 @@ CEnfdDistribution::FCompatible(CDistributionSpec *pds) const
 // 		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CEnfdDistribution::HashValue() const
 {
 	return gpos::CombineHashes(m_edm + 1, m_pds->HashValue());
@@ -128,7 +128,7 @@ CEnfdDistribution::HashValue() const
 CEnfdProp::EPropEnforcingType
 CEnfdDistribution::Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
 						CPartitionPropagationSpec *pppsReqd,
-						BOOL fDistribReqd) const
+						GP_BOOL fDistribReqd) const
 {
 	if (fDistribReqd)
 	{

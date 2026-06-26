@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -41,14 +41,14 @@ class CDXLDatumBool : public CDXLDatum
 {
 private:
 	// boolean value
-	BOOL m_value;
+	GP_BOOL m_value;
 
 	// private copy ctor
 	CDXLDatumBool(const CDXLDatumBool &);
 
 public:
 	// ctor
-	CDXLDatumBool(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, BOOL value);
+	CDXLDatumBool(CMemoryPool *mp, IMDId *mdid_type, GP_BOOL is_null, GP_BOOL value);
 
 	// dtor
 	virtual ~CDXLDatumBool()
@@ -66,7 +66,7 @@ public:
 	}
 
 	// accessor of boolean value
-	BOOL
+	GP_BOOL
 	GetValue() const
 	{
 		return m_value;

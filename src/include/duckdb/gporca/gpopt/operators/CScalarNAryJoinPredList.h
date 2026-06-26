@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2019 Pivotal Inc.
 //
@@ -58,16 +58,16 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();

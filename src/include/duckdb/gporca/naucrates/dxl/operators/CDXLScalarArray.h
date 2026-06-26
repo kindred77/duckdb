@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -39,7 +39,7 @@ private:
 	IMDId *m_array_type_mdid;
 
 	// is it a multidimensional array
-	BOOL m_multi_dimensional_array;
+	GP_BOOL m_multi_dimensional_array;
 
 	// private copy ctor
 	CDXLScalarArray(const CDXLScalarArray &);
@@ -47,7 +47,7 @@ private:
 public:
 	// ctor
 	CDXLScalarArray(CMemoryPool *mp, IMDId *elem_type_mdid,
-					IMDId *array_type_mdid, BOOL multi_dimensional_array);
+					IMDId *array_type_mdid, GP_BOOL multi_dimensional_array);
 
 	// dtor
 	virtual ~CDXLScalarArray();
@@ -65,7 +65,7 @@ public:
 	IMDId *ArrayTypeMDid() const;
 
 	// is array multi-dimensional
-	BOOL IsMultiDimensional() const;
+	GP_BOOL IsMultiDimensional() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -82,7 +82,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -92,7 +92,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

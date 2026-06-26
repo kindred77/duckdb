@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -47,11 +47,11 @@ protected:
 
 public:
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -61,7 +61,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -144,9 +144,9 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *
 	PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsInput,
-			 ULONG child_index) const
+			 GP_ULONG child_index) const
 	{
-		const ULONG arity = exprhdl.Arity();
+		const GP_ULONG arity = exprhdl.Arity();
 
 		return PcrsReqdChildStats(mp, exprhdl, pcrsInput,
 								  exprhdl.DeriveUsedColumns(arity - 1),
@@ -154,7 +154,7 @@ public:
 	}
 
 	// return true if operator can select a subset of input tuples based on some predicate
-	virtual BOOL
+	virtual GP_BOOL
 	FSelectionOp() const
 	{
 		return true;

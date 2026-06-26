@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -40,10 +40,10 @@ private:
 		CMemoryPoolTracker *m_mp;
 
 		// total allocation size (including headers)
-		ULONG m_alloc_size;
+		GP_ULONG m_alloc_size;
 
 		// user requested size
-		ULONG m_user_size;
+		GP_ULONG m_user_size;
 
 		// sequence number
 		ULLONG m_serial;
@@ -52,7 +52,7 @@ private:
 		const CHAR *m_filename;
 
 		// line in file
-		ULONG m_line;
+		GP_ULONG m_line;
 
 #ifdef GPOS_DEBUG
 		// allocation stack
@@ -67,7 +67,7 @@ private:
 	CMemoryPoolStatistics m_memory_pool_statistics;
 
 	// allocation sequence number
-	ULONG m_alloc_sequence;
+	GP_ULONG m_alloc_sequence;
 
 	// list of allocated (live) objects
 	CList<SAllocHeader> m_allocations_list;
@@ -93,14 +93,14 @@ public:
 	virtual void TearDown();
 
 	// allocate memory
-	void *NewImpl(const ULONG bytes, const CHAR *file, const ULONG line,
+	void *NewImpl(const GP_ULONG bytes, const CHAR *file, const GP_ULONG line,
 				  CMemoryPool::EAllocationType eat);
 
 	// free memory allocation
 	static void DeleteImpl(void *ptr, EAllocationType eat);
 
 	// get user requested size of allocation
-	static ULONG UserSizeOfAlloc(const void *ptr);
+	static GP_ULONG UserSizeOfAlloc(const void *ptr);
 
 	// return total allocated size
 	virtual ULLONG
@@ -112,7 +112,7 @@ public:
 #ifdef GPOS_DEBUG
 
 	// check if the memory pool keeps track of live objects
-	virtual BOOL
+	virtual GP_BOOL
 	SupportsLiveObjectWalk() const
 	{
 		return true;

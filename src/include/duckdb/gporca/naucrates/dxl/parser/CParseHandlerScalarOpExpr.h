@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -36,7 +36,7 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarOpExpr : public CParseHandlerScalarOp
 {
 private:
-	ULONG m_num_of_children;
+	GP_ULONG m_num_of_children;
 	// private copy ctor
 	CParseHandlerScalarOpExpr(const CParseHandlerScalarOpExpr &);
 

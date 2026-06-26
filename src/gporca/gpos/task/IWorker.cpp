@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -48,7 +48,7 @@ IWorker::Self()
 //
 //---------------------------------------------------------------------------
 void
-IWorker::CheckAbort(const CHAR *file, ULONG line_num)
+IWorker::CheckAbort(const CHAR *file, GP_ULONG line_num)
 {
 	IWorker *worker = Self();
 	if (NULL != worker)

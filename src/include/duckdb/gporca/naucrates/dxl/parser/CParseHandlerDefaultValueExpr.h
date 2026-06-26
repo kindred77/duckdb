@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -35,7 +35,7 @@ class CParseHandlerDefaultValueExpr : public CParseHandlerScalarOp
 {
 private:
 	// has an opening tag for a default value been seen already
-	BOOL is_default_val_started;
+	GP_BOOL is_default_val_started;
 
 	// private copy ctor
 	CParseHandlerDefaultValueExpr(const CParseHandlerDefaultValueExpr &);

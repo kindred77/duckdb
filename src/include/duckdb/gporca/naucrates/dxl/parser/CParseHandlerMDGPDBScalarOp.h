@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -61,13 +61,13 @@ private:
 	IMDType::ECmpType m_comparision_type;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
 	IMDId *m_mdid_hash_opfamily;
 	IMDId *m_mdid_legacy_hash_opfamily;
 
 	// preserves NDVs of inputs
-	BOOL m_is_ndv_preserving;
+	GP_BOOL m_is_ndv_preserving;
 
 	// private copy ctor
 	CParseHandlerMDGPDBScalarOp(const CParseHandlerMDGPDBScalarOp &);
@@ -88,7 +88,7 @@ private:
 	);
 
 	// is this a supported child elem of the scalar op
-	BOOL IsSupportedChildElem(const XMLCh *const xml_str);
+	GP_BOOL IsSupportedChildElem(const XMLCh *const xml_str);
 
 public:
 	// ctor

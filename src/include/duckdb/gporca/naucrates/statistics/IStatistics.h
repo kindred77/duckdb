@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -41,34 +41,34 @@ using namespace gpopt;
 class IStatistics;
 
 // hash map from column id to a histogram
-typedef CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CHistogram> >
+typedef CHashMap<GP_ULONG, CHistogram, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupDelete<CHistogram> >
 	UlongToHistogramMap;
 
 // iterator
-typedef CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CHistogram, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupDelete<CHistogram> >
 	UlongToHistogramMapIter;
 
-// hash map from column ULONG to CDouble
-typedef CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<CDouble> >
+// hash map from column GP_ULONG to CDouble
+typedef CHashMap<GP_ULONG, CDouble, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupDelete<CDouble> >
 	UlongToDoubleMap;
 
 // iterator
-typedef CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CDouble, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupDelete<CDouble> >
 	UlongToDoubleMapIter;
 
-typedef CHashMap<ULONG, ULONG, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupDelete<ULONG> >
+typedef CHashMap<GP_ULONG, GP_ULONG, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupDelete<GP_ULONG> >
 	UlongToUlongMap;
 
-// hash maps mapping INT -> ULONG
-typedef CHashMap<INT, ULONG, gpos::HashValue<INT>, gpos::Equals<INT>,
-				 CleanupDelete<INT>, CleanupDelete<ULONG> >
+// hash maps mapping INT -> GP_ULONG
+typedef CHashMap<INT, GP_ULONG, gpos::HashValue<INT>, gpos::Equals<INT>,
+				 CleanupDelete<INT>, CleanupDelete<GP_ULONG> >
 	IntToUlongMap;
 
 //---------------------------------------------------------------------------
@@ -112,20 +112,20 @@ public:
 	virtual CDouble Rows() const = 0;
 
 	// number of blocks in the relation (not always up to-to-date)
-	virtual ULONG RelPages() const = 0;
+	virtual GP_ULONG RelPages() const = 0;
 
 	// number of all-visible blocks in the relation (not always up-to-date)
-	virtual ULONG RelAllVisible() const = 0;
+	virtual GP_ULONG RelAllVisible() const = 0;
 
 	// is statistics on an empty input
-	virtual BOOL IsEmpty() const = 0;
+	virtual GP_BOOL IsEmpty() const = 0;
 
 	// statistics could be computed using predicates with external parameters (outer references),
 	// this is the total number of external parameters' values
 	virtual CDouble NumRebinds() const = 0;
 
 	// skew estimate for given column
-	virtual CDouble GetSkew(ULONG colid) const = 0;
+	virtual CDouble GetSkew(GP_ULONG colid) const = 0;
 
 	// what is the width in bytes
 	virtual CDouble Width() const = 0;
@@ -137,15 +137,15 @@ public:
 	virtual CDouble Width(CMemoryPool *mp, CColRefSet *colrefs) const = 0;
 
 	// the risk of errors in cardinality estimation
-	virtual ULONG StatsEstimationRisk() const = 0;
+	virtual GP_ULONG StatsEstimationRisk() const = 0;
 
 	// update the risk of errors in cardinality estimation
-	virtual void SetStatsEstimationRisk(ULONG risk) = 0;
+	virtual void SetStatsEstimationRisk(GP_ULONG risk) = 0;
 
 	// look up the number of distinct values of a particular column
 	virtual CDouble GetNDVs(const CColRef *colref) = 0;
 
-	virtual ULONG GetNumberOfPredicates() const = 0;
+	virtual GP_ULONG GetNumberOfPredicates() const = 0;
 
 	// inner join with another stats structure
 	virtual IStatistics *CalcInnerJoinStats(
@@ -166,7 +166,7 @@ public:
 	virtual IStatistics *CalcLASJoinStats(
 		CMemoryPool *mp, const IStatistics *other_stats,
 		CStatsPredJoinArray *join_preds_stats,
-		BOOL DoIgnoreLASJHistComputation) const = 0;
+		GP_BOOL DoIgnoreLASJHistComputation) const = 0;
 
 	// return required props associated with stats object
 	virtual CReqdPropRelational *GetReqdRelationalProps(
@@ -187,7 +187,7 @@ public:
 	// copy stats with remapped column ids
 	virtual IStatistics *CopyStatsWithRemap(CMemoryPool *mp,
 											UlongToColRefMap *colref_mapping,
-											BOOL must_exist = true) const = 0;
+											GP_BOOL must_exist = true) const = 0;
 
 	// return a set of column references we have stats for
 	virtual CColRefSet *GetColRefSet(CMemoryPool *mp) const = 0;
@@ -200,7 +200,7 @@ public:
 		CMemoryPool *mp, CMDAccessor *md_accessor) const = 0;
 
 	// is the join type either a left semi join or left anti-semi join
-	static BOOL
+	static GP_BOOL
 	IsSemiJoin(IStatistics::EStatsJoinType join_type)
 	{
 		return (IStatistics::EsjtLeftAntiSemiJoin == join_type) ||

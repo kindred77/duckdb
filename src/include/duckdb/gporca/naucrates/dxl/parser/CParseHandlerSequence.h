@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -37,7 +37,7 @@ class CParseHandlerSequence : public CParseHandlerPhysicalOp
 {
 private:
 	// are we already inside a sequence operator
-	BOOL m_is_inside_sequence;
+	GP_BOOL m_is_inside_sequence;
 
 	// private copy ctor
 	CParseHandlerSequence(const CParseHandlerSequence &);

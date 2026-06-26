@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -50,7 +50,7 @@ public:
 	}
 
 	// open file for writing
-	void Open(const CHAR *file_path, ULONG permission_bits);
+	void Open(const CHAR *file_path, GP_ULONG permission_bits);
 
 	// close file
 	void Close();

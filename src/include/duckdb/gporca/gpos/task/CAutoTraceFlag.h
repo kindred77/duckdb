@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -31,17 +31,17 @@ class CAutoTraceFlag : public CStackObject
 {
 private:
 	// traceflag id
-	ULONG m_trace;
+	GP_ULONG m_trace;
 
 	// original value
-	BOOL m_orig;
+	GP_BOOL m_orig;
 
 	// no copy ctor
 	CAutoTraceFlag(const CAutoTraceFlag &);
 
 public:
 	// ctor
-	CAutoTraceFlag(ULONG trace, BOOL orig);
+	CAutoTraceFlag(GP_ULONG trace, GP_BOOL orig);
 
 	// dtor
 	virtual ~CAutoTraceFlag();

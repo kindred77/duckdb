@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2015 Pivotal, Inc.
 //
@@ -36,10 +36,10 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 CPhysicalDynamicScan::CPhysicalDynamicScan(
-	CMemoryPool *mp, BOOL is_partial, CTableDescriptor *ptabdesc,
-	ULONG ulOriginOpId, const CName *pnameAlias, ULONG scan_id,
+	CMemoryPool *mp, GP_BOOL is_partial, CTableDescriptor *ptabdesc,
+	GP_ULONG ulOriginOpId, const CName *pnameAlias, GP_ULONG scan_id,
 	CColRefArray *pdrgpcrOutput, CColRef2dArray *pdrgpdrgpcrParts,
-	ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
+	GP_ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
 	CPartConstraint *ppartcnstrRel)
 	: CPhysicalScan(mp, pnameAlias, ptabdesc, pdrgpcrOutput),
 	  m_ulOriginOpId(ulOriginOpId),
@@ -79,10 +79,10 @@ CPhysicalDynamicScan::~CPhysicalDynamicScan()
 //		Combine part index, pointer for table descriptor, Eop and output columns
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CPhysicalDynamicScan::HashValue() const
 {
-	ULONG ulHash = gpos::CombineHashes(
+	GP_ULONG ulHash = gpos::CombineHashes(
 		COperator::HashValue(),
 		gpos::CombineHashes(gpos::HashValue(&m_scan_id),
 							m_ptabdesc->MDId()->HashValue()));
@@ -111,7 +111,7 @@ CPhysicalDynamicScan::PpimDerive(CMemoryPool *mp,
 	m_pdrgpdrgpcrPart->AddRef();
 	m_part_constraint->AddRef();
 	m_ppartcnstrRel->AddRef();
-	ULONG ulExpectedPartitionSelectors =
+	GP_ULONG ulExpectedPartitionSelectors =
 		CDrvdPropCtxtPlan::PdpctxtplanConvert(pdpctxt)
 			->UlExpectedPartitionSelectors();
 

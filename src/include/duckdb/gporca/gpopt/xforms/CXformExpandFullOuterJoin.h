@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -37,8 +37,8 @@ private:
 	// construct a join expression of two CTEs using the given CTE ids
 	// and output columns
 	CExpression *PexprLogicalJoinOverCTEs(
-		CMemoryPool *mp, EdxlJoinType edxljointype, ULONG ulLeftCTEId,
-		CColRefArray *pdrgpcrLeft, ULONG ulRightCTEId,
+		CMemoryPool *mp, EdxlJoinType edxljointype, GP_ULONG ulLeftCTEId,
+		CColRefArray *pdrgpcrLeft, GP_ULONG ulRightCTEId,
 		CColRefArray *pdrgpcrRight, CExpression *pexprScalar) const;
 
 public:

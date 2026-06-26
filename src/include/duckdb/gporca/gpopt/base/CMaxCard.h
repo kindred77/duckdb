@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2012 EMC Corp.
 //
@@ -34,15 +34,15 @@ using namespace gpos;
 class CMaxCard
 {
 	// friends that enforce 'literal == variable' order
-	friend BOOL operator==(ULLONG, const CMaxCard &);
-	friend BOOL operator==(const CMaxCard &, const CMaxCard &);
+	friend GP_BOOL operator==(ULLONG, const CMaxCard &);
+	friend GP_BOOL operator==(const CMaxCard &, const CMaxCard &);
 
 private:
 	// actual (cropped) value
 	ULLONG m_ull;
 
 	// equality
-	BOOL
+	GP_BOOL
 	operator==(ULLONG ull) const
 	{
 		GPOS_ASSERT(ull <= GPOPT_MAX_CARD);
@@ -113,7 +113,7 @@ operator<<(IOstream &os, const CMaxCard &mc)
 }
 
 // shorthand for less-than equal
-inline BOOL
+inline GP_BOOL
 operator<=(const CMaxCard &mcLHS, const CMaxCard &mcRHS)
 {
 	if (mcLHS.Ull() <= mcRHS.Ull())
@@ -125,14 +125,14 @@ operator<=(const CMaxCard &mcLHS, const CMaxCard &mcRHS)
 }
 
 // shorthand for equality
-inline BOOL
+inline GP_BOOL
 operator==(const CMaxCard &mcLHS, const CMaxCard &mcRHS)
 {
 	return mcLHS.operator==(mcRHS.Ull());
 }
 
 // shorthand for equality
-inline BOOL
+inline GP_BOOL
 operator==(ULLONG ull, const CMaxCard &mc)
 {
 	return mc.operator==(ull);

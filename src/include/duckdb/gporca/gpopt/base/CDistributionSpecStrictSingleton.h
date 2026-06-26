@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -49,14 +49,14 @@ public:
 	}
 
 	// return true if distribution spec can be required
-	virtual BOOL
+	virtual GP_BOOL
 	FRequirable() const
 	{
 		return false;
 	}
 
 	// does this distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// append enforcers to dynamic array for the given plan properties
 	virtual void

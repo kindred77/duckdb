@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -50,16 +50,16 @@ private:
 	INT m_type_modifier;
 
 	// are nulls allowed for this column
-	BOOL m_is_nullable;
+	GP_BOOL m_is_nullable;
 
 	// is column dropped
-	BOOL m_is_dropped;
+	GP_BOOL m_is_dropped;
 
 	// default value expression if one exists
 	CDXLNode *m_dxl_default_val;
 
 	// width of the column
-	ULONG m_width;
+	GP_ULONG m_width;
 
 	// private copy ctor
 	CParseHandlerMetadataColumn(const CParseHandlerMetadataColumn &);

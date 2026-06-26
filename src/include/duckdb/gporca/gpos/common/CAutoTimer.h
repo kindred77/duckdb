@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -36,14 +36,14 @@ private:
 	const CHAR *m_timer_text_label;
 
 	// trigger printing at destruction time
-	BOOL m_print_text_label;
+	GP_BOOL m_print_text_label;
 
 	// private copy ctor
 	CAutoTimer(const CAutoTimer &);
 
 public:
 	// ctor
-	CAutoTimer(const CHAR *sz, BOOL fPrint);
+	CAutoTimer(const CHAR *sz, GP_BOOL fPrint);
 
 	// dtor
 	~CAutoTimer() throw();

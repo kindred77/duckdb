@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -155,8 +155,8 @@ public:
 							   const CDXLNode *dxl_query_node,
 							   const CDXLNodeArray *query_output_dxlnode_array,
 							   const CDXLNodeArray *cte_producers,
-							   BOOL serialize_document_header_footer,
-							   BOOL indentation);
+							   GP_BOOL serialize_document_header_footer,
+							   GP_BOOL indentation);
 
 	// serialize a ULLONG value
 	static CWStringDynamic *SerializeULLONG(CMemoryPool *mp, ULLONG value);
@@ -165,61 +165,61 @@ public:
 	static void SerializePlan(CMemoryPool *mp, IOstream &os,
 							  const CDXLNode *node, ULLONG plan_id,
 							  ULLONG plan_space_size,
-							  BOOL serialize_document_header_footer,
-							  BOOL indentation);
+							  GP_BOOL serialize_document_header_footer,
+							  GP_BOOL indentation);
 
 	static CWStringDynamic *SerializeStatistics(
 		CMemoryPool *mp, CMDAccessor *md_accessor,
-		const CStatisticsArray *statistics_array, BOOL serialize_header_footer,
-		BOOL indentation);
+		const CStatisticsArray *statistics_array, GP_BOOL serialize_header_footer,
+		GP_BOOL indentation);
 
 	// serialize statistics objects into DXL and write to stream
 	static void SerializeStatistics(CMemoryPool *mp, CMDAccessor *md_accessor,
 									const CStatisticsArray *statistics_array,
 									IOstream &os,
-									BOOL serialize_document_header_footer,
-									BOOL indentation);
+									GP_BOOL serialize_document_header_footer,
+									GP_BOOL indentation);
 
 	// serialize metadata objects into DXL and write to stream
 	static void SerializeMetadata(CMemoryPool *mp,
 								  const IMDCacheObjectArray *imd_obj_array,
 								  IOstream &os,
-								  BOOL serialize_document_header_footer,
-								  BOOL indentation);
+								  GP_BOOL serialize_document_header_footer,
+								  GP_BOOL indentation);
 
 	// serialize metadata ids into a MD request message
 	static void SerializeMDRequest(CMemoryPool *mp, CMDRequest *md_request,
 								   IOstream &os,
-								   BOOL serialize_document_header_footer,
-								   BOOL indentation);
+								   GP_BOOL serialize_document_header_footer,
+								   GP_BOOL indentation);
 
 	// serialize a list of metadata objects into DXL
 	static CWStringDynamic *SerializeMetadata(
 		CMemoryPool *, const IMDCacheObjectArray *,
-		BOOL serialize_document_header_footer, BOOL indentation);
+		GP_BOOL serialize_document_header_footer, GP_BOOL indentation);
 
 	// serialize a metadata id into DXL
 	static CWStringDynamic *SerializeMetadata(
 		CMemoryPool *mp, const IMDId *mdid,
-		BOOL serialize_document_header_footer, BOOL indentation);
+		GP_BOOL serialize_document_header_footer, GP_BOOL indentation);
 
 	// serialize sample plans
 	static CWStringDynamic *SerializeSamplePlans(
-		CMemoryPool *mp, CEnumeratorConfig *enumerator_cfg, BOOL indentation);
+		CMemoryPool *mp, CEnumeratorConfig *enumerator_cfg, GP_BOOL indentation);
 
 	// serialize cost distribution plans
 	static CWStringDynamic *SerializeCostDistr(
-		CMemoryPool *mp, CEnumeratorConfig *enumerator_cfg, BOOL indentation);
+		CMemoryPool *mp, CEnumeratorConfig *enumerator_cfg, GP_BOOL indentation);
 
 	// serialize a metadata object into DXL
 	static CWStringDynamic *SerializeMDObj(
 		CMemoryPool *, const IMDCacheObject *,
-		BOOL serialize_document_header_footer, BOOL indentation);
+		GP_BOOL serialize_document_header_footer, GP_BOOL indentation);
 
 	// serialize a scalar expression into DXL
 	static CWStringDynamic *SerializeScalarExpr(
 		CMemoryPool *mp, const CDXLNode *node,
-		BOOL serialize_document_header_footer, BOOL indentation);
+		GP_BOOL serialize_document_header_footer, GP_BOOL indentation);
 
 	// create a GPOS dynamic string from a Xerces XMLCh array
 	static CWStringDynamic *CreateDynamicStringFromXMLChArray(
@@ -228,7 +228,7 @@ public:
 	// create a GPOS string object from a base 64 encoded XML string
 	static BYTE *CreateStringFrom64XMLStr(CDXLMemoryManager *memory_manager,
 										  const XMLCh *xml_string,
-										  ULONG *length);
+										  GP_ULONG *length);
 
 	// create a GPOS dynamic string from a regular character array
 	static CWStringDynamic *CreateDynamicStringFromCharArray(CMemoryPool *mp,
@@ -244,7 +244,7 @@ public:
 	// encode a byte array to a string
 	static CWStringDynamic *EncodeByteArrayToString(CMemoryPool *mp,
 													const BYTE *byte,
-													ULONG length);
+													GP_ULONG length);
 
 	// serialize a list of integers into a comma-separate string
 	template <typename T, void (*CleanupFn)(T *)>
@@ -262,7 +262,7 @@ public:
 	// decode a byte array from a string
 	static BYTE *DecodeByteArrayFromString(CMemoryPool *mp,
 										   const CWStringDynamic *dxl_string,
-										   ULONG *length);
+										   GP_ULONG *length);
 
 	static CHAR *Read(CMemoryPool *mp, const CHAR *filename);
 
@@ -292,8 +292,8 @@ CDXLUtils::Serialize(CMemoryPool *mp,
 {
 	CAutoP<CWStringDynamic> string_var(GPOS_NEW(mp) CWStringDynamic(mp));
 
-	ULONG length = dynamic_ptr_array->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	GP_ULONG length = dynamic_ptr_array->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		T value = *((*dynamic_ptr_array)[ul]);
 		if (ul == length - 1)

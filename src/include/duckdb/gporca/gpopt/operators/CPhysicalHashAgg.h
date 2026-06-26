@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -39,10 +39,10 @@ public:
 	CPhysicalHashAgg(CMemoryPool *mp, CColRefArray *colref_array,
 					 CColRefArray *pdrgpcrMinimal,
 					 COperator::EGbAggType egbaggtype,
-					 BOOL fGeneratesDuplicates, CColRefArray *pdrgpcrArgDQA,
-					 BOOL fMultiStage, BOOL isAggFromSplitDQA,
+					 GP_BOOL fGeneratesDuplicates, CColRefArray *pdrgpcrArgDQA,
+					 GP_BOOL fMultiStage, GP_BOOL isAggFromSplitDQA,
 					 CLogicalGbAgg::EAggStage aggStage,
-					 BOOL should_enforce_distribution = true
+					 GP_BOOL should_enforce_distribution = true
 					 // should_enforce_distribution should be set to false if
 					 // 'local' and 'global' splits don't need to have different
 					 // distributions. This flag is set to false if the local
@@ -73,9 +73,9 @@ public:
 
 	// compute required sort columns of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties

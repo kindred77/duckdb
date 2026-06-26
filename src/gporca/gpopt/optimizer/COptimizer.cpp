@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -67,11 +67,11 @@
 // 
 // 	CExpressionArray *pdrgpexpr =
 // 		COptCtxt::PoctxtFromTLS()->Pcteinfo()->PdrgPexpr(mp);
-// 	const ULONG ulCTEs = pdrgpexpr->Size();
+// 	const GP_ULONG ulCTEs = pdrgpexpr->Size();
 // 	if (0 < ulCTEs)
 // 	{
 // 		at.Os() << std::endl << "Common Table Expressions: ";
-// 		for (ULONG ul = 0; ul < ulCTEs; ul++)
+// 		for (GP_ULONG ul = 0; ul < ulCTEs; ul++)
 // 		{
 // 			at.Os() << std::endl << *(*pdrgpexpr)[ul];
 // 		}
@@ -112,7 +112,7 @@
 //---------------------------------------------------------------------------
 // void
 // COptimizer::DumpSamples(CMemoryPool *mp, CEnumeratorConfig *pec,
-// 						ULONG ulSessionId, ULONG ulCmdId)
+// 						GP_ULONG ulSessionId, GP_ULONG ulCmdId)
 // {
 // 	GPOS_ASSERT(NULL != pec);
 // 
@@ -179,10 +179,10 @@
 // 				{
 // 					const char *select_element_bytes =
 // 						(const char *) datum->GetByteArrayValue();
-// 					ULONG select_element_len =
+// 					GP_ULONG select_element_len =
 // 						clib::Strlen(select_element_bytes);
 // 					const char *query_name_prefix = "query name: ";
-// 					ULONG query_name_prefix_len =
+// 					GP_ULONG query_name_prefix_len =
 // 						clib::Strlen(query_name_prefix);
 // 
 // 					if (0 == clib::Strncmp((const char *) select_element_bytes,
@@ -190,7 +190,7 @@
 // 										   query_name_prefix_len))
 // 					{
 // 						// the constant in the select starts with "query_name: "
-// 						for (ULONG i = query_name_prefix_len;
+// 						for (GP_ULONG i = query_name_prefix_len;
 // 							 i < select_element_len; i++)
 // 						{
 // 							if (select_element_bytes[i] > 0)
@@ -230,8 +230,8 @@
 // 	CMemoryPool *mp, CMDAccessor *md_accessor, const CDXLNode *query,
 // 	const CDXLNodeArray *query_output_dxlnode_array,
 // 	const CDXLNodeArray *cte_producers, IConstExprEvaluator *pceeval,
-// 	ULONG ulHosts,	// actual number of data nodes in the system
-// 	ULONG ulSessionId, ULONG ulCmdId, CSearchStageArray *search_stage_array,
+// 	GP_ULONG ulHosts,	// actual number of data nodes in the system
+// 	GP_ULONG ulSessionId, GP_ULONG ulCmdId, CSearchStageArray *search_stage_array,
 // 	COptimizerConfig *optimizer_config,
 // 	const CHAR *szMinidumpFileName	// name of minidump file to be created
 // )
@@ -241,7 +241,7 @@
 // 	GPOS_ASSERT(NULL != query_output_dxlnode_array);
 // 	GPOS_ASSERT(NULL != optimizer_config);
 // 
-// 	BOOL fMinidump = GPOS_FTRACE(EopttraceMinidump);
+// 	GP_BOOL fMinidump = GPOS_FTRACE(EopttraceMinidump);
 // 
 // 	// If minidump was requested, open the minidump file and initialize
 // 	// minidumper. (We create the minidumper object even if we're not
@@ -454,12 +454,12 @@
 // CDXLNode *
 // COptimizer::CreateDXLNode(CMemoryPool *mp, CMDAccessor *md_accessor,
 // 						  CExpression *pexpr, CColRefArray *colref_array,
-// 						  CMDNameArray *pdrgpmdname, ULONG ulHosts)
+// 						  CMDNameArray *pdrgpmdname, GP_ULONG ulHosts)
 // {
 // 	GPOS_ASSERT(0 < ulHosts);
 // 	IntPtrArray *pdrgpiHosts = GPOS_NEW(mp) IntPtrArray(mp);
 // 
-// 	for (ULONG ul = 0; ul < ulHosts; ul++)
+// 	for (GP_ULONG ul = 0; ul < ulHosts; ul++)
 // 	{
 // 		pdrgpiHosts->Append(GPOS_NEW(mp) INT(ul));
 // 	}

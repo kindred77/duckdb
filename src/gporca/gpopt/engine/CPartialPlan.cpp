@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -33,7 +33,7 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CPartialPlan::CPartialPlan(CGroupExpression *pgexpr, CReqdPropPlan *prpp,
 						   CCostContext *pccChild,
-						   ULONG child_index)
+						   GP_ULONG child_index)
 	: m_pgexpr(pgexpr),	 // not owned
 	  m_prpp(prpp),
 	  m_pccChild(pccChild),	 // cost context of an already optimized child
@@ -76,9 +76,9 @@ CPartialPlan::ExtractChildrenCostingInfo(CMemoryPool *mp, ICostModel *pcm,
 	GPOS_ASSERT(NULL != pci);
 	GPOS_ASSERT_IMP(NULL != m_pccChild, m_ulChildIndex < exprhdl.Arity());
 
-	const ULONG arity = m_pgexpr->Arity();
-	ULONG ulIndex = 0;
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = m_pgexpr->Arity();
+	GP_ULONG ulIndex = 0;
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CGroup *pgroupChild = (*m_pgexpr)[ul];
 		if (pgroupChild->FScalar())
@@ -181,8 +181,8 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 
 	// create array of child derived properties
 	CDrvdPropArray *pdrgpdp = GPOS_NEW(mp) CDrvdPropArray(mp);
-	const ULONG arity = m_pgexpr->Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = m_pgexpr->Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		// compute required columns of the n-th child
 		exprhdl.ComputeChildReqdCols(ul, pdrgpdp);
@@ -207,7 +207,7 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 	}
 
 	COperator *pop = m_pgexpr->Pop();
-	BOOL fDataPartitioningMotion =
+	GP_BOOL fDataPartitioningMotion =
 		CUtils::FPhysicalMotion(pop) &&
 		CDistributionSpec::EdptPartitioned ==
 			CPhysicalMotion::PopConvert(pop)->Pds()->Edpt();
@@ -263,12 +263,12 @@ CPartialPlan::CostCompute(CMemoryPool *mp)
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CPartialPlan::HashValue(const CPartialPlan *ppp)
 {
 	GPOS_ASSERT(NULL != ppp);
 
-	ULONG ulHash = ppp->Pgexpr()->HashValue();
+	GP_ULONG ulHash = ppp->Pgexpr()->HashValue();
 	return CombineHashes(ulHash,
 						 CReqdPropPlan::UlHashForCostBounding(ppp->Prpp()));
 }
@@ -282,13 +282,13 @@ CPartialPlan::HashValue(const CPartialPlan *ppp)
 //		Equality function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPartialPlan::Equals(const CPartialPlan *pppFst, const CPartialPlan *pppSnd)
 {
 	GPOS_ASSERT(NULL != pppFst);
 	GPOS_ASSERT(NULL != pppSnd);
 
-	BOOL fEqual = false;
+	GP_BOOL fEqual = false;
 	if (NULL == pppFst->PccChild() || NULL == pppSnd->PccChild())
 	{
 		fEqual = (NULL == pppFst->PccChild() && NULL == pppSnd->PccChild());

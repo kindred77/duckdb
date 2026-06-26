@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2012 EMC Corp.
 //
@@ -80,9 +80,9 @@ CExpressionPreprocessor::PexprEliminateSelfComparison(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprEliminateSelfComparison(mp, (*pexpr)[ul]);
@@ -111,9 +111,9 @@ CExpressionPreprocessor::PexprPruneSuperfluousEquality(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprPruneSuperfluousEquality(mp, (*pexpr)[ul]);
@@ -151,7 +151,7 @@ CExpressionPreprocessor::PexprTrimExistentialSubqueries(CMemoryPool *mp,
 		{
 			GPOS_ASSERT(0 < (*pexprInner)[1]->Arity() &&
 						"Project list of GbAgg is expected to be non-empty");
-			BOOL fValue = true;
+			GP_BOOL fValue = true;
 			if (COperator::EopScalarSubqueryNotExists == pop->Eopid())
 			{
 				fValue = false;
@@ -161,9 +161,9 @@ CExpressionPreprocessor::PexprTrimExistentialSubqueries(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprTrimExistentialSubqueries(mp, (*pexpr)[ul]);
@@ -216,11 +216,11 @@ CExpressionPreprocessor::PexprSimplifyQuantifiedSubqueries(CMemoryPool *mp,
 		}
 
 		// inspect next node
-		BOOL fGbAggWithoutGrpCols =
+		GP_BOOL fGbAggWithoutGrpCols =
 			COperator::EopLogicalGbAgg == popChild->Eopid() &&
 			0 == CLogicalGbAgg::PopConvert(popChild)->Pdrgpcr()->Size();
 
-		BOOL fOneRowConstTable =
+		GP_BOOL fOneRowConstTable =
 			COperator::EopLogicalConstTableGet == popChild->Eopid() &&
 			1 == CLogicalConstTableGet::PopConvert(popChild)
 					 ->Pdrgpdrgpdatum()
@@ -254,9 +254,9 @@ CExpressionPreprocessor::PexprSimplifyQuantifiedSubqueries(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprSimplifyQuantifiedSubqueries(mp, (*pexpr)[ul]);
@@ -362,9 +362,9 @@ CExpressionPreprocessor::PexprUnnestScalarSubqueries(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprUnnestScalarSubqueries(mp, (*pexpr)[ul]);
 		pdrgpexprChildren->Append(pexprChild);
@@ -401,10 +401,10 @@ CExpressionPreprocessor::PexprRemoveSuperfluousLimit(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
 
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprRemoveSuperfluousLimit(mp, (*pexpr)[ul]);
 
@@ -432,11 +432,11 @@ CExpressionPreprocessor::PexprRemoveSuperfluousDistinctInDQA(CMemoryPool *mp,
 		const CExpression *const pexprProjectList = (*pexpr)[1];
 		GPOS_ASSERT(COperator::EopScalarProjectList ==
 					pexprProjectList->Pop()->Eopid());
-		const ULONG arity = pexprProjectList->Arity();
+		const GP_ULONG arity = pexprProjectList->Arity();
 
 		CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
 
-		for (ULONG ul = 0; ul < arity; ul++)
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *const pexprPrjElem = (*pexprProjectList)[ul];
 			if (COperator::EopScalarAggFunc ==
@@ -460,10 +460,10 @@ CExpressionPreprocessor::PexprRemoveSuperfluousDistinctInDQA(CMemoryPool *mp,
 
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
 
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprRemoveSuperfluousDistinctInDQA(mp, (*pexpr)[ul]);
@@ -512,7 +512,7 @@ CExpressionPreprocessor::PexprRemoveSuperfluousOuterRefs(CMemoryPool *mp,
 	CExpression *newExpr = pexpr;
 
 	COperator::EOperatorId op_id = pop->Eopid();
-	BOOL fHasOuterRefs = (pop->FLogical() && CUtils::HasOuterRefs(pexpr));
+	GP_BOOL fHasOuterRefs = (pop->FLogical() && CUtils::HasOuterRefs(pexpr));
 
 	pop->AddRef();
 	if (fHasOuterRefs)
@@ -610,7 +610,7 @@ CExpressionPreprocessor::PexprRemoveSuperfluousOuterRefs(CMemoryPool *mp,
 				CExpressionArray *new_children =
 					GPOS_NEW(mp) CExpressionArray(mp);
 				new_children->Append(projectExpr);
-				for (ULONG ul = 1; ul < pexpr->PdrgPexpr()->Size(); ul++)
+				for (GP_ULONG ul = 1; ul < pexpr->PdrgPexpr()->Size(); ul++)
 				{
 					new_children->Append((*pexpr->PdrgPexpr())[ul]);
 					(*pexpr->PdrgPexpr())[ul]->AddRef();
@@ -619,7 +619,7 @@ CExpressionPreprocessor::PexprRemoveSuperfluousOuterRefs(CMemoryPool *mp,
 				// build a new CLogicalGbAgg operator, with a new grouping columns list
 				CColRefArray *new_grouping_cols = GPOS_NEW(mp) CColRefArray(mp);
 				CExpression *new_projected_cols = (*projectExpr)[1];
-				for (ULONG ul = 0; ul < new_projected_cols->Arity(); ul++)
+				for (GP_ULONG ul = 0; ul < new_projected_cols->Arity(); ul++)
 				{
 					new_grouping_cols->Append(
 						CUtils::PcrFromProjElem((*new_projected_cols)[ul]));
@@ -662,9 +662,9 @@ CExpressionPreprocessor::PexprRemoveSuperfluousOuterRefs(CMemoryPool *mp,
 	}
 
 	// recursively process children
-	const ULONG arity = newExpr->Arity();
+	const GP_ULONG arity = newExpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprRemoveSuperfluousOuterRefs(mp, (*newExpr)[ul]);
@@ -743,7 +743,7 @@ CExpressionPreprocessor::PexprScalarBoolOpConvert2In(
 // checks if the given expression is likely to be simplified by the constraints
 // framework during array conversion. eboolop is the CScalarBoolOp type
 // of the expression which contains the argument expression
-BOOL
+GP_BOOL
 CExpressionPreprocessor::FConvert2InIsConvertable(
 	CExpression *pexpr, CScalarBoolOp::EBoolOperator eboolopParent)
 {
@@ -812,8 +812,8 @@ CExpressionPreprocessor::PexprConvert2In(
 		CExpressionArray *pdrgpexprCollapse = GPOS_NEW(mp) CExpressionArray(mp);
 		CExpressionArray *pdrgpexprRemainder =
 			GPOS_NEW(mp) CExpressionArray(mp);
-		const ULONG arity = pexpr->Arity();
-		for (ULONG ul = 0; ul < arity; ul++)
+		const GP_ULONG arity = pexpr->Arity();
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprChild = (*pexpr)[ul];
 
@@ -858,7 +858,7 @@ CExpressionPreprocessor::PexprConvert2In(
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 	CExpressionArray *pdrgexprChildren = pexpr->PdrgPexpr();
-	for (ULONG ul = 0; ul < pexpr->Arity(); ul++)
+	for (GP_ULONG ul = 0; ul < pexpr->Arity(); ul++)
 	{
 		pdrgpexpr->Append(PexprConvert2In(mp, (*pdrgexprChildren)[ul]));
 	}
@@ -877,7 +877,7 @@ CExpressionPreprocessor::PexprCollapseJoins(CMemoryPool *mp, CExpression *pexpr)
 	GPOS_ASSERT(NULL != pexpr);
 
 	COperator *pop = pexpr->Pop();
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 
 	if (CPredicateUtils::FInnerOrNAryJoin(pexpr) ||
 		(GPOS_FTRACE(EopttraceEnableLOJInNAryJoin) &&
@@ -909,7 +909,7 @@ CExpressionPreprocessor::PexprCollapseJoins(CMemoryPool *mp, CExpression *pexpr)
 			naryJoinPredicates->Append(
 				CPredicateUtils::PexprConjunction(mp, innerJoinPredicates));
 			// the remaining children are the LOJ predicates, one by one
-			for (ULONG ul = 0; ul < lojPredicates->Size(); ul++)
+			for (GP_ULONG ul = 0; ul < lojPredicates->Size(); ul++)
 			{
 				CExpression *predicate = (*lojPredicates)[ul];
 				predicate->AddRef();
@@ -939,11 +939,11 @@ CExpressionPreprocessor::PexprCollapseJoins(CMemoryPool *mp, CExpression *pexpr)
 			// lojChildPredIndexes must contain the numbers 1 ... lojPredicates->Size()
 			// in ascending order, each number exactly once, with optional additional
 			// GPOPT_ZERO_INNER_JOIN_PRED_INDEX (0) entries in-between entries
-			ULONG highestNumberSeen = 0;
+			GP_ULONG highestNumberSeen = 0;
 
-			for (ULONG ix = 1; ix < lojChildPredIndexes->Size(); ix++)
+			for (GP_ULONG ix = 1; ix < lojChildPredIndexes->Size(); ix++)
 			{
-				ULONG nextNumber = *((*lojChildPredIndexes)[ix]);
+				GP_ULONG nextNumber = *((*lojChildPredIndexes)[ix]);
 
 				if (nextNumber == highestNumberSeen + 1)
 				{
@@ -975,7 +975,7 @@ CExpressionPreprocessor::PexprCollapseJoins(CMemoryPool *mp, CExpression *pexpr)
 
 		COptimizerConfig *optimizer_config =
 			COptCtxt::PoctxtFromTLS()->GetOptimizerConfig();
-		ULONG ulJoinArityLimit =
+		GP_ULONG ulJoinArityLimit =
 			optimizer_config->GetHint()
 				->UlJoinArityForAssociativityCommutativity();
 
@@ -991,7 +991,7 @@ CExpressionPreprocessor::PexprCollapseJoins(CMemoryPool *mp, CExpression *pexpr)
 	}
 	// current operator is not an inner-join or supported LOJ, recursively process children
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprCollapseJoins(mp, (*pexpr)[ul]);
 		pdrgpexprChildren->Append(pexprChild);
@@ -1016,12 +1016,12 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 
 	if (CPredicateUtils::FInnerOrNAryJoin(pexpr))
 	{
-		const ULONG arity = pexpr->Arity();
+		const GP_ULONG arity = pexpr->Arity();
 		CExpression *pexprScalar = (*pexpr)[arity - 1];
 
 		if (COperator::EopScalarNAryJoinPredList != pexprScalar->Pop()->Eopid())
 		{
-			for (ULONG ul = 0; ul < arity - 1; ul++)
+			for (GP_ULONG ul = 0; ul < arity - 1; ul++)
 			{
 				CExpression *child = (*pexpr)[ul];
 				CollectJoinChildrenRecursively(
@@ -1045,7 +1045,7 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 				PexprCollapseJoins(mp, (*pexprScalar)[0]));
 
 			// loop over the logical children
-			for (ULONG ul = 0; ul < arity - 1; ul++)
+			for (GP_ULONG ul = 0; ul < arity - 1; ul++)
 			{
 				if (GPOPT_ZERO_INNER_JOIN_PRED_INDEX ==
 					*(*naryJoinPredIndexes)[ul])
@@ -1058,7 +1058,7 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 				else
 				{
 					// this is the right child of a non-inner join
-					ULONG oldPredIndex = *(*naryJoinPredIndexes)[ul];
+					GP_ULONG oldPredIndex = *(*naryJoinPredIndexes)[ul];
 					CExpression *lojPred =
 						PexprCollapseJoins(mp, (*pexprScalar)[oldPredIndex]);
 
@@ -1067,10 +1067,10 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 						PexprCollapseJoins(mp, (*pexpr)[ul]));
 					lojPredicates->Append(lojPred);
 
-					ULONG newPredIndex = lojPredicates->Size();
+					GP_ULONG newPredIndex = lojPredicates->Size();
 
 					lojChildPredIndexes->Append(GPOS_NEW(mp)
-													ULONG(newPredIndex));
+													GP_ULONG(newPredIndex));
 				}
 			}
 		}
@@ -1096,8 +1096,8 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 		lojPredicates->Append(PexprCollapseJoins(mp, pexprScalar));
 
 		// ... and point to this new entry in lojChildPredIndexes
-		ULONG *indexOfThisLOJInTheArray =
-			GPOS_NEW(mp) ULONG(lojPredicates->Size());
+		GP_ULONG *indexOfThisLOJInTheArray =
+			GPOS_NEW(mp) GP_ULONG(lojPredicates->Size());
 		lojChildPredIndexes->Append(indexOfThisLOJInTheArray);
 	}
 	else
@@ -1107,8 +1107,8 @@ CExpressionPreprocessor::CollectJoinChildrenRecursively(
 
 		// this logical "leaf" node is a child of an inner join or it is the left child
 		// of an LOJ, either way it is associated with the inner join predicates
-		ULONG *innerJoinPredIndex =
-			GPOS_NEW(mp) ULONG(GPOPT_ZERO_INNER_JOIN_PRED_INDEX);
+		GP_ULONG *innerJoinPredIndex =
+			GPOS_NEW(mp) GP_ULONG(GPOPT_ZERO_INNER_JOIN_PRED_INDEX);
 		lojChildPredIndexes->Append(innerJoinPredIndex);
 	}
 }
@@ -1126,9 +1126,9 @@ CExpressionPreprocessor::PexprCollapseProjects(CMemoryPool *mp,
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	// recursively process children
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprCollapseProjects(mp, (*pexpr)[ul]);
 		pdrgpexpr->Append(pexprChild);
@@ -1155,7 +1155,7 @@ CExpressionPreprocessor::PexprCollapseProjects(CMemoryPool *mp,
 CExpression *
 CExpressionPreprocessor::PexprProjBelowSubquery(CMemoryPool *mp,
 												CExpression *pexpr,
-												BOOL fUnderPrList)
+												GP_BOOL fUnderPrList)
 {
 	// protect against stack overflow during recursion
 	GPOS_CHECK_STACK_SIZE;
@@ -1188,7 +1188,7 @@ CExpressionPreprocessor::PexprProjBelowSubquery(CMemoryPool *mp,
 	 * since the foo.b + 5 is a new computed column inside the subquery with its own
 	 * project element, we do not need to add anything.
 	 */
-	BOOL fUnderPrListChild = fUnderPrList;
+	GP_BOOL fUnderPrListChild = fUnderPrList;
 	COperator *pop = pexpr->Pop();
 
 	if (pop->FLogical())
@@ -1247,8 +1247,8 @@ CExpressionPreprocessor::PexprProjBelowSubquery(CMemoryPool *mp,
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG arity = pexpr->Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprProjBelowSubquery(mp, (*pexpr)[ul], fUnderPrListChild);
@@ -1270,12 +1270,12 @@ CExpressionPreprocessor::PexprCollapseUnionUnionAll(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pexpr);
 
 	COperator *pop = pexpr->Pop();
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
 	// recursively process children
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprCollapseUnionUnionAll(mp, (*pexpr)[ul]);
 		pdrgpexpr->Append(pexprChild);
@@ -1294,8 +1294,8 @@ CExpressionPreprocessor::PexprCollapseUnionUnionAll(CMemoryPool *mp,
 		CLogicalSetOp::PopConvert(pop)->PdrgpdrgpcrInput();
 	CColRef2dArray *pdrgdrgpcrNew = GPOS_NEW(mp) CColRef2dArray(mp);
 
-	BOOL fCollapsed = false;
-	for (ULONG ul = 0; ul < arity; ul++)
+	GP_BOOL fCollapsed = false;
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		if (CPredicateUtils::FCollapsibleChildUnionUnionAll(pexprNew, ul))
 		{
@@ -1356,7 +1356,7 @@ CExpressionPreprocessor::PexprOuterJoinToInnerJoin(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pexpr);
 
 	COperator *pop = pexpr->Pop();
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 
 	if (COperator::EopLogicalSelect == pop->Eopid() &&
 		COperator::EopLogicalLeftOuterJoin == (*pexpr)[0]->Pop()->Eopid())
@@ -1379,10 +1379,10 @@ CExpressionPreprocessor::PexprOuterJoinToInnerJoin(CMemoryPool *mp,
 		}
 
 		CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-		for (ULONG ul = 0; ul < arity; ul++)
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprChild = (*pexpr)[ul];
-			BOOL fNewChild = false;
+			GP_BOOL fNewChild = false;
 			if (COperator::EopLogicalLeftOuterJoin ==
 				pexprChild->Pop()->Eopid())
 			{
@@ -1443,7 +1443,7 @@ CExpressionPreprocessor::PexprOuterJoinToInnerJoin(CMemoryPool *mp,
 
 	// current operator is not an NAry-join, recursively process children
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = PexprOuterJoinToInnerJoin(mp, (*pexpr)[ul]);
 		pdrgpexprChildren->Append(pexprChild);
@@ -1462,7 +1462,7 @@ CExpressionPreprocessor::PexprConjEqualityPredicates(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pcrs);
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-	ULONG ulPreds = 0;
+	GP_ULONG ulPreds = 0;
 	CColRefSetIter crsiRight(*pcrs);
 	while (crsiRight.Advance() && GPOPT_MAX_DERIVED_PREDS > ulPreds)
 	{
@@ -1487,15 +1487,15 @@ CExpressionPreprocessor::PexprConjEqualityPredicates(CMemoryPool *mp,
 
 // check if all columns in the given equivalent class come from one of the
 // children of the given expression
-BOOL
+GP_BOOL
 CExpressionPreprocessor::FEquivClassFromChild(CColRefSet *pcrs,
 											  CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pcrs);
 	GPOS_ASSERT(NULL != pexpr);
 
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = (*pexpr)[ul];
 		if (!pexprChild->Pop()->FLogical())
@@ -1524,7 +1524,7 @@ CExpressionPreprocessor::PexprAddEqualityPreds(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(pexpr->Pop()->FLogical());
 
-	const ULONG ulChildren = pexpr->Arity();
+	const GP_ULONG ulChildren = pexpr->Arity();
 	CPropConstraint *ppc = pexpr->DerivePropertyConstraint();
 
 	CExpression *pexprPred = NULL;
@@ -1538,8 +1538,8 @@ CExpressionPreprocessor::PexprAddEqualityPreds(CMemoryPool *mp,
 		CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 		CColRefSetArray *pdrgpcrs = ppc->PdrgpcrsEquivClasses();
 		GPOS_ASSERT(NULL != pdrgpcrs);
-		const ULONG ulEquivClasses = pdrgpcrs->Size();
-		for (ULONG ul = 0; ul < ulEquivClasses; ul++)
+		const GP_ULONG ulEquivClasses = pdrgpcrs->Size();
+		for (GP_ULONG ul = 0; ul < ulEquivClasses; ul++)
 		{
 			CColRefSet *pcrsEquivClass = (*pdrgpcrs)[ul];
 
@@ -1565,7 +1565,7 @@ CExpressionPreprocessor::PexprAddEqualityPreds(CMemoryPool *mp,
 	}
 
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = (*pexpr)[ul];
 		if (pexprChild->Pop()->FLogical())
@@ -1650,10 +1650,10 @@ CExpressionPreprocessor::PexprFromConstraintsScalar(
 		return pexpr;
 	}
 
-	const ULONG ulChildren = pexpr->Arity();
+	const GP_ULONG ulChildren = pexpr->Arity();
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
 
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = (*pexpr)[ul];
 		if (pexprChild->Pop()->FScalar())
@@ -1683,7 +1683,7 @@ CExpressionPreprocessor::PexprFromConstraintsScalar(
 CExpression *
 CExpressionPreprocessor::PexprWithImpliedPredsOnLOJInnerChild(
 	CMemoryPool *mp, CExpression *pexprLOJ,
-	BOOL *
+	GP_BOOL *
 		pfAddedPredicates  // output: set to True if new predicates are added to inner child
 )
 {
@@ -1784,7 +1784,7 @@ CExpressionPreprocessor::PexprWithImpliedPredsOnLOJInnerChild(
 CExpression *
 CExpressionPreprocessor::PexprOuterJoinInferPredsFromOuterChildToInnerChild(
 	CMemoryPool *mp, CExpression *pexpr,
-	BOOL *
+	GP_BOOL *
 		pfAddedPredicates  // output: set to True if new predicates are added to inner child
 )
 {
@@ -1801,8 +1801,8 @@ CExpressionPreprocessor::PexprOuterJoinInferPredsFromOuterChildToInnerChild(
 	// not an outer join, process children recursively
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild =
 			PexprOuterJoinInferPredsFromOuterChildToInnerChild(
@@ -1827,13 +1827,13 @@ CExpressionPreprocessor::PexprFromConstraints(
 	GPOS_ASSERT(NULL != pexpr);
 	GPOS_ASSERT(pexpr->Pop()->FLogical());
 
-	const ULONG ulChildren = pexpr->Arity();
+	const GP_ULONG ulChildren = pexpr->Arity();
 	CPropConstraint *ppc = pexpr->DerivePropertyConstraint();
 	CColRefSet *pcrsNotNull = pexpr->DeriveNotNullColumns();
 
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
 
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = (*pexpr)[ul];
 		if (pexprChild->Pop()->FScalar())
@@ -1912,8 +1912,8 @@ CExpressionPreprocessor::PexprPruneEmptySubtrees(CMemoryPool *mp,
 	// process children
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = PexprPruneEmptySubtrees(mp, (*pexpr)[ul]);
 		pdrgpexpr->Append(pexprChild);
@@ -1933,7 +1933,7 @@ CExpressionPreprocessor::PexprRemoveUnusedCTEs(CMemoryPool *mp,
 	COperator *pop = pexpr->Pop();
 	if (COperator::EopLogicalCTEAnchor == pop->Eopid())
 	{
-		ULONG id = CLogicalCTEAnchor::PopConvert(pop)->Id();
+		GP_ULONG id = CLogicalCTEAnchor::PopConvert(pop)->Id();
 		if (!COptCtxt::PoctxtFromTLS()->Pcteinfo()->FUsed(id))
 		{
 			GPOS_ASSERT(1 == pexpr->Arity());
@@ -1944,8 +1944,8 @@ CExpressionPreprocessor::PexprRemoveUnusedCTEs(CMemoryPool *mp,
 	// process children
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild = PexprRemoveUnusedCTEs(mp, (*pexpr)[ul]);
 		pdrgpexpr->Append(pexprChild);
@@ -1976,7 +1976,7 @@ CExpressionPreprocessor::CollectCTEPredicates(CMemoryPool *mp,
 			CExpression *pexprChild = (*pexpr)[0];
 			CLogicalCTEConsumer *popConsumer =
 				CLogicalCTEConsumer::PopConvert(pexprChild->Pop());
-			ULONG ulCTEId = popConsumer->UlCTEId();
+			GP_ULONG ulCTEId = popConsumer->UlCTEId();
 			CExpression *pexprProducer =
 				COptCtxt::PoctxtFromTLS()->Pcteinfo()->PexprCTEProducer(
 					ulCTEId);
@@ -1996,9 +1996,9 @@ CExpressionPreprocessor::CollectCTEPredicates(CMemoryPool *mp,
 			{
 				pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
 #ifdef GPOS_DEBUG
-				BOOL fInserted =
+				GP_BOOL fInserted =
 #endif	// GPOS_DEBUG
-					phm->Insert(GPOS_NEW(mp) ULONG(ulCTEId), pdrgpexpr);
+					phm->Insert(GPOS_NEW(mp) GP_ULONG(ulCTEId), pdrgpexpr);
 				GPOS_ASSERT(fInserted);
 			}
 			pdrgpexpr->Append(pexprRemappedScalar);
@@ -2006,8 +2006,8 @@ CExpressionPreprocessor::CollectCTEPredicates(CMemoryPool *mp,
 	}
 
 	// process children recursively
-	const ULONG ulChildren = pexpr->Arity();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CollectCTEPredicates(mp, (*pexpr)[ul], phm);
 	}
@@ -2025,11 +2025,11 @@ CExpressionPreprocessor::AddPredsToCTEProducers(CMemoryPool *mp,
 	CTEPredsMapIter mi(phm);
 	while (mi.Advance())
 	{
-		ULONG ulCTEId = *(mi.Key());
+		GP_ULONG ulCTEId = *(mi.Key());
 		CExpression *pexprProducer = pcteinfo->PexprCTEProducer(ulCTEId);
 		GPOS_ASSERT(NULL != pexprProducer);
 
-		ULONG ulConsumers = pcteinfo->UlConsumers(ulCTEId);
+		GP_ULONG ulConsumers = pcteinfo->UlConsumers(ulCTEId);
 		CExpressionArray *pdrgpexpr =
 			const_cast<CExpressionArray *>(mi.Value());
 
@@ -2119,7 +2119,7 @@ CExpressionPreprocessor::PexprInferPredicates(CMemoryPool *mp,
 	CExpression *pexprWithPreds = PexprAddPredicatesFromConstraints(mp, pexpr);
 
 	// infer predicates from outer child to inner child of outer join
-	BOOL fNewPreds = false;
+	GP_BOOL fNewPreds = false;
 	CExpression *pexprInferredPreds =
 		PexprOuterJoinInferPredsFromOuterChildToInnerChild(mp, pexprWithPreds,
 														   &fNewPreds);
@@ -2238,9 +2238,9 @@ CExpressionPreprocessor::PexprPruneUnusedComputedColsRecursive(
 
 	// process children
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-	const ULONG ulChildren = pexpr->Arity();
+	const GP_ULONG ulChildren = pexpr->Arity();
 
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild =
 			PexprPruneUnusedComputedColsRecursive(mp, (*pexpr)[ul], pcrsReqd);
@@ -2324,10 +2324,10 @@ CExpressionPreprocessor::PexprPruneProjListProjectOrGbAgg(
 		// only remove part of the project elements
 		CExpressionArray *pdrgpexprPrElRemain =
 			GPOS_NEW(mp) CExpressionArray(mp);
-		const ULONG ulPrjEls = pexprProjList->Arity();
+		const GP_ULONG ulPrjEls = pexprProjList->Arity();
 		CExpressionHandle exprhdl(mp);
 
-		for (ULONG ul = 0; ul < ulPrjEls; ul++)
+		for (GP_ULONG ul = 0; ul < ulPrjEls; ul++)
 		{
 			CExpression *pexprPrEl = (*pexprProjList)[ul];
 			CScalarProjectElement *popPrEl =
@@ -2385,9 +2385,9 @@ CExpressionPreprocessor::PexprReorderScalarCmpChildren(CMemoryPool *mp,
 
 	// process children
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-	const ULONG ulChildren = pexpr->Arity();
+	const GP_ULONG ulChildren = pexpr->Arity();
 
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		CExpression *pexprChild =
 			PexprReorderScalarCmpChildren(mp, (*pexpr)[ul]);
@@ -2520,11 +2520,11 @@ CExpressionPreprocessor::PexprExistWithPredFromINSubq(CMemoryPool *mp,
 	COperator *pop = pexpr->Pop();
 
 	// recursively process children
-	const ULONG arity = pexpr->Arity();
+	const GP_ULONG arity = pexpr->Arity();
 	pop->AddRef();
 
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild =
 			PexprExistWithPredFromINSubq(mp, (*pexpr)[ul]);
@@ -2609,7 +2609,7 @@ CollapseSelectAndReplaceColref(CMemoryPool *mp, CExpression *pexpr,
 
 	// recurse to children
 	CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < pexpr->Arity(); ul++)
+	for (GP_ULONG ul = 0; ul < pexpr->Arity(); ul++)
 	{
 		pdrgpexprChildren->Append(CollapseSelectAndReplaceColref(
 			mp, (*pexpr)[ul], pcolref, pprojExpr));
@@ -2702,7 +2702,7 @@ CExpressionPreprocessor::PexprTransposeSelectAndProject(CMemoryPool *mp,
 		CExpression *pselectNew = pexpr;
 
 		CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-		for (ULONG ul = 0; ul < pprojectList->Arity(); ul++)
+		for (GP_ULONG ul = 0; ul < pprojectList->Arity(); ul++)
 		{
 			CExpression *pprojexpr =
 				CUtils::PNthProjectElementExpr(pproject, ul);
@@ -2740,7 +2740,7 @@ CExpressionPreprocessor::PexprTransposeSelectAndProject(CMemoryPool *mp,
 		pdrgpexpr->Append(pselectNew);
 
 		CExpressionArray *pdrgpprojelems = GPOS_NEW(mp) CExpressionArray(mp);
-		for (ULONG ul = 0; ul < pprojectList->Arity(); ul++)
+		for (GP_ULONG ul = 0; ul < pprojectList->Arity(); ul++)
 		{
 			(*pprojectList)[ul]->AddRef();
 			pdrgpprojelems->Append((*pprojectList)[ul]);
@@ -2754,7 +2754,7 @@ CExpressionPreprocessor::PexprTransposeSelectAndProject(CMemoryPool *mp,
 	else
 	{
 		CExpressionArray *pdrgpexprChildren = GPOS_NEW(mp) CExpressionArray(mp);
-		for (ULONG ul = 0; ul < pexpr->Arity(); ul++)
+		for (GP_ULONG ul = 0; ul < pexpr->Arity(); ul++)
 		{
 			pdrgpexprChildren->Append(
 				PexprTransposeSelectAndProject(mp, (*pexpr)[ul]));

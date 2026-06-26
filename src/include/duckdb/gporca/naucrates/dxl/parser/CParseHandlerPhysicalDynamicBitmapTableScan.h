@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -40,10 +40,10 @@ private:
 		const CParseHandlerPhysicalDynamicBitmapTableScan &);
 
 	// part index id
-	ULONG m_part_index_id;
+	GP_ULONG m_part_index_id;
 
 	// printable partition index id
-	ULONG m_part_index_id_printable;
+	GP_ULONG m_part_index_id_printable;
 
 	// process the start of an element
 	virtual void StartElement(

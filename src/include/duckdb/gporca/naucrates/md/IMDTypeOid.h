@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -54,7 +54,7 @@ public:
 
 	// factory function for OID datums
 	virtual IDatumOid *CreateOidDatum(CMemoryPool *mp, OID oid_value,
-									  BOOL is_null) const = 0;
+									  GP_BOOL is_null) const = 0;
 };
 }  // namespace gpmd
 

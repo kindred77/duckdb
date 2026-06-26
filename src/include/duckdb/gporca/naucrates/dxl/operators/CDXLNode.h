@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -33,8 +33,8 @@ typedef CDynamicPtrArray<CDXLNode, CleanupRelease> CDXLNodeArray;
 // arrays of OID
 typedef CDynamicPtrArray<OID, CleanupDelete> OidArray;
 
-typedef CHashMap<ULONG, CDXLNode, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupRelease<CDXLNode> >
+typedef CHashMap<GP_ULONG, CDXLNode, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupRelease<CDXLNode> >
 	IdToCDXLNodeMap;
 
 //---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public:
 
 	// shorthand to access children
 	inline CDXLNode *
-	operator[](ULONG idx) const
+	operator[](GP_ULONG idx) const
 	{
 		GPOS_ASSERT(NULL != m_dxl_array);
 		CDXLNode *dxl_node = (*m_dxl_array)[idx];
@@ -94,7 +94,7 @@ public:
 	};
 
 	// arity function, returns the number of children this node has
-	inline ULONG
+	inline GP_ULONG
 	Arity() const
 	{
 		return (m_dxl_array == NULL) ? 0 : m_dxl_array->Size();
@@ -136,7 +136,7 @@ public:
 	void SerializeToDXL(CXMLSerializer *) const;
 
 	// replace a given child of this DXL node with the given node
-	void ReplaceChild(ULONG idx, CDXLNode *child_dxlnode);
+	void ReplaceChild(GP_ULONG idx, CDXLNode *child_dxlnode);
 
 	void SerializeChildrenToDXL(CXMLSerializer *xml_serializer) const;
 
@@ -153,7 +153,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(BOOL validate_children) const;
+	void AssertValid(GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 };	// class CDXLNode

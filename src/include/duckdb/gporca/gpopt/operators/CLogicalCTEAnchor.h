@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -30,7 +30,7 @@ class CLogicalCTEAnchor : public CLogical
 {
 private:
 	// cte identifier
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// private copy ctor
 	CLogicalCTEAnchor(const CLogicalCTEAnchor &);
@@ -40,7 +40,7 @@ public:
 	explicit CLogicalCTEAnchor(CMemoryPool *mp);
 
 	// ctor
-	CLogicalCTEAnchor(CMemoryPool *mp, ULONG id);
+	CLogicalCTEAnchor(CMemoryPool *mp, GP_ULONG id);
 
 	// dtor
 	virtual ~CLogicalCTEAnchor()
@@ -61,20 +61,20 @@ public:
 	}
 
 	// cte identifier
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return false;
@@ -84,7 +84,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -123,7 +123,7 @@ public:
 	PcrsStat(CMemoryPool *,		   // mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *pcrsInput,
-			 ULONG	// child_index
+			 GP_ULONG	// child_index
 	) const
 	{
 		return PcrsStatsPassThru(pcrsInput);

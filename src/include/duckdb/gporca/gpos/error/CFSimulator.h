@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -77,30 +77,30 @@ private:
 		struct SStackKey
 		{
 			// stack trackers are identified by the exceptions they manage
-			ULONG m_major;
-			ULONG m_minor;
+			GP_ULONG m_major;
+			GP_ULONG m_minor;
 
 			// ctor
-			SStackKey(ULONG major, ULONG minor) : m_major(major), m_minor(minor)
+			SStackKey(GP_ULONG major, GP_ULONG minor) : m_major(major), m_minor(minor)
 			{
 			}
 
 			// simple comparison
-			BOOL
+			GP_BOOL
 			operator==(const SStackKey &key) const
 			{
 				return m_major == key.m_major && m_minor == key.m_minor;
 			}
 
 			// equality function -- needed for hashtable
-			static BOOL
+			static GP_BOOL
 			Equals(const SStackKey &key, const SStackKey &other_key)
 			{
 				return key == other_key;
 			}
 
 			// basic hash function
-			static ULONG
+			static GP_ULONG
 			HashValue(const SStackKey &key)
 			{
 				return key.m_major ^ key.m_minor;
@@ -110,11 +110,11 @@ private:
 
 
 		// ctor
-		explicit CStackTracker(CMemoryPool *mp, ULONG resolution,
+		explicit CStackTracker(CMemoryPool *mp, GP_ULONG resolution,
 							   SStackKey key);
 
 		// exchange/set function
-		BOOL ExchangeSet(ULONG bit);
+		GP_BOOL ExchangeSet(GP_ULONG bit);
 
 		// link element for hashtable
 		SLink m_link;
@@ -143,7 +143,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// resolution
-	ULONG m_resolution;
+	GP_ULONG m_resolution;
 
 	// short hands for stack repository and accessor
 	typedef CSyncHashtable<CStackTracker, CStackTracker::SStackKey> CStackTable;
@@ -159,7 +159,7 @@ private:
 
 public:
 	// ctor
-	CFSimulator(CMemoryPool *mp, ULONG resolution);
+	CFSimulator(CMemoryPool *mp, GP_ULONG resolution);
 
 	// dtor
 	~CFSimulator()
@@ -167,7 +167,7 @@ public:
 	}
 
 	// determine if stack is new
-	BOOL NewStack(ULONG major, ULONG minor);
+	GP_BOOL NewStack(GP_ULONG major, GP_ULONG minor);
 
 	// global instance
 	static CFSimulator *m_fsim;
@@ -188,7 +188,7 @@ public:
 	}
 
 	// check if simulation is activated
-	static BOOL
+	static GP_BOOL
 	FSimulation()
 	{
 		ITask *task = ITask::Self();

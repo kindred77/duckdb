@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp
 //
@@ -53,10 +53,10 @@ protected:
 
 	// derive part index map from a dynamic scan operator
 	static CPartIndexMap *PpimDeriveFromDynamicScan(
-		CMemoryPool *mp, ULONG part_idx_id, IMDId *rel_mdid,
-		CColRef2dArray *pdrgpdrgpcrPart, ULONG ulSecondaryPartIndexId,
+		CMemoryPool *mp, GP_ULONG part_idx_id, IMDId *rel_mdid,
+		CColRef2dArray *pdrgpdrgpcrPart, GP_ULONG ulSecondaryPartIndexId,
 		CPartConstraint *ppartcnstr, CPartConstraint *ppartcnstrRel,
-		ULONG ulExpectedPropagators);
+		GP_ULONG ulExpectedPropagators);
 
 private:
 	// compute stats of underlying table
@@ -95,7 +95,7 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const;
+	virtual GP_BOOL FInputOrderSensitive() const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
@@ -106,9 +106,9 @@ public:
 	PcrsRequired(CMemoryPool *,		   // mp
 				 CExpressionHandle &,  // exprhdl
 				 CColRefSet *,		   // pcrsRequired
-				 ULONG,				   // child_index
+				 GP_ULONG,				   // child_index
 				 CDrvdPropArray *,	   // pdrgpdpCtxt
-				 ULONG				   // ulOptReq
+				 GP_ULONG				   // ulOptReq
 	)
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -120,9 +120,9 @@ public:
 	PcteRequired(CMemoryPool *,		   //mp,
 				 CExpressionHandle &,  //exprhdl,
 				 CCTEReq *,			   //pcter,
-				 ULONG,				   //child_index,
+				 GP_ULONG,				   //child_index,
 				 CDrvdPropArray *,	   //pdrgpdpCtxt,
-				 ULONG				   //ulOptReq
+				 GP_ULONG				   //ulOptReq
 	) const
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -134,9 +134,9 @@ public:
 	PosRequired(CMemoryPool *,		  // mp
 				CExpressionHandle &,  // exprhdl
 				COrderSpec *,		  // posRequired
-				ULONG,				  // child_index
+				GP_ULONG,				  // child_index
 				CDrvdPropArray *,	  // pdrgpdpCtxt
-				ULONG				  // ulOptReq
+				GP_ULONG				  // ulOptReq
 	) const
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -148,9 +148,9 @@ public:
 	PdsRequired(CMemoryPool *,		  // mp
 				CExpressionHandle &,  // exprhdl
 				CDistributionSpec *,  // pdsRequired
-				ULONG,				  // child_index
+				GP_ULONG,				  // child_index
 				CDrvdPropArray *,	  // pdrgpdpCtxt
-				ULONG				  // ulOptReq
+				GP_ULONG				  // ulOptReq
 	) const
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -162,9 +162,9 @@ public:
 	PrsRequired(CMemoryPool *,		   //mp
 				CExpressionHandle &,   //exprhdl
 				CRewindabilitySpec *,  //prsRequired
-				ULONG,				   // child_index
+				GP_ULONG,				   // child_index
 				CDrvdPropArray *,	   // pdrgpdpCtxt
-				ULONG				   // ulOptReq
+				GP_ULONG				   // ulOptReq
 	) const
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -177,9 +177,9 @@ public:
 	PppsRequired(CMemoryPool *,				   //mp,
 				 CExpressionHandle &,		   //exprhdl,
 				 CPartitionPropagationSpec *,  //pppsRequired,
-				 ULONG,						   //child_index,
+				 GP_ULONG,						   //child_index,
 				 CDrvdPropArray *,			   //pdrgpdpCtxt,
-				 ULONG						   // ulOptReq
+				 GP_ULONG						   // ulOptReq
 	)
 	{
 		GPOS_ASSERT(!"CPhysicalScan has no children");
@@ -187,9 +187,9 @@ public:
 	}
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
@@ -277,14 +277,14 @@ public:
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL
+	virtual GP_BOOL
 	FPassThruStats() const
 	{
 		return false;
 	}
 
 	// return true if operator is dynamic scan
-	virtual BOOL
+	virtual GP_BOOL
 	FDynamicScan() const
 	{
 		return false;

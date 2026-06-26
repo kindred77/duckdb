@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -60,10 +60,10 @@ private:
 
 #ifdef GPOS_DEBUG
 	// returns true if current bucket matches key
-	BOOL
+	GP_BOOL
 	CurrentBucketMatchesKey(const K &key) const
 	{
-		ULONG bucket_idx = Base::GetHashTable().GetBucketIndex(key);
+		GP_ULONG bucket_idx = Base::GetHashTable().GetBucketIndex(key);
 
 		return &(Base::GetHashTable().GetBucket(bucket_idx)) ==
 			   &(Base::GetBucket());

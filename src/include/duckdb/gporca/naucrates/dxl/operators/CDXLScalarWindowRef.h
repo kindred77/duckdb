@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -49,19 +49,19 @@ private:
 	IMDId *m_return_type_mdid;
 
 	// denotes whether it's agg(DISTINCT ...)
-	BOOL m_is_distinct;
+	GP_BOOL m_is_distinct;
 
 	// is argument list really '*' //
-	BOOL m_is_star_arg;
+	GP_BOOL m_is_star_arg;
 
 	// is function a simple aggregate? //
-	BOOL m_is_simple_agg;
+	GP_BOOL m_is_simple_agg;
 
 	// denotes the win stage
 	EdxlWinStage m_dxl_win_stage;
 
 	// position the window specification in a parent window operator
-	ULONG m_win_spec_pos;
+	GP_ULONG m_win_spec_pos;
 
 	// private copy ctor
 	CDXLScalarWindowRef(const CDXLScalarWindowRef &);
@@ -69,9 +69,9 @@ private:
 public:
 	// ctor
 	CDXLScalarWindowRef(CMemoryPool *mp, IMDId *pmdidWinfunc,
-						IMDId *mdid_return_type, BOOL is_distinct,
-						BOOL is_star_arg, BOOL is_simple_agg,
-						EdxlWinStage dxl_win_stage, ULONG ulWinspecPosition);
+						IMDId *mdid_return_type, GP_BOOL is_distinct,
+						GP_BOOL is_star_arg, GP_BOOL is_simple_agg,
+						EdxlWinStage dxl_win_stage, GP_ULONG ulWinspecPosition);
 
 	//dtor
 	virtual ~CDXLScalarWindowRef();
@@ -104,26 +104,26 @@ public:
 	}
 
 	// denotes whether it's agg(DISTINCT ...)
-	BOOL
+	GP_BOOL
 	IsDistinct() const
 	{
 		return m_is_distinct;
 	}
 
-	BOOL
+	GP_BOOL
 	IsStarArg() const
 	{
 		return m_is_star_arg;
 	}
 
-	BOOL
+	GP_BOOL
 	IsSimpleAgg() const
 	{
 		return m_is_simple_agg;
 	}
 
 	// position the window specification in a parent window operator
-	ULONG
+	GP_ULONG
 	GetWindSpecPos() const
 	{
 		return m_win_spec_pos;
@@ -131,7 +131,7 @@ public:
 
 	// set window spec position
 	void
-	SetWinSpecPos(ULONG win_spec_pos)
+	SetWinSpecPos(GP_ULONG win_spec_pos)
 	{
 		m_win_spec_pos = win_spec_pos;
 	}
@@ -154,12 +154,12 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -253,21 +253,21 @@ public:
 	// the following functions check xform type
 
 	// is xform substitution?
-	virtual BOOL
+	virtual GP_BOOL
 	FSubstitution() const
 	{
 		return false;
 	}
 
 	// is xform exploration?
-	virtual BOOL
+	virtual GP_BOOL
 	FExploration() const
 	{
 		return false;
 	}
 
 	// is xform implementation?
-	virtual BOOL
+	virtual GP_BOOL
 	FImplementation() const
 	{
 		return false;
@@ -285,7 +285,7 @@ public:
 	}
 
 	// check compatibility with another xform
-	virtual BOOL FCompatible(CXform::EXformId)
+	virtual GP_BOOL FCompatible(CXform::EXformId)
 	{
 		return true;
 	}
@@ -299,16 +299,16 @@ public:
 #ifdef GPOS_DEBUG
 
 	// verify pattern against given expression
-	BOOL FCheckPattern(CExpression *pexpr) const;
+	GP_BOOL FCheckPattern(CExpression *pexpr) const;
 
 	// verify xform promise on the given expression
-	static BOOL FPromising(CMemoryPool *mp, const CXform *pxform,
+	static GP_BOOL FPromising(CMemoryPool *mp, const CXform *pxform,
 						   CExpression *pexpr);
 
 #endif	// GPOS_DEBUG
 
 	// equality function over xform ids
-	static BOOL FEqualIds(const CHAR *szIdOne, const CHAR *szIdTwo);
+	static GP_BOOL FEqualIds(const CHAR *szIdOne, const CHAR *szIdTwo);
 
 
 	// returns a set containing all xforms related to index join
@@ -346,7 +346,7 @@ public:
 	// of expressions generated for group expression can be significantly
 	// large causing the Xform to be applied many times. This can lead to
 	// significantly long planning time, so such Xform should only be applied once
-	virtual BOOL IsApplyOnce();
+	virtual GP_BOOL IsApplyOnce();
 
 };	// class CXform
 

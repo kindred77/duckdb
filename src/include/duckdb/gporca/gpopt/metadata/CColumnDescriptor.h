@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -47,19 +47,19 @@ private:
 	INT m_iAttno;
 
 	// does column allow null values?
-	BOOL m_is_nullable;
+	GP_BOOL m_is_nullable;
 
 	// width of the column, for instance  char(10) column has width 10
-	ULONG m_width;
+	GP_ULONG m_width;
 
 	// is the column a distribution col
-	BOOL m_is_dist_col;
+	GP_BOOL m_is_dist_col;
 
 public:
 	// ctor
 	CColumnDescriptor(CMemoryPool *mp, const gpmd::IMDType *pmdtype,
 					  INT type_modifier, const CName &name, INT attno,
-					  BOOL is_nullable, ULONG ulWidth = gpos::ulong_max);
+					  GP_BOOL is_nullable, GP_ULONG ulWidth = gpos::ulong_max);
 
 	// dtor
 	virtual ~CColumnDescriptor();
@@ -93,28 +93,28 @@ public:
 	}
 
 	// does column allow null values?
-	BOOL
+	GP_BOOL
 	IsNullable() const
 	{
 		return m_is_nullable;
 	}
 
 	// is this a system column
-	virtual BOOL
+	virtual GP_BOOL
 	IsSystemColumn() const
 	{
 		return (0 > m_iAttno);
 	}
 
 	// width of the column
-	virtual ULONG
+	virtual GP_ULONG
 	Width() const
 	{
 		return m_width;
 	}
 
 	// is this a distribution column
-	BOOL
+	GP_BOOL
 	IsDistCol() const
 	{
 		return m_is_dist_col;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -40,10 +40,10 @@ public:
 								  CColRefArray *pdrgpcrMinimal,
 								  COperator::EGbAggType egbaggtype,
 								  CColRefArray *pdrgpcrKeys,
-								  BOOL fGeneratesDuplicates, BOOL fMultiStage,
-								  BOOL isAggFromSplitDQA,
+								  GP_BOOL fGeneratesDuplicates, GP_BOOL fMultiStage,
+								  GP_BOOL isAggFromSplitDQA,
 								  CLogicalGbAgg::EAggStage aggStage,
-								  BOOL should_enforce_distribution);
+								  GP_BOOL should_enforce_distribution);
 
 	// dtor
 	virtual ~CPhysicalStreamAggDeduplicate();
@@ -76,9 +76,9 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *
 	PcrsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				 CColRefSet *pcrsRequired, ULONG child_index,
+				 CColRefSet *pcrsRequired, GP_ULONG child_index,
 				 CDrvdPropArray *,	//pdrgpdpCtxt,
-				 ULONG				//ulOptReq
+				 GP_ULONG				//ulOptReq
 	)
 	{
 		return PcrsRequiredAgg(mp, exprhdl, pcrsRequired, child_index,
@@ -88,9 +88,9 @@ public:
 	// compute required sort columns of the n-th child
 	virtual COrderSpec *
 	PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				COrderSpec *posRequired, ULONG child_index,
+				COrderSpec *posRequired, GP_ULONG child_index,
 				CDrvdPropArray *,  //pdrgpdpCtxt,
-				ULONG			   //ulOptReq
+				GP_ULONG			   //ulOptReq
 	) const
 	{
 		return PosRequiredStreamAgg(mp, exprhdl, posRequired, child_index,
@@ -100,9 +100,9 @@ public:
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *
 	PdsRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				CDistributionSpec *pdsRequired, ULONG child_index,
+				CDistributionSpec *pdsRequired, GP_ULONG child_index,
 				CDrvdPropArray *,  //pdrgpdpCtxt,
-				ULONG ulOptReq) const
+				GP_ULONG ulOptReq) const
 	{
 		return PdsRequiredAgg(mp, exprhdl, pdsRequired, child_index, ulOptReq,
 							  m_pdrgpcrKeys, m_pdrgpcrKeys);

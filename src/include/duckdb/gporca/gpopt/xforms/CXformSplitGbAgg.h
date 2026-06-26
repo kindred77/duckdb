@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -35,7 +35,7 @@ private:
 
 protected:
 	// check if the transformation is applicable;
-	static BOOL FApplicable(CExpression *pexpr);
+	static GP_BOOL FApplicable(CExpression *pexpr);
 
 	// generate a project lists for the local and global aggregates
 	// from the original aggregate
@@ -76,7 +76,7 @@ public:
 	}
 
 	// Compatibility function for splitting aggregates
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return ((CXform::ExfSplitDQA != exfid) &&

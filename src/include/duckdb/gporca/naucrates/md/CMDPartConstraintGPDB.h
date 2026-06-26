@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -53,7 +53,7 @@ private:
 	ULongPtrArray *m_level_with_default_part_array;
 
 	// is constraint unbounded
-	BOOL m_is_unbounded;
+	GP_BOOL m_is_unbounded;
 
 	// the DXL representation of the part constraint
 	CDXLNode *m_dxl_node;
@@ -62,7 +62,7 @@ public:
 	// ctor
 	CMDPartConstraintGPDB(CMemoryPool *mp,
 						  ULongPtrArray *level_with_default_part_array,
-						  BOOL is_unbounded, CDXLNode *dxlnode);
+						  GP_BOOL is_unbounded, CDXLNode *dxlnode);
 
 	// dtor
 	virtual ~CMDPartConstraintGPDB();
@@ -79,7 +79,7 @@ public:
 	virtual ULongPtrArray *GetDefaultPartsArray() const;
 
 	// is constraint unbounded
-	virtual BOOL IsConstraintUnbounded() const;
+	virtual GP_BOOL IsConstraintUnbounded() const;
 };
 }  // namespace gpmd
 

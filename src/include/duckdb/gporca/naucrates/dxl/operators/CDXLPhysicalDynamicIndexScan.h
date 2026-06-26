@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -36,10 +36,10 @@ private:
 	CDXLTableDescr *m_dxl_table_descr;
 
 	// part index id
-	ULONG m_part_index_id;
+	GP_ULONG m_part_index_id;
 
 	// printable partition index id
-	ULONG m_part_index_id_printable;
+	GP_ULONG m_part_index_id_printable;
 
 	// index descriptor associated with the scanned table
 	CDXLIndexDescr *m_dxl_index_descr;
@@ -62,7 +62,7 @@ public:
 
 	//ctor
 	CDXLPhysicalDynamicIndexScan(CMemoryPool *mp, CDXLTableDescr *table_descr,
-								 ULONG part_idx_id, ULONG part_idx_id_printable,
+								 GP_ULONG part_idx_id, GP_ULONG part_idx_id_printable,
 								 CDXLIndexDescr *dxl_index_descr,
 								 EdxlIndexScanDirection idx_scan_direction);
 
@@ -82,10 +82,10 @@ public:
 	const CDXLTableDescr *GetDXLTableDescr() const;
 
 	// partition index id
-	ULONG GetPartIndexId() const;
+	GP_ULONG GetPartIndexId() const;
 
 	// printable partition index id
-	ULONG GetPartIndexIdPrintable() const;
+	GP_ULONG GetPartIndexIdPrintable() const;
 
 	// scan direction
 	EdxlIndexScanDirection GetIndexScanDir() const;
@@ -107,7 +107,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2014 Pivotal Inc.
 //
@@ -84,25 +84,25 @@ private:
 		CMemoryPool *mp, CExpression *predicate_expr);
 
 	// is the condition a conjunctive predicate
-	static BOOL IsConjunction(CMemoryPool *mp, CExpression *predicate_expr);
+	static GP_BOOL IsConjunction(CMemoryPool *mp, CExpression *predicate_expr);
 
 	// is the condition a boolean predicate
-	static BOOL IsPredBooleanScIdent(CExpression *predicate_expr);
+	static GP_BOOL IsPredBooleanScIdent(CExpression *predicate_expr);
 
 	// is the condition a point predicate
-	static BOOL IsPointPredicate(CExpression *predicate_expr);
+	static GP_BOOL IsPointPredicate(CExpression *predicate_expr);
 
 	// is the condition an IDF point predicate
-	static BOOL IsPredPointIDF(CExpression *predicate_expr);
+	static GP_BOOL IsPredPointIDF(CExpression *predicate_expr);
 
 	// is the condition an INDF point predicate
-	static BOOL IsPredPointINDF(CExpression *predicate_expr);
+	static GP_BOOL IsPredPointINDF(CExpression *predicate_expr);
 
 	// is the condition 'is null' on a scalar ident
-	static BOOL IsPredScalarIdentIsNull(CExpression *predicate_expr);
+	static GP_BOOL IsPredScalarIdentIsNull(CExpression *predicate_expr);
 
 	// is the condition 'is not null' on a scalar ident
-	static BOOL IsPredScalarIdentIsNotNull(CExpression *predicate_expr);
+	static GP_BOOL IsPredScalarIdentIsNotNull(CExpression *predicate_expr);
 
 	// extract statistics filtering information from a point comparison
 	static CStatsPred *GetStatsPredPoint(CMemoryPool *mp,
@@ -136,22 +136,22 @@ private:
 		CMemoryPool *mp, CExpression *join_predicate_expr,
 		CColRefSetArray *
 			join_output_col_refset,	 // array of output columns of join's relational inputs
-		CColRefSet *outer_refs, BOOL is_semi_or_anti_join,
+		CColRefSet *outer_refs, GP_BOOL is_semi_or_anti_join,
 		CExpressionArray *unsupported_predicates_expr);
 
 	// Is the expression a comparison of scalar idents (or casted scalar idents),
 	// or of other supported expressions? If so, extract relevant info.
-	static BOOL IsJoinPredSupportedForStatsEstimation(
+	static GP_BOOL IsJoinPredSupportedForStatsEstimation(
 		CExpression *expr,
 		CColRefSetArray *
 			output_col_refsets,	 // array of output columns of join's relational inputs
-		BOOL is_semi_or_anti_join,
+		GP_BOOL is_semi_or_anti_join,
 		CStatsPred::EStatsCmpType *stats_pred_cmp_type,
 		const CColRef **col_ref_outer, const CColRef **col_ref_inner);
 
 	// find out which input expression refers only to the inner table and which
 	// refers only to the outer table, and return accordingly
-	static BOOL AssignExprsToOuterAndInner(
+	static GP_BOOL AssignExprsToOuterAndInner(
 		CColRefSetArray *
 			output_col_refsets,	 // array of output columns of join's relational inputs
 		CExpression *expr_1, CExpression *expr_2, CExpression **outer_expr,
@@ -168,25 +168,25 @@ public:
 		CMemoryPool *mp, CExpression *scalar_expr,
 		CColRefSetArray *
 			output_col_refset,	// array of output columns of join's relational inputs
-		CColRefSet *outer_refs, BOOL is_semi_or_anti_join,
+		CColRefSet *outer_refs, GP_BOOL is_semi_or_anti_join,
 		CStatsPred **unsupported_pred_stats);
 
 	// helper function to extract array of statistics join filter from an expression handle
 	static CStatsPredJoinArray *ExtractJoinStatsFromExprHandle(
 		CMemoryPool *mp, CExpressionHandle &expr_handle,
-		BOOL is_semi_or_anti_join);
+		GP_BOOL is_semi_or_anti_join);
 
 	// helper function to extract array of statistics join filter from an expression
 	static CStatsPredJoinArray *ExtractJoinStatsFromExpr(
 		CMemoryPool *mp, CExpressionHandle &expr_handle,
 		CExpression *scalar_expression, CColRefSetArray *output_col_refset,
-		CColRefSet *outer_refs, BOOL is_semi_or_anti_join);
+		CColRefSet *outer_refs, GP_BOOL is_semi_or_anti_join);
 
 	// is the predicate a conjunctive or disjunctive predicate
-	static BOOL IsConjOrDisjPred(CStatsPred *pred_stats);
+	static GP_BOOL IsConjOrDisjPred(CStatsPred *pred_stats);
 
 	// is unsupported predicate on unknown column
-	static BOOL IsUnsupportedPredOnDefinedCol(CStatsPred *pred_stats);
+	static GP_BOOL IsUnsupportedPredOnDefinedCol(CStatsPred *pred_stats);
 
 };	// class CStatsPredUtils
 }  // namespace gpopt

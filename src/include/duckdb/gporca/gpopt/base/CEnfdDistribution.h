@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -80,7 +80,7 @@ public:
 	}
 
 	// matching function
-	BOOL
+	GP_BOOL
 	Matches(CEnfdDistribution *ped)
 	{
 		GPOS_ASSERT(NULL != ped);
@@ -89,11 +89,11 @@ public:
 	}
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// check if the given distribution specification is compatible with the
 	// distribution specification of this object for the specified matching type
-	BOOL FCompatible(CDistributionSpec *pds) const;
+	GP_BOOL FCompatible(CDistributionSpec *pds) const;
 
 	// required distribution accessor
 	CDistributionSpec *
@@ -105,7 +105,7 @@ public:
 	// get distribution enforcing type for the given operator
 	EPropEnforcingType Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
 							CPartitionPropagationSpec *pppsReqd,
-							BOOL fDistribReqd) const;
+							GP_BOOL fDistribReqd) const;
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -31,14 +31,14 @@ class CDXLScalarPartOid : public CDXLScalar
 {
 private:
 	// partitioning level
-	ULONG m_partitioning_level;
+	GP_ULONG m_partitioning_level;
 
 	// private copy ctor
 	CDXLScalarPartOid(const CDXLScalarPartOid &);
 
 public:
 	// ctor
-	CDXLScalarPartOid(CMemoryPool *mp, ULONG partitioning_level);
+	CDXLScalarPartOid(CMemoryPool *mp, GP_ULONG partitioning_level);
 
 	// operator type
 	virtual Edxlopid GetDXLOperator() const;
@@ -47,7 +47,7 @@ public:
 	virtual const CWStringConst *GetOpNameStr() const;
 
 	// partitioning level
-	ULONG
+	GP_ULONG
 	GetPartitioningLevel() const
 	{
 		return m_partitioning_level;
@@ -58,7 +58,7 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -69,7 +69,7 @@ public:
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
 	virtual void AssertValid(const CDXLNode *dxlnode,
-							 BOOL validate_children) const;
+							 GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

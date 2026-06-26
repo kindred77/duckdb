@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -31,14 +31,14 @@ private:
 	ILogger *m_old_logger;
 
 	// flag indicating if logger is used for error logging
-	BOOL m_error;
+	GP_BOOL m_error;
 
 	// private copy ctor
 	CAutoLogger(const CAutoLogger &);
 
 public:
 	// ctor
-	CAutoLogger(ILogger *logger, BOOL error)
+	CAutoLogger(ILogger *logger, GP_BOOL error)
 		: m_old_logger(NULL), m_error(error)
 	{
 		GPOS_ASSERT(NULL != logger);

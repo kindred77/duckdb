@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -35,7 +35,7 @@ class CDXLScalarSortCol : public CDXLScalar
 {
 private:
 	// id of the sorting column
-	ULONG m_colid;
+	GP_ULONG m_colid;
 
 	// catalog Oid of the sorting operator
 	IMDId *m_mdid_sort_op;
@@ -44,15 +44,15 @@ private:
 	CWStringConst *m_sort_op_name_str;
 
 	// sort nulls before other values
-	BOOL m_must_sort_nulls_first;
+	GP_BOOL m_must_sort_nulls_first;
 
 	// private copy ctor
 	CDXLScalarSortCol(CDXLScalarSortCol &);
 
 public:
 	// ctor/dtor
-	CDXLScalarSortCol(CMemoryPool *mp, ULONG colid, IMDId *sort_op_id,
-					  CWStringConst *pstrTypeName, BOOL fSortNullsFirst);
+	CDXLScalarSortCol(CMemoryPool *mp, GP_ULONG colid, IMDId *sort_op_id,
+					  CWStringConst *pstrTypeName, GP_BOOL fSortNullsFirst);
 
 	virtual ~CDXLScalarSortCol();
 
@@ -63,13 +63,13 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// Id of the sorting column
-	ULONG GetColId() const;
+	GP_ULONG GetColId() const;
 
 	// mdid of the sorting operator
 	IMDId *GetMdIdSortOp() const;
 
 	// whether nulls are sorted before other values
-	BOOL IsSortedNullsFirst() const;
+	GP_BOOL IsSortedNullsFirst() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
@@ -85,7 +85,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -96,7 +96,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

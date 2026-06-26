@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2017 Pivotal Software, Inc
 //
 //	Hash set iterator
@@ -14,8 +14,8 @@
 namespace gpos
 {
 // Hash set iterator
-template <class T, ULONG (*HashFn)(const T *),
-		  BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
+template <class T, GP_ULONG (*HashFn)(const T *),
+		  GP_BOOL (*EqFn)(const T *, const T *), void (*CleanupFn)(T *)>
 class CHashSetIter : public CStackObject
 {
 	// short hand for hashset type
@@ -26,13 +26,13 @@ private:
 	const TSet *m_set;
 
 	// current hashchain
-	ULONG m_chain_idx;
+	GP_ULONG m_chain_idx;
 
 	// current element
-	ULONG m_elem_idx;
+	GP_ULONG m_elem_idx;
 
 	// is initialized?
-	BOOL m_is_initialized;
+	GP_BOOL m_is_initialized;
 
 	// private copy ctor
 	CHashSetIter(const CHashSetIter<T, HashFn, EqFn, CleanupFn> &);
@@ -51,7 +51,7 @@ public:
 	}
 
 	// advance iterator to next element
-	BOOL
+	GP_BOOL
 	Advance()
 	{
 		if (m_elem_idx < m_set->m_elements->Size())

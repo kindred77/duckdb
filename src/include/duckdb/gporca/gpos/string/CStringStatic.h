@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -46,10 +46,10 @@ private:
 
 	// size of the string in number of CHAR units,
 	// not counting the terminating '\0'
-	ULONG m_length;
+	GP_ULONG m_length;
 
 	// buffer capacity
-	ULONG m_capacity;
+	GP_ULONG m_capacity;
 
 #ifdef GPOS_DEBUG
 	// checks whether a string is properly null-terminated
@@ -61,10 +61,10 @@ private:
 
 public:
 	// ctor
-	CStringStatic(CHAR buffer[], ULONG capacity);
+	CStringStatic(CHAR buffer[], GP_ULONG capacity);
 
 	// ctor with string initialization
-	CStringStatic(CHAR buffer[], ULONG capacity, const CHAR init_str[]);
+	CStringStatic(CHAR buffer[], GP_ULONG capacity, const CHAR init_str[]);
 
 	// dtor - owner is responsible for releasing the buffer
 	~CStringStatic()
@@ -79,21 +79,21 @@ public:
 	}
 
 	// returns the string length
-	ULONG
+	GP_ULONG
 	Length() const
 	{
 		return m_length;
 	}
 
 	// checks whether the string contains any characters
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return (0 == m_length);
 	}
 
 	// checks whether the string is byte-wise equal to a given string literal
-	BOOL Equals(const CHAR *buf) const;
+	GP_BOOL Equals(const CHAR *buf) const;
 
 	// appends a string
 	void Append(const CStringStatic *str);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -48,7 +48,7 @@ private:
 
 public:
 	// ctor
-	CDXLDatumInt8(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, LINT val);
+	CDXLDatumInt8(CMemoryPool *mp, IMDId *mdid_type, GP_BOOL is_null, LINT val);
 
 	// dtor
 	virtual ~CDXLDatumInt8(){};

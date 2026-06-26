@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -51,17 +51,17 @@ protected:
 	static const WCHAR m_empty_wcstr;
 
 	// size of the string in number of WCHAR units (not counting the terminating '\0')
-	ULONG m_length;
+	GP_ULONG m_length;
 
 	// whether string owns its memory and should take care of deallocating it at destruction time
-	BOOL m_owns_memory;
+	GP_BOOL m_owns_memory;
 
 	// checks whether the string is byte-wise equal to a given string literal
-	virtual BOOL Equals(const WCHAR *w_str_buffer) const;
+	virtual GP_BOOL Equals(const WCHAR *w_str_buffer) const;
 
 public:
 	// ctor
-	CWStringBase(ULONG length, BOOL owns_memory)
+	CWStringBase(GP_ULONG length, GP_BOOL owns_memory)
 		: m_length(length), m_owns_memory(owns_memory)
 	{
 	}
@@ -75,19 +75,19 @@ public:
 	virtual CWStringConst *Copy(CMemoryPool *mp) const;
 
 	// accessors
-	virtual ULONG Length() const;
+	virtual GP_ULONG Length() const;
 
 	// checks whether the string is byte-wise equal to another string
-	virtual BOOL Equals(const CWStringBase *str) const;
+	virtual GP_BOOL Equals(const CWStringBase *str) const;
 
 	// checks whether the string contains any characters
-	virtual BOOL IsEmpty() const;
+	virtual GP_BOOL IsEmpty() const;
 
 	// checks whether a string is properly null-terminated
 	bool IsValid() const;
 
 	// equality operator
-	BOOL operator==(const CWStringBase &str) const;
+	GP_BOOL operator==(const CWStringBase &str) const;
 
 	// returns the wide character buffer storing the string
 	virtual const WCHAR *GetBuffer() const = 0;
@@ -96,10 +96,10 @@ public:
 	INT Find(WCHAR wc) const;
 
 	// checks if a character is escaped
-	BOOL HasEscapedCharAt(ULONG offset) const;
+	GP_BOOL HasEscapedCharAt(GP_ULONG offset) const;
 
 	// count how many times the character appears in string
-	ULONG CountOccurrencesOf(const WCHAR wc) const;
+	GP_ULONG CountOccurrencesOf(const WCHAR wc) const;
 };
 
 }  // namespace gpos

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 	IMDProvider *m_pimdp;
 
 	// do we own cache object?
-	BOOL m_fOwnCache;
+	GP_BOOL m_fOwnCache;
 
 	// metadata cache
 	CMDAccessor::MDCache *m_pcache;

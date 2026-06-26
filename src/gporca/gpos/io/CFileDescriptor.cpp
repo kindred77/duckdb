@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -42,12 +42,12 @@ CFileDescriptor::CFileDescriptor() : m_file_descriptor(GPOS_FILE_DESCR_INVALID)
 //
 //---------------------------------------------------------------------------
 void
-CFileDescriptor::OpenFile(const CHAR *file_path, ULONG mode,
-						  ULONG permission_bits)
+CFileDescriptor::OpenFile(const CHAR *file_path, GP_ULONG mode,
+						  GP_ULONG permission_bits)
 {
 	GPOS_ASSERT(!IsFileOpen());
 
-	BOOL fOpened = false;
+	GP_BOOL fOpened = false;
 
 	while (!fOpened)
 	{
@@ -107,7 +107,7 @@ CFileDescriptor::CloseFile()
 {
 	GPOS_ASSERT(IsFileOpen());
 
-	BOOL fClosed = false;
+	GP_BOOL fClosed = false;
 
 	while (!fClosed)
 	{

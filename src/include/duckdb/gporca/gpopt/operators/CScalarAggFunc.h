@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -74,7 +74,7 @@ private:
 	const CWStringConst *m_pstrAggFunc;
 
 	// distinct aggregate computation
-	BOOL m_is_distinct;
+	GP_BOOL m_is_distinct;
 
 	EAggfuncKind m_aggkind;
 
@@ -82,7 +82,7 @@ private:
 	EAggfuncStage m_eaggfuncstage;
 
 	// is result of splitting aggregates
-	BOOL m_fSplit;
+	GP_BOOL m_fSplit;
 
 	// corresponding gp_agg mdid for supported ordered aggs
 	IMDId *m_gp_agg_mdid;
@@ -94,7 +94,7 @@ public:
 	// ctor
 	CScalarAggFunc(CMemoryPool *mp, IMDId *pmdidAggFunc,
 				   IMDId *resolved_rettype, const CWStringConst *pstrAggFunc,
-				   BOOL is_distinct, EAggfuncStage eaggfuncstage, BOOL fSplit,
+				   GP_BOOL is_distinct, EAggfuncStage eaggfuncstage, GP_BOOL fSplit,
 				   EAggfuncKind aggkind, IMDId *gp_agg_mdid = NULL);
 
 	// dtor
@@ -124,13 +124,13 @@ public:
 
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -140,7 +140,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -164,14 +164,14 @@ public:
 	IMDId *MDId() const;
 
 	// ident accessors
-	BOOL
+	GP_BOOL
 	IsDistinct() const
 	{
 		return m_is_distinct;
 	}
 
 	void
-	SetIsDistinct(BOOL val)
+	SetIsDistinct(GP_BOOL val)
 	{
 		m_is_distinct = val;
 	}
@@ -190,14 +190,14 @@ public:
 	}
 
 	// global or local aggregate function
-	BOOL
+	GP_BOOL
 	FGlobal() const
 	{
 		return (EaggfuncstageGlobal == m_eaggfuncstage);
 	}
 
 	// is result of splitting aggregates
-	BOOL
+	GP_BOOL
 	FSplit() const
 	{
 		return m_fSplit;
@@ -216,7 +216,7 @@ public:
 	}
 
 	// is return type of Agg ambiguous?
-	BOOL
+	GP_BOOL
 	FHasAmbiguousReturnType() const
 	{
 		return (NULL != m_pmdidResolvedRetType);
@@ -237,19 +237,19 @@ public:
 	}
 
 	// is function count(*)?
-	BOOL FCountStar() const;
+	GP_BOOL FCountStar() const;
 
 	// is function count(Any)?
-	BOOL FCountAny() const;
+	GP_BOOL FCountAny() const;
 
 	// is function either min() or max()?
-	BOOL IsMinMax(const IMDType *mdtype) const;
+	GP_BOOL IsMinMax(const IMDType *mdtype) const;
 
 	// print
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// lookup mdid of return type for given Agg function
-	static IMDId *PmdidLookupReturnType(IMDId *pmdidAggFunc, BOOL fGlobal,
+	static IMDId *PmdidLookupReturnType(IMDId *pmdidAggFunc, GP_BOOL fGlobal,
 										CMDAccessor *pmdaInput = NULL);
 
 };	// class CScalarAggFunc

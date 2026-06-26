@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -109,7 +109,7 @@ private:
 		}
 
 		// check if order specs match
-		BOOL Matches(const COrderExpression *poe) const;
+		GP_BOOL Matches(const COrderExpression *poe) const;
 
 		// print
 		IOstream &OsPrint(IOstream &os) const;
@@ -141,7 +141,7 @@ public:
 	virtual ~COrderSpec();
 
 	// number of sort expressions
-	ULONG
+	GP_ULONG
 	UlSortColumns() const
 	{
 		return m_pdrgpoe->Size();
@@ -149,7 +149,7 @@ public:
 
 	// accessor of sort operator of the n-th component
 	IMDId *
-	GetMdIdSortOp(ULONG ul) const
+	GetMdIdSortOp(GP_ULONG ul) const
 	{
 		COrderExpression *poe = (*m_pdrgpoe)[ul];
 		return poe->GetMdIdSortOp();
@@ -157,7 +157,7 @@ public:
 
 	// accessor of sort column of the n-th component
 	const CColRef *
-	Pcr(ULONG ul) const
+	Pcr(GP_ULONG ul) const
 	{
 		COrderExpression *poe = (*m_pdrgpoe)[ul];
 		return poe->Pcr();
@@ -165,14 +165,14 @@ public:
 
 	// accessor of null treatment of the n-th component
 	ENullTreatment
-	Ent(ULONG ul) const
+	Ent(GP_ULONG ul) const
 	{
 		COrderExpression *poe = (*m_pdrgpoe)[ul];
 		return poe->Ent();
 	}
 
 	// check if order spec has no columns
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return UlSortColumns() == 0;
@@ -192,10 +192,10 @@ public:
 	}
 
 	// check if order specs match
-	BOOL Matches(const COrderSpec *pos) const;
+	GP_BOOL Matches(const COrderSpec *pos) const;
 
 	// check if order specs satisfies req'd spec
-	BOOL FSatisfies(const COrderSpec *pos) const;
+	GP_BOOL FSatisfies(const COrderSpec *pos) const;
 
 	// append enforcers to dynamic array for the given plan properties
 	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
@@ -204,11 +204,11 @@ public:
 								 CExpression *pexpr);
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// return a copy of the order spec with remapped columns
 	virtual COrderSpec *PosCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// return a copy of the order spec after excluding the given columns
 	virtual COrderSpec *PosExcludeColumns(CMemoryPool *mp, CColRefSet *pcrs);
@@ -217,11 +217,11 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// matching function over order spec arrays
-	static BOOL Equals(const COrderSpecArray *pdrgposFirst,
+	static GP_BOOL Equals(const COrderSpecArray *pdrgposFirst,
 					   const COrderSpecArray *pdrgposSecond);
 
 	// combine hash values of a maximum number of entries
-	static ULONG HashValue(const COrderSpecArray *pdrgpos, ULONG ulMaxSize);
+	static GP_ULONG HashValue(const COrderSpecArray *pdrgpos, GP_ULONG ulMaxSize);
 
 	// print array of order spec objects
 	static IOstream &OsPrint(IOstream &os, const COrderSpecArray *pdrgpos);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -61,7 +61,7 @@ void CheckStateUsingFileDescriptor(const INT file_descriptor,
 								   SFileStat *file_state);
 
 // check if path is mapped to an accessible file or directory
-BOOL PathExists(const CHAR *file_path);
+GP_BOOL PathExists(const CHAR *file_path);
 
 // get file size by file path
 ULLONG FileSize(const CHAR *file_path);
@@ -70,16 +70,16 @@ ULLONG FileSize(const CHAR *file_path);
 ULLONG FileSize(const INT file_descriptor);
 
 // check if path is directory
-BOOL IsDir(const CHAR *file_path);
+GP_BOOL IsDir(const CHAR *file_path);
 
 // check if path is file
-BOOL IsFile(const CHAR *file_path);
+GP_BOOL IsFile(const CHAR *file_path);
 
 // check permissions
-BOOL CheckFilePermissions(const CHAR *file_path, ULONG permission_bits);
+GP_BOOL CheckFilePermissions(const CHAR *file_path, GP_ULONG permission_bits);
 
 // create directory with specific permissions
-void CreateDir(const CHAR *file_path, ULONG permission_bits);
+void CreateDir(const CHAR *file_path, GP_ULONG permission_bits);
 
 // delete file
 void RemoveDir(const CHAR *file_path);
@@ -111,20 +111,20 @@ void CreateTempDir(CHAR *dir_path);
 
 #ifdef GPOS_FPSIMULATOR
 // inject I/O error for functions whose returned value type is INT
-BOOL SimulateIOError(INT *return_value, INT error_no, const CHAR *file,
-					 ULONG line_num);
+GP_BOOL SimulateIOError(INT *return_value, INT error_no, const CHAR *file,
+					 GP_ULONG line_num);
 
 // inject I/O error for functions whose returned value type is INT_PTR
-inline BOOL
+inline GP_BOOL
 SimulateIOError(INT_PTR *return_value, INT error_no, const CHAR *file,
-				ULONG line_num)
+				GP_ULONG line_num)
 {
 	return SimulateIOError((INT *) return_value, error_no, file, line_num);
 }
 
 // inject I/O error for functions whose returned value type is CHAR*
-BOOL SimulateIOError(CHAR **return_value, INT error_no, const CHAR *file,
-					 ULONG line_num);
+GP_BOOL SimulateIOError(CHAR **return_value, INT error_no, const CHAR *file,
+					 GP_ULONG line_num);
 #endif	// GPOS_FPSIMULATOR
 
 }  // namespace ioutils

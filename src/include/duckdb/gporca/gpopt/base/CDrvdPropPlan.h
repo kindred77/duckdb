@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -135,13 +135,13 @@ public:
 	}
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// equality function
-	virtual ULONG Equals(const CDrvdPropPlan *pdpplan) const;
+	virtual GP_ULONG Equals(const CDrvdPropPlan *pdpplan) const;
 
 	// check for satisfying required plan properties
-	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
+	virtual GP_BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

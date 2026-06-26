@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -38,7 +38,7 @@ class CScalarCoerceToDomain : public CScalarCoerceBase
 {
 private:
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
 	// private copy ctor
 	CScalarCoerceToDomain(const CScalarCoerceToDomain &);
@@ -67,10 +67,10 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return false;

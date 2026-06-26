@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2011 EMC Corp.
 //
@@ -52,10 +52,10 @@ protected:
 
 public:
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -72,7 +72,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -129,31 +129,31 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
-								 ULONG child_index) const;
+								 GP_ULONG child_index) const;
 
 	// return true if operator is a correlated apply
-	virtual BOOL
+	virtual GP_BOOL
 	FCorrelated() const
 	{
 		return false;
 	}
 
 	// return true if operator is a left semi apply
-	virtual BOOL
+	virtual GP_BOOL
 	FLeftSemiApply() const
 	{
 		return false;
 	}
 
 	// return true if operator is a left anti semi apply
-	virtual BOOL
+	virtual GP_BOOL
 	FLeftAntiSemiApply() const
 	{
 		return false;
 	}
 
 	// return true if operator can select a subset of input tuples based on some predicate
-	virtual BOOL
+	virtual GP_BOOL
 	FSelectionOp() const
 	{
 		return true;

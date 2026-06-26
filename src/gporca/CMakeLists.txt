@@ -1,4 +1,6 @@
-﻿set(CMAKE_CXX_FLAGS " -Wno-template-body -Wno-undefined-var-template")
+﻿# Use response files to avoid cmd.exe command-line length limits
+set(CMAKE_NINJA_USE_RESPONSE_FILE_FOR_OBJECTS ON)
+set(CMAKE_CXX_FLAGS " -Wno-template-body -Wno-undefined-var-template")
 
 add_library_unity(
         duckdb_gporca
@@ -114,7 +116,6 @@ add_library_unity(
 	gpopt/operators/CPhysicalUnionAll.cpp
 	gpopt/base/CDatumSortedSet.cpp
 	gpopt/operators/CScalarIsDistinctFrom.cpp
-	gporca_dxl_stubs.cpp
 	gpopt/operators/CPhysicalSort.cpp
 	gpopt/operators/CPhysicalSpool.cpp
 	gpopt/operators/CPhysicalPartitionSelector.cpp
@@ -159,7 +160,6 @@ add_library_unity(
 	naucrates/md/CSystemId.cpp
 	naucrates/md/CMDProviderGeneric.cpp
 	naucrates/md/IMDType.cpp
-	naucrates/md/CMDIdGPDB.cpp
 	naucrates/md/CMDIdGPDB.cpp
 	naucrates/statistics/CBucket.cpp
 	naucrates/statistics/CFilterStatsProcessor.cpp
@@ -261,9 +261,6 @@ set(ALL_OBJECT_FILES
          $<TARGET_OBJECTS:duckdb_gporca>
         PARENT_SCOPE)
 
-add_library(duckdb_gporca_stubs OBJECT gporca_stubs.cpp)
-target_include_directories(duckdb_gporca_stubs PRIVATE /src/include /src/include/duckdb/gporca)
-set(ALL_OBJECT_FILES  $<TARGET_OBJECTS:duckdb_gporca_stubs> PARENT_SCOPE)
 
 add_executable(gporca_test gporca_verify.cpp)
 target_include_directories(gporca_test PRIVATE /src/include /src/include/duckdb/gporca)

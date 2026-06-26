@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal Inc.
 //
@@ -47,8 +47,8 @@ private:
 		CExpressionArray *pdrgpexprPrElFirstStage,
 		CExpressionArray *pdrgpexprPrElSecondStage,
 		CExpressionArray *pdrgpexprPrElThirdStage, CColRefArray *pdrgpcrArgDQA,
-		CColRefArray *pdrgpcrLastStage, BOOL fSplit2LevelsOnly,
-		BOOL fAddDistinctColToLocalGb, CLogicalGbAgg::EAggStage aggStage);
+		CColRefArray *pdrgpcrLastStage, GP_BOOL fSplit2LevelsOnly,
+		GP_BOOL fAddDistinctColToLocalGb, CLogicalGbAgg::EAggStage aggStage);
 
 	// split DQA into a local DQA and global non-DQA aggregate function
 	static CExpression *PexprSplitIntoLocalDQAGlobalAgg(
@@ -72,7 +72,7 @@ private:
 		CMemoryPool *mp, CColumnFactory *col_factory, CMDAccessor *md_accessor,
 		CExpression *pexprPrEl, CExpressionArray *pdrgpexprPrElFirstStage,
 		CExpressionArray *pdrgpexprPrElSecondStage,
-		CExpressionArray *pdrgpexprPrElLastStage, BOOL fSplit2LevelsOnly);
+		CExpressionArray *pdrgpexprPrElLastStage, GP_BOOL fSplit2LevelsOnly);
 
 	// create project element for the aggregate function of a particular level
 	static CExpression *PexprPrElAgg(CMemoryPool *mp, CExpression *pexprAggFunc,
@@ -117,7 +117,7 @@ public:
 	}
 
 	// Compatibility function for splitting aggregates
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSplitDQA != exfid) &&

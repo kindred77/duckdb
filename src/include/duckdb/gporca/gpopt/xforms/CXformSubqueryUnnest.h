@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -36,12 +36,12 @@ private:
 protected:
 	// helper for subquery unnesting
 	static CExpression *PexprSubqueryUnnest(CMemoryPool *mp, CExpression *pexpr,
-											BOOL fEnforceCorrelatedApply);
+											GP_BOOL fEnforceCorrelatedApply);
 
 	// actual transform
 	virtual void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 						   CExpression *pexpr,
-						   BOOL fEnforceCorrelatedApply) const;
+						   GP_BOOL fEnforceCorrelatedApply) const;
 
 public:
 	// ctor
@@ -61,7 +61,7 @@ public:
 						   CExpression *pexpr) const;
 
 	// is transformation a subquery unnesting (Subquery To Apply) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FSubqueryUnnesting() const
 	{
 		return true;

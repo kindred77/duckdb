@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -73,7 +73,7 @@ private:
 	CColRefSet *m_pcrsUsed;
 
 	// do subqueries appear in the operator's tree?
-	BOOL m_fHasSubquery;
+	GP_BOOL m_fHasSubquery;
 
 	// partition table consumers in subqueries
 	CPartInfo *m_ppartinfo;
@@ -82,22 +82,22 @@ private:
 	CFunctionProp *m_pfp;
 
 	// scalar expression contains non-scalar function?
-	BOOL m_fHasNonScalarFunction;
+	GP_BOOL m_fHasNonScalarFunction;
 
 	// total number of Distinct Aggs (e.g., {count(distinct a), sum(distinct a), count(distinct b)}, the value is 3),
 	// only applicable to project lists
-	ULONG m_ulDistinctAggs;
+	GP_ULONG m_ulDistinctAggs;
 
 	// only applicable to project lists
-	BOOL m_fHasScalarFunc;
+	GP_BOOL m_fHasScalarFunc;
 
 	// does operator define Distinct Aggs on different arguments (e.g., count(distinct a), sum(distinct b)),
 	// only applicable to project lists
-	BOOL m_fHasMultipleDistinctAggs;
-	ULONG m_ulOrderedAggs;
+	GP_BOOL m_fHasMultipleDistinctAggs;
+	GP_ULONG m_ulOrderedAggs;
 
 	// does expression contain ScalarArrayCmp generated for "scalar op ANY/ALL (array)" construct
-	BOOL m_fHasScalarArrayCmp;
+	GP_BOOL m_fHasScalarArrayCmp;
 
 	// private copy ctor
 	CDrvdPropScalar(const CDrvdPropScalar &);
@@ -113,7 +113,7 @@ private:
 	// corresponding expression used to derive it, this MUST be set to true,
 	// since after the detachment, there will be no way to derive the
 	// properties once again.
-	BOOL m_is_complete;
+	GP_BOOL m_is_complete;
 
 protected:
 	CColRefSet *DeriveDefinedColumns(CExpressionHandle &);
@@ -122,22 +122,22 @@ protected:
 
 	CColRefSet *DeriveSetReturningFunctionColumns(CExpressionHandle &);
 
-	BOOL DeriveHasSubquery(CExpressionHandle &);
+	GP_BOOL DeriveHasSubquery(CExpressionHandle &);
 
 	CPartInfo *DerivePartitionInfo(CExpressionHandle &);
 
 	CFunctionProp *DeriveFunctionProperties(CExpressionHandle &);
 
-	BOOL DeriveHasNonScalarFunction(CExpressionHandle &);
+	GP_BOOL DeriveHasNonScalarFunction(CExpressionHandle &);
 
-	ULONG DeriveTotalDistinctAggs(CExpressionHandle &);
+	GP_ULONG DeriveTotalDistinctAggs(CExpressionHandle &);
 
-	BOOL DeriveHasScalarFuncProject(CExpressionHandle &);
+	GP_BOOL DeriveHasScalarFuncProject(CExpressionHandle &);
 
-	BOOL DeriveHasMultipleDistinctAggs(CExpressionHandle &);
+	GP_BOOL DeriveHasMultipleDistinctAggs(CExpressionHandle &);
 
-	BOOL DeriveHasScalarArrayCmp(CExpressionHandle &);
-	ULONG DeriveTotalOrderedAggs(CExpressionHandle &);
+	GP_BOOL DeriveHasScalarArrayCmp(CExpressionHandle &);
+	GP_ULONG DeriveTotalOrderedAggs(CExpressionHandle &);
 
 public:
 	// ctor
@@ -153,7 +153,7 @@ public:
 		return EptScalar;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsComplete() const
 	{
 		return m_is_complete;
@@ -164,7 +164,7 @@ public:
 				CDrvdPropCtxt *pdpctxt);
 
 	// check for satisfying required plan properties
-	virtual BOOL FSatisfies(const CReqdPropPlan *prpp) const;
+	virtual GP_BOOL FSatisfies(const CReqdPropPlan *prpp) const;
 
 	// defined columns
 	CColRefSet *GetDefinedColumns() const;
@@ -176,7 +176,7 @@ public:
 	CColRefSet *GetSetReturningFunctionColumns() const;
 
 	// do subqueries appear in the operator's tree?
-	BOOL HasSubquery() const;
+	GP_BOOL HasSubquery() const;
 
 	// derived partition consumers
 	CPartInfo *GetPartitionInfo() const;
@@ -185,17 +185,17 @@ public:
 	CFunctionProp *GetFunctionProperties() const;
 
 	// scalar expression contains non-scalar function?
-	virtual BOOL HasNonScalarFunction() const;
+	virtual GP_BOOL HasNonScalarFunction() const;
 
 	// return total number of Distinct Aggs, only applicable to project list
-	ULONG GetTotalDistinctAggs() const;
+	GP_ULONG GetTotalDistinctAggs() const;
 
-	BOOL HasScalarFuncProject() const;
+	GP_BOOL HasScalarFuncProject() const;
 
 	// does operator define Distinct Aggs on different arguments, only applicable to project lists
-	BOOL HasMultipleDistinctAggs() const;
+	GP_BOOL HasMultipleDistinctAggs() const;
 
-	BOOL HasScalarArrayCmp() const;
+	GP_BOOL HasScalarArrayCmp() const;
 
 	// short hand for conversion
 	static CDrvdPropScalar *GetDrvdScalarProps(CDrvdProp *pdp);

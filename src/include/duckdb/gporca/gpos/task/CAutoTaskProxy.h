@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -43,7 +43,7 @@ private:
 	CList<CTask> m_list;
 
 	// propagate error of sub-task or not
-	BOOL m_propagate_error;
+	GP_BOOL m_propagate_error;
 
 	// find finished task
 	GPOS_RESULT
@@ -61,13 +61,13 @@ private:
 public:
 	// ctor
 	CAutoTaskProxy(CMemoryPool *mp, CWorkerPoolManager *m_pwpm,
-				   BOOL propagate_error = true);
+				   GP_BOOL propagate_error = true);
 
 	// dtor
 	~CAutoTaskProxy();
 
 	// task count
-	ULONG
+	GP_ULONG
 	TaskCount()
 	{
 		return m_list.Size();
@@ -75,13 +75,13 @@ public:
 
 	// disable/enable error propagation
 	void
-	SetPropagateError(BOOL propagate_error)
+	SetPropagateError(GP_BOOL propagate_error)
 	{
 		m_propagate_error = propagate_error;
 	}
 
 	// create new task
-	CTask *Create(void *(*pfunc)(void *), void *argv, BOOL *cancel = NULL);
+	CTask *Create(void *(*pfunc)(void *), void *argv, GP_BOOL *cancel = NULL);
 
 	// schedule task for execution
 	void Schedule(CTask *task);

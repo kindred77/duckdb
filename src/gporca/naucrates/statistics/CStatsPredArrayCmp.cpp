@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2020 VMware, Inc.
 //
@@ -21,7 +21,7 @@ using namespace gpmd;
 
 
 // Ctor
-CStatsPredArrayCmp::CStatsPredArrayCmp(ULONG colid,
+CStatsPredArrayCmp::CStatsPredArrayCmp(GP_ULONG colid,
 									   CStatsPred::EStatsCmpType stats_cmp_type,
 									   CPointArray *points)
 	: CStatsPred(colid), m_stats_cmp_type(stats_cmp_type), m_points(points)

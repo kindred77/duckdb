@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+﻿//===----------------------------------------------------------------------===//
 //                         DuckDB
 //
 // gporca_verify.cpp - GPORCA + DuckDB verification test
@@ -77,9 +77,9 @@ int main() {
         for (int i = 0; i < 3; i++) {
             char col_name[32];
             snprintf(col_name, 32, "col_%d", i + 1);
-            ULONG len = (ULONG)strlen(col_name);
+            GP_ULONG len = (GP_ULONG)strlen(col_name);
             WCHAR *wstr = GPOS_NEW_ARRAY(mp, WCHAR, len + 1);
-            for (ULONG j = 0; j < len; j++) wstr[j] = col_name[j];
+            for (GP_ULONG j = 0; j < len; j++) wstr[j] = col_name[j];
             wstr[len] = 0;
             CName *colname = GPOS_NEW(mp) CName(mp, GPOS_NEW(mp) CWStringConst(mp, wstr));
             GPOS_DELETE_ARRAY(wstr);
@@ -90,7 +90,7 @@ int main() {
         // Create column refs
         CColumnFactory *cf = COptCtxt::PoctxtFromTLS()->Pcf();
         CColRefArray *colrefs = GPOS_NEW(mp) CColRefArray(mp);
-        for (ULONG i = 0; i < ptabdesc->ColumnCount(); i++) {
+        for (GP_ULONG i = 0; i < ptabdesc->ColumnCount(); i++) {
             const CColumnDescriptor *cd = ptabdesc->Pcoldesc(i);
             CColRef *cr = GPOS_NEW(mp) CColRefTable(cd, i, GPOS_NEW(mp) CName(mp, GPOS_NEW(mp) CWStringConst(mp, L"col")), 0);
             colrefs->Append(cr);

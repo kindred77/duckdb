@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -27,7 +27,7 @@ using namespace gpopt;
 //---------------------------------------------------------------------------
 CRewindabilitySpec::CRewindabilitySpec(ERewindabilityType rewindability_type,
 									   EMotionHazardType motion_hazard,
-									   BOOL origin_nl_join)
+									   GP_BOOL origin_nl_join)
 	: m_rewindability(rewindability_type),
 	  m_motion_hazard(motion_hazard),
 	  m_origin_nl_join(origin_nl_join)
@@ -55,7 +55,7 @@ CRewindabilitySpec::~CRewindabilitySpec()
 //		Check for equality between rewindability specs
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CRewindabilitySpec::Matches(const CRewindabilitySpec *prs) const
 {
 	GPOS_ASSERT(NULL != prs);
@@ -94,7 +94,7 @@ CRewindabilitySpec::Matches(const CRewindabilitySpec *prs) const
 //	| Motion    | T        | F      |
 //	+-----------+----------+--------+
 
-BOOL
+GP_BOOL
 CRewindabilitySpec::FSatisfies(const CRewindabilitySpec *prs) const
 {
 	// ErtNone requests always satisfied (row 1 in table 1)
@@ -145,7 +145,7 @@ CRewindabilitySpec::FSatisfies(const CRewindabilitySpec *prs) const
 //		Hash of components
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CRewindabilitySpec::HashValue() const
 {
 	return gpos::CombineHashes(
@@ -178,7 +178,7 @@ CRewindabilitySpec::AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
 
 	CRewindabilitySpec *prs = CDrvdPropPlan::Pdpplan(exprhdl.Pdp())->Prs();
 
-	BOOL eager = false;
+	GP_BOOL eager = false;
 	if (!GPOS_FTRACE(EopttraceMotionHazardHandling) ||
 		(prpp->Per()->PrsRequired()->HasMotionHazard() &&
 		 prs->HasMotionHazard()))

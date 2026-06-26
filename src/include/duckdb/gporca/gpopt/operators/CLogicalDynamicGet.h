@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -41,15 +41,15 @@ public:
 	explicit CLogicalDynamicGet(CMemoryPool *mp);
 
 	CLogicalDynamicGet(CMemoryPool *mp, const CName *pnameAlias,
-					   CTableDescriptor *ptabdesc, ULONG ulPartIndex,
+					   CTableDescriptor *ptabdesc, GP_ULONG ulPartIndex,
 					   CColRefArray *colref_array,
 					   CColRef2dArray *pdrgpdrgpcrPart,
-					   ULONG ulSecondaryPartIndexId, BOOL is_partial,
+					   GP_ULONG ulSecondaryPartIndexId, GP_BOOL is_partial,
 					   CPartConstraint *ppartcnstr,
 					   CPartConstraint *ppartcnstrRel);
 
 	CLogicalDynamicGet(CMemoryPool *mp, const CName *pnameAlias,
-					   CTableDescriptor *ptabdesc, ULONG ulPartIndex);
+					   CTableDescriptor *ptabdesc, GP_ULONG ulPartIndex);
 
 	// dtor
 	virtual ~CLogicalDynamicGet();
@@ -69,17 +69,17 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
@@ -87,7 +87,7 @@ public:
 
 
 	// derive join depth
-	virtual ULONG
+	virtual GP_ULONG
 	DeriveJoinDepth(CMemoryPool *,		 // mp
 					CExpressionHandle &	 // exprhdl
 	) const
@@ -113,7 +113,7 @@ public:
 	PcrsStat(CMemoryPool *,		   // mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		GPOS_ASSERT(!"CLogicalDynamicGet has no children");

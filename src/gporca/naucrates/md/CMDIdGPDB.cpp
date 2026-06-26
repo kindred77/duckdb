@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -173,7 +173,7 @@ CMDIdGPDB::CMDIdGPDB(OID oid)
 //		Constructs a metadata identifier
 //
 //---------------------------------------------------------------------------
-CMDIdGPDB::CMDIdGPDB(OID oid, ULONG version_major, ULONG version_minor)
+CMDIdGPDB::CMDIdGPDB(OID oid, GP_ULONG version_major, GP_ULONG version_minor)
 	: m_sysid(IMDId::EmdidGPDB, GPMD_GPDB_SYSID),
 	  m_oid(oid),
 	  m_major_version(version_major),
@@ -262,7 +262,7 @@ CMDIdGPDB::Oid() const
 //		Returns the object's major version
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIdGPDB::VersionMajor() const
 {
 	return m_major_version;
@@ -276,7 +276,7 @@ CMDIdGPDB::VersionMajor() const
 //		Returns the object's minor version
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIdGPDB::VersionMinor() const
 {
 	return m_minor_version;
@@ -292,7 +292,7 @@ CMDIdGPDB::VersionMinor() const
 //		of the same object
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdGPDB::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidGPDB != mdid->MdidType())
@@ -316,7 +316,7 @@ CMDIdGPDB::Equals(const IMDId *mdid) const
 //		Is the mdid valid
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdGPDB::IsValid() const
 {
 	return !Equals(&CMDIdGPDB::m_mdid_invalid_key);

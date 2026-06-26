@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -57,7 +57,7 @@ public:
 	}
 
 	// compatibility function
-	BOOL FCompatible(CXform::EXformId exfid);
+	GP_BOOL FCompatible(CXform::EXformId exfid);
 
 	// compute xform promise for a given expression handle
 	virtual EXformPromise

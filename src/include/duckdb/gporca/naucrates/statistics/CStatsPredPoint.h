@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -58,7 +58,7 @@ private:
 
 public:
 	// ctor
-	CStatsPredPoint(ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
+	CStatsPredPoint(GP_ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
 					CPoint *point);
 
 	// ctor

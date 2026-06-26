@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC CORP.
 //
@@ -80,7 +80,7 @@ public:
 	// create a cache instance
 	template <class T, class K>
 	static CCache<T, K> *
-	CreateCache(BOOL unique, ULLONG cache_quota,
+	CreateCache(GP_BOOL unique, ULLONG cache_quota,
 				typename CCache<T, K>::HashFuncPtr hash_func,
 				typename CCache<T, K>::EqualFuncPtr equal_func)
 	{

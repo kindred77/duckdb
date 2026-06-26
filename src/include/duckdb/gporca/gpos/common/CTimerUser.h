@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -36,7 +36,7 @@ public:
 	}
 
 	// retrieve elapsed user time in micro-seconds
-	virtual ULONG ElapsedUS() const;
+	virtual GP_ULONG ElapsedUS() const;
 
 	// restart timer
 	virtual void Restart();

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -39,45 +39,45 @@ public:
 	}
 
 	// is this a temp relation
-	virtual BOOL
+	virtual GP_BOOL
 	IsTemporary() const
 	{
 		return false;
 	}
 
 	// is this a partitioned table
-	virtual BOOL
+	virtual GP_BOOL
 	IsPartitioned() const
 	{
 		return false;
 	}
 
 	// return true if a hash distributed table needs to be considered as random
-	virtual BOOL ConvertHashToRandom() const = 0;
+	virtual GP_BOOL ConvertHashToRandom() const = 0;
 
 	// does this table have oids
-	virtual BOOL
+	virtual GP_BOOL
 	HasOids() const
 	{
 		return false;
 	}
 
 	// number of partition columns
-	virtual ULONG
+	virtual GP_ULONG
 	PartColumnCount() const
 	{
 		return 0;
 	}
 
 	// number of partitions
-	virtual ULONG
+	virtual GP_ULONG
 	PartitionCount() const
 	{
 		return 0;
 	}
 
 	// retrieve the partition column at the given position
-	virtual const IMDColumn *PartColAt(ULONG /*pos*/) const
+	virtual const IMDColumn *PartColAt(GP_ULONG /*pos*/) const
 	{
 		GPOS_ASSERT(!"External tables have no partition columns");
 		return NULL;
@@ -92,7 +92,7 @@ public:
 	}
 
 	// retrieve the partition type at the given position
-	virtual CHAR PartTypeAtLevel(ULONG /*pos*/) const
+	virtual CHAR PartTypeAtLevel(GP_ULONG /*pos*/) const
 	{
 		GPOS_ASSERT(!"External tables have no partition types");
 		return (CHAR) 0;
@@ -102,7 +102,7 @@ public:
 	virtual INT RejectLimit() const = 0;
 
 	// reject limit in rows?
-	virtual BOOL IsRejectLimitInRows() const = 0;
+	virtual GP_BOOL IsRejectLimitInRows() const = 0;
 
 	// format error table mdid
 	virtual IMDId *GetFormatErrTableMdid() const = 0;

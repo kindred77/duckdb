@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -189,7 +189,7 @@ const CDouble CCostModelParamsGPDB::DScalarFuncCost(1.0e-04);
 #define GPOPT_COSTPARAM_NAME_MAX_LENGTH 80
 
 // parameter names in the same order of param enumeration
-const CHAR rgszCostParamNames[CCostModelParamsGPDB::EcpSentinel]
+static const CHAR rgszCostParamNames[CCostModelParamsGPDB::EcpSentinel]
 							 [GPOPT_COSTPARAM_NAME_MAX_LENGTH] = {
 								 "SeqIOBandwidth",
 								 "RandomIOBandwidth",
@@ -256,7 +256,7 @@ CCostModelParamsGPDB::CCostModelParamsGPDB(CMemoryPool *mp) : m_mp(mp)
 {
 	GPOS_ASSERT(NULL != mp);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		m_rgpcp[ul] = NULL;
 	}
@@ -449,7 +449,7 @@ CCostModelParamsGPDB::CCostModelParamsGPDB(CMemoryPool *mp) : m_mp(mp)
 //---------------------------------------------------------------------------
 CCostModelParamsGPDB::~CCostModelParamsGPDB()
 {
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		GPOS_DELETE(m_rgpcp[ul]);
 		m_rgpcp[ul] = NULL;
@@ -467,7 +467,7 @@ CCostModelParamsGPDB::~CCostModelParamsGPDB()
 //
 //---------------------------------------------------------------------------
 CCostModelParamsGPDB::SCostParam *
-CCostModelParamsGPDB::PcpLookup(ULONG id) const
+CCostModelParamsGPDB::PcpLookup(GP_ULONG id) const
 {
 	ECostParam ecp = (ECostParam) id;
 	GPOS_ASSERT(EcpSentinel > ecp);
@@ -490,7 +490,7 @@ CCostModelParamsGPDB::PcpLookup(const CHAR *szName) const
 {
 	GPOS_ASSERT(NULL != szName);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		if (0 == clib::Strcmp(szName, rgszCostParamNames[ul]))
 		{
@@ -511,7 +511,7 @@ CCostModelParamsGPDB::PcpLookup(const CHAR *szName) const
 //
 //---------------------------------------------------------------------------
 void
-CCostModelParamsGPDB::SetParam(ULONG id, CDouble dVal, CDouble dLowerBound,
+CCostModelParamsGPDB::SetParam(GP_ULONG id, CDouble dVal, CDouble dLowerBound,
 							   CDouble dUpperBound)
 {
 	ECostParam ecp = (ECostParam) id;
@@ -538,7 +538,7 @@ CCostModelParamsGPDB::SetParam(const CHAR *szName, CDouble dVal,
 {
 	GPOS_ASSERT(NULL != szName);
 
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		if (0 == clib::Strcmp(szName, rgszCostParamNames[ul]))
 		{
@@ -564,7 +564,7 @@ CCostModelParamsGPDB::SetParam(const CHAR *szName, CDouble dVal,
 IOstream &
 CCostModelParamsGPDB::OsPrint(IOstream &os) const
 {
-	for (ULONG ul = 0; ul < EcpSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < EcpSentinel; ul++)
 	{
 		SCostParam *pcp = PcpLookup((ECostParam) ul);
 		os << rgszCostParamNames[ul] << " : " << pcp->Get() << "  ["
@@ -574,14 +574,14 @@ CCostModelParamsGPDB::OsPrint(IOstream &os) const
 	return os;
 }
 
-BOOL
+GP_BOOL
 CCostModelParamsGPDB::Equals(ICostModelParams *pcm) const
 {
 	CCostModelParamsGPDB *pcmgOther = dynamic_cast<CCostModelParamsGPDB *>(pcm);
 	if (NULL == pcmgOther)
 		return false;
 
-	for (ULONG ul = 0U; ul < GPOS_ARRAY_SIZE(m_rgpcp); ul++)
+	for (GP_ULONG ul = 0U; ul < GPOS_ARRAY_SIZE(m_rgpcp); ul++)
 	{
 		if (!m_rgpcp[ul]->Equals(pcmgOther->m_rgpcp[ul]))
 			return false;
@@ -591,7 +591,7 @@ CCostModelParamsGPDB::Equals(ICostModelParams *pcm) const
 }
 
 const CHAR *
-CCostModelParamsGPDB::SzNameLookup(ULONG id) const
+CCostModelParamsGPDB::SzNameLookup(GP_ULONG id) const
 {
 	ECostParam ecp = (ECostParam) id;
 	GPOS_ASSERT(EcpSentinel > ecp);

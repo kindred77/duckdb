@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -28,7 +28,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CDXLStatsDerivedRelation::CDXLStatsDerivedRelation(
-	CDouble rows, BOOL is_empty,
+	CDouble rows, GP_BOOL is_empty,
 	CDXLStatsDerivedColumnArray *dxl_stats_derived_col_array)
 	: m_rows(rows),
 	  m_empty(is_empty),
@@ -84,8 +84,8 @@ CDXLStatsDerivedRelation::Serialize(CXMLSerializer *xml_serializer) const
 	xml_serializer->AddAttribute(
 		CDXLTokens::GetDXLTokenStr(EdxltokenEmptyRelation), m_empty);
 
-	const ULONG arity = m_dxl_stats_derived_col_array->Size();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = m_dxl_stats_derived_col_array->Size();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		GPOS_CHECK_ABORT;
 

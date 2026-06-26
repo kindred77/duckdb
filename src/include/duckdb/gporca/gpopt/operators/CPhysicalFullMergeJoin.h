@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2019 Pivotal Software, Inc.
 
 #ifndef GPOPT_CPhysicalFullMergeJoin_H
@@ -57,27 +57,27 @@ public:
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CReqdPropPlan *prppInput, GP_ULONG child_index,
 								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulDistrReq);
+								   GP_ULONG ulDistrReq);
 
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posInput, ULONG child_index,
+									COrderSpec *posInput, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const;
+											GP_ULONG ulOptReq) const;
 
 	// return order property enforcing type for this operator
 	virtual CEnfdProp::EPropEnforcingType EpetOrder(
@@ -85,9 +85,9 @@ public:
 
 	virtual CEnfdDistribution::EDistributionMatching Edm(
 		CReqdPropPlan *,   // prppInput
-		ULONG,			   //child_index,
+		GP_ULONG,			   //child_index,
 		CDrvdPropArray *,  // pdrgpdpCtxt,
-		ULONG			   // ulOptReq
+		GP_ULONG			   // ulOptReq
 	);
 
 	virtual CDistributionSpec *PdsDerive(CMemoryPool *mp,

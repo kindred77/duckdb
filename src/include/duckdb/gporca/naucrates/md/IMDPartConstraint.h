@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -53,7 +53,7 @@ public:
 	virtual ULongPtrArray *GetDefaultPartsArray() const = 0;
 
 	// is constraint unbounded
-	virtual BOOL IsConstraintUnbounded() const = 0;
+	virtual GP_BOOL IsConstraintUnbounded() const = 0;
 
 	// serialize constraint in DXL format
 	virtual void Serialize(CXMLSerializer *xml_serializer) const = 0;

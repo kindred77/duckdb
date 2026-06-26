@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,28 +42,28 @@ class CDXLPhysicalRandomMotion : public CDXLPhysicalMotion
 {
 private:
 	// is distribution duplicate sensitive
-	BOOL m_is_duplicate_sensitive;
+	GP_BOOL m_is_duplicate_sensitive;
 
 	// private copy ctor
 	CDXLPhysicalRandomMotion(const CDXLPhysicalRandomMotion &);
 
 public:
 	// ctor
-	CDXLPhysicalRandomMotion(CMemoryPool *mp, BOOL is_duplicate_sensitive);
+	CDXLPhysicalRandomMotion(CMemoryPool *mp, GP_BOOL is_duplicate_sensitive);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
 	const CWStringConst *GetOpNameStr() const;
 
 	// is operator duplicate sensitive
-	BOOL
+	GP_BOOL
 	IsDuplicateSensitive() const
 	{
 		return m_is_duplicate_sensitive;
 	}
 
 	// index of relational child node in the children array
-	virtual ULONG
+	virtual GP_ULONG
 	GetRelationChildIdx() const
 	{
 		return EdxlrandommIndexChild;
@@ -85,7 +85,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

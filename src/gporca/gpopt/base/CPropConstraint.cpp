@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -65,14 +65,14 @@ void
 CPropConstraint::InitHashMap(CMemoryPool *mp)
 {
 	GPOS_ASSERT(NULL == m_phmcrcrs);
-	const ULONG ulEquiv = m_pdrgpcrs->Size();
+	const GP_ULONG ulEquiv = m_pdrgpcrs->Size();
 
 	// m_phmcrcrs is only needed when storing equivalent columns
 	if (0 != ulEquiv)
 	{
 		m_phmcrcrs = GPOS_NEW(mp) ColRefToColRefSetMap(mp);
 	}
-	for (ULONG ul = 0; ul < ulEquiv; ul++)
+	for (GP_ULONG ul = 0; ul < ulEquiv; ul++)
 	{
 		CColRefSet *pcrs = (*m_pdrgpcrs)[ul];
 
@@ -81,7 +81,7 @@ CPropConstraint::InitHashMap(CMemoryPool *mp)
 		{
 			pcrs->AddRef();
 #ifdef GPOS_DEBUG
-			BOOL fres =
+			GP_BOOL fres =
 #endif	//GPOS_DEBUG
 				m_phmcrcrs->Insert(crsi.Pcr(), pcrs);
 			GPOS_ASSERT(fres);
@@ -97,7 +97,7 @@ CPropConstraint::InitHashMap(CMemoryPool *mp)
 //		Is this a contradiction
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPropConstraint::FContradiction() const
 {
 	return (NULL != m_pcnstr && m_pcnstr->FContradiction());
@@ -210,12 +210,12 @@ CPropConstraint::PexprScalarMappedFromEquivCols(
 IOstream &
 CPropConstraint::OsPrint(IOstream &os) const
 {
-	const ULONG length = m_pdrgpcrs->Size();
+	const GP_ULONG length = m_pdrgpcrs->Size();
 	if (0 < length)
 	{
 		os << "Equivalence Classes: { ";
 
-		for (ULONG ul = 0; ul < length; ul++)
+		for (GP_ULONG ul = 0; ul < length; ul++)
 		{
 			CColRefSet *pcrs = (*m_pdrgpcrs)[ul];
 			os << "(" << *pcrs << ") ";

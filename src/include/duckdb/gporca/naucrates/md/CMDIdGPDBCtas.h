@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -55,10 +55,10 @@ public:
 	}
 
 	// equality check
-	virtual BOOL Equals(const IMDId *mdid) const;
+	virtual GP_BOOL Equals(const IMDId *mdid) const;
 
 	// is the mdid valid
-	virtual BOOL IsValid() const;
+	virtual GP_BOOL IsValid() const;
 
 	// debug print of the metadata id
 	virtual IOstream &OsPrint(IOstream &os) const;

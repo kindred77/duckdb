@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -28,7 +28,7 @@ const ELocale CMessageTable::m_invalid_locale = ELocInvalid;
 //	@doc:
 //
 //---------------------------------------------------------------------------
-CMessageTable::CMessageTable(CMemoryPool *mp, ULONG size, ELocale locale)
+CMessageTable::CMessageTable(CMemoryPool *mp, GP_ULONG size, ELocale locale)
 	: m_locale(locale)
 {
 	m_hash_table.Init(mp, size, GPOS_OFFSET(CMessage, m_link),

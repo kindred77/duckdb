@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 // Greenplum Database
 // Copyright (c) 2020 VMware and affiliates, Inc.
 //
@@ -25,13 +25,13 @@ class CXformJoin2IndexApplyGeneric : public CXformJoin2IndexApply
 {
 private:
 	// this decides which types of plans are produced, index gets or bitmap gets
-	BOOL m_generateBitmapPlans;
+	GP_BOOL m_generateBitmapPlans;
 
 	// no copy ctor
 	CXformJoin2IndexApplyGeneric(const CXformJoin2IndexApplyGeneric &);
 
 	// Can we transform left outer join to left outer index apply?
-	BOOL FCanLeftOuterIndexApply(CMemoryPool *mp, CExpression *pexprInner,
+	GP_BOOL FCanLeftOuterIndexApply(CMemoryPool *mp, CExpression *pexprInner,
 								 CExpression *pexprScalar,
 								 CTableDescriptor *ptabDesc,
 								 const CColRefSet *pcrsDist) const;
@@ -39,7 +39,7 @@ private:
 public:
 	// ctor
 	explicit CXformJoin2IndexApplyGeneric(CMemoryPool *mp,
-										  BOOL generateBitmapPlans)
+										  GP_BOOL generateBitmapPlans)
 		:  // pattern
 		  CXformJoin2IndexApply(GPOS_NEW(mp) CExpression(
 			  mp,
@@ -71,7 +71,7 @@ public:
 	// For now return true. We may need to revisit this if we find that
 	// there are multiple bindings and we miss interesting bindings because
 	// we extract only one of them.
-	virtual BOOL
+	virtual GP_BOOL
 	IsApplyOnce()
 	{
 		return true;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 		const CXformLeftSemiApplyWithExternalCorrs2InnerJoin &);
 
 	// helper for splitting correlations into external and residual
-	static BOOL FSplitCorrelations(CMemoryPool *mp, CExpression *pexprOuter,
+	static GP_BOOL FSplitCorrelations(CMemoryPool *mp, CExpression *pexprOuter,
 								   CExpression *pexprInner,
 								   CExpressionArray *pdrgpexprAllCorr,
 								   CExpressionArray **ppdrgpexprExternal,
@@ -50,7 +50,7 @@ private:
 								   CColRefSet **ppcrsInnerUsed);
 
 	// helper for collecting correlations
-	static BOOL FDecorrelate(CMemoryPool *mp, CExpression *pexpr,
+	static GP_BOOL FDecorrelate(CMemoryPool *mp, CExpression *pexpr,
 							 CExpression **ppexprInnerNew,
 							 CExpressionArray **ppdrgpexprCorr);
 

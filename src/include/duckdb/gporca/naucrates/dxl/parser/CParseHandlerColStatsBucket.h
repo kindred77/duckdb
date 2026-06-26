@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -58,10 +58,10 @@ private:
 	CDXLDatum *m_upper_bound_dxl_datum;
 
 	// is lower bound closed
-	BOOL m_is_lower_closed;
+	GP_BOOL m_is_lower_closed;
 
 	// is upper bound closed
-	BOOL m_is_upper_closed;
+	GP_BOOL m_is_upper_closed;
 
 	// dxl bucket object
 	CDXLBucket *m_dxl_bucket;

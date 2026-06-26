@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -67,7 +67,7 @@ private:
 	CExpression *m_pexpr;
 
 	// should statistics derivation take place
-	BOOL m_fDeriveStats;
+	GP_BOOL m_fDeriveStats;
 
 	// collect system columns from output columns
 	void SetSystemCols(CMemoryPool *mp);
@@ -82,12 +82,12 @@ public:
 	// ctor
 	CQueryContext(CMemoryPool *mp, CExpression *pexpr, CReqdPropPlan *prpp,
 				  CColRefArray *colref_array, CMDNameArray *pdrgpmdname,
-				  BOOL fDeriveStats);
+				  GP_BOOL fDeriveStats);
 
 	// dtor
 	virtual ~CQueryContext();
 
-	BOOL
+	GP_BOOL
 	FDeriveStats() const
 	{
 		return m_fDeriveStats;
@@ -135,7 +135,7 @@ public:
 		ULongPtrArray
 			*pdrgpulQueryOutputColRefId,  // array of output column reference id
 		CMDNameArray *pdrgpmdname,		  // array of output column names
-		BOOL fDeriveStats);
+		GP_BOOL fDeriveStats);
 
 #ifdef GPOS_DEBUG
 	// debug print

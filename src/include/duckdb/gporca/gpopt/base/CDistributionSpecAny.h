@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -37,7 +37,7 @@ private:
 	COperator::EOperatorId m_eopidRequested;
 
 	// allow outer references in the operator tree where distribution is requested
-	BOOL m_fAllowOuterRefs;
+	GP_BOOL m_fAllowOuterRefs;
 
 	// private copy ctor
 	CDistributionSpecAny(const CDistributionSpecAny &);
@@ -52,7 +52,7 @@ public:
 
 	//ctor
 	CDistributionSpecAny(COperator::EOperatorId eopidRequested,
-						 BOOL fAllowOuterRefs)
+						 GP_BOOL fAllowOuterRefs)
 		: m_eopidRequested(eopidRequested), m_fAllowOuterRefs(fAllowOuterRefs)
 	{
 	}
@@ -65,14 +65,14 @@ public:
 	}
 
 	// does current distribution satisfy the given one
-	virtual BOOL
+	virtual GP_BOOL
 	FSatisfies(const CDistributionSpec *pds) const
 	{
 		return EdtAny == pds->Edt();
 	}
 
 	// return true if distribution spec can be derived
-	virtual BOOL
+	virtual GP_BOOL
 	FDerivable() const
 	{
 		return false;
@@ -107,7 +107,7 @@ public:
 	}
 
 	// allow outer references in the operator tree where distribution is requested
-	BOOL
+	GP_BOOL
 	FAllowOuterRefs() const
 	{
 		return m_fAllowOuterRefs;

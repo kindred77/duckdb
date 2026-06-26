@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -71,16 +71,16 @@ private:
 	ETaskStatus m_status;
 
 	// cancellation flag
-	BOOL *m_cancel;
+	GP_BOOL *m_cancel;
 
 	// local cancellation flag; used when no flag is externally passed
-	BOOL m_cancel_local;
+	GP_BOOL m_cancel_local;
 
 	// counter of requests to suspend cancellation
-	ULONG m_abort_suspend_count;
+	GP_ULONG m_abort_suspend_count;
 
 	// flag denoting task completion report
-	BOOL m_reported;
+	GP_BOOL m_reported;
 
 	// task identifier
 	CTaskId m_tid;
@@ -91,7 +91,7 @@ private:
 public:
 	// ctor - made public for testing
 	CTask(CMemoryPool *mp, CTaskContext *task_ctxt, IErrorContext *err_ctxt,
-		  BOOL *cancel = NULL);
+		  GP_BOOL *cancel = NULL);
 
 private:
 
@@ -102,20 +102,20 @@ private:
 	void Execute();
 
 	// check if task has been scheduled
-	BOOL IsScheduled() const;
+	GP_BOOL IsScheduled() const;
 
 	// check if task finished executing
-	BOOL IsFinished() const;
+	GP_BOOL IsFinished() const;
 
 	// check if task is currently executing
-	BOOL
+	GP_BOOL
 	IsRunning() const
 	{
 		return EtsRunning == m_status;
 	}
 
 	// reported flag accessor
-	BOOL
+	GP_BOOL
 	IsReported() const
 	{
 		return m_reported;
@@ -175,14 +175,14 @@ public:
 		return this->m_task_ctxt->GetErrorLogger();
 	}
 
-	BOOL
-	SetTrace(ULONG trace, BOOL val)
+	GP_BOOL
+	SetTrace(GP_ULONG trace, GP_BOOL val)
 	{
 		return this->m_task_ctxt->SetTrace(trace, val);
 	}
 
-	BOOL
-	IsTraceSet(ULONG trace)
+	GP_BOOL
+	IsTraceSet(GP_ULONG trace)
 	{
 		return this->m_task_ctxt->IsTraceSet(trace);
 	}
@@ -196,7 +196,7 @@ public:
 	}
 
 	// check if task is canceled
-	BOOL
+	GP_BOOL
 	IsCanceled() const
 	{
 		return *m_cancel;
@@ -217,7 +217,7 @@ public:
 	}
 
 	// check if a request to suspend abort was received
-	BOOL
+	GP_BOOL
 	IsAbortSuspended() const
 	{
 		return (0 < m_abort_suspend_count);
@@ -265,7 +265,7 @@ public:
 	}
 
 	// pending exceptions
-	BOOL
+	GP_BOOL
 	HasPendingExceptions() const
 	{
 		return m_err_ctxt->IsPending();
@@ -273,7 +273,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// check if task has expected status
-	BOOL CheckStatus(BOOL completed);
+	GP_BOOL CheckStatus(GP_BOOL completed);
 #endif	// GPOS_DEBUG
 
 	// slink for auto task proxy

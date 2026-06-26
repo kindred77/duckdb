@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -37,17 +37,17 @@ class CBinding
 {
 private:
 	// initialize cursors of child expressions
-	BOOL FInitChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
+	GP_BOOL FInitChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 						   CExpression *pexprPattern,
 						   CExpressionArray *pdrgpexpr);
 
 	// advance cursors of child expressions
-	BOOL FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
+	GP_BOOL FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 							  CExpression *pexprPattern, CExpression *pexprLast,
 							  CExpressionArray *pdrgpexpr);
 
 	// extraction of child expressions
-	BOOL FExtractChildren(CMemoryPool *mp, CExpression *pexprPattern,
+	GP_BOOL FExtractChildren(CMemoryPool *mp, CExpression *pexprPattern,
 						  CGroupExpression *pgexprCursor,
 						  CExpressionArray *pdrgpexpr);
 
@@ -56,11 +56,11 @@ private:
 								 CGroupExpression *pgexpr) const;
 
 	// expand n-th child of pattern
-	CExpression *PexprExpandPattern(CExpression *pexpr, ULONG ulPos,
-									ULONG arity);
+	CExpression *PexprExpandPattern(CExpression *pexpr, GP_ULONG ulPos,
+									GP_ULONG arity);
 
 	// get binding for children
-	BOOL FExtractChildren(CMemoryPool *mp, CGroupExpression *pgexpr,
+	GP_BOOL FExtractChildren(CMemoryPool *mp, CGroupExpression *pgexpr,
 						  CExpression *pexprPattern, CExpression *pexprLast,
 						  CExpressionArray *pdrgpexprChildren);
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -59,14 +59,14 @@ public:
 	}
 
 	// is this constraint a contradiction
-	virtual BOOL
+	virtual GP_BOOL
 	FContradiction() const
 	{
 		return m_pcnstr->IsConstraintUnbounded();
 	}
 
 	// is this constraint unbounded
-	virtual BOOL
+	virtual GP_BOOL
 	IsConstraintUnbounded() const
 	{
 		return m_pcnstr->FContradiction();
@@ -76,7 +76,7 @@ public:
 	virtual CExpression *PexprScalar(CMemoryPool *mp);
 
 	// check if there is a constraint on the given column
-	virtual BOOL
+	virtual GP_BOOL
 	FConstraint(const CColRef *colref) const
 	{
 		return m_pcnstr->FConstraint(colref);
@@ -84,7 +84,7 @@ public:
 
 	// return a copy of the constraint with remapped columns
 	virtual CConstraint *PcnstrCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// return constraint on a given column
 	virtual CConstraint *Pcnstr(CMemoryPool *mp, const CColRef *colref);

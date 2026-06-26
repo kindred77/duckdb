@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -10,6 +10,12 @@
 //---------------------------------------------------------------------------
 
 #include "gpos/error/CMessage.h"
+#ifdef FormatMessage
+#undef FormatMessage
+#endif
+#ifdef GetMessage
+#undef GetMessage
+#endif
 
 #include "gpos/error/CMessageRepository.h"
 #include "gpos/utils.h"
@@ -25,9 +31,9 @@ FORCE_GENERATE_DBGSTR(CMessage);
 //	@doc:
 //
 //---------------------------------------------------------------------------
-CMessage::CMessage(CException exc, ULONG severity, const WCHAR *wszFmt,
-				   ULONG ulLenFmt, ULONG ulParams, const WCHAR *wszComment,
-				   ULONG ulLenComment)
+CMessage::CMessage(CException exc, GP_ULONG severity, const WCHAR *wszFmt,
+				   GP_ULONG ulLenFmt, GP_ULONG ulParams, const WCHAR *wszComment,
+				   GP_ULONG ulLenComment)
 	: m_severity(severity),
 	  m_fmt(wszFmt),
 	  m_fmt_len(ulLenFmt),
@@ -83,7 +89,7 @@ CMessage::Format(CWStringStatic *pwss, VA_LIST vl) const
 //
 //---------------------------------------------------------------------------
 void
-CMessage::FormatMessage(CWStringStatic *str, ULONG major, ULONG minor, ...)
+CMessage::FormatMessage(CWStringStatic *str, GP_ULONG major, GP_ULONG minor, ...)
 {
 	// manufacture actual exception object
 	CException exc(major, minor);
@@ -139,7 +145,7 @@ CMessage::OsPrint(IOstream &os) const
 //
 //---------------------------------------------------------------------------
 CMessage *
-CMessage::GetMessage(ULONG index)
+CMessage::GetMessage(GP_ULONG index)
 {
 	GPOS_ASSERT(index < CException::ExmiSentinel);
 
@@ -182,7 +188,7 @@ CMessage::GetMessage(ULONG index)
 			CException(CException::ExmaSystem, CException::ExmiAbortTimeout),
 			CException::ExsevError,
 			GPOS_WSZ_WSZLEN("Last check for aborts before %d ms, at:\n%ls"),
-			2,	// # params: interval (ULONG), stack trace (WCHAR *)
+			2,	// # params: interval (GP_ULONG), stack trace (WCHAR *)
 			GPOS_WSZ_WSZLEN(
 				"Interval between successive abort checkpoints exceeds maximum")),
 

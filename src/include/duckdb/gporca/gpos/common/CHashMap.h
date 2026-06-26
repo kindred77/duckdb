@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -22,8 +22,8 @@
 namespace gpos
 {
 // fwd declaration
-template <class K, class T, ULONG (*HashFn)(const K *),
-		  BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
+template <class K, class T, GP_ULONG (*HashFn)(const K *),
+		  GP_BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
 		  void (*DestroyTFn)(T *)>
 class CHashMapIter;
 
@@ -35,8 +35,8 @@ class CHashMapIter;
 //		Hash map
 //
 //---------------------------------------------------------------------------
-template <class K, class T, ULONG (*HashFn)(const K *),
-		  BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
+template <class K, class T, GP_ULONG (*HashFn)(const K *),
+		  GP_BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
 		  void (*DestroyTFn)(T *)>
 class CHashMap : public CRefCount
 {
@@ -60,14 +60,14 @@ private:
 		T *m_value;
 
 		// own objects
-		BOOL m_owns_objects;
+		GP_BOOL m_owns_objects;
 
 		// private copy ctor
 		CHashMapElem(const CHashMapElem &);
 
 	public:
 		// ctor
-		CHashMapElem(K *key, T *value, BOOL fOwn)
+		CHashMapElem(K *key, T *value, GP_BOOL fOwn)
 			: m_key(key), m_value(value), m_owns_objects(fOwn)
 		{
 			GPOS_ASSERT(NULL != key);
@@ -111,7 +111,7 @@ private:
 		}
 
 		// equality operator -- map elements are equal if their keys match
-		BOOL
+		GP_BOOL
 		operator==(const CHashMapElem &elem) const
 		{
 			return EqFn(m_key, elem.m_key);
@@ -122,10 +122,10 @@ private:
 	CMemoryPool *const m_mp;
 
 	// size
-	ULONG m_num_chains;
+	GP_ULONG m_num_chains;
 
 	// number of entries
-	ULONG m_size;
+	GP_ULONG m_size;
 
 	// each hash chain is an array of hashmap elements
 	typedef CDynamicPtrArray<CHashMapElem, CleanupDelete> CHashSetElemArray;
@@ -154,7 +154,7 @@ private:
 	void
 	Clear()
 	{
-		for (ULONG i = 0; i < m_filled_chains->Size(); i++)
+		for (GP_ULONG i = 0; i < m_filled_chains->Size(); i++)
 		{
 			// release each hash chain
 			m_chains[*(*m_filled_chains)[i]]->Release();
@@ -182,7 +182,7 @@ private:
 public:
 	// ctor
 	CHashMap<K, T, HashFn, EqFn, DestroyKFn, DestroyTFn>(CMemoryPool *mp,
-														 ULONG num_chains = 127)
+														 GP_ULONG num_chains = 127)
 		: m_mp(mp),
 		  m_num_chains(num_chains),
 		  m_size(0),
@@ -207,7 +207,7 @@ public:
 	}
 
 	// insert an element if key is not yet present
-	BOOL
+	GP_BOOL
 	Insert(K *key, T *value)
 	{
 		if (NULL != Find(key))
@@ -247,12 +247,12 @@ public:
 	}
 
 	// replace the value in a map entry with a new given value
-	BOOL
+	GP_BOOL
 	Replace(const K *key, T *ptNew)
 	{
 		GPOS_ASSERT(NULL != key);
 
-		BOOL fSuccess = false;
+		GP_BOOL fSuccess = false;
 		CHashMapElem *elem = Lookup(key);
 		if (NULL != elem)
 		{
@@ -263,14 +263,14 @@ public:
 		return fSuccess;
 	}
 
-	BOOL
+	GP_BOOL
 	Delete(const K *key)
 	{
 		CHashSetElemArray **chain = GetChain(key);
 
 		if (NULL != *chain)
 		{
-			for (ULONG ul = 0; ul < (*chain)->Size(); ul++)
+			for (GP_ULONG ul = 0; ul < (*chain)->Size(); ul++)
 			{
 				if (EqFn((**chain)[ul]->Key(), key))
 				{
@@ -287,7 +287,7 @@ public:
 	}
 
 	// return number of map entries
-	ULONG
+	GP_ULONG
 	Size() const
 	{
 		return m_size;

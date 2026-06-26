@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -104,7 +104,7 @@ public:
 
 	// determine if an innerJoin group expression has
 	// less conjuncts than another
-	static BOOL FFewerConj(CMemoryPool *mp, CGroupExpression *pgexprFst,
+	static GP_BOOL FFewerConj(CMemoryPool *mp, CGroupExpression *pgexprFst,
 						   CGroupExpression *pgexprSnd);
 
 

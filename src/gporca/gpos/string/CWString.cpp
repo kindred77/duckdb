@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -24,7 +24,7 @@ using namespace gpos;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CWString::CWString(ULONG length)
+CWString::CWString(GP_ULONG length)
 	: CWStringBase(length,
 				   true	 // owns_memory
 				   ),

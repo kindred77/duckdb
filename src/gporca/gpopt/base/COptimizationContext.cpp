@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -105,7 +105,7 @@ COptimizationContext::SetBest(CCostContext *pcc)
 //		Match against another context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::Matches(const COptimizationContext *poc) const
 {
 	GPOS_ASSERT(NULL != poc);
@@ -137,7 +137,7 @@ COptimizationContext::Matches(const COptimizationContext *poc) const
 //		Equality function used for computing stats during costing
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FEqualForStats(const COptimizationContext *pocLeft,
 									 const COptimizationContext *pocRight)
 {
@@ -161,11 +161,11 @@ COptimizationContext::FEqualForStats(const COptimizationContext *pocLeft,
 //		given context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FOptimize(CMemoryPool *mp, CGroupExpression *pgexprParent,
 								CGroupExpression *pgexprChild,
 								COptimizationContext *pocChild,
-								ULONG ulSearchStages)
+								GP_ULONG ulSearchStages)
 {
 	COperator *pop = pgexprChild->Pop();
 
@@ -205,7 +205,7 @@ COptimizationContext::FOptimize(CMemoryPool *mp, CGroupExpression *pgexprParent,
 //		Compare array of optimization contexts based on context ids
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FEqualContextIds(COptimizationContextArray *pdrgpocFst,
 									   COptimizationContextArray *pdrgpocSnd)
 {
@@ -214,14 +214,14 @@ COptimizationContext::FEqualContextIds(COptimizationContextArray *pdrgpocFst,
 		return (NULL == pdrgpocFst && NULL == pdrgpocSnd);
 	}
 
-	const ULONG ulCtxts = pdrgpocFst->Size();
+	const GP_ULONG ulCtxts = pdrgpocFst->Size();
 	if (ulCtxts != pdrgpocSnd->Size())
 	{
 		return false;
 	}
 
-	BOOL fEqual = true;
-	for (ULONG ul = 0; fEqual && ul < ulCtxts; ul++)
+	GP_BOOL fEqual = true;
+	for (GP_ULONG ul = 0; fEqual && ul < ulCtxts; ul++)
 	{
 		fEqual = (*pdrgpocFst)[ul]->Id() == (*pdrgpocSnd)[ul]->Id();
 	}
@@ -238,12 +238,12 @@ COptimizationContext::FEqualContextIds(COptimizationContextArray *pdrgpocFst,
 //		Check if a Motion node should be optimized for the given context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FOptimizeMotion(CMemoryPool *,	   // mp
 									  CGroupExpression *,  // pgexprParent
 									  CGroupExpression *pgexprMotion,
 									  COptimizationContext *poc,
-									  ULONG	 // ulSearchStages
+									  GP_ULONG	 // ulSearchStages
 )
 {
 	GPOS_ASSERT(NULL != pgexprMotion);
@@ -264,12 +264,12 @@ COptimizationContext::FOptimizeMotion(CMemoryPool *,	   // mp
 //		Check if a Sort node should be optimized for the given context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FOptimizeSort(CMemoryPool *,		 // mp
 									CGroupExpression *,	 // pgexprParent
 									CGroupExpression *pgexprSort,
 									COptimizationContext *poc,
-									ULONG  // ulSearchStages
+									GP_ULONG  // ulSearchStages
 )
 {
 	GPOS_ASSERT(NULL != pgexprSort);
@@ -291,12 +291,12 @@ COptimizationContext::FOptimizeSort(CMemoryPool *,		 // mp
 //		Check if Agg node should be optimized for the given context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FOptimizeAgg(CMemoryPool *mp,
 								   CGroupExpression *,	// pgexprParent
 								   CGroupExpression *pgexprAgg,
 								   COptimizationContext *poc,
-								   ULONG ulSearchStages)
+								   GP_ULONG ulSearchStages)
 {
 	GPOS_ASSERT(NULL != pgexprAgg);
 	GPOS_ASSERT(NULL != poc);
@@ -305,7 +305,7 @@ COptimizationContext::FOptimizeAgg(CMemoryPool *mp,
 
 	if (GPOS_FTRACE(EopttraceForceExpandedMDQAs))
 	{
-		BOOL fHasMultipleDistinctAggs =
+		GP_BOOL fHasMultipleDistinctAggs =
 			CDrvdPropScalar::GetDrvdScalarProps((*pgexprAgg)[1]->Pdp())
 				->HasMultipleDistinctAggs();
 		if (fHasMultipleDistinctAggs)
@@ -343,12 +343,12 @@ COptimizationContext::FOptimizeAgg(CMemoryPool *mp,
 //		Check if NL join node should be optimized for the given context
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptimizationContext::FOptimizeNLJoin(CMemoryPool *mp,
 									  CGroupExpression *,  // pgexprParent
 									  CGroupExpression *pgexprJoin,
 									  COptimizationContext *poc,
-									  ULONG	 // ulSearchStages
+									  GP_ULONG	 // ulSearchStages
 )
 {
 	GPOS_ASSERT(NULL != pgexprJoin);
@@ -369,7 +369,7 @@ COptimizationContext::FOptimizeNLJoin(CMemoryPool *mp,
 		CDrvdPropRelational::GetRelationalProperties((*pgexprJoin)[0]->Pdp())
 			->GetOutputColumns();
 	pcrs->Include(pcrsOuterChild);
-	BOOL fIncluded = pcrs->ContainsAll(poc->Prpp()->PcrsRequired());
+	GP_BOOL fIncluded = pcrs->ContainsAll(poc->Prpp()->PcrsRequired());
 	pcrs->Release();
 
 	return fIncluded;
@@ -388,14 +388,14 @@ COptimizationContext::FOptimizeNLJoin(CMemoryPool *mp,
 CReqdPropPlan *
 COptimizationContext::PrppCTEProducer(CMemoryPool *mp,
 									  COptimizationContext *poc,
-									  ULONG ulSearchStages)
+									  GP_ULONG ulSearchStages)
 {
 	GPOS_ASSERT(NULL != poc);
 	GPOS_ASSERT(NULL != poc->PccBest());
 
 	CCostContext *pccBest = poc->PccBest();
 	CGroupExpression *pgexpr = pccBest->Pgexpr();
-	BOOL fOptimizeCTESequence =
+	GP_BOOL fOptimizeCTESequence =
 		(COperator::EopPhysicalSequence == pgexpr->Pop()->Eopid() &&
 		 (*pgexpr)[0]->FHasCTEProducer());
 

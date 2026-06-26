@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -39,13 +39,13 @@ private:
 	IMDId *m_func_mdid;
 
 	// whether or not this cast is binary coercible
-	BOOL m_is_binary_coercible;
+	GP_BOOL m_is_binary_coercible;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
-	// is operator's return type BOOL?
-	BOOL m_fBoolReturnType;
+	// is operator's return type GP_BOOL?
+	GP_BOOL m_fBoolReturnType;
 
 	// private copy ctor
 	CScalarCast(const CScalarCast &);
@@ -53,7 +53,7 @@ private:
 public:
 	// ctor
 	CScalarCast(CMemoryPool *mp, IMDId *return_type_mdid, IMDId *mdid_func,
-				BOOL is_binary_coercible);
+				GP_BOOL is_binary_coercible);
 
 	// dtor
 	virtual ~CScalarCast()
@@ -93,10 +93,10 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return false;
@@ -106,14 +106,14 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
 	}
 
 	// whether or not this cast is binary coercible
-	BOOL
+	GP_BOOL
 	IsBinaryCoercible() const
 	{
 		return m_is_binary_coercible;

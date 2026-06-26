@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -138,7 +138,7 @@ CFSimulatorTestExt::EresUnittest_NetError()
 //
 //---------------------------------------------------------------------------
 GPOS_RESULT
-CFSimulatorTestExt::EresUnittest_SimulateException(ULONG major, ULONG minor)
+CFSimulatorTestExt::EresUnittest_SimulateException(GP_ULONG major, GP_ULONG minor)
 {
 	// assemble -u option
 	const CHAR *rgsz[] = {"", "-u"};

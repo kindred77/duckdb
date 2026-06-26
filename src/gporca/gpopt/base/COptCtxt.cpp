@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -24,7 +24,7 @@
 using namespace gpopt;
 
 // value of the first value part id
-ULONG COptCtxt::m_ulFirstValidPartId = 1;
+GP_ULONG COptCtxt::m_ulFirstValidPartId = 1;
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -132,10 +132,10 @@ COptCtxt::PoctxtCreate(CMemoryPool *mp, CMDAccessor *md_accessor,
 //		Return true if all enforcers are enabled
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 COptCtxt::FAllEnforcersEnabled()
 {
-	BOOL fEnforcerDisabled =
+	GP_BOOL fEnforcerDisabled =
 		GPOS_FTRACE(EopttraceDisableMotions) ||
 		GPOS_FTRACE(EopttraceDisableMotionBroadcast) ||
 		GPOS_FTRACE(EopttraceDisableMotionGather) ||

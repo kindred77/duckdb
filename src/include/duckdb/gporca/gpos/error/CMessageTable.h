@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010, Greenplum, Inc.
 //
@@ -41,7 +41,7 @@ class CMessageTable
 
 public:
 	// ctor
-	CMessageTable(CMemoryPool *mp, ULONG size, ELocale locale);
+	CMessageTable(CMemoryPool *mp, GP_ULONG size, ELocale locale);
 
 	// lookup message by error/local
 	CMessage *LookupMessage(CException exc);
@@ -50,24 +50,24 @@ public:
 	void AddMessage(CMessage *msg);
 
 	// simple comparison
-	BOOL
+	GP_BOOL
 	operator==(const CMessageTable &mt) const
 	{
 		return m_locale == mt.m_locale;
 	}
 
 	// equality function -- needed for hashtable
-	static BOOL
+	static GP_BOOL
 	Equals(const ELocale &locale, const ELocale &other_locale)
 	{
 		return locale == other_locale;
 	}
 
 	// basic hash function
-	static ULONG
+	static GP_ULONG
 	HashValue(const ELocale &locale)
 	{
-		return (ULONG) locale;
+		return (GP_ULONG) locale;
 	}
 
 	// link object

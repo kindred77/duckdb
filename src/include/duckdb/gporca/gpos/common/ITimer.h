@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -42,10 +42,10 @@ public:
 	}
 
 	// retrieve elapsed time in micro-seconds
-	virtual ULONG ElapsedUS() const = 0;
+	virtual GP_ULONG ElapsedUS() const = 0;
 
 	// retrieve elapsed time in milli-seconds
-	ULONG
+	GP_ULONG
 	ElapsedMS() const
 	{
 		return ElapsedUS() / GPOS_USEC_IN_MSEC;

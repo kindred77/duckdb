@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2015 Pivotal, Inc.
 //
@@ -41,19 +41,19 @@ class CPhysicalDynamicScan : public CPhysicalScan
 {
 private:
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// true iff it is a partial scan
-	BOOL m_is_partial;
+	GP_BOOL m_is_partial;
 
 	// id of the dynamic scan
-	ULONG m_scan_id;
+	GP_ULONG m_scan_id;
 
 	// partition keys
 	CColRef2dArray *m_pdrgpdrgpcrPart;
 
 	// secondary scan id in case of partial scan
-	ULONG m_ulSecondaryScanId;
+	GP_ULONG m_ulSecondaryScanId;
 
 	// dynamic index part constraint
 	CPartConstraint *m_part_constraint;
@@ -66,33 +66,33 @@ private:
 
 public:
 	// ctor
-	CPhysicalDynamicScan(CMemoryPool *mp, BOOL is_partial,
-						 CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
-						 const CName *pnameAlias, ULONG scan_id,
+	CPhysicalDynamicScan(CMemoryPool *mp, GP_BOOL is_partial,
+						 CTableDescriptor *ptabdesc, GP_ULONG ulOriginOpId,
+						 const CName *pnameAlias, GP_ULONG scan_id,
 						 CColRefArray *pdrgpcrOutput,
 						 CColRef2dArray *pdrgpdrgpcrParts,
-						 ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
+						 GP_ULONG ulSecondaryScanId, CPartConstraint *ppartcnstr,
 						 CPartConstraint *ppartcnstrRel);
 
 	// dtor
 	virtual ~CPhysicalDynamicScan();
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
 	}
 
 	// true iff the scan is partial
-	BOOL
+	GP_BOOL
 	IsPartial() const
 	{
 		return m_is_partial;
 	}
 
 	// return scan id
-	ULONG
+	GP_ULONG
 	ScanId() const
 	{
 		return m_scan_id;
@@ -106,7 +106,7 @@ public:
 	}
 
 	// secondary scan id
-	ULONG
+	GP_ULONG
 	UlSecondaryScanId() const
 	{
 		return m_ulSecondaryScanId;
@@ -127,14 +127,14 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// derive partition index map
 	virtual CPartIndexMap *PpimDerive(CMemoryPool *mp,
@@ -142,7 +142,7 @@ public:
 									  CDrvdPropCtxt *pdpctxt) const;
 
 	// return true if operator is dynamic scan
-	virtual BOOL
+	virtual GP_BOOL
 	FDynamicScan() const
 	{
 		return true;

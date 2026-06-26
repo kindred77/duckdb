@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -33,7 +33,7 @@ using namespace gpmd;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CDatumBoolGPDB::CDatumBoolGPDB(CSystemId sysid, BOOL value, BOOL is_null)
+CDatumBoolGPDB::CDatumBoolGPDB(CSystemId sysid, GP_BOOL value, GP_BOOL is_null)
 	: m_value(value), m_is_null(is_null)
 {
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
@@ -59,7 +59,7 @@ CDatumBoolGPDB::CDatumBoolGPDB(CSystemId sysid, BOOL value, BOOL is_null)
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CDatumBoolGPDB::CDatumBoolGPDB(IMDId *mdid, BOOL value, BOOL is_null)
+CDatumBoolGPDB::CDatumBoolGPDB(IMDId *mdid, GP_BOOL value, GP_BOOL is_null)
 	: m_mdid(mdid), m_value(value), m_is_null(is_null)
 {
 	GPOS_ASSERT(NULL != m_mdid);
@@ -94,7 +94,7 @@ CDatumBoolGPDB::~CDatumBoolGPDB()
 //		Accessor of boolean value
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumBoolGPDB::GetValue() const
 {
 	return m_value;
@@ -109,7 +109,7 @@ CDatumBoolGPDB::GetValue() const
 //		Accessor of is null
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumBoolGPDB::IsNull() const
 {
 	return m_is_null;
@@ -124,7 +124,7 @@ CDatumBoolGPDB::IsNull() const
 //		Accessor of size
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumBoolGPDB::Size() const
 {
 	return 1;
@@ -153,11 +153,11 @@ CDatumBoolGPDB::MDId() const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumBoolGPDB::HashValue() const
 {
 	return gpos::CombineHashes(m_mdid->HashValue(),
-							   gpos::HashValue<BOOL>(&m_value));
+							   gpos::HashValue<GP_BOOL>(&m_value));
 }
 
 //---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ CDatumBoolGPDB::GetStrRepr(CMemoryPool *mp) const
 //		Matches the values of datums
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumBoolGPDB::Matches(const IDatum *other) const
 {
 	if (!other->MDId()->Equals(m_mdid))

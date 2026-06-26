@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -51,7 +51,7 @@ protected:
 public:
 	// ctor
 	CDXLDatumGeneric(CMemoryPool *mp, IMDId *mdid_type, INT type_modifier,
-					 BOOL is_null, BYTE *data, ULONG length);
+					 GP_BOOL is_null, BYTE *data, GP_ULONG length);
 
 	// dtor
 	virtual ~CDXLDatumGeneric();
@@ -86,7 +86,7 @@ public:
 	// statistics related APIs
 
 	// can datum be mapped to LINT
-	virtual BOOL
+	virtual GP_BOOL
 	IsDatumMappableToLINT() const
 	{
 		return false;
@@ -102,7 +102,7 @@ public:
 	}
 
 	// can datum be mapped to a double
-	virtual BOOL
+	virtual GP_BOOL
 	IsDatumMappableToDouble() const
 	{
 		return false;

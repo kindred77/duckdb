@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -32,20 +32,20 @@ class CCTEConfig : public CRefCount
 {
 private:
 	// CTE inlining cut-off
-	ULONG m_ulCTEInliningCutoff;
+	GP_ULONG m_ulCTEInliningCutoff;
 
 	// private copy ctor
 	CCTEConfig(const CCTEConfig &);
 
 public:
 	// ctor
-	CCTEConfig(ULONG cte_inlining_cut_off)
+	CCTEConfig(GP_ULONG cte_inlining_cut_off)
 		: m_ulCTEInliningCutoff(cte_inlining_cut_off)
 	{
 	}
 
 	// CTE inlining cut-off
-	ULONG
+	GP_ULONG
 	UlCTEInliningCutoff() const
 	{
 		return m_ulCTEInliningCutoff;

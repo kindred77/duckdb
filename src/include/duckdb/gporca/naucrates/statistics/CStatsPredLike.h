@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -56,14 +56,14 @@ private:
 
 public:
 	// ctor
-	CStatsPredLike(ULONG colid, CExpression *expr_left, CExpression *expr_right,
+	CStatsPredLike(GP_ULONG colid, CExpression *expr_left, CExpression *expr_right,
 				   CDouble default_scale_factor);
 
 	// dtor
 	virtual ~CStatsPredLike();
 
 	// the column identifier on which the predicates are on
-	virtual ULONG GetColId() const;
+	virtual GP_ULONG GetColId() const;
 
 	// filter type id
 	virtual EStatsPredType

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -98,7 +98,7 @@ gpos::ioutils::CheckStateUsingFileDescriptor(const INT file_descriptor,
 //		Check if path is mapped to an accessible file or directory
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::PathExists(const CHAR *file_path)
 {
 	GPOS_ASSERT(NULL != file_path);
@@ -119,7 +119,7 @@ gpos::ioutils::PathExists(const CHAR *file_path)
 //		Check if path is directory
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::IsDir(const CHAR *file_path)
 {
 	GPOS_ASSERT(NULL != file_path);
@@ -139,7 +139,7 @@ gpos::ioutils::IsDir(const CHAR *file_path)
 //		Check if path is file
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::IsFile(const CHAR *file_path)
 {
 	GPOS_ASSERT(NULL != file_path);
@@ -198,9 +198,9 @@ gpos::ioutils::FileSize(const INT file_descriptor)
 //		Check permissions
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::CheckFilePermissions(const CHAR *file_path,
-									ULONG permission_bits)
+									GP_ULONG permission_bits)
 {
 	GPOS_ASSERT(NULL != file_path);
 
@@ -220,7 +220,7 @@ gpos::ioutils::CheckFilePermissions(const CHAR *file_path,
 //
 //---------------------------------------------------------------------------
 void
-gpos::ioutils::CreateDir(const CHAR *file_path, ULONG permission_bits)
+gpos::ioutils::CreateDir(const CHAR *file_path, GP_ULONG permission_bits)
 {
 	GPOS_ASSERT(NULL != file_path);
 
@@ -482,10 +482,10 @@ gpos::ioutils::CreateTempDir(CHAR *dir_path)
 //		Inject I/O exception
 //
 //---------------------------------------------------------------------------
-static BOOL
-FSimulateIOErrorInternal(INT error_no, const CHAR *file, ULONG line_num)
+static GP_BOOL
+FSimulateIOErrorInternal(INT error_no, const CHAR *file, GP_ULONG line_num)
 {
-	BOOL fRes = false;
+	GP_BOOL fRes = false;
 
 	ITask *ptsk = ITask::Self();
 	if (NULL != ptsk && ptsk->IsTraceSet(EtraceSimulateIOError) &&
@@ -523,9 +523,9 @@ FSimulateIOErrorInternal(INT error_no, const CHAR *file, ULONG line_num)
 //		whose returned value type is INT
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::SimulateIOError(INT *return_value, INT error_no,
-							   const CHAR *file, ULONG line_num)
+							   const CHAR *file, GP_ULONG line_num)
 {
 	GPOS_ASSERT(NULL != return_value);
 
@@ -544,9 +544,9 @@ gpos::ioutils::SimulateIOError(INT *return_value, INT error_no,
 //		whose returned value type is CHAR*
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 gpos::ioutils::SimulateIOError(CHAR **return_value, INT error_no,
-							   const CHAR *file, ULONG line_num)
+							   const CHAR *file, GP_ULONG line_num)
 {
 	GPOS_ASSERT(NULL != return_value);
 

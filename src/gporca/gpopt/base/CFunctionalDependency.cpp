@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 Greenplum, Inc.
 //
@@ -60,7 +60,7 @@ CFunctionalDependency::~CFunctionalDependency()
 //		Determine if all FD columns are included in the given column set
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CFunctionalDependency::FIncluded(CColRefSet *pcrs) const
 {
 	return pcrs->ContainsAll(m_pcrsKey) && pcrs->ContainsAll(m_pcrsDetermined);
@@ -75,7 +75,7 @@ CFunctionalDependency::FIncluded(CColRefSet *pcrs) const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CFunctionalDependency::HashValue() const
 {
 	return gpos::CombineHashes(m_pcrsKey->HashValue(),
@@ -91,7 +91,7 @@ CFunctionalDependency::HashValue() const
 //		Equality function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CFunctionalDependency::Equals(const CFunctionalDependency *pfd) const
 {
 	if (NULL == pfd)
@@ -129,14 +129,14 @@ CFunctionalDependency::OsPrint(IOstream &os) const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CFunctionalDependency::HashValue(const CFunctionalDependencyArray *pdrgpfd)
 {
-	ULONG ulHash = 0;
+	GP_ULONG ulHash = 0;
 	if (NULL != pdrgpfd)
 	{
-		const ULONG size = pdrgpfd->Size();
-		for (ULONG ul = 0; ul < size; ul++)
+		const GP_ULONG size = pdrgpfd->Size();
+		for (GP_ULONG ul = 0; ul < size; ul++)
 		{
 			ulHash = gpos::CombineHashes(ulHash, (*pdrgpfd)[ul]->HashValue());
 		}
@@ -154,7 +154,7 @@ CFunctionalDependency::HashValue(const CFunctionalDependencyArray *pdrgpfd)
 //		Equality function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CFunctionalDependency::Equals(const CFunctionalDependencyArray *pdrgpfdFst,
 							  const CFunctionalDependencyArray *pdrgpfdSnd)
 {
@@ -164,18 +164,18 @@ CFunctionalDependency::Equals(const CFunctionalDependencyArray *pdrgpfdFst,
 	if (NULL == pdrgpfdFst || NULL == pdrgpfdSnd)
 		return false; /* one is empty, the other is not */
 
-	const ULONG ulLenFst = pdrgpfdFst->Size();
-	const ULONG ulLenSnd = pdrgpfdSnd->Size();
+	const GP_ULONG ulLenFst = pdrgpfdFst->Size();
+	const GP_ULONG ulLenSnd = pdrgpfdSnd->Size();
 
 	if (ulLenFst != ulLenSnd)
 		return false;
 
-	BOOL fEqual = true;
-	for (ULONG ulFst = 0; fEqual && ulFst < ulLenFst; ulFst++)
+	GP_BOOL fEqual = true;
+	for (GP_ULONG ulFst = 0; fEqual && ulFst < ulLenFst; ulFst++)
 	{
 		const CFunctionalDependency *pfdFst = (*pdrgpfdFst)[ulFst];
-		BOOL fMatch = false;
-		for (ULONG ulSnd = 0; !fMatch && ulSnd < ulLenSnd; ulSnd++)
+		GP_BOOL fMatch = false;
+		for (GP_ULONG ulSnd = 0; !fMatch && ulSnd < ulLenSnd; ulSnd++)
 		{
 			const CFunctionalDependency *pfdSnd = (*pdrgpfdSnd)[ulSnd];
 			fMatch = pfdFst->Equals(pfdSnd);
@@ -203,8 +203,8 @@ CFunctionalDependency::PcrsKeys(CMemoryPool *mp,
 
 	if (pdrgpfd != NULL)
 	{
-		const ULONG size = pdrgpfd->Size();
-		for (ULONG ul = 0; ul < size; ul++)
+		const GP_ULONG size = pdrgpfd->Size();
+		for (GP_ULONG ul = 0; ul < size; ul++)
 		{
 			pcrs->Include((*pdrgpfd)[ul]->PcrsKey());
 		}

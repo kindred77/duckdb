@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2020 VMware, Inc.
 //
@@ -37,7 +37,7 @@ private:
 	CIndexDescriptor *m_pindexdesc;
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// order
 	COrderSpec *m_pos;
@@ -48,7 +48,7 @@ private:
 public:
 	// ctors
 	CPhysicalIndexOnlyScan(CMemoryPool *mp, CIndexDescriptor *pindexdesc,
-						   CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
+						   CTableDescriptor *ptabdesc, GP_ULONG ulOriginOpId,
 						   const CName *pnameAlias, CColRefArray *colref_array,
 						   COrderSpec *pos);
 
@@ -78,17 +78,17 @@ public:
 	}
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// index descriptor
 	CIndexDescriptor *
@@ -98,7 +98,7 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;

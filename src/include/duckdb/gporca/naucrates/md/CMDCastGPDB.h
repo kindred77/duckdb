@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -55,7 +55,7 @@ protected:
 	IMDId *m_mdid_dest;
 
 	// is cast between binary coercible types, i.e. the types are binary compatible
-	BOOL m_is_binary_coercible;
+	GP_BOOL m_is_binary_coercible;
 
 	// cast func id
 	IMDId *m_mdid_cast_func;
@@ -66,7 +66,7 @@ protected:
 public:
 	// ctor
 	CMDCastGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname, IMDId *mdid_src,
-				IMDId *mdid_dest, BOOL is_binary_coercible,
+				IMDId *mdid_dest, GP_BOOL is_binary_coercible,
 				IMDId *mdid_cast_func, EmdCoercepathType path_type = EmdtNone);
 
 	// dtor
@@ -92,7 +92,7 @@ public:
 	virtual IMDId *MdidDest() const;
 
 	// is this a cast between binary coeercible types, i.e. the types are binary compatible
-	virtual BOOL IsBinaryCoercible() const;
+	virtual GP_BOOL IsBinaryCoercible() const;
 
 	// return the coercion path type
 	virtual EmdCoercepathType GetMDPathType() const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -24,7 +24,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CSystemId::CSystemId(IMDId::EMDIdType mdid_type, const WCHAR *sysid_char,
-					 ULONG length)
+					 GP_ULONG length)
 	: m_mdid_type(mdid_type)
 {
 	GPOS_ASSERT(GPDXL_SYSID_LENGTH >= length);
@@ -59,10 +59,10 @@ CSystemId::CSystemId(const CSystemId &sysid) : m_mdid_type(sysid.MdidType())
 //		Equality function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CSystemId::Equals(const CSystemId &sysid) const
 {
-	ULONG length = GPOS_WSZ_LENGTH(m_sysid_char);
+	GP_ULONG length = GPOS_WSZ_LENGTH(m_sysid_char);
 	return length == GPOS_WSZ_LENGTH(sysid.m_sysid_char) &&
 		   0 == clib::Wcsncmp(m_sysid_char, sysid.m_sysid_char, length);
 }
@@ -75,7 +75,7 @@ CSystemId::Equals(const CSystemId &sysid) const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CSystemId::HashValue() const
 {
 	return gpos::HashByteArray(

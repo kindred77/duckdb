@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -58,7 +58,7 @@ private:
 	ParseHandlerStack *m_parse_handler_stack;
 
 	// steps since last check for aborts
-	ULONG m_iteration_since_last_abortcheck;
+	GP_ULONG m_iteration_since_last_abortcheck;
 
 	// check for aborts at regular intervals
 	void CheckForAborts();

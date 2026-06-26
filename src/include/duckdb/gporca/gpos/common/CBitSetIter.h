@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -32,13 +32,13 @@ private:
 	const CBitSet &m_bs;
 
 	// current cursor position (in current link)
-	ULONG m_cursor;
+	GP_ULONG m_cursor;
 
 	// current cursor link
 	CBitSet::CBitSetLink *m_bsl;
 
 	// is iterator active or exhausted
-	BOOL m_active;
+	GP_BOOL m_active;
 
 	// private copy ctor
 	CBitSetIter(const CBitSetIter &);
@@ -52,16 +52,16 @@ public:
 	}
 
 	// short hand for cast
-	operator BOOL() const
+	operator GP_BOOL() const
 	{
 		return m_active;
 	}
 
 	// move to next bit
-	BOOL Advance();
+	GP_BOOL Advance();
 
 	// current bit
-	ULONG Bit() const;
+	GP_ULONG Bit() const;
 
 };	// class CBitSetIter
 }  // namespace gpos

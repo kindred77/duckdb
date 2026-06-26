@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -122,7 +122,7 @@ CMDTypeInt8GPDB::~CMDTypeInt8GPDB()
 //---------------------------------------------------------------------------
 IDatumInt8 *
 CMDTypeInt8GPDB::CreateInt8Datum(CMemoryPool *mp, LINT value,
-								 BOOL is_null) const
+								 GP_BOOL is_null) const
 {
 	return GPOS_NEW(mp) CDatumInt8GPDB(m_mdid->Sysid(), value, is_null);
 }
@@ -277,7 +277,7 @@ CMDTypeInt8GPDB::GetDatumForDXLDatum(CMemoryPool *mp,
 		CDXLDatumInt8::Cast(const_cast<CDXLDatum *>(dxl_datum));
 
 	LINT val = int8_dxl_datum->Value();
-	BOOL is_null = int8_dxl_datum->IsNull();
+	GP_BOOL is_null = int8_dxl_datum->IsNull();
 
 	return GPOS_NEW(mp) CDatumInt8GPDB(m_mdid->Sysid(), val, is_null);
 }

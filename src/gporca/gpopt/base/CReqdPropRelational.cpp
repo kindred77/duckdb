@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC Corp.
 //
@@ -90,9 +90,9 @@ CReqdPropRelational::~CReqdPropRelational()
 //---------------------------------------------------------------------------
 void
 CReqdPropRelational::Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							 CReqdProp *prpInput, ULONG child_index,
+							 CReqdProp *prpInput, GP_ULONG child_index,
 							 CDrvdPropArray *,	// pdrgpdpCtxt
-							 ULONG				// ulOptReq
+							 GP_ULONG				// ulOptReq
 )
 {
 	GPOS_CHECK_ABORT;
@@ -154,7 +154,7 @@ CReqdPropRelational::PrprelDifference(CMemoryPool *mp,
 //		Return true if property container is empty
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CReqdPropRelational::IsEmpty() const
 {
 	return m_pcrsStat->Size() == 0;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -57,10 +57,10 @@ public:
 	virtual void CopyPropErrCtxt(const IErrorContext *err_ctxt) = 0;
 
 	// severity accessor
-	virtual ULONG GetSeverity() const = 0;
+	virtual GP_ULONG GetSeverity() const = 0;
 
 	// set severity
-	virtual void SetSev(ULONG severity) = 0;
+	virtual void SetSev(GP_ULONG severity) = 0;
 
 	// print error stack trace
 	virtual void AppendStackTrace() = 0;
@@ -69,10 +69,10 @@ public:
 	virtual void AppendErrnoMsg() = 0;
 
 	// check if there is a pending exception
-	virtual BOOL IsPending() const = 0;
+	virtual GP_BOOL IsPending() const = 0;
 
 	// check if exception is rethrown
-	virtual BOOL IsRethrown() const = 0;
+	virtual GP_BOOL IsRethrown() const = 0;
 
 	// mark that exception is rethrown
 	virtual void SetRethrow() = 0;

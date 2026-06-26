@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -40,7 +40,7 @@ private:
 
 	// skip group expressions starting from the given expression;
 	CGroupExpression *PgexprSkip(CGroupExpression *pgexprStart,
-								 BOOL fSkipLogical);
+								 GP_BOOL fSkipLogical);
 
 public:
 	// ctor
@@ -51,7 +51,7 @@ public:
 
 	// set group id
 	void
-	SetId(ULONG id)
+	SetId(GP_ULONG id)
 	{
 		m_pgroup->SetId(id);
 	}
@@ -101,7 +101,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// is group transition to given state complete?
-	BOOL
+	GP_BOOL
 	FTransitioned(CGroup::EState estate) const
 	{
 		return (CGroup::estExplored == estate && m_pgroup->FExplored()) ||

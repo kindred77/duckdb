@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -41,7 +41,7 @@ private:
 	CTask *m_task;
 
 	// available stack
-	ULONG m_stack_size;
+	GP_ULONG m_stack_size;
 
 	// start address of current thread's stack
 	const ULONG_PTR m_stack_start;
@@ -50,11 +50,11 @@ private:
 	void Execute(CTask *task);
 
 	// check for abort request
-	void CheckForAbort(const CHAR *file, ULONG line_num);
+	void CheckForAbort(const CHAR *file, GP_ULONG line_num);
 
 #ifdef GPOS_FPSIMULATOR
 	// simulate abort request, log abort injection
-	void SimulateAbort(const CHAR *file, ULONG line_num);
+	void SimulateAbort(const CHAR *file, GP_ULONG line_num);
 #endif	// GPOS_FPSIMULATOR
 
 	// no copy ctor
@@ -62,7 +62,7 @@ private:
 
 public:
 	// ctor
-	CWorker(ULONG stack_size, ULONG_PTR stack_start);
+	CWorker(GP_ULONG stack_size, ULONG_PTR stack_start);
 
 	// dtor
 	virtual ~CWorker();
@@ -75,7 +75,7 @@ public:
 	}
 
 	// stack check
-	BOOL CheckStackSize(ULONG request = 0) const;
+	GP_BOOL CheckStackSize(GP_ULONG request = 0) const;
 
 	// accessor
 	inline CTask *

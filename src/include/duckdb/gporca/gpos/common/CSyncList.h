@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -55,7 +55,7 @@ public:
 
 	// init function to facilitate arrays
 	void
-	Init(ULONG offset)
+	Init(GP_ULONG offset)
 	{
 		m_list.Init(offset);
 	}
@@ -91,7 +91,7 @@ public:
 	}
 
 	// check if list is empty
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return NULL == m_list.First();

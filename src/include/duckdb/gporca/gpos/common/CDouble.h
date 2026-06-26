@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -81,7 +81,7 @@ public:
 		CheckValidity();
 	}
 
-	inline CDouble(ULONG ul) : m_d(DOUBLE(ul))
+	inline CDouble(GP_ULONG ul) : m_d(DOUBLE(ul))
 	{
 		CheckValidity();
 	}
@@ -145,7 +145,7 @@ public:
 	}
 
 	// logical operators
-	friend BOOL
+	friend GP_BOOL
 	operator==(const CDouble &left, const CDouble &right)
 	{
 		CDouble fpCompare(left.m_d - right.m_d);
@@ -153,10 +153,10 @@ public:
 		return (fabs(fpCompare.m_d) == GPOS_FP_ABS_MIN);
 	}
 
-	friend BOOL operator!=(const CDouble &left, const CDouble &right);
-	friend BOOL operator<(const CDouble &left, const CDouble &right);
-	friend BOOL operator<=(const CDouble &left, const CDouble &right);
-	friend BOOL
+	friend GP_BOOL operator!=(const CDouble &left, const CDouble &right);
+	friend GP_BOOL operator<(const CDouble &left, const CDouble &right);
+	friend GP_BOOL operator<=(const CDouble &left, const CDouble &right);
+	friend GP_BOOL
 	operator>(const CDouble &left, const CDouble &right)
 	{
 		CDouble fpCompare(left.m_d - right.m_d);
@@ -164,7 +164,7 @@ public:
 		return (fpCompare.m_d > GPOS_FP_ABS_MIN);
 	}
 
-	friend BOOL operator>=(const CDouble &left, const CDouble &right);
+	friend GP_BOOL operator>=(const CDouble &left, const CDouble &right);
 
 	// absolute
 	inline CDouble
@@ -209,7 +209,7 @@ public:
 	}
 
 	// compare two double values using given precision
-	inline static BOOL
+	inline static GP_BOOL
 	Equals(DOUBLE dLeft, DOUBLE dRight, DOUBLE dPrecision = GPOS_FP_ABS_MIN)
 	{
 		return fabs(dRight - dLeft) <= dPrecision;
@@ -224,35 +224,35 @@ inline CDouble operator*(const CDouble &left, const CDouble &right);
 inline CDouble operator/(const CDouble &left, const CDouble &right);
 
 // logical operators
-inline BOOL operator==(const CDouble &left, const CDouble &right);
-inline BOOL operator>(const CDouble &left, const CDouble &right);
+inline GP_BOOL operator==(const CDouble &left, const CDouble &right);
+inline GP_BOOL operator>(const CDouble &left, const CDouble &right);
 
 // negation
 inline CDouble operator-(const CDouble &d);
 
 // '!=' operator
-inline BOOL
+inline GP_BOOL
 operator!=(const CDouble &left, const CDouble &right)
 {
 	return (!(left == right));
 }
 
 // '<=' operator
-inline BOOL
+inline GP_BOOL
 operator>=(const CDouble &left, const CDouble &right)
 {
 	return (left == right || left > right);
 }
 
 // '>' operator
-inline BOOL
+inline GP_BOOL
 operator<(const CDouble &left, const CDouble &right)
 {
 	return (right > left);
 }
 
 // '>=' operator
-inline BOOL
+inline GP_BOOL
 operator<=(const CDouble &left, const CDouble &right)
 {
 	return (right == left || right > left);

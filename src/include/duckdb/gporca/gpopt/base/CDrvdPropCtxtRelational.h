@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC CORP.
 //
@@ -67,7 +67,7 @@ public:
 #ifdef GPOS_DEBUG
 
 	// is it a relational property context?
-	virtual BOOL
+	virtual GP_BOOL
 	FRelational() const
 	{
 		return true;

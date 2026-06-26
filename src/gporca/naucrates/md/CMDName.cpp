@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -42,7 +42,7 @@ CMDName::CMDName(CMemoryPool *mp, const CWStringBase *str)
 //		can become property of the CMDName object
 //
 //---------------------------------------------------------------------------
-CMDName::CMDName(const CWStringConst *str, BOOL owns_memory)
+CMDName::CMDName(const CWStringConst *str, GP_BOOL owns_memory)
 	: m_name(str), m_deep_copy(owns_memory)
 {
 	GPOS_ASSERT(NULL != m_name);

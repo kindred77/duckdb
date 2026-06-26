@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2020 VMware, Inc.
 //
@@ -28,44 +28,44 @@ class CKHeap : public CRefCount
 private:
 	A *m_topk;
 	CMemoryPool *m_mp;
-	ULONG m_k;
-	BOOL m_is_heapified;
-	ULONG m_num_returned;
+	GP_ULONG m_k;
+	GP_BOOL m_is_heapified;
+	GP_ULONG m_num_returned;
 
 	// the parent index is (ix-1)/2, except for 0
-	ULONG
-	parent(ULONG ix)
+	GP_ULONG
+	parent(GP_ULONG ix)
 	{
 		return (0 < ix ? (ix - 1) / 2 : m_topk->Size());
 	}
 
 	// children are at indexes 2*ix + 1 and 2*ix + 2
-	ULONG
-	left_child(ULONG ix)
+	GP_ULONG
+	left_child(GP_ULONG ix)
 	{
 		return 2 * ix + 1;
 	}
-	ULONG
-	right_child(ULONG ix)
+	GP_ULONG
+	right_child(GP_ULONG ix)
 	{
 		return 2 * ix + 2;
 	}
 
 	// does the parent/child exist?
-	BOOL
-	exists(ULONG ix)
+	GP_BOOL
+	exists(GP_ULONG ix)
 	{
 		return ix < m_topk->Size();
 	}
 	// cost of an entry (this class implements a Min-Heap)
-	gpos::CDouble cost(ULONG ix) { return 0.0; }
+	gpos::CDouble cost(GP_ULONG ix) { return 0.0; }
 	// push node ix in the tree down into its child tree as much as needed
 	void
-	HeapifyDown(ULONG ix)
+	HeapifyDown(GP_ULONG ix)
 	{
-		ULONG left_child_ix = left_child(ix);
-		ULONG right_child_ix = right_child(ix);
-		ULONG min_element_ix = ix;
+		GP_ULONG left_child_ix = left_child(ix);
+		GP_ULONG right_child_ix = right_child(ix);
+		GP_ULONG min_element_ix = ix;
 
 		if (exists(left_child_ix) && this->cost(left_child_ix) < this->cost(ix))
 			// left child is better than parent, it becomes the new candidate
@@ -86,9 +86,9 @@ private:
 
 	// pull node ix in the tree up as much as needed
 	void
-	HeapifyUp(ULONG ix)
+	HeapifyUp(GP_ULONG ix)
 	{
-		ULONG parent_ix = parent(ix);
+		GP_ULONG parent_ix = parent(ix);
 
 		if (!exists(parent_ix))
 			return;
@@ -107,17 +107,17 @@ private:
 	Heapify()
 	{
 		// the parent of the last node is the last node in the tree that is a parent
-		ULONG start_ix = parent(m_topk->Size() - 1);
+		GP_ULONG start_ix = parent(m_topk->Size() - 1);
 
 		// now work our way up to the root, calling HeapifyDown
-		for (ULONG ix = start_ix; exists(ix); ix--)
+		for (GP_ULONG ix = start_ix; exists(ix); ix--)
 			HeapifyDown(ix);
 
 		m_is_heapified = true;
 	}
 
 public:
-	CKHeap(CMemoryPool *mp, ULONG k)
+	CKHeap(CMemoryPool *mp, GP_ULONG k)
 		: m_mp(mp), m_k(k), m_is_heapified(false), m_num_returned(0)
 	{
 		m_topk = GPOS_NEW(m_mp) A(m_mp);
@@ -185,13 +185,13 @@ public:
 		return result;
 	}
 
-	ULONG
+	GP_ULONG
 	Size()
 	{
 		return m_topk->Size();
 	}
 
-	BOOL
+	GP_BOOL
 	IsLimitExceeded()
 	{
 		return m_topk->Size() + m_num_returned > m_k;

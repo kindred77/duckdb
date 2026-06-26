@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -51,14 +51,14 @@ protected:
 	}
 
 	// open file
-	void OpenFile(const CHAR *file_path, ULONG mode, ULONG permission_bits);
+	void OpenFile(const CHAR *file_path, GP_ULONG mode, GP_ULONG permission_bits);
 
 	// close file
 	void CloseFile();
 
 public:
 	// check if file is open
-	BOOL
+	GP_BOOL
 	IsFileOpen() const
 	{
 		return (GPOS_FILE_DESCR_INVALID != m_file_descriptor);

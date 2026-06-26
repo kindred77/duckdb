@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CPhysicalParallelUnionAll_H
@@ -20,7 +20,7 @@ private:
 public:
 	CPhysicalParallelUnionAll(CMemoryPool *mp, CColRefArray *pdrgpcrOutput,
 							  CColRef2dArray *pdrgpdrgpcrInput,
-							  ULONG ulScanIdPartialIndex);
+							  GP_ULONG ulScanIdPartialIndex);
 
 	virtual EOperatorId Eopid() const;
 
@@ -29,15 +29,15 @@ public:
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	virtual CEnfdDistribution::EDistributionMatching Edm(
 		CReqdPropPlan *,   // prppInput
-		ULONG,			   // child_index
+		GP_ULONG,			   // child_index
 		CDrvdPropArray *,  //pdrgpdpCtxt
-		ULONG			   // ulOptReq
+		GP_ULONG			   // ulOptReq
 	);
 
 	virtual ~CPhysicalParallelUnionAll();

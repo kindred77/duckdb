@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -65,7 +65,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// number of segments
-	ULONG m_num_of_segments;
+	GP_ULONG m_num_of_segments;
 
 	// cost model parameters
 	CCostModelParamsGPDBLegacy *m_cost_model_params;
@@ -90,10 +90,10 @@ private:
 								  ICostModelParams *pcp);
 
 	// add up array of costs
-	static CCost CostSum(DOUBLE *pdCost, ULONG size);
+	static CCost CostSum(DOUBLE *pdCost, GP_ULONG size);
 
 	// check if given operator is unary
-	static BOOL FUnary(COperator::EOperatorId op_id);
+	static GP_BOOL FUnary(COperator::EOperatorId op_id);
 
 	// cost of scan
 	static CCost CostScan(CMemoryPool *mp, CExpressionHandle &exprhdl,
@@ -194,14 +194,14 @@ private:
 
 public:
 	// ctor
-	CCostModelGPDBLegacy(CMemoryPool *mp, ULONG ulSegments,
+	CCostModelGPDBLegacy(CMemoryPool *mp, GP_ULONG ulSegments,
 						 ICostModelParamsArray *pdrgpcp = NULL);
 
 	// dtor
 	virtual ~CCostModelGPDBLegacy();
 
 	// number of segments
-	ULONG
+	GP_ULONG
 	UlHosts() const
 	{
 		return m_num_of_segments;

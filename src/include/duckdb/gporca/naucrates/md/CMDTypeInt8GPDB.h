@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -123,7 +123,7 @@ public:
 
 	// factory method for creating Int8 datums
 	virtual IDatumInt8 *CreateInt8Datum(CMemoryPool *mp, LINT value,
-										BOOL is_null) const;
+										GP_BOOL is_null) const;
 
 	// accessors
 	virtual const CWStringDynamic *
@@ -146,26 +146,26 @@ public:
 	// id of specified specified aggregate type
 	virtual IMDId *GetMdidForAggType(EAggType agg_type) const;
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsRedistributable() const
 	{
 		return true;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsFixedLength() const
 	{
 		return true;
 	}
 
 	// is type composite
-	virtual BOOL
+	virtual GP_BOOL
 	IsComposite() const
 	{
 		return false;
 	}
 
-	virtual ULONG
+	virtual GP_ULONG
 	Length() const
 	{
 		return GPDB_INT8_LENGTH;
@@ -178,7 +178,7 @@ public:
 		return GPDB_INT8_LENGTH;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsPassedByValue() const
 	{
 		return true;
@@ -191,14 +191,14 @@ public:
 	}
 
 	// is type hashable
-	virtual BOOL
+	virtual GP_BOOL
 	IsHashable() const
 	{
 		return true;
 	}
 
 	// is type merge joinable
-	virtual BOOL
+	virtual GP_BOOL
 	IsMergeJoinable() const
 	{
 		return true;

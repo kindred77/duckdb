@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -25,7 +25,7 @@ namespace gpos
 //		Template derived from CBitSet
 //
 //---------------------------------------------------------------------------
-template <class T, ULONG sentinel_index>
+template <class T, GP_ULONG sentinel_index>
 class CEnumSet : public CBitSet
 {
 private:
@@ -51,36 +51,36 @@ public:
 	}
 
 	// determine if bit is set
-	BOOL
+	GP_BOOL
 	Get(T t) const
 	{
 		GPOS_ASSERT(t >= 0);
 
-		ULONG bit_index = static_cast<ULONG>(t);
+		GP_ULONG bit_index = static_cast<GP_ULONG>(t);
 		GPOS_ASSERT(bit_index < sentinel_index && "Out of range of enum");
 
 		return CBitSet::Get(bit_index);
 	}
 
 	// set given bit; return previous value
-	BOOL
+	GP_BOOL
 	ExchangeSet(T t)
 	{
 		GPOS_ASSERT(t >= 0);
 
-		ULONG bit_index = static_cast<ULONG>(t);
+		GP_ULONG bit_index = static_cast<GP_ULONG>(t);
 		GPOS_ASSERT(bit_index < sentinel_index && "Out of range of enum");
 
 		return CBitSet::ExchangeSet(bit_index);
 	}
 
 	// clear given bit; return previous value
-	BOOL
+	GP_BOOL
 	ExchangeClear(T t)
 	{
 		GPOS_ASSERT(t >= 0);
 
-		ULONG bit_index = static_cast<ULONG>(t);
+		GP_ULONG bit_index = static_cast<GP_ULONG>(t);
 		GPOS_ASSERT(bit_index < sentinel_index && "Out of range of enum");
 
 		return CBitSet::ExchangeClear(bit_index);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -38,10 +38,10 @@ private:
 	CDXLTableDescr *m_dxl_table_descr;
 
 	// ctid column id
-	ULONG m_ctid_colid;
+	GP_ULONG m_ctid_colid;
 
 	// segmentId column id
-	ULONG m_segid_colid;
+	GP_ULONG m_segid_colid;
 
 	// list of deletion column ids
 	ULongPtrArray *m_deletion_colid_array;
@@ -50,10 +50,10 @@ private:
 	ULongPtrArray *m_insert_colid_array;
 
 	// should update preserve tuple oids
-	BOOL m_preserve_oids;
+	GP_BOOL m_preserve_oids;
 
 	// tuple oid column id
-	ULONG m_tuple_oid;
+	GP_ULONG m_tuple_oid;
 
 	// private copy ctor
 	CDXLLogicalUpdate(const CDXLLogicalUpdate &);
@@ -61,10 +61,10 @@ private:
 public:
 	// ctor
 	CDXLLogicalUpdate(CMemoryPool *mp, CDXLTableDescr *table_descr,
-					  ULONG ctid_colid, ULONG segid_colid,
+					  GP_ULONG ctid_colid, GP_ULONG segid_colid,
 					  ULongPtrArray *delete_colid_array,
-					  ULongPtrArray *insert_colid_array, BOOL preserve_oids,
-					  ULONG tuple_oid);
+					  ULongPtrArray *insert_colid_array, GP_BOOL preserve_oids,
+					  GP_ULONG tuple_oid);
 
 	// dtor
 	virtual ~CDXLLogicalUpdate();
@@ -83,14 +83,14 @@ public:
 	}
 
 	// ctid column id
-	ULONG
+	GP_ULONG
 	GetCtIdColId() const
 	{
 		return m_ctid_colid;
 	}
 
 	// segmentid column id
-	ULONG
+	GP_ULONG
 	GetSegmentIdColId() const
 	{
 		return m_segid_colid;
@@ -111,14 +111,14 @@ public:
 	}
 
 	// does update preserve oids
-	BOOL
+	GP_BOOL
 	IsOidsPreserved() const
 	{
 		return m_preserve_oids;
 	}
 
 	// tuple oid column id
-	ULONG
+	GP_ULONG
 	GetTupleOid() const
 	{
 		return m_tuple_oid;
@@ -127,7 +127,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *node, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format

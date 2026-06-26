@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -57,7 +57,7 @@ CCTEMap::~CCTEMap()
 //
 //---------------------------------------------------------------------------
 void
-CCTEMap::Insert(ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan)
+CCTEMap::Insert(GP_ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan)
 {
 	GPOS_ASSERT(EctSentinel > ect);
 
@@ -68,9 +68,9 @@ CCTEMap::Insert(ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan)
 
 	CCTEMapEntry *pcme = GPOS_NEW(m_mp) CCTEMapEntry(ulCteId, ect, pdpplan);
 #ifdef GPOS_DEBUG
-	BOOL fSuccess =
+	GP_BOOL fSuccess =
 #endif	// GPOS_DEBUG
-		m_phmcm->Insert(GPOS_NEW(m_mp) ULONG(ulCteId), pcme);
+		m_phmcm->Insert(GPOS_NEW(m_mp) GP_ULONG(ulCteId), pcme);
 	GPOS_ASSERT(fSuccess);
 }
 
@@ -90,7 +90,7 @@ CCTEMap::Insert(ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan)
 //---------------------------------------------------------------------------
 CDrvdPropPlan *
 CCTEMap::PdpplanProducer(
-	ULONG *
+	GP_ULONG *
 		pulId  // output: CTE producer Id, set to gpos::ulong_max if no producer found
 ) const
 {
@@ -145,7 +145,7 @@ CCTEMap::AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
 	while (hmcmi.Advance())
 	{
 		const CCTEMapEntry *pcme = hmcmi.Value();
-		ULONG id = pcme->Id();
+		GP_ULONG id = pcme->Id();
 		ECteType ectFirst = pcme->Ect();
 		CDrvdPropPlan *pdpplanFirst = pcme->Pdpplan();
 
@@ -176,7 +176,7 @@ CCTEMap::AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
 //
 //---------------------------------------------------------------------------
 CCTEMap::CCTEMapEntry *
-CCTEMap::PcmeLookup(ULONG ulCteId) const
+CCTEMap::PcmeLookup(GP_ULONG ulCteId) const
 {
 	return m_phmcm->Find(&ulCteId);
 }
@@ -189,7 +189,7 @@ CCTEMap::PcmeLookup(ULONG ulCteId) const
 //		Check if the current map is a subset of the given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CCTEMap::FSubset(const CCTEMap *pcm) const
 {
 	GPOS_ASSERT(NULL != pcm);
@@ -221,14 +221,14 @@ CCTEMap::FSubset(const CCTEMap *pcm) const
 //		Hash of components
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CCTEMap::HashValue() const
 {
-	ULONG ulHash = 0;
+	GP_ULONG ulHash = 0;
 
 	// how many map entries to use for hash computation
-	ULONG ulMaxEntries = 5;
-	ULONG ul = 0;
+	GP_ULONG ulMaxEntries = 5;
+	GP_ULONG ul = 0;
 
 	UlongToCTEMapEntryMapIter hmcmi(m_phmcm);
 	while (hmcmi.Advance() && ul < ulMaxEntries)
@@ -250,7 +250,7 @@ CCTEMap::HashValue() const
 //
 //---------------------------------------------------------------------------
 CCTEMap::ECteType
-CCTEMap::Ect(const ULONG id) const
+CCTEMap::Ect(const GP_ULONG id) const
 {
 	CCTEMapEntry *pcme = PcmeLookup(id);
 	if (NULL == pcme)
@@ -292,16 +292,16 @@ CCTEMap::PcmCombine(CMemoryPool *mp, const CCTEMap &cmFirst,
 //		Check whether the current CTE map satisfies the given CTE requirements
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CCTEMap::FSatisfies(const CCTEReq *pcter) const
 {
 	GPOS_ASSERT(NULL != pcter);
 	// every CTE marked as "Required" must be in the current map
 	ULongPtrArray *pdrgpul = pcter->PdrgpulRequired();
-	const ULONG ulReqd = pdrgpul->Size();
-	for (ULONG ul = 0; ul < ulReqd; ul++)
+	const GP_ULONG ulReqd = pdrgpul->Size();
+	for (GP_ULONG ul = 0; ul < ulReqd; ul++)
 	{
-		ULONG *pulId = (*pdrgpul)[ul];
+		GP_ULONG *pulId = (*pdrgpul)[ul];
 		ECteType ect = pcter->Ect(*pulId);
 
 		CCTEMapEntry *pcme = this->PcmeLookup(*pulId);
@@ -346,13 +346,13 @@ CCTEMap::PdrgpulAdditionalProducers(CMemoryPool *mp, const CCTEReq *pcter) const
 	while (hmcmi.Advance())
 	{
 		const CCTEMapEntry *pcme = hmcmi.Value();
-		ULONG id = pcme->Id();
+		GP_ULONG id = pcme->Id();
 		ECteType ect = pcme->Ect();
 
 		if (CCTEMap::EctProducer == ect &&
 			!pcter->FContainsRequirement(id, ect))
 		{
-			pdrgpul->Append(GPOS_NEW(mp) ULONG(id));
+			pdrgpul->Append(GPOS_NEW(mp) GP_ULONG(id));
 		}
 	}
 

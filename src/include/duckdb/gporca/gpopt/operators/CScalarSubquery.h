@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -34,10 +34,10 @@ private:
 	const CColRef *m_pcr;
 
 	// is subquery generated from existential subquery?
-	BOOL m_fGeneratedByExist;
+	GP_BOOL m_fGeneratedByExist;
 
 	// is subquery generated from quantified subquery?
-	BOOL m_fGeneratedByQuantified;
+	GP_BOOL m_fGeneratedByQuantified;
 
 	// private copy ctor
 	CScalarSubquery(const CScalarSubquery &);
@@ -45,7 +45,7 @@ private:
 public:
 	// ctor
 	CScalarSubquery(CMemoryPool *mp, const CColRef *colref,
-					BOOL fGeneratedByExist, BOOL fGeneratedByQuantified);
+					GP_BOOL fGeneratedByExist, GP_BOOL fGeneratedByQuantified);
 
 	// dtor
 	virtual ~CScalarSubquery();
@@ -75,13 +75,13 @@ public:
 	virtual IMDId *MdidType() const;
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -89,20 +89,20 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// return locally used columns
 	virtual CColRefSet *PcrsUsed(CMemoryPool *mp, CExpressionHandle &exprhdl);
 
 	// is subquery generated from existential subquery?
-	BOOL
+	GP_BOOL
 	FGeneratedByExist() const
 	{
 		return m_fGeneratedByExist;
 	}
 
 	// is subquery generated from quantified subquery?
-	BOOL
+	GP_BOOL
 	FGeneratedByQuantified() const
 	{
 		return m_fGeneratedByQuantified;

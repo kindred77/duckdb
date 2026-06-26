@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -59,7 +59,7 @@ public:
 	virtual ~CReqdPropRelational();
 
 	// type of properties
-	virtual BOOL
+	virtual GP_BOOL
 	FRelational() const
 	{
 		GPOS_ASSERT(!FPlan());
@@ -82,15 +82,15 @@ public:
 
 	// required properties computation function
 	virtual void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdProp *prpInput, ULONG child_index,
-						 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+						 CReqdProp *prpInput, GP_ULONG child_index,
+						 CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// return difference from given properties
 	CReqdPropRelational *PrprelDifference(CMemoryPool *mp,
 										  CReqdPropRelational *prprel);
 
 	// return true if property container is empty
-	BOOL IsEmpty() const;
+	GP_BOOL IsEmpty() const;
 
 	// shorthand for conversion
 	static CReqdPropRelational *GetReqdRelationalProps(CReqdProp *prp);

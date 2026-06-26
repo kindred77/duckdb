@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2020 VMware Inc.
 
 #include "gpopt/base/CDistributionSpecReplicated.h"
@@ -36,7 +36,7 @@ using namespace gpopt;
 //	| ANY                     | T                | T                 |
 //	| others not Singleton    | T                |(default) F        |
 //	+-------------------------+------------------+-------------------+
-BOOL
+GP_BOOL
 CDistributionSpecReplicated::FSatisfies(const CDistributionSpec *pdss) const
 {
 	GPOS_ASSERT(Edt() != CDistributionSpec::EdtReplicated);

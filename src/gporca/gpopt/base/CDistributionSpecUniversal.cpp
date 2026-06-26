@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDistributionSpecUniversal.h"
@@ -15,7 +15,7 @@ CDistributionSpecUniversal::Edt() const
 	return CDistributionSpec::EdtUniversal;
 }
 
-BOOL
+GP_BOOL
 CDistributionSpecUniversal::FSatisfies(const CDistributionSpec *pds) const
 {
 	// universal distribution does not satisfy duplicate-sensitive
@@ -43,13 +43,13 @@ CDistributionSpecUniversal::FSatisfies(const CDistributionSpec *pds) const
 	return true;
 }
 
-BOOL
+GP_BOOL
 CDistributionSpecUniversal::FRequirable() const
 {
 	return false;
 }
 
-BOOL
+GP_BOOL
 CDistributionSpecUniversal::Matches(const CDistributionSpec *pds) const
 {
 	// universal distribution needs to match replicated / singleton requests

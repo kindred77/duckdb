@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,11 +65,11 @@ public:
 	virtual ~CEnfdOrder();
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// check if the given order specification is compatible with the
 	// order specification of this object for the specified matching type
-	BOOL FCompatible(COrderSpec *pos) const;
+	GP_BOOL FCompatible(COrderSpec *pos) const;
 
 	// required order accessor
 	COrderSpec *
@@ -80,7 +80,7 @@ public:
 
 	// get order enforcing type for the given operator
 	EPropEnforcingType Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
-							BOOL fOrderReqd) const;
+							GP_BOOL fOrderReqd) const;
 
 	// property spec accessor
 	virtual CPropSpec *
@@ -97,7 +97,7 @@ public:
 	}
 
 	// matching function
-	BOOL
+	GP_BOOL
 	Matches(CEnfdOrder *peo)
 	{
 		GPOS_ASSERT(NULL != peo);

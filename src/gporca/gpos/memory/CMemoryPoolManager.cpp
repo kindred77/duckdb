@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -153,7 +153,7 @@ CMemoryPoolManager::DeleteImpl(void *ptr, CMemoryPool::EAllocationType eat)
 }
 
 // get user requested size of allocation
-ULONG
+GP_ULONG
 CMemoryPoolManager::UserSizeOfAlloc(const void *ptr)
 {
 	return CMemoryPoolTracker::UserSizeOfAlloc(ptr);

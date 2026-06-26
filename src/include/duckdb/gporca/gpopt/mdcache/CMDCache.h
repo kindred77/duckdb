@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,7 +58,7 @@ public:
 	static void Init();
 
 	// has cache been initialized?
-	static BOOL
+	static GP_BOOL
 	FInitialized()
 	{
 		return (NULL != m_pcache);

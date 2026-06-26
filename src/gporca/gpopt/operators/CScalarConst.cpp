@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -60,7 +60,7 @@ CScalarConst::~CScalarConst()
 //		hash of constant value
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CScalarConst::HashValue() const
 {
 	return gpos::CombineHashes(COperator::HashValue(), m_pdatum->HashValue());
@@ -74,7 +74,7 @@ CScalarConst::HashValue() const
 //		Match function on operator level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarConst::Matches(COperator *pop) const
 {
 	if (pop->Eopid() == Eopid())
@@ -129,7 +129,7 @@ CScalarConst::OsPrint(IOstream &os) const
 // 		Is the given expression a cast of a constant expression
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarConst::FCastedConst(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
@@ -161,8 +161,8 @@ CScalarConst::PopExtractFromConstOrCastConst(CExpression *pexpr)
 {
 	GPOS_ASSERT(NULL != pexpr);
 
-	BOOL fScConst = COperator::EopScalarConst == pexpr->Pop()->Eopid();
-	BOOL fCastedScConst = CScalarConst::FCastedConst(pexpr);
+	GP_BOOL fScConst = COperator::EopScalarConst == pexpr->Pop()->Eopid();
+	GP_BOOL fCastedScConst = CScalarConst::FCastedConst(pexpr);
 
 	// constant or cast(constant)
 	if (!fScConst && !fCastedScConst)

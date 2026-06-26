@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -46,10 +46,10 @@ public:
 	}
 
 	// accessor of boolean value
-	virtual BOOL GetValue() const = 0;
+	virtual GP_BOOL GetValue() const = 0;
 
 	// can datum be mapped to a double
-	BOOL
+	GP_BOOL
 	IsDatumMappableToDouble() const
 	{
 		return true;
@@ -68,7 +68,7 @@ public:
 	}
 
 	// can datum be mapped to LINT
-	BOOL
+	GP_BOOL
 	IsDatumMappableToLINT() const
 	{
 		return true;
@@ -94,7 +94,7 @@ public:
 	}
 
 	// does the datum need to be padded before statistical derivation
-	virtual BOOL
+	virtual GP_BOOL
 	NeedsPadding() const
 	{
 		return false;
@@ -103,7 +103,7 @@ public:
 	// return the padded datum
 	virtual IDatum *
 	MakePaddedDatum(CMemoryPool *,	// mp,
-					ULONG			// col_len
+					GP_ULONG			// col_len
 	) const
 	{
 		GPOS_ASSERT(!"Invalid invocation of MakePaddedDatum");
@@ -111,7 +111,7 @@ public:
 	}
 
 	// does datum support like predicate
-	virtual BOOL
+	virtual GP_BOOL
 	SupportsLikePredicate() const
 	{
 		return false;

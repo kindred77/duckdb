@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp..
 //
@@ -40,7 +40,7 @@ private:
 	CCost m_cost_threshold;
 
 	// time threshold in milliseconds
-	ULONG m_time_threshold;
+	GP_ULONG m_time_threshold;
 
 	// private ctor
 	CParseHandlerSearchStage(const CParseHandlerSearchStage &);
@@ -84,7 +84,7 @@ public:
 	}
 
 	// returns time threshold
-	ULONG
+	GP_ULONG
 	TimeThreshold() const
 	{
 		return m_time_threshold;

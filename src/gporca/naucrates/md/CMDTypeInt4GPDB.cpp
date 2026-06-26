@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -113,7 +113,7 @@ CMDTypeInt4GPDB::~CMDTypeInt4GPDB()
 //
 //---------------------------------------------------------------------------
 IDatumInt4 *
-CMDTypeInt4GPDB::CreateInt4Datum(CMemoryPool *mp, INT value, BOOL is_null) const
+CMDTypeInt4GPDB::CreateInt4Datum(CMemoryPool *mp, INT value, GP_BOOL is_null) const
 {
 	return GPOS_NEW(mp) CDatumInt4GPDB(m_mdid->Sysid(), value, is_null);
 }
@@ -267,7 +267,7 @@ CMDTypeInt4GPDB::GetDatumForDXLDatum(CMemoryPool *mp,
 	CDXLDatumInt4 *int4_dxl_datum =
 		CDXLDatumInt4::Cast(const_cast<CDXLDatum *>(dxl_datum));
 	INT val = int4_dxl_datum->Value();
-	BOOL is_null = int4_dxl_datum->IsNull();
+	GP_BOOL is_null = int4_dxl_datum->IsNull();
 
 	return GPOS_NEW(mp) CDatumInt4GPDB(m_mdid->Sysid(), val, is_null);
 }

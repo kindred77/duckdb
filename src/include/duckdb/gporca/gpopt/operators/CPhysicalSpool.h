@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -33,11 +33,11 @@ private:
 
 	// true if spool is blocking - consume all input the tuples, before yielding an output tuple
 	// false if spool is streaming - stream the tuples as they come
-	BOOL m_eager;
+	GP_BOOL m_eager;
 
 public:
 	// ctor
-	explicit CPhysicalSpool(CMemoryPool *mp, BOOL eager);
+	explicit CPhysicalSpool(CMemoryPool *mp, GP_BOOL eager);
 
 	// dtor
 	virtual ~CPhysicalSpool();
@@ -56,10 +56,10 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -72,54 +72,54 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const;
+								  GP_ULONG ulOptReq) const;
 
 	// compute required sort order of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const;
+											GP_ULONG ulOptReq) const;
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// distribution matching type
 	virtual CEnfdDistribution::EDistributionMatching
 	Edm(CReqdPropPlan *prppInput,
-		ULONG,			   // child_index
+		GP_ULONG,			   // child_index
 		CDrvdPropArray *,  //pdrgpdpCtxt
-		ULONG			   // ulOptReq
+		GP_ULONG			   // ulOptReq
 	)
 	{
 		// Spool does not require Motions to be enforced on top,
@@ -179,7 +179,7 @@ public:
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL
+	virtual GP_BOOL
 	FPassThruStats() const
 	{
 		return true;
@@ -199,15 +199,15 @@ public:
 		return dynamic_cast<CPhysicalSpool *>(pop);
 	}
 
-	BOOL
+	GP_BOOL
 	FEager() const
 	{
 		return m_eager;
 	}
 
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
-	virtual BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
+	virtual GP_BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
 							   COptimizationContextArray *pdrgpocChild) const;
 
 	IOstream &OsPrint(IOstream &os) const;

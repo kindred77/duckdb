@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -29,7 +29,7 @@ FORCE_GENERATE_DBGSTR(CColRefSet);
 //		ctor
 //
 //---------------------------------------------------------------------------
-CColRefSet::CColRefSet(CMemoryPool *mp, ULONG ulSizeBits)
+CColRefSet::CColRefSet(CMemoryPool *mp, GP_ULONG ulSizeBits)
 	: CBitSet(mp, ulSizeBits)
 {
 }
@@ -57,7 +57,7 @@ CColRefSet::CColRefSet(CMemoryPool *mp, const CColRefSet &bs) : CBitSet(mp, bs)
 //
 //---------------------------------------------------------------------------
 CColRefSet::CColRefSet(CMemoryPool *mp, const CColRefArray *colref_array,
-					   ULONG size)
+					   GP_ULONG size)
 	: CBitSet(mp, size)
 {
 	Include(colref_array);
@@ -84,7 +84,7 @@ CColRefSet::~CColRefSet()
 //		Check if given column ref is in the set
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CColRefSet::FMember(const CColRef *colref) const
 {
 	return CBitSet::Get(colref->Id());
@@ -152,8 +152,8 @@ CColRefSet::Include(const CColRef *colref)
 void
 CColRefSet::Include(const CColRefArray *colref_array)
 {
-	ULONG length = colref_array->Size();
-	for (ULONG i = 0; i < length; i++)
+	GP_ULONG length = colref_array->Size();
+	for (GP_ULONG i = 0; i < length; i++)
 	{
 		Include((*colref_array)[i]);
 	}
@@ -224,7 +224,7 @@ CColRefSet::Exclude(const CColRefSet *pcrs)
 void
 CColRefSet::Exclude(const CColRefArray *colref_array)
 {
-	for (ULONG i = 0; i < colref_array->Size(); i++)
+	for (GP_ULONG i = 0; i < colref_array->Size(); i++)
 	{
 		Exclude((*colref_array)[i]);
 	}
@@ -262,10 +262,10 @@ void
 CColRefSet::Replace(const CColRefArray *pdrgpcrOut,
 					const CColRefArray *pdrgpcrIn)
 {
-	const ULONG length = pdrgpcrOut->Size();
+	const GP_ULONG length = pdrgpcrOut->Size();
 	GPOS_ASSERT(length == pdrgpcrIn->Size());
 
-	for (ULONG ul = 0; ul < length; ul++)
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		Replace((*pdrgpcrOut)[ul], (*pdrgpcrIn)[ul]);
 	}
@@ -326,17 +326,17 @@ CColRefSet::Phmicr(CMemoryPool *mp) const
 //		Compute hash value by combining hashes of components
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CColRefSet::HashValue()
 {
-	ULONG size = this->Size();
-	ULONG ulHash = gpos::HashValue<ULONG>(&size);
+	GP_ULONG size = this->Size();
+	GP_ULONG ulHash = gpos::HashValue<GP_ULONG>(&size);
 
 	// limit the number of columns used in hash computation
-	ULONG length = std::min(size, (ULONG) 8);
+	GP_ULONG length = std::min(size, (GP_ULONG) 8);
 
 	CColRefSetIter crsi(*this);
-	for (ULONG i = 0; i < length; i++)
+	for (GP_ULONG i = 0; i < length; i++)
 	{
 		(void) crsi.Advance();
 		ulHash =
@@ -362,10 +362,10 @@ CColRefSet::OsPrint(IOstream &os) const
 }
 
 IOstream &
-CColRefSet::OsPrint(IOstream &os, ULONG ulLenMax) const
+CColRefSet::OsPrint(IOstream &os, GP_ULONG ulLenMax) const
 {
-	ULONG length = Size();
-	ULONG ul = 0;
+	GP_ULONG length = Size();
+	GP_ULONG ul = 0;
 
 	CColRefSetIter crsi(*this);
 	while (crsi.Advance() && ul < std::min(length, ulLenMax))
@@ -402,8 +402,8 @@ CColRefSet::ExtractColIds(CMemoryPool *mp, ULongPtrArray *colids) const
 	while (crsi.Advance())
 	{
 		CColRef *colref = crsi.Pcr();
-		ULONG colid = colref->Id();
-		colids->Append(GPOS_NEW(mp) ULONG(colid));
+		GP_ULONG colid = colref->Id();
+		colids->Append(GPOS_NEW(mp) GP_ULONG(colid));
 	}
 }
 
@@ -416,13 +416,13 @@ CColRefSet::ExtractColIds(CMemoryPool *mp, ULongPtrArray *colids) const
 //		the given array
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CColRefSet::FContained(const CColRefSetArray *pdrgpcrs)
 {
 	GPOS_ASSERT(NULL != pdrgpcrs);
 
-	const ULONG length = pdrgpcrs->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = pdrgpcrs->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		if ((*pdrgpcrs)[ul]->ContainsAll(this))
 		{
@@ -433,14 +433,14 @@ CColRefSet::FContained(const CColRefSetArray *pdrgpcrs)
 	return false;
 }
 
-BOOL
+GP_BOOL
 CColRefSet::FIntersects(const CColRefSet *pcrs)
 {
 	GPOS_ASSERT(NULL != pcrs);
 	CColRefSet *intersecting_colrefset = GPOS_NEW(m_mp) CColRefSet(m_mp, *this);
 	intersecting_colrefset->Intersection(pcrs);
 
-	BOOL intersects = intersecting_colrefset->Size() > 0;
+	GP_BOOL intersects = intersecting_colrefset->Size() > 0;
 	intersecting_colrefset->Release();
 
 	return intersects;
@@ -454,7 +454,7 @@ CColRefSet::FIntersects(const CColRefSet *pcrs)
 //		Are the columns in the column reference set covered by the array of
 //		column ref sets
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CColRefSet::FCovered(CColRefSetArray *pdrgpcrs, CColRefSet *pcrs)
 {
 	GPOS_ASSERT(NULL != pdrgpcrs);
@@ -470,9 +470,9 @@ CColRefSet::FCovered(CColRefSetArray *pdrgpcrs, CColRefSet *pcrs)
 	while (crsi.Advance())
 	{
 		CColRef *colref = crsi.Pcr();
-		BOOL fFound = false;
-		const ULONG length = pdrgpcrs->Size();
-		for (ULONG ul = 0; ul < length && !fFound; ul++)
+		GP_BOOL fFound = false;
+		const GP_ULONG length = pdrgpcrs->Size();
+		for (GP_ULONG ul = 0; ul < length && !fFound; ul++)
 		{
 			CColRefSet *pcrs = (*pdrgpcrs)[ul];
 			if (pcrs->FMember(colref))

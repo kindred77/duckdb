@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -34,8 +34,8 @@ FORCE_GENERATE_DBGSTR(CBitSet);
 //		ctor
 //
 //---------------------------------------------------------------------------
-CBitSet::CBitSetLink::CBitSetLink(CMemoryPool *mp, ULONG offset,
-								  ULONG vector_size)
+CBitSet::CBitSetLink::CBitSetLink(CMemoryPool *mp, GP_ULONG offset,
+								  GP_ULONG vector_size)
 	: m_offset(offset)
 {
 	m_vec = GPOS_NEW(mp) CBitVector(mp, vector_size);
@@ -83,7 +83,7 @@ CBitSet::CBitSetLink::~CBitSetLink()
 //
 //---------------------------------------------------------------------------
 CBitSet::CBitSetLink *
-CBitSet::FindLinkByOffset(ULONG offset, CBitSetLink *bsl) const
+CBitSet::FindLinkByOffset(GP_ULONG offset, CBitSetLink *bsl) const
 {
 	CBitSetLink *found = NULL;
 	CBitSetLink *cursor = bsl;
@@ -174,8 +174,8 @@ CBitSet::Clear()
 //		Compute offset
 //
 //---------------------------------------------------------------------------
-ULONG
-CBitSet::ComputeOffset(ULONG ul) const
+GP_ULONG
+CBitSet::ComputeOffset(GP_ULONG ul) const
 {
 	return (ul / m_vector_size) * m_vector_size;
 }
@@ -190,7 +190,7 @@ CBitSet::ComputeOffset(ULONG ul) const
 //		ctor
 //
 //---------------------------------------------------------------------------
-CBitSet::CBitSet(CMemoryPool *mp, ULONG vector_size)
+CBitSet::CBitSet(CMemoryPool *mp, GP_ULONG vector_size)
 	: m_mp(mp), m_vector_size(vector_size), m_size(0)
 {
 	m_bsllist.Init(GPOS_OFFSET(CBitSetLink, m_link));
@@ -235,10 +235,10 @@ CBitSet::~CBitSet()
 //		Check if given bit is set
 //
 //---------------------------------------------------------------------------
-BOOL
-CBitSet::Get(ULONG pos) const
+GP_BOOL
+CBitSet::Get(GP_ULONG pos) const
 {
-	ULONG offset = ComputeOffset(pos);
+	GP_ULONG offset = ComputeOffset(pos);
 
 	CBitSetLink *bsl = FindLinkByOffset(offset);
 	if (NULL != bsl && bsl->GetOffset() == offset)
@@ -258,10 +258,10 @@ CBitSet::Get(ULONG pos) const
 //		Set given bit; return previous value; allocate new link if necessary
 //
 //---------------------------------------------------------------------------
-BOOL
-CBitSet::ExchangeSet(ULONG pos)
+GP_BOOL
+CBitSet::ExchangeSet(GP_ULONG pos)
 {
-	ULONG offset = ComputeOffset(pos);
+	GP_ULONG offset = ComputeOffset(pos);
 
 	CBitSetLink *bsl = FindLinkByOffset(offset);
 	if (NULL == bsl || bsl->GetOffset() != offset)
@@ -283,7 +283,7 @@ CBitSet::ExchangeSet(ULONG pos)
 
 	GPOS_ASSERT(bsl->GetOffset() == offset);
 
-	BOOL bit = bsl->GetVec()->ExchangeSet(pos - offset);
+	GP_BOOL bit = bsl->GetVec()->ExchangeSet(pos - offset);
 	if (!bit)
 	{
 		m_size++;
@@ -301,15 +301,15 @@ CBitSet::ExchangeSet(ULONG pos)
 //		Clear given bit; return previous value
 //
 //---------------------------------------------------------------------------
-BOOL
-CBitSet::ExchangeClear(ULONG pos)
+GP_BOOL
+CBitSet::ExchangeClear(GP_ULONG pos)
 {
-	ULONG offset = ComputeOffset(pos);
+	GP_ULONG offset = ComputeOffset(pos);
 
 	CBitSetLink *bsl = FindLinkByOffset(offset);
 	if (NULL != bsl && bsl->GetOffset() == offset)
 	{
-		BOOL bit = bsl->GetVec()->ExchangeClear(pos - offset);
+		GP_BOOL bit = bsl->GetVec()->ExchangeClear(pos - offset);
 
 		// remove empty link
 		if (bsl->GetVec()->IsEmpty())
@@ -374,7 +374,7 @@ CBitSet::Union(const CBitSet *pbsOther)
 
 	// insert all new links
 	bsl = NULL;
-	for (ULONG i = 0; i < a_drgpbsl->Size(); i++)
+	for (GP_ULONG i = 0; i < a_drgpbsl->Size(); i++)
 	{
 		CBitSetLink *pbslInsert = (*a_drgpbsl)[i];
 		bsl = FindLinkByOffset(pbslInsert->GetOffset(), bsl);
@@ -485,7 +485,7 @@ CBitSet::Difference(const CBitSet *pbs)
 //		Determine if given vector is subset
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBitSet::ContainsAll(const CBitSet *bs) const
 {
 	// skip iterating if we can already tell by the sizes
@@ -522,7 +522,7 @@ CBitSet::ContainsAll(const CBitSet *bs) const
 //		Determine if equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBitSet::Equals(const CBitSet *bs) const
 {
 	// check pointer equality first
@@ -566,7 +566,7 @@ CBitSet::Equals(const CBitSet *bs) const
 //		Determine if disjoint
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBitSet::IsDisjoint(const CBitSet *bs) const
 {
 	CBitSetLink *bsl = NULL;
@@ -597,10 +597,10 @@ CBitSet::IsDisjoint(const CBitSet *bs) const
 //		Compute hash value for set
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CBitSet::HashValue() const
 {
-	ULONG ulHash = 0;
+	GP_ULONG ulHash = 0;
 
 	CBitSetLink *bsl = m_bsllist.First();
 	while (NULL != bsl)
@@ -626,10 +626,10 @@ CBitSet::OsPrint(IOstream &os) const
 {
 	os << "{";
 
-	ULONG ulElems = Size();
+	GP_ULONG ulElems = Size();
 	CBitSetIter bsiter(*this);
 
-	for (ULONG ul = 0; ul < ulElems; ul++)
+	for (GP_ULONG ul = 0; ul < ulElems; ul++)
 	{
 		(void) bsiter.Advance();
 		os << bsiter.Bit();

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -105,13 +105,13 @@ public:
 	virtual const IMDId *CmpOpMdid() const = 0;
 
 	// id of hash operator for type
-	virtual BOOL IsHashable() const = 0;
+	virtual GP_BOOL IsHashable() const = 0;
 
 	// type is merge joinable on '='
-	virtual BOOL IsMergeJoinable() const = 0;
+	virtual GP_BOOL IsMergeJoinable() const = 0;
 
 	// is type redistributable
-	virtual BOOL IsRedistributable() const = 0;
+	virtual GP_BOOL IsRedistributable() const = 0;
 
 	// id of the array type for the type
 	virtual IMDId *GetArrayTypeMdid() const = 0;
@@ -128,12 +128,12 @@ public:
 	//									const CDXLDatum *dxl_datum) const = 0;
 
 	// is type fixed length
-	virtual BOOL IsFixedLength() const = 0;
+	virtual GP_BOOL IsFixedLength() const = 0;
 
 	// is type composite
-	virtual BOOL IsComposite() const = 0;
+	virtual GP_BOOL IsComposite() const = 0;
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsTextRelated() const
 	{
 		return false;
@@ -143,10 +143,10 @@ public:
 	virtual IMDId *GetBaseRelMdid() const = 0;
 
 	// type length
-	virtual ULONG Length() const = 0;
+	virtual GP_ULONG Length() const = 0;
 
 	// is type passed by value
-	virtual BOOL IsPassedByValue() const = 0;
+	virtual GP_BOOL IsPassedByValue() const = 0;
 
 	// return the null constant for this type
 	virtual IDatum *DatumNull() const = 0;
@@ -162,7 +162,7 @@ public:
 	//virtual CDXLDatum *GetDXLDatumNull(CMemoryPool *mp) const = 0;
 
 	// is type an ambiguous one? e.g., AnyElement in GPDB
-	virtual BOOL
+	virtual GP_BOOL
 	IsAmbiguous() const
 	{
 		return false;
@@ -172,11 +172,11 @@ public:
 	static const CWStringConst *GetCmpTypeStr(IMDType::ECmpType cmp_type);
 
 	// return true if we can perform statistical comparison between datums of these two types; else return false
-	static BOOL StatsAreComparable(const IMDType *mdtype_first,
+	static GP_BOOL StatsAreComparable(const IMDType *mdtype_first,
 								   const IMDType *mdtype_second);
 
 	// return true if we can perform statistical comparison between datum of the given type and a given datum; else return false
-	static BOOL StatsAreComparable(const IMDType *mdtype_first,
+	static GP_BOOL StatsAreComparable(const IMDType *mdtype_first,
 								   const IDatum *datum_second);
 };
 }  // namespace gpmd

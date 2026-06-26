@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -60,7 +60,7 @@ private:
 	CDouble m_freq_remaining;
 
 	// is the column statistics missing in the database
-	BOOL m_is_column_stats_missing;
+	GP_BOOL m_is_column_stats_missing;
 
 	// private copy ctor
 	CParseHandlerColStats(const CParseHandlerColStats &);

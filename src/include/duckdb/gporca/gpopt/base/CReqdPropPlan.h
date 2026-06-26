@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC CORP.
 //
@@ -72,7 +72,7 @@ private:
 	CPartFilterMap *PpfmCombineDerived(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
 									   CReqdPropPlan *prppInput,
-									   ULONG child_index,
+									   GP_ULONG child_index,
 									   CDrvdPropArray *pdrgpdpCtxt);
 
 public:
@@ -100,7 +100,7 @@ public:
 	virtual ~CReqdPropPlan();
 
 	// type of properties
-	virtual BOOL
+	virtual GP_BOOL
 	FPlan() const
 	{
 		GPOS_ASSERT(!FRelational());
@@ -109,17 +109,17 @@ public:
 
 	// required properties computation function
 	virtual void Compute(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdProp *prpInput, ULONG child_index,
-						 CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+						 CReqdProp *prpInput, GP_ULONG child_index,
+						 CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// required columns computation function
 	void ComputeReqdCols(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdProp *prpInput, ULONG child_index,
+						 CReqdProp *prpInput, GP_ULONG child_index,
 						 CDrvdPropArray *pdrgpdpCtxt);
 
 	// required ctes computation function
 	void ComputeReqdCTEs(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						 CReqdProp *prpInput, ULONG child_index,
+						 CReqdProp *prpInput, GP_ULONG child_index,
 						 CDrvdPropArray *pdrgpdpCtxt);
 
 	// required columns accessor
@@ -165,20 +165,20 @@ public:
 	}
 
 	// given a property spec type, return the corresponding property spec member
-	CPropSpec *Pps(ULONG ul) const;
+	CPropSpec *Pps(GP_ULONG ul) const;
 
 	// equality function
-	BOOL Equals(const CReqdPropPlan *prpp) const;
+	GP_BOOL Equals(const CReqdPropPlan *prpp) const;
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// check if plan properties are satisfied by the given derived properties
-	BOOL FSatisfied(const CDrvdPropRelational *pdprel,
+	GP_BOOL FSatisfied(const CDrvdPropRelational *pdprel,
 					const CDrvdPropPlan *pdpplan) const;
 
 	// check if plan properties are compatible with the given derived properties
-	BOOL FCompatible(CExpressionHandle &exprhdl, CPhysical *popPhysical,
+	GP_BOOL FCompatible(CExpressionHandle &exprhdl, CPhysical *popPhysical,
 					 const CDrvdPropRelational *pdprel,
 					 const CDrvdPropPlan *pdpplan) const;
 
@@ -186,8 +186,8 @@ public:
 	void InitReqdPartitionPropagation(CMemoryPool *mp, CPartInfo *ppartinfo);
 
 	// check if expression attached to handle provides required columns by all plan properties
-	BOOL FProvidesReqdCols(CMemoryPool *mp, CExpressionHandle &exprhdl,
-						   ULONG ulOptReq) const;
+	GP_BOOL FProvidesReqdCols(CMemoryPool *mp, CExpressionHandle &exprhdl,
+						   GP_ULONG ulOptReq) const;
 
 	// shorthand for conversion
 	static CReqdPropPlan *
@@ -202,10 +202,10 @@ public:
 	static CReqdPropPlan *PrppEmpty(CMemoryPool *mp);
 
 	// hash function used for cost bounding
-	static ULONG UlHashForCostBounding(const CReqdPropPlan *prpp);
+	static GP_ULONG UlHashForCostBounding(const CReqdPropPlan *prpp);
 
 	// equality function used for cost bounding
-	static BOOL FEqualForCostBounding(const CReqdPropPlan *prppFst,
+	static GP_BOOL FEqualForCostBounding(const CReqdPropPlan *prppFst,
 									  const CReqdPropPlan *prppSnd);
 
 	// map input required and derived plan properties into new required plan properties

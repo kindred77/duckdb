@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -60,7 +60,7 @@ CPattern::PrpCreate(CMemoryPool *  // mp
 //		match against an operator
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPattern::Matches(COperator *pop) const
 {
 	return Eopid() == pop->Eopid();
@@ -75,7 +75,7 @@ CPattern::Matches(COperator *pop) const
 //		By default patterns are leaves; no need to call this function ever
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPattern::FInputOrderSensitive() const
 {
 	GPOS_ASSERT(!"Unexpected call to function FInputOrderSensitive");
@@ -93,7 +93,7 @@ CPattern::FInputOrderSensitive() const
 COperator *
 CPattern::PopCopyWithRemappedColumns(CMemoryPool *,		  //mp,
 									 UlongToColRefMap *,  //colref_mapping,
-									 BOOL				  //must_exist
+									 GP_BOOL				  //must_exist
 )
 {
 	GPOS_ASSERT(

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,18 +42,18 @@ private:
 	CStatsPredJoin &operator=(CStatsPredJoin &);
 
 	// column id
-	ULONG m_colidOuter;
+	GP_ULONG m_colidOuter;
 
 	// comparison type
 	CStatsPred::EStatsCmpType m_stats_cmp_type;
 
 	// column id
-	ULONG m_colidInner;
+	GP_ULONG m_colidInner;
 
 public:
 	// c'tor
-	CStatsPredJoin(ULONG colid1, CStatsPred::EStatsCmpType stats_cmp_type,
-				   ULONG colid2)
+	CStatsPredJoin(GP_ULONG colid1, CStatsPred::EStatsCmpType stats_cmp_type,
+				   GP_ULONG colid2)
 		: m_colidOuter(colid1),
 		  m_stats_cmp_type(stats_cmp_type),
 		  m_colidInner(colid2)
@@ -61,13 +61,13 @@ public:
 	}
 
 	// accessors
-	BOOL
+	GP_BOOL
 	HasValidColIdOuter() const
 	{
 		return gpos::ulong_max != m_colidOuter;
 	}
 
-	ULONG
+	GP_ULONG
 	ColIdOuter() const
 	{
 		return m_colidOuter;
@@ -80,13 +80,13 @@ public:
 		return m_stats_cmp_type;
 	}
 
-	BOOL
+	GP_BOOL
 	HasValidColIdInner() const
 	{
 		return gpos::ulong_max != m_colidInner;
 	}
 
-	ULONG
+	GP_ULONG
 	ColIdInner() const
 	{
 		return m_colidInner;

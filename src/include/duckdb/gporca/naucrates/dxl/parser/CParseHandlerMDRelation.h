@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -47,10 +47,10 @@ protected:
 	CMDName *m_mdname;
 
 	// is this a temporary relation
-	BOOL m_is_temp_table;
+	GP_BOOL m_is_temp_table;
 
 	// does this relation have oids
-	BOOL m_has_oids;
+	GP_BOOL m_has_oids;
 
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
@@ -62,7 +62,7 @@ protected:
 	ULongPtrArray *m_distr_col_array;
 
 	// do we need to consider a hash distributed table as random distributed
-	BOOL m_convert_hash_to_random;
+	GP_BOOL m_convert_hash_to_random;
 
 	// partition keys
 	ULongPtrArray *m_partition_cols_array;
@@ -71,7 +71,7 @@ protected:
 	CharPtrArray *m_str_part_types_array;
 
 	// number of partitions
-	ULONG m_num_of_partitions;
+	GP_ULONG m_num_of_partitions;
 
 	// key sets
 	ULongPtr2dArray *m_key_sets_arrays;
@@ -89,10 +89,10 @@ protected:
 	ULongPtrArray *m_level_with_default_part_array;
 
 	// is part constraint unbounded
-	BOOL m_part_constraint_unbounded;
+	GP_BOOL m_part_constraint_unbounded;
 
 	// is part constraint complete with part constraint expr
-	BOOL m_part_constraint_contains_expr;
+	GP_BOOL m_part_constraint_contains_expr;
 
 	// helper function to parse main relation attributes: name, id,
 	// distribution policy and keys

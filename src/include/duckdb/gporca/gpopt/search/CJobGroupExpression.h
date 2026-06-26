@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -37,10 +37,10 @@ class CJobGroupExpression : public CJob
 {
 private:
 	// true if job has scheduled child group jobs
-	BOOL m_fChildrenScheduled;
+	GP_BOOL m_fChildrenScheduled;
 
 	// true if job has scheduled transformation jobs
-	BOOL m_fXformsScheduled;
+	GP_BOOL m_fXformsScheduled;
 
 	// private copy ctor
 	CJobGroupExpression(const CJobGroupExpression &);
@@ -60,7 +60,7 @@ protected:
 	}
 
 	// has job scheduled child groups ?
-	BOOL
+	GP_BOOL
 	FChildrenScheduled() const
 	{
 		return m_fChildrenScheduled;
@@ -74,7 +74,7 @@ protected:
 	}
 
 	// has job scheduled xform groups ?
-	BOOL
+	GP_BOOL
 	FXformsScheduled() const
 	{
 		return m_fXformsScheduled;
@@ -100,7 +100,7 @@ protected:
 	void ScheduleTransformations(CSchedulerContext *psc, CXformSet *xform_set);
 
 	// job's function
-	virtual BOOL FExecute(CSchedulerContext *psc) = 0;
+	virtual GP_BOOL FExecute(CSchedulerContext *psc) = 0;
 
 #ifdef GPOS_DEBUG
 

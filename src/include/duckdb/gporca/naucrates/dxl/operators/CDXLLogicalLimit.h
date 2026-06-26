@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -40,14 +40,14 @@ enum EdxlLogicalLimit
 class CDXLLogicalLimit : public CDXLLogical
 {
 private:
-	BOOL m_top_limit_under_dml;
+	GP_BOOL m_top_limit_under_dml;
 
 	// private copy ctor
 	CDXLLogicalLimit(CDXLLogicalLimit &);
 
 public:
 	// ctor/dtor
-	CDXLLogicalLimit(CMemoryPool *mp, BOOL fNonRemovableLimit);
+	CDXLLogicalLimit(CMemoryPool *mp, GP_BOOL fNonRemovableLimit);
 
 	virtual ~CDXLLogicalLimit();
 
@@ -57,7 +57,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// the limit is right under a DML or CTAS
-	BOOL
+	GP_BOOL
 	IsTopLimitUnderDMLorCTAS() const
 	{
 		return m_top_limit_under_dml;
@@ -80,7 +80,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -91,7 +91,7 @@ CScalarArrayCmp::MdIdOp() const
 //		metadata id
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CScalarArrayCmp::HashValue() const
 {
 	return gpos::CombineHashes(
@@ -108,7 +108,7 @@ CScalarArrayCmp::HashValue() const
 //		Match function on operator level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarArrayCmp::Matches(COperator *pop) const
 {
 	if (pop->Eopid() == Eopid())
@@ -194,13 +194,13 @@ CScalarArrayCmp::PexprExpand(CMemoryPool *mp, CExpression *pexprArrayCmp)
 
 	COptimizerConfig *optimizer_config =
 		COptCtxt::PoctxtFromTLS()->GetOptimizerConfig();
-	ULONG array_expansion_threshold =
+	GP_ULONG array_expansion_threshold =
 		optimizer_config->GetHint()->UlArrayExpansionThreshold();
 	CExpression *pexprIdent = (*pexprArrayCmp)[0];
 	CExpression *pexprArray = CUtils::PexprScalarArrayChild(pexprArrayCmp);
 	CScalarArrayCmp *popArrayCmp =
 		CScalarArrayCmp::PopConvert(pexprArrayCmp->Pop());
-	ULONG ulArrayElems = 0;
+	GP_ULONG ulArrayElems = 0;
 
 	if (CUtils::FScalarArray(pexprArray))
 	{
@@ -217,7 +217,7 @@ CScalarArrayCmp::PexprExpand(CMemoryPool *mp, CExpression *pexprArrayCmp)
 	}
 
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-	for (ULONG ul = 0; ul < ulArrayElems; ul++)
+	for (GP_ULONG ul = 0; ul < ulArrayElems; ul++)
 	{
 		CExpression *pexprArrayElem =
 			CUtils::PScalarArrayExprChildAt(mp, pexprArray, ul);

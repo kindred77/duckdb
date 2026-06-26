@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008-2011 Greenplum, Inc.
 //
@@ -51,9 +51,9 @@ private:
 	CEngine *m_peng;
 
 	// flag indicating if context has been initialized
-	BOOL m_fInit;
+	GP_BOOL m_fInit;
 
-	BOOL
+	GP_BOOL
 	FInit() const
 	{
 		return m_fInit;

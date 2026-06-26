@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC Corp.
 //
@@ -95,7 +95,7 @@ private:
 
 
 	// expression id
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// duplicate group expression
 	CGroupExpression *m_pgexprDuplicate;
@@ -121,7 +121,7 @@ private:
 
 	// flag to indicate if group expression was created as a node at some
 	// intermediate level when origin expression was inserted to memo
-	BOOL m_fIntermediate;
+	GP_BOOL m_fIntermediate;
 
 	// state of group expression
 	EState m_estate;
@@ -142,11 +142,11 @@ private:
 	void SetGroup(CGroup *pgroup);
 
 	// set group expression id
-	void SetId(ULONG id);
+	void SetId(GP_ULONG id);
 
 	// print transformation
 	void PrintXform(CMemoryPool *mp, CXform *pxform, CExpression *pexpr,
-					CXformResult *pxfres, ULONG ulNumResults);
+					CXformResult *pxfres, GP_ULONG ulNumResults);
 
 	// preprocessing before applying transformation
 	void PreprocessTransform(CMemoryPool *pmpLocal, CMemoryPool *pmpGlobal,
@@ -163,11 +163,11 @@ private:
 	void SetOptimizationLevel();
 
 	// check validity of group expression
-	BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
+	GP_BOOL FValidContext(CMemoryPool *mp, COptimizationContext *poc,
 					   COptimizationContextArray *pdrgpocChild);
 
 	// remove cost context in hash table
-	CCostContext *PccRemove(COptimizationContext *poc, ULONG ulOptReq);
+	CCostContext *PccRemove(COptimizationContext *poc, GP_ULONG ulOptReq);
 
 	// insert given context in hash table only if a better context does not exist, return the context that is kept it in hash table
 	CCostContext *PccInsertBest(CCostContext *pcc);
@@ -197,7 +197,7 @@ public:
 	// ctor
 	CGroupExpression(CMemoryPool *mp, COperator *pop, CGroupArray *pdrgpgroup,
 					 CXform::EXformId exfid, CGroupExpression *pgexprOrigin,
-					 BOOL fIntermediate);
+					 GP_BOOL fIntermediate);
 
 	// dtor
 	~CGroupExpression();
@@ -222,25 +222,25 @@ public:
 	void CleanupContexts();
 
 	// check if cost context already exists in group expression hash table
-	BOOL FCostContextExists(COptimizationContext *poc,
+	GP_BOOL FCostContextExists(COptimizationContext *poc,
 							COptimizationContextArray *pdrgpoc);
 
 	// compute and store expression's cost under a given context
 	CCostContext *PccComputeCost(CMemoryPool *mp, COptimizationContext *poc,
-								 ULONG ulOptReq,
+								 GP_ULONG ulOptReq,
 								 COptimizationContextArray *pdrgpoc,
-								 BOOL fPruned, CCost costLowerBound);
+								 GP_BOOL fPruned, CCost costLowerBound);
 
 	// compute a cost lower bound for plans, rooted by current group expression, and satisfying the given required properties
 	CCost CostLowerBound(CMemoryPool *mp, CReqdPropPlan *prppInput,
-						 CCostContext *pccChild, ULONG child_index);
+						 CCostContext *pccChild, GP_ULONG child_index);
 
 	// initialize group expression
-	void Init(CGroup *pgroup, ULONG id);
+	void Init(CGroup *pgroup, GP_ULONG id);
 
 	// reset group expression
 	void
-	Reset(CGroup *pgroup, ULONG id)
+	Reset(CGroup *pgroup, GP_ULONG id)
 	{
 		m_pgroup = pgroup;
 		m_id = id;
@@ -255,7 +255,7 @@ public:
 
 	// shorthand to access children
 	CGroup *
-	operator[](ULONG ulPos) const
+	operator[](GP_ULONG ulPos) const
 	{
 		GPOS_ASSERT(NULL != m_pdrgpgroup);
 
@@ -273,7 +273,7 @@ public:
 	};
 
 	// arity function
-	ULONG
+	GP_ULONG
 	Arity() const
 	{
 		return m_pdrgpgroup->Size();
@@ -287,7 +287,7 @@ public:
 	}
 
 	// accessor for id
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
@@ -322,14 +322,14 @@ public:
 	}
 
 	// comparison operator for hashtables
-	BOOL
+	GP_BOOL
 	operator==(const CGroupExpression &gexpr) const
 	{
 		return gexpr.Matches(this);
 	}
 
 	// equality function for hash table
-	static BOOL
+	static GP_BOOL
 	Equals(const CGroupExpression &gexprLeft,
 		   const CGroupExpression &gexprRight)
 	{
@@ -337,28 +337,28 @@ public:
 	}
 
 	// match group expression against given operator and its children
-	BOOL Matches(const CGroupExpression *) const;
+	GP_BOOL Matches(const CGroupExpression *) const;
 
 	// match non-scalar children of group expression against given children of passed expression
-	BOOL FMatchNonScalarChildren(const CGroupExpression *pgexpr) const;
+	GP_BOOL FMatchNonScalarChildren(const CGroupExpression *pgexpr) const;
 
 	// hash function
-	ULONG
+	GP_ULONG
 	HashValue() const
 	{
 		return HashValue(m_pop, m_pdrgpgroup);
 	}
 
 	// static hash function for operator and group references
-	static ULONG HashValue(COperator *pop, CGroupArray *drgpgroup);
+	static GP_ULONG HashValue(COperator *pop, CGroupArray *drgpgroup);
 
 	// static hash function for group expression
-	static ULONG HashValue(const CGroupExpression &);
+	static GP_ULONG HashValue(const CGroupExpression &);
 
 	// transform group expression
 	void Transform(CMemoryPool *mp, CMemoryPool *pmpLocal, CXform *pxform,
-				   CXformResult *pxfres, ULONG *pulElapsedTime,
-				   ULONG *pulNumberOfBindings);
+				   CXformResult *pxfres, GP_ULONG *pulElapsedTime,
+				   GP_ULONG *pulNumberOfBindings);
 
 	// set group expression state
 	void SetState(EState estNewState);
@@ -367,21 +367,21 @@ public:
 	void ResetState();
 
 	// check if group expression has been explored
-	BOOL
+	GP_BOOL
 	FExplored() const
 	{
 		return (estExplored <= m_estate);
 	}
 
 	// check if group expression has been implemented
-	BOOL
+	GP_BOOL
 	FImplemented() const
 	{
 		return (estImplemented == m_estate);
 	}
 
 	// check if transition to the given state is completed
-	BOOL FTransitioned(EState estate) const;
+	GP_BOOL FTransitioned(EState estate) const;
 
 	CGroupArray *
 	Pdrgpgroup() const
@@ -390,7 +390,7 @@ public:
 	}
 
 	// lookup cost context in hash table
-	CCostContext *PccLookup(COptimizationContext *poc, ULONG ulOptReq);
+	CCostContext *PccLookup(COptimizationContext *poc, GP_ULONG ulOptReq);
 
 	// lookup all cost contexts matching given optimization context
 	CCostContextArray *PdrgpccLookupAll(CMemoryPool *mp,
@@ -404,7 +404,7 @@ public:
 									   CMemoryPool *pmpGlobal,
 									   CReqdPropRelational *prprel,
 									   IStatisticsArray *stats_ctxt,
-									   BOOL fComputeRootStats = true);
+									   GP_BOOL fComputeRootStats = true);
 
 	// print driver
 	virtual IOstream &OsPrint(IOstream &os) const;
@@ -419,7 +419,7 @@ public:
 	// invalid group expression
 	static const CGroupExpression m_gexprInvalid;
 
-	virtual BOOL ContainsCircularDependencies();
+	virtual GP_BOOL ContainsCircularDependencies();
 };	// class CGroupExpression
 
 }  // namespace gpopt

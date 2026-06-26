@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -35,10 +35,10 @@ class CParseHandlerLogicalDelete : public CParseHandlerLogicalOp
 {
 private:
 	// ctid column id
-	ULONG m_ctid_colid;
+	GP_ULONG m_ctid_colid;
 
 	// segmentId column id
-	ULONG m_segid_colid;
+	GP_ULONG m_segid_colid;
 
 	// delete col ids
 	ULongPtrArray *m_deletion_colid_array;

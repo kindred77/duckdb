@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2011 EMC Corp.
 //
@@ -65,8 +65,8 @@ public:
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL
-	FCanPullProjectionsUp(ULONG child_index) const
+	virtual GP_BOOL
+	FCanPullProjectionsUp(GP_ULONG child_index) const
 	{
 		return (0 == child_index);
 	}
@@ -121,7 +121,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// return true if operator is a left anti semi apply
-	virtual BOOL
+	virtual GP_BOOL
 	FLeftAntiSemiApply() const
 	{
 		return true;
@@ -129,7 +129,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// conversion function
 	static CLogicalLeftAntiSemiApply *

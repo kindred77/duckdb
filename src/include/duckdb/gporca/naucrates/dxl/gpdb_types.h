@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -15,7 +15,7 @@
 
 using namespace gpos;
 
-typedef ULONG OID;
+typedef GP_ULONG OID;
 
 #define GPDB_INT2 OID(21)
 #define GPDB_INT4 OID(23)

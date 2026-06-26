@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -32,14 +32,14 @@ class CDistributionSpecRandom : public CDistributionSpec
 {
 protected:
 	// is the random distribution sensitive to duplicates
-	BOOL m_is_duplicate_sensitive;
+	GP_BOOL m_is_duplicate_sensitive;
 
 	// does Singleton spec satisfy current distribution?
 	// by default, Singleton satisfies hashed/random since all tuples with the same hash value
 	// are moved to the same host/segment,
 	// this flag adds the ability to mark a distribution request as non-satisfiable by Singleton
 	// in case we need to enforce across segments distribution
-	BOOL m_fSatisfiedBySingleton;
+	GP_BOOL m_fSatisfiedBySingleton;
 
 	// private copy ctor
 	CDistributionSpecRandom(const CDistributionSpecRandom &);
@@ -66,7 +66,7 @@ public:
 	}
 
 	// is distribution duplicate sensitive
-	BOOL
+	GP_BOOL
 	IsDuplicateSensitive() const
 	{
 		return m_is_duplicate_sensitive;
@@ -82,7 +82,7 @@ public:
 	}
 
 	// does Singleton spec satisfy current distribution?
-	BOOL
+	GP_BOOL
 	FSatisfiedBySingleton() const
 	{
 		return m_fSatisfiedBySingleton;
@@ -98,10 +98,10 @@ public:
 	}
 
 	// does this distribution match the given one
-	virtual BOOL Matches(const CDistributionSpec *pds) const;
+	virtual GP_BOOL Matches(const CDistributionSpec *pds) const;
 
 	// does current distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// append enforcers to dynamic array for the given plan properties
 	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,

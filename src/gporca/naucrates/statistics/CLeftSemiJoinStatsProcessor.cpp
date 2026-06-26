@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2018 Pivotal, Inc.
 //
@@ -25,16 +25,16 @@ CLeftSemiJoinStatsProcessor::CalcLSJoinStatsStatic(
 	GPOS_ASSERT(NULL != inner_stats_input);
 	GPOS_ASSERT(NULL != join_preds_stats);
 
-	const ULONG length = join_preds_stats->Size();
+	const GP_ULONG length = join_preds_stats->Size();
 
 	// iterate over all inner columns and perform a group by to remove duplicates
 	ULongPtrArray *inner_colids = GPOS_NEW(mp) ULongPtrArray(mp);
-	for (ULONG ul = 0; ul < length; ul++)
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		if ((*join_preds_stats)[ul]->HasValidColIdInner())
 		{
-			ULONG colid = ((*join_preds_stats)[ul])->ColIdInner();
-			inner_colids->Append(GPOS_NEW(mp) ULONG(colid));
+			GP_ULONG colid = ((*join_preds_stats)[ul])->ColIdInner();
+			inner_colids->Append(GPOS_NEW(mp) GP_ULONG(colid));
 		}
 	}
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -91,13 +91,13 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
 	virtual void AssertValid(const CDXLNode *dxlnode,
-							 BOOL validate_children) const;
+							 GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

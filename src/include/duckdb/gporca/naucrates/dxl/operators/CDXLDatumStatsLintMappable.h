@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal Inc.
 //
@@ -50,8 +50,8 @@ private:
 public:
 	// ctor
 	CDXLDatumStatsLintMappable(CMemoryPool *mp, IMDId *mdid_type,
-							   INT type_modifier, BOOL is_null,
-							   BYTE *byte_array, ULONG length, LINT value);
+							   INT type_modifier, GP_BOOL is_null,
+							   BYTE *byte_array, GP_ULONG length, LINT value);
 
 	// dtor
 	virtual ~CDXLDatumStatsLintMappable(){};
@@ -80,7 +80,7 @@ public:
 	// statistics related APIs
 
 	// can datum be mapped to LINT
-	virtual BOOL
+	virtual GP_BOOL
 	IsDatumMappableToLINT() const
 	{
 		return true;

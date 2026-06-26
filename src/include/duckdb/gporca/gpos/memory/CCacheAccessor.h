@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC CORP.
 //
@@ -52,7 +52,7 @@ private:
 	typename CCache<T, K>::CCacheHashTableEntry *m_entry;
 
 	// true if insertion of a new object into the cache was successful
-	BOOL m_inserted;
+	GP_BOOL m_inserted;
 
 public:
 	// ctor; protected to disable instantiation unless from child class

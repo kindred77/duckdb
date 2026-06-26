@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -28,7 +28,7 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 void
-CStackDescriptor::BackTrace(ULONG top_frames_to_skip)
+CStackDescriptor::BackTrace(GP_ULONG top_frames_to_skip)
 {
 	// get base pointer of current frame
 	ULONG_PTR current_frame;
@@ -53,7 +53,7 @@ CStackDescriptor::BackTrace(ULONG top_frames_to_skip)
 	stack_start = worker->GetStackStart();
 
 	// consider the first GPOS_STACK_TRACE_DEPTH frames below worker object
-	for (ULONG frame_counter = 0; frame_counter < GPOS_STACK_TRACE_DEPTH;
+	for (GP_ULONG frame_counter = 0; frame_counter < GPOS_STACK_TRACE_DEPTH;
 		 frame_counter++)
 	{
 		// check if the frame pointer is after stack start and before previous frame
@@ -91,7 +91,7 @@ CStackDescriptor::BackTrace(ULONG top_frames_to_skip)
 void
 CStackDescriptor::AppendSymbolInfo(CWString *ws, CHAR *demangling_symbol_buffer,
 								   SIZE_T size, const DL_INFO &symbol_info,
-								   ULONG index) const
+								   GP_ULONG index) const
 {
 	const CHAR *symbol_name = demangling_symbol_buffer;
 
@@ -109,7 +109,7 @@ CStackDescriptor::AppendSymbolInfo(CWString *ws, CHAR *demangling_symbol_buffer,
 		if (0 == status)
 		{
 			// skip args and template symbol_info
-			for (ULONG ul = 0; ul < size; ul++)
+			for (GP_ULONG ul = 0; ul < size; ul++)
 			{
 				if ('(' == demangling_symbol_buffer[ul] ||
 					'<' == demangling_symbol_buffer[ul])
@@ -149,7 +149,7 @@ CStackDescriptor::AppendSymbolInfo(CWString *ws, CHAR *demangling_symbol_buffer,
 //
 //---------------------------------------------------------------------------
 void
-CStackDescriptor::AppendTrace(CWString *ws, ULONG depth) const
+CStackDescriptor::AppendTrace(CWString *ws, GP_ULONG depth) const
 {
 	GPOS_ASSERT(GPOS_STACK_TRACE_DEPTH >= m_depth &&
 				"Stack exceeds maximum depth");
@@ -162,7 +162,7 @@ CStackDescriptor::AppendTrace(CWString *ws, ULONG depth) const
 	CHAR demangling_symbol_buffer[GPOS_STACK_SYMBOL_SIZE];
 
 	// print symbol_info for frames in stack
-	for (ULONG i = 0; i < m_depth && i < depth; i++)
+	for (GP_ULONG i = 0; i < m_depth && i < depth; i++)
 	{
 		// resolve address
 		clib::Dladdr(m_array_of_addresses[i], &symbol_info);
@@ -183,7 +183,7 @@ CStackDescriptor::AppendTrace(CWString *ws, ULONG depth) const
 //
 //---------------------------------------------------------------------------
 void
-CStackDescriptor::AppendTrace(IOstream &os, ULONG depth) const
+CStackDescriptor::AppendTrace(IOstream &os, GP_ULONG depth) const
 {
 	WCHAR wsz[GPOS_STACK_DESCR_TRACE_BUF];
 	CWStringStatic str(wsz, GPOS_ARRAY_SIZE(wsz));
@@ -201,7 +201,7 @@ CStackDescriptor::AppendTrace(IOstream &os, ULONG depth) const
 //		Get hash value for stored stack
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CStackDescriptor::HashValue() const
 {
 	GPOS_ASSERT(0 < m_depth && "No stack to hash");

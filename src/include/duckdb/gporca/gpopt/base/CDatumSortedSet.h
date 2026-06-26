@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CDatumSortedSet_H
@@ -17,13 +17,13 @@ namespace gpopt
 class CDatumSortedSet : public IDatumArray
 {
 private:
-	BOOL m_fIncludesNull;
+	GP_BOOL m_fIncludesNull;
 
 public:
 	CDatumSortedSet(CMemoryPool *mp, CExpression *pexprArray,
 					const IComparator *pcomp);
 
-	BOOL FIncludesNull() const;
+	GP_BOOL FIncludesNull() const;
 };
 }  // namespace gpopt
 

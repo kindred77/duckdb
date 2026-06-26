@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -36,17 +36,17 @@ typedef CHashMap<CColRef, CConstraintArray, CColRef::HashValue, CColRef::Equals,
 				 CleanupNULL<CColRef>, CleanupRelease<CConstraintArray> >
 	ColRefToConstraintArrayMap;
 
-// mapping CConstraint -> BOOL to cache previous containment queries,
+// mapping CConstraint -> GP_BOOL to cache previous containment queries,
 // we use pointer equality here for fast map lookup -- since we do shallow comparison, we do not take ownership
 // of pointer values
-typedef CHashMap<CConstraint, BOOL, gpos::HashPtr<CConstraint>,
+typedef CHashMap<CConstraint, GP_BOOL, gpos::HashPtr<CConstraint>,
 				 gpos::EqualPtr<CConstraint>, CleanupNULL<CConstraint>,
-				 CleanupNULL<BOOL> >
+				 CleanupNULL<GP_BOOL> >
 	ConstraintContainmentMap;
 
-// hash map mapping ULONG -> CConstraint
-typedef CHashMap<ULONG, CConstraint, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+// hash map mapping GP_ULONG -> CConstraint
+typedef CHashMap<GP_ULONG, CConstraint, gpos::HashValue<GP_ULONG>,
+				 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 				 CleanupRelease<CConstraint> >
 	UlongToConstraintMap;
 
@@ -74,17 +74,17 @@ private:
 	ConstraintContainmentMap *m_phmcontain;
 
 	// constant true
-	static BOOL m_fTrue;
+	static GP_BOOL m_fTrue;
 
 	// constant false
-	static BOOL m_fFalse;
+	static GP_BOOL m_fFalse;
 
 	// hidden copy ctor
 	CConstraint(const CConstraint &);
 
-	// return address of static BOOL constant based on passed BOOL value
-	static BOOL *
-	PfVal(BOOL value)
+	// return address of static GP_BOOL constant based on passed GP_BOOL value
+	static GP_BOOL *
+	PfVal(GP_BOOL value)
 	{
 		if (value)
 		{
@@ -102,18 +102,18 @@ private:
 	// create constraint from scalar comparison
 	static CConstraint *PcnstrFromScalarCmp(CMemoryPool *mp, CExpression *pexpr,
 											CColRefSetArray **ppdrgpcrs,
-											BOOL infer_nulls_as = false);
+											GP_BOOL infer_nulls_as = false);
 
 	// create constraint from scalar boolean expression
 	static CConstraint *PcnstrFromScalarBoolOp(CMemoryPool *mp,
 											   CExpression *pexpr,
 											   CColRefSetArray **ppdrgpcrs,
-											   BOOL infer_nulls_as = false);
+											   GP_BOOL infer_nulls_as = false);
 
 	// create conjunction/disjunction from array of constraints
 	static CConstraint *PcnstrConjDisj(CMemoryPool *mp,
 									   CConstraintArray *pdrgpcnstr,
-									   BOOL fConj);
+									   GP_BOOL fConj);
 
 protected:
 	// memory pool -- used for local computations
@@ -133,7 +133,7 @@ protected:
 	// array of constraints
 	CExpression *PexprScalarConjDisj(CMemoryPool *mp,
 									 CConstraintArray *pdrgpcnstr,
-									 BOOL fConj) const;
+									 GP_BOOL fConj) const;
 
 	// flatten an array of constraints to be used as constraint children
 	CConstraintArray *PdrgpcnstrFlatten(CMemoryPool *mp,
@@ -152,14 +152,14 @@ protected:
 	// return a copy of the conjunction/disjunction constraint for a different column
 	CConstraint *PcnstrConjDisjRemapForColumn(CMemoryPool *mp, CColRef *colref,
 											  CConstraintArray *pdrgpcnstr,
-											  BOOL fConj) const;
+											  GP_BOOL fConj) const;
 
 	// create constraint from scalar array comparison expression originally generated for
 	// "scalar op ANY/ALL (array)" construct
 	static CConstraint *PcnstrFromScalarArrayCmp(CMemoryPool *mp,
 												 CExpression *pexpr,
 												 CColRef *colref,
-												 BOOL infer_nulls_as = false);
+												 GP_BOOL infer_nulls_as = false);
 
 public:
 	// ctor
@@ -172,20 +172,20 @@ public:
 	virtual EConstraintType Ect() const = 0;
 
 	// is this constraint a contradiction
-	virtual BOOL FContradiction() const = 0;
+	virtual GP_BOOL FContradiction() const = 0;
 
 	// is this constraint unbounded
-	virtual BOOL
+	virtual GP_BOOL
 	IsConstraintUnbounded() const
 	{
 		return false;
 	}
 
 	// does the current constraint contain the given one
-	virtual BOOL Contains(CConstraint *pcnstr);
+	virtual GP_BOOL Contains(CConstraint *pcnstr);
 
 	// equality function
-	virtual BOOL Equals(CConstraint *pcnstr);
+	virtual GP_BOOL Equals(CConstraint *pcnstr);
 
 	// columns in this constraint
 	virtual CColRefSet *
@@ -198,9 +198,9 @@ public:
 	virtual CExpression *PexprScalar(CMemoryPool *mp) = 0;
 
 	// check if there is a constraint on the given column
-	virtual BOOL FConstraint(const CColRef *colref) const = 0;
+	virtual GP_BOOL FConstraint(const CColRef *colref) const = 0;
 
-	virtual BOOL
+	virtual GP_BOOL
 	FConstraintOnSegmentId() const
 	{
 		return false;
@@ -208,7 +208,7 @@ public:
 
 	// return a copy of the constraint with remapped columns
 	virtual CConstraint *PcnstrCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist) = 0;
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist) = 0;
 
 	// return constraint on a given column
 	virtual CConstraint *
@@ -237,7 +237,7 @@ public:
 	static CConstraint *PcnstrFromScalarExpr(CMemoryPool *mp,
 											 CExpression *pexpr,
 											 CColRefSetArray **ppdrgpcrs,
-											 BOOL infer_nulls_as = false);
+											 GP_BOOL infer_nulls_as = false);
 
 	// create conjunction from array of constraints
 	static CConstraint *PcnstrConjunction(CMemoryPool *mp,
@@ -256,7 +256,7 @@ public:
 	static CConstraintArray *PdrgpcnstrOnColumn(CMemoryPool *mp,
 												CConstraintArray *pdrgpcnstr,
 												CColRef *colref,
-												BOOL fExclusive);
+												GP_BOOL fExclusive);
 
 };	// class CConstraint
 

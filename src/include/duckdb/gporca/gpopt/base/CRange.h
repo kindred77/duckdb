@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -149,34 +149,34 @@ public:
 	}
 
 	// is this range disjoint from the given range and to its left
-	BOOL FDisjointLeft(CRange *prange);
+	GP_BOOL FDisjointLeft(CRange *prange);
 
 	// does this range contain the given range
-	BOOL Contains(CRange *prange);
+	GP_BOOL Contains(CRange *prange);
 
 	// does this range overlap only the left end of the given range
-	BOOL FOverlapsLeft(CRange *prange);
+	GP_BOOL FOverlapsLeft(CRange *prange);
 
 	// does this range overlap only the right end of the given range
-	BOOL FOverlapsRight(CRange *prange);
+	GP_BOOL FOverlapsRight(CRange *prange);
 
 	// does this range's upper bound equal the given range's lower bound
-	BOOL FUpperBoundEqualsLowerBound(CRange *prange);
+	GP_BOOL FUpperBoundEqualsLowerBound(CRange *prange);
 
 	// does this range start before the given range starts
-	BOOL FStartsBefore(CRange *prange);
+	GP_BOOL FStartsBefore(CRange *prange);
 
 	// does this range start with or before the given range
-	BOOL FStartsWithOrBefore(CRange *prange);
+	GP_BOOL FStartsWithOrBefore(CRange *prange);
 
 	// does this range end after the given range ends
-	BOOL FEndsAfter(CRange *prange);
+	GP_BOOL FEndsAfter(CRange *prange);
 
 	// does this range end with or after the given range
-	BOOL FEndsWithOrAfter(CRange *prange);
+	GP_BOOL FEndsWithOrAfter(CRange *prange);
 
 	// check if range represents a point
-	BOOL FPoint() const;
+	GP_BOOL FPoint() const;
 
 	// intersection with another range
 	CRange *PrngIntersect(CMemoryPool *mp, CRange *prange);
@@ -195,7 +195,7 @@ public:
 	CExpression *PexprScalar(CMemoryPool *mp, const CColRef *colref);
 
 	// is this interval unbounded
-	BOOL
+	GP_BOOL
 	IsConstraintUnbounded() const
 	{
 		return (NULL == m_pdatumLeft && NULL == m_pdatumRight);

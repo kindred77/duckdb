@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -53,9 +53,9 @@ public:
 	}
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 	// conversion function
 	static CPhysicalLeftSemiNLJoin *

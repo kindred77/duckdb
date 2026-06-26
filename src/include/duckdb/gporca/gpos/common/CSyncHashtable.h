@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -78,7 +78,7 @@ private:
 
 #ifdef GPOS_DEBUG
 		// bucket number
-		ULONG m_bucket_idx;
+		GP_ULONG m_bucket_idx;
 #endif	// GPOS_DEBUG
 	};
 
@@ -86,25 +86,25 @@ private:
 	SBucket *m_buckets;
 
 	// number of ht buckets
-	ULONG m_nbuckets;
+	GP_ULONG m_nbuckets;
 
 	// number of ht entries
 	ULONG_PTR m_size;
 
 	// offset of key
-	ULONG m_key_offset;
+	GP_ULONG m_key_offset;
 
 	// invalid key - needed for iteration
 	const K *m_invalid_key;
 
 	// pointer to hashing function
-	ULONG (*m_hashfn)(const K &);
+	GP_ULONG (*m_hashfn)(const K &);
 
 	// pointer to key equality function
-	BOOL (*m_eqfn)(const K &, const K &);
+	GP_BOOL (*m_eqfn)(const K &, const K &);
 
 	// function to compute bucket index for key
-	ULONG
+	GP_ULONG
 	GetBucketIndex(const K &key) const
 	{
 		GPOS_ASSERT(IsValid(key) && "Invalid key is inaccessible");
@@ -114,7 +114,7 @@ private:
 
 	// function to get bucket by index
 	SBucket &
-	GetBucket(const ULONG index) const
+	GetBucket(const GP_ULONG index) const
 	{
 		GPOS_ASSERT(index < m_nbuckets && "Invalid bucket index");
 
@@ -134,7 +134,7 @@ private:
 	}
 
 	// key validity check
-	BOOL
+	GP_BOOL
 	IsValid(const K &key) const
 	{
 		return !m_eqfn(key, *m_invalid_key);
@@ -164,9 +164,9 @@ public:
 
 	// Initialization of hashtable
 	void
-	Init(CMemoryPool *mp, ULONG size, ULONG link_offset, ULONG key_offset,
-		 const K *invalid_key, ULONG (*func_hash)(const K &),
-		 BOOL (*func_equal)(const K &, const K &))
+	Init(CMemoryPool *mp, GP_ULONG size, GP_ULONG link_offset, GP_ULONG key_offset,
+		 const K *invalid_key, GP_ULONG (*func_hash)(const K &),
+		 GP_BOOL (*func_equal)(const K &, const K &))
 	{
 		GPOS_ASSERT(NULL == m_buckets);
 		GPOS_ASSERT(0 == m_nbuckets);
@@ -188,7 +188,7 @@ public:
 		CAutoRg<SBucket> argbucket;
 		argbucket = m_buckets;
 
-		for (ULONG i = 0; i < m_nbuckets; i++)
+		for (GP_ULONG i = 0; i < m_nbuckets; i++)
 		{
 			m_buckets[i].m_chain.Init(link_offset);
 #ifdef GPOS_DEBUG

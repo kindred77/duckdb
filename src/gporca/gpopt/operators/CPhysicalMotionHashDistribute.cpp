@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -59,7 +59,7 @@ CPhysicalMotionHashDistribute::~CPhysicalMotionHashDistribute()
 //		Match operators
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionHashDistribute::Matches(COperator *pop) const
 {
 	if (Eopid() != pop->Eopid())
@@ -85,9 +85,9 @@ CColRefSet *
 CPhysicalMotionHashDistribute::PcrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CColRefSet *pcrsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *,  // pdrgpdpCtxt
-											ULONG			   // ulOptReq
+											GP_ULONG			   // ulOptReq
 )
 {
 	GPOS_ASSERT(0 == child_index);
@@ -109,10 +109,10 @@ CPhysicalMotionHashDistribute::PcrsRequired(CMemoryPool *mp,
 //		Check if required columns are included in output columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionHashDistribute::FProvidesReqdCols(CExpressionHandle &exprhdl,
 												 CColRefSet *pcrsRequired,
-												 ULONG	// ulOptReq
+												 GP_ULONG	// ulOptReq
 ) const
 {
 	return FUnaryProvidesReqdCols(exprhdl, pcrsRequired);
@@ -147,13 +147,13 @@ COrderSpec *
 CPhysicalMotionHashDistribute::PosRequired(CMemoryPool *mp,
 										   CExpressionHandle &,	 // exprhdl
 										   COrderSpec *,		 //posInput
-										   ULONG
+										   GP_ULONG
 #ifdef GPOS_DEBUG
 											   child_index
 #endif	// GPOS_DEBUG
 										   ,
 										   CDrvdPropArray *,  // pdrgpdpCtxt
-										   ULONG			  // ulOptReq
+										   GP_ULONG			  // ulOptReq
 ) const
 {
 	GPOS_ASSERT(0 == child_index);
@@ -218,7 +218,7 @@ CPhysicalMotionHashDistribute::PopConvert(COperator *pop)
 CDistributionSpec *
 CPhysicalMotionHashDistribute::PdsRequired(
 	CMemoryPool *mp, CExpressionHandle &exprhdl, CDistributionSpec *pdsRequired,
-	ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const
+	GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) const
 {
 	CDistributionSpecHashedNoOp *pdsNoOp =
 		dynamic_cast<CDistributionSpecHashedNoOp *>(m_pdsHashed);

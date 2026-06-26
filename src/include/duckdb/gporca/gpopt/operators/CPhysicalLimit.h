@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -33,13 +33,13 @@ private:
 	COrderSpec *m_pos;
 
 	// global limit
-	BOOL m_fGlobal;
+	GP_BOOL m_fGlobal;
 
 	// does limit specify a number of rows?
-	BOOL m_fHasCount;
+	GP_BOOL m_fHasCount;
 
 	// this is a top limit right under a DML or CTAS operation
-	BOOL m_top_limit_under_dml;
+	GP_BOOL m_top_limit_under_dml;
 
 	// columns used by order spec
 	CColRefSet *m_pcrsSort;
@@ -49,8 +49,8 @@ private:
 
 public:
 	// ctor
-	CPhysicalLimit(CMemoryPool *mp, COrderSpec *pos, BOOL fGlobal,
-				   BOOL fHasCount, BOOL fTopLimitUnderDML);
+	CPhysicalLimit(CMemoryPool *mp, COrderSpec *pos, GP_BOOL fGlobal,
+				   GP_BOOL fHasCount, GP_BOOL fTopLimitUnderDML);
 
 	// dtor
 	virtual ~CPhysicalLimit();
@@ -69,13 +69,13 @@ public:
 	}
 
 	// hash function
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
 		return gpos::CombineHashes(
 			gpos::CombineHashes(COperator::HashValue(), m_pos->HashValue()),
-			gpos::CombineHashes(gpos::HashValue<BOOL>(&m_fGlobal),
-								gpos::HashValue<BOOL>(&m_fHasCount)));
+			gpos::CombineHashes(gpos::HashValue<GP_BOOL>(&m_fGlobal),
+								gpos::HashValue<GP_BOOL>(&m_fHasCount)));
 	}
 
 	// order spec
@@ -86,31 +86,31 @@ public:
 	}
 
 	// global limit
-	BOOL
+	GP_BOOL
 	FGlobal() const
 	{
 		return m_fGlobal;
 	}
 
 	// does limit specify a number of rows
-	BOOL
+	GP_BOOL
 	FHasCount() const
 	{
 		return m_fHasCount;
 	}
 
 	// must the limit be always kept
-	BOOL
+	GP_BOOL
 	IsTopLimitUnderDMLorCTAS() const
 	{
 		return m_top_limit_under_dml;
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -123,46 +123,46 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const;
+								  GP_ULONG ulOptReq) const;
 
 	// compute required sort order of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const;
+											GP_ULONG ulOptReq) const;
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
@@ -218,7 +218,7 @@ public:
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL
+	virtual GP_BOOL
 	FPassThruStats() const
 	{
 		return false;
@@ -242,9 +242,9 @@ public:
 	}
 
 	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CReqdPropPlan *prppInput, GP_ULONG child_index,
 								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulDistrReq);
+								   GP_ULONG ulDistrReq);
 
 };	// class CPhysicalLimit
 

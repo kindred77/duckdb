@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -86,13 +86,13 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *) const;
+	GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return !FCommutative(Eboolop());
@@ -102,7 +102,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -122,7 +122,7 @@ public:
 	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;
 
 	// decide boolean operator commutativity
-	static BOOL FCommutative(EBoolOperator eboolop);
+	static GP_BOOL FCommutative(EBoolOperator eboolop);
 
 	// the type of the scalar expression
 	virtual IMDId *MdidType() const;

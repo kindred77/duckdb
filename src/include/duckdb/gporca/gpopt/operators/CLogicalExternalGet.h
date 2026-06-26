@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -62,11 +62,11 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
@@ -77,7 +77,7 @@ public:
 	PcrsStat(CMemoryPool *,		   // mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   // pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		GPOS_ASSERT(!"CLogicalExternalGet has no children");

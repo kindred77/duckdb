@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------
  *	Greenplum Database
  *	Copyright (c) 2019 Pivotal Software, Inc.
  *
@@ -23,11 +23,11 @@ using namespace gpos;
 
 CDebugCounter *CDebugCounter::m_instance = NULL;
 
-ULONG
+GP_ULONG
 CDebugCounter::SDebugCounterKey::HashValue(
 	const CDebugCounter::SDebugCounterKey *key)
 {
-	ULONG result = 0;
+	GP_ULONG result = 0;
 	int key_size = key->m_counter_name.size();
 
 	for (int i = 0; i < key_size; i++)
@@ -128,7 +128,7 @@ CDebugCounter::NextQry(const char *next_qry_name)
 			{
 				const SDebugCounterValue *val = iter.Value();
 				const char *typeString = "";
-				BOOL use_long = true;
+				GP_BOOL use_long = true;
 
 				switch (val->m_type)
 				{
@@ -176,7 +176,7 @@ CDebugCounter::NextQry(const char *next_qry_name)
 	}
 }
 
-BOOL
+GP_BOOL
 CDebugCounter::FindByName(const char *counter_name, SDebugCounterKey **key,
 						  SDebugCounterValue **val, enum ECounterType typ)
 {
@@ -205,7 +205,7 @@ CDebugCounter::FindByName(const char *counter_name, SDebugCounterKey **key,
 // by FindByName()
 void
 CDebugCounter::InsertOrUpdateCounter(SDebugCounterKey *key,
-									 SDebugCounterValue *val, BOOL update)
+									 SDebugCounterValue *val, GP_BOOL update)
 {
 	if (update)
 	{
@@ -230,7 +230,7 @@ CDebugCounter::Bump(const char *counter_name)
 
 		SDebugCounterKey *key = NULL;
 		SDebugCounterValue *val = NULL;
-		BOOL found =
+		GP_BOOL found =
 			m_instance->FindByName(counter_name, &key, &val, ECounterTypeCount);
 
 		val->m_counter_val_long++;
@@ -248,7 +248,7 @@ CDebugCounter::Add(const char *counter_name, long delta)
 
 		SDebugCounterKey *key = NULL;
 		SDebugCounterValue *val = NULL;
-		BOOL found =
+		GP_BOOL found =
 			m_instance->FindByName(counter_name, &key, &val, ECounterTypeSum);
 
 		val->m_counter_val_long += delta;
@@ -265,7 +265,7 @@ CDebugCounter::AddDouble(const char *counter_name, double delta)
 
 		SDebugCounterKey *key = NULL;
 		SDebugCounterValue *val = NULL;
-		BOOL found = m_instance->FindByName(counter_name, &key, &val,
+		GP_BOOL found = m_instance->FindByName(counter_name, &key, &val,
 											ECounterTypeSumDouble);
 
 		val->m_counter_val_double += delta;
@@ -282,7 +282,7 @@ CDebugCounter::StartCpuTime(const char *counter_name)
 
 		SDebugCounterKey *key = NULL;
 		SDebugCounterValue *val = NULL;
-		BOOL found = m_instance->FindByName(counter_name, &key, &val,
+		GP_BOOL found = m_instance->FindByName(counter_name, &key, &val,
 											ECounterTypeCpuTime);
 
 		if (NULL == val->m_cpu_timer)
@@ -307,7 +307,7 @@ CDebugCounter::StopCpuTime(const char *counter_name)
 
 		SDebugCounterKey *key = NULL;
 		SDebugCounterValue *val = NULL;
-		BOOL found = m_instance->FindByName(counter_name, &key, &val,
+		GP_BOOL found = m_instance->FindByName(counter_name, &key, &val,
 											ECounterTypeCpuTime);
 
 		// note that we tolerate starting a timer but never stopping

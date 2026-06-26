@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -47,7 +47,7 @@ private:
 	CMDName *m_mdname;
 
 	// is the index clustered
-	BOOL m_clustered;
+	GP_BOOL m_clustered;
 
 	// index type
 	EmdindexType m_index_type;
@@ -81,7 +81,7 @@ private:
 public:
 	// ctor
 	CMDIndexGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-				 BOOL is_clustered, EmdindexType index_type,
+				 GP_BOOL is_clustered, EmdindexType index_type,
 				 EmdindexType index_physical_type, IMDId *mdid_item_type,
 				 ULongPtrArray *index_key_cols_array,
 				 ULongPtrArray *included_cols_array,
@@ -98,7 +98,7 @@ public:
 	virtual CMDName Mdname() const;
 
 	// is the index clustered
-	virtual BOOL IsClustered() const;
+	virtual GP_BOOL IsClustered() const;
 
 	// index type
 	virtual EmdindexType IndexType() const;
@@ -107,22 +107,22 @@ public:
 	virtual EmdindexType IndexPhysicalType() const;
 
 	// number of keys
-	virtual ULONG Keys() const;
+	virtual GP_ULONG Keys() const;
 
 	// return the n-th key column
-	virtual ULONG KeyAt(ULONG pos) const;
+	virtual GP_ULONG KeyAt(GP_ULONG pos) const;
 
 	// return the position of the key column
-	virtual ULONG GetKeyPos(ULONG column) const;
+	virtual GP_ULONG GetKeyPos(GP_ULONG column) const;
 
 	// number of included columns
-	virtual ULONG IncludedCols() const;
+	virtual GP_ULONG IncludedCols() const;
 
 	// return the n-th included column
-	virtual ULONG IncludedColAt(ULONG pos) const;
+	virtual GP_ULONG IncludedColAt(GP_ULONG pos) const;
 
 	// return the position of the included column
-	virtual ULONG GetIncludedColPos(ULONG column) const;
+	virtual GP_ULONG GetIncludedColPos(GP_ULONG column) const;
 
 	// part constraint
 	virtual IMDPartConstraint *MDPartConstraint() const;
@@ -142,8 +142,8 @@ public:
 
 	// check if given scalar comparison can be used with the index key
 	// at the specified position
-	virtual BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
-							  ULONG key_pos) const;
+	virtual GP_BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
+							  GP_ULONG key_pos) const;
 
 #ifdef GPOS_DEBUG
 	// debug print of the MD index

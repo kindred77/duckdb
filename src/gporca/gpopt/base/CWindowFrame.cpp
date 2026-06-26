@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -130,7 +130,7 @@ CWindowFrame::~CWindowFrame()
 //		Check for equality between window frames
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CWindowFrame::Matches(const CWindowFrame *pwf) const
 {
 	return m_efs == pwf->Efs() && m_efbLeading == pwf->EfbLeading() &&
@@ -148,10 +148,10 @@ CWindowFrame::Matches(const CWindowFrame *pwf) const
 //		Hash of components
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CWindowFrame::HashValue() const
 {
-	ULONG ulHash = 0;
+	GP_ULONG ulHash = 0;
 	ulHash = gpos::CombineHashes(ulHash, m_efs);
 	ulHash = gpos::CombineHashes(ulHash, m_efbLeading);
 	ulHash = gpos::CombineHashes(ulHash, m_efbTrailing);
@@ -183,7 +183,7 @@ CWindowFrame::HashValue() const
 CWindowFrame *
 CWindowFrame::PwfCopyWithRemappedColumns(CMemoryPool *mp,
 										 UlongToColRefMap *colref_mapping,
-										 BOOL must_exist)
+										 GP_BOOL must_exist)
 {
 	if (this == &m_wfEmpty)
 	{
@@ -256,7 +256,7 @@ CWindowFrame::OsPrint(IOstream &os) const
 //		 Matching function over frame arrays
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CWindowFrame::Equals(const CWindowFrameArray *pdrgpwfFirst,
 					 const CWindowFrameArray *pdrgpwfSecond)
 {
@@ -270,9 +270,9 @@ CWindowFrame::Equals(const CWindowFrameArray *pdrgpwfFirst,
 		return false;
 	}
 
-	const ULONG size = pdrgpwfFirst->Size();
-	BOOL fMatch = true;
-	for (ULONG ul = 0; fMatch && ul < size; ul++)
+	const GP_ULONG size = pdrgpwfFirst->Size();
+	GP_BOOL fMatch = true;
+	for (GP_ULONG ul = 0; fMatch && ul < size; ul++)
 	{
 		fMatch = (*pdrgpwfFirst)[ul]->Matches((*pdrgpwfSecond)[ul]);
 	}
@@ -289,14 +289,14 @@ CWindowFrame::Equals(const CWindowFrameArray *pdrgpwfFirst,
 //		 Combine hash values of a maximum number of entries
 //
 //---------------------------------------------------------------------------
-ULONG
-CWindowFrame::HashValue(const CWindowFrameArray *pdrgpwf, ULONG ulMaxSize)
+GP_ULONG
+CWindowFrame::HashValue(const CWindowFrameArray *pdrgpwf, GP_ULONG ulMaxSize)
 {
 	GPOS_ASSERT(NULL != pdrgpwf);
-	const ULONG size = std::min(ulMaxSize, pdrgpwf->Size());
+	const GP_ULONG size = std::min(ulMaxSize, pdrgpwf->Size());
 
-	ULONG ulHash = 0;
-	for (ULONG ul = 0; ul < size; ul++)
+	GP_ULONG ulHash = 0;
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		ulHash = gpos::CombineHashes(ulHash, (*pdrgpwf)[ul]->HashValue());
 	}
@@ -316,10 +316,10 @@ IOstream &
 CWindowFrame::OsPrint(IOstream &os, const CWindowFrameArray *pdrgpwf)
 {
 	os << "[";
-	const ULONG size = pdrgpwf->Size();
+	const GP_ULONG size = pdrgpwf->Size();
 	if (0 < size)
 	{
-		for (ULONG ul = 0; ul < size - 1; ul++)
+		for (GP_ULONG ul = 0; ul < size - 1; ul++)
 		{
 			(void) (*pdrgpwf)[ul]->OsPrint(os);
 			os << ", ";

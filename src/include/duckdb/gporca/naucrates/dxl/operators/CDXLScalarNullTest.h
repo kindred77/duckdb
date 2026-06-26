@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -39,14 +39,14 @@ class CDXLScalarNullTest : public CDXLScalar
 {
 private:
 	// is nul or is not null operation
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// private copy ctor
 	CDXLScalarNullTest(const CDXLScalarNullTest &);
 
 public:
 	// ctor/
-	CDXLScalarNullTest(CMemoryPool *mp, BOOL is_null);
+	CDXLScalarNullTest(CMemoryPool *mp, GP_BOOL is_null);
 
 	// ident accessors
 	Edxlopid GetDXLOperator() const;
@@ -55,7 +55,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// NullTest operator type
-	BOOL IsNullTest() const;
+	GP_BOOL IsNullTest() const;
 
 	// name of the operator
 	const CWStringConst *PstrTestName() const;
@@ -74,7 +74,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -84,7 +84,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

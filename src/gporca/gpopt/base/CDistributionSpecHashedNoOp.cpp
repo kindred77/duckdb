@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDistributionSpecHashedNoOp.h"
@@ -20,7 +20,7 @@ CDistributionSpecHashedNoOp::Edt() const
 	return CDistributionSpec::EdtHashedNoOp;
 }
 
-BOOL
+GP_BOOL
 CDistributionSpecHashedNoOp::Matches(const CDistributionSpec *pds) const
 {
 	return pds->Edt() == Edt();

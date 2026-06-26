@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -46,10 +46,10 @@ private:
 	IMDId *m_rel_mdid;
 
 	// number of partitioning levels
-	ULONG m_num_of_part_levels;
+	GP_ULONG m_num_of_part_levels;
 
 	// scan id
-	ULONG m_scan_id;
+	GP_ULONG m_scan_id;
 
 	// private copy ctor
 	CDXLPhysicalPartitionSelector(CDXLPhysicalPartitionSelector &);
@@ -57,7 +57,7 @@ private:
 public:
 	// ctor
 	CDXLPhysicalPartitionSelector(CMemoryPool *mp, IMDId *mdid_rel,
-								  ULONG num_of_part_levels, ULONG scan_id);
+								  GP_ULONG num_of_part_levels, GP_ULONG scan_id);
 
 	// dtor
 	virtual ~CDXLPhysicalPartitionSelector();
@@ -76,14 +76,14 @@ public:
 	}
 
 	// number of partitioning levels
-	ULONG
+	GP_ULONG
 	GetPartitioningLevel() const
 	{
 		return m_num_of_part_levels;
 	}
 
 	// scan id
-	ULONG
+	GP_ULONG
 	ScanId() const
 	{
 		return m_scan_id;
@@ -96,7 +96,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	virtual void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	virtual void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

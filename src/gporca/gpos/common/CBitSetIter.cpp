@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -26,7 +26,7 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 CBitSetIter::CBitSetIter(const CBitSet &bs)
-	: m_bs(bs), m_cursor((ULONG) -1), m_bsl(NULL), m_active(true)
+	: m_bs(bs), m_cursor((GP_ULONG) -1), m_bsl(NULL), m_active(true)
 {
 }
 
@@ -39,7 +39,7 @@ CBitSetIter::CBitSetIter(const CBitSet &bs)
 //		Move to next bit
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBitSetIter::Advance()
 {
 	GPOS_ASSERT(m_active && "called advance on exhausted iterator");
@@ -58,7 +58,7 @@ CBitSetIter::Advance()
 		}
 
 		m_bsl = m_bs.m_bsllist.Next(m_bsl);
-		m_cursor = (ULONG) -1;
+		m_cursor = (GP_ULONG) -1;
 	}
 
 	m_active = (NULL != m_bsl);
@@ -74,7 +74,7 @@ CBitSetIter::Advance()
 //		Return current position of cursor
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CBitSetIter::Bit() const
 {
 	GPOS_ASSERT(m_active && NULL != m_bsl && "iterator uninitialized");

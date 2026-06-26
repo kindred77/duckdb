@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -64,12 +64,12 @@ private:
 	CDefaultComparator(const CDefaultComparator &);
 
 	// construct a comparison expression from the given components and evaluate it
-	BOOL FEvalComparison(CMemoryPool *mp, const IDatum *datum1,
+	GP_BOOL FEvalComparison(CMemoryPool *mp, const IDatum *datum1,
 						 const IDatum *datum2,
 						 IMDType::ECmpType cmp_type) const;
 
 	// return true iff we use built-in evaluation for integers
-	static BOOL
+	static GP_BOOL
 	FUseBuiltinIntEvaluators()
 	{
 		return !GPOS_FTRACE(EopttraceEnableConstantExpressionEvaluation) ||
@@ -87,21 +87,21 @@ public:
 	}
 
 	// tests if the two arguments are equal
-	virtual BOOL Equals(const IDatum *datum1, const IDatum *datum2) const;
+	virtual GP_BOOL Equals(const IDatum *datum1, const IDatum *datum2) const;
 
 	// tests if the first argument is less than the second
-	virtual BOOL IsLessThan(const IDatum *datum1, const IDatum *datum2) const;
+	virtual GP_BOOL IsLessThan(const IDatum *datum1, const IDatum *datum2) const;
 
 	// tests if the first argument is less or equal to the second
-	virtual BOOL IsLessThanOrEqual(const IDatum *datum1,
+	virtual GP_BOOL IsLessThanOrEqual(const IDatum *datum1,
 								   const IDatum *datum2) const;
 
 	// tests if the first argument is greater than the second
-	virtual BOOL IsGreaterThan(const IDatum *datum1,
+	virtual GP_BOOL IsGreaterThan(const IDatum *datum1,
 							   const IDatum *datum2) const;
 
 	// tests if the first argument is greater or equal to the second
-	virtual BOOL IsGreaterThanOrEqual(const IDatum *datum1,
+	virtual GP_BOOL IsGreaterThanOrEqual(const IDatum *datum1,
 									  const IDatum *datum2) const;
 
 };	// CDefaultComparator

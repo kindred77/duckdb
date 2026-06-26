@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2014 Pivotal Inc.
 //
@@ -60,14 +60,14 @@ CScaleFactorUtils::GenerateScaleFactorMap(
 	// so that the predicate does not get damped, and any following predicate will be damped accordingly.
 	// If more than one dist col = dist col predicate exists (in the case of joins on multi-distkey tables)
 	// any additional dist col = dist col predicate are treated as independent
-	BOOL contains_dist_pred = false;
+	GP_BOOL contains_dist_pred = false;
 	// iterate over joins to find predicates on same tables
-	for (ULONG ul = 0; ul < join_conds_scale_factors->Size(); ul++)
+	for (GP_ULONG ul = 0; ul < join_conds_scale_factors->Size(); ul++)
 	{
 		CDouble local_scale_factor =
 			(*(*join_conds_scale_factors)[ul]).m_scale_factor;
 		IMdIdArray *oid_pair = (*(*join_conds_scale_factors)[ul]).m_oid_pair;
-		BOOL both_dist_keys = (*(*join_conds_scale_factors)[ul]).m_dist_keys;
+		GP_BOOL both_dist_keys = (*(*join_conds_scale_factors)[ul]).m_dist_keys;
 
 		if (oid_pair != NULL && oid_pair->Size() == 2)
 		{
@@ -105,7 +105,7 @@ CScaleFactorUtils::GenerateScaleFactorMap(
 					new_scale_factor_array->Append(
 						GPOS_NEW(mp) CDouble(local_scale_factor));
 					// append the rest of the predicates after
-					for (ULONG i = 0; i < scale_factor_array->Size(); i++)
+					for (GP_ULONG i = 0; i < scale_factor_array->Size(); i++)
 					{
 						CDouble scale_factor = (*(*scale_factor_array)[i]);
 						new_scale_factor_array->Append(
@@ -166,7 +166,7 @@ CScaleFactorUtils::CalcCumulativeScaleFactorSqrtAlg(
 		const CDoubleArray *scale_factor_array = iter.Value();
 
 		// damp the join preds if they are on the same tables (ex: t1.a = t2.a AND t1.b = t2.b)
-		for (ULONG ul = 0; ul < scale_factor_array->Size(); ul++)
+		for (GP_ULONG ul = 0; ul < scale_factor_array->Size(); ul++)
 		{
 			CDouble local_scale_factor = *(*scale_factor_array)[ul];
 			CDouble fp(2);
@@ -180,7 +180,7 @@ CScaleFactorUtils::CalcCumulativeScaleFactorSqrtAlg(
 
 	// independent_join_preds are either dist_key = dist_key preds or
 	// more complex predicates, such as t1.a = t2.a + t3.a;
-	for (ULONG ul = 0; ul < independent_join_preds->Size(); ul++)
+	for (GP_ULONG ul = 0; ul < independent_join_preds->Size(); ul++)
 	{
 		CDouble local_scale_factor = *(*independent_join_preds)[ul];
 		cumulative_scale_factor = cumulative_scale_factor * local_scale_factor;
@@ -206,7 +206,7 @@ CScaleFactorUtils::CumulativeJoinScaleFactor(
 	GPOS_ASSERT(NULL != stats_config);
 	GPOS_ASSERT(NULL != join_conds_scale_factors);
 
-	const ULONG num_join_conds = join_conds_scale_factors->Size();
+	const GP_ULONG num_join_conds = join_conds_scale_factors->Size();
 	if (1 < num_join_conds)
 	{
 		// sort (in desc order) the scaling factor of the join conditions
@@ -246,7 +246,7 @@ CScaleFactorUtils::CumulativeJoinScaleFactor(
 	CDouble cumulative_scale_factor(1.0);
 	if (stats_config->DDampingFactorJoin() > 0)
 	{
-		for (ULONG ul = 0; ul < num_join_conds; ul++)
+		for (GP_ULONG ul = 0; ul < num_join_conds; ul++)
 		{
 			CDouble local_scale_factor =
 				(*(*join_conds_scale_factors)[ul]).m_scale_factor;
@@ -305,7 +305,7 @@ CScaleFactorUtils::CumulativeJoinScaleFactor(
 //---------------------------------------------------------------------------
 CDouble
 CScaleFactorUtils::DampedJoinScaleFactor(const CStatisticsConfig *stats_config,
-										 ULONG num_columns)
+										 GP_ULONG num_columns)
 {
 	if (1 >= num_columns)
 	{
@@ -326,7 +326,7 @@ CScaleFactorUtils::DampedJoinScaleFactor(const CStatisticsConfig *stats_config,
 //---------------------------------------------------------------------------
 CDouble
 CScaleFactorUtils::DampedFilterScaleFactor(
-	const CStatisticsConfig *stats_config, ULONG num_columns)
+	const CStatisticsConfig *stats_config, GP_ULONG num_columns)
 {
 	GPOS_ASSERT(NULL != stats_config);
 
@@ -349,7 +349,7 @@ CScaleFactorUtils::DampedFilterScaleFactor(
 //---------------------------------------------------------------------------
 CDouble
 CScaleFactorUtils::DampedGroupByScaleFactor(
-	const CStatisticsConfig *stats_config, ULONG num_columns)
+	const CStatisticsConfig *stats_config, GP_ULONG num_columns)
 {
 	GPOS_ASSERT(NULL != stats_config);
 
@@ -372,10 +372,10 @@ CScaleFactorUtils::DampedGroupByScaleFactor(
 //---------------------------------------------------------------------------
 void
 CScaleFactorUtils::SortScalingFactor(CDoubleArray *scale_factors,
-									 BOOL is_descending)
+									 GP_BOOL is_descending)
 {
 	GPOS_ASSERT(NULL != scale_factors);
-	const ULONG num_cols = scale_factors->Size();
+	const GP_ULONG num_cols = scale_factors->Size();
 	if (1 < num_cols)
 	{
 		if (is_descending)
@@ -461,7 +461,7 @@ CScaleFactorUtils::AscendingOrderCmpFunc(const void *val1, const void *val2)
 //---------------------------------------------------------------------------
 INT
 CScaleFactorUtils::DoubleCmpFunc(const CDouble *double_val1,
-								 const CDouble *double_val2, BOOL is_descending)
+								 const CDouble *double_val2, GP_BOOL is_descending)
 {
 	GPOS_ASSERT(NULL != double_val1);
 	GPOS_ASSERT(NULL != double_val2);
@@ -500,7 +500,7 @@ CScaleFactorUtils::CalcScaleFactorCumulativeConj(
 	GPOS_ASSERT(NULL != stats_config);
 	GPOS_ASSERT(NULL != scale_factors);
 
-	const ULONG num_cols = scale_factors->Size();
+	const GP_ULONG num_cols = scale_factors->Size();
 	CDouble scale_factor(1.0);
 	if (1 < num_cols)
 	{
@@ -508,7 +508,7 @@ CScaleFactorUtils::CalcScaleFactorCumulativeConj(
 		scale_factors->Sort(CScaleFactorUtils::DescendingOrderCmpFunc);
 	}
 
-	for (ULONG ul = 0; ul < num_cols; ul++)
+	for (GP_ULONG ul = 0; ul < num_cols; ul++)
 	{
 		// apply damping factor
 		CDouble local_scale_factor = *(*scale_factors)[ul];
@@ -541,7 +541,7 @@ CScaleFactorUtils::CalcScaleFactorCumulativeDisj(
 	GPOS_ASSERT(NULL != stats_config);
 	GPOS_ASSERT(NULL != scale_factors);
 
-	const ULONG num_cols = scale_factors->Size();
+	const GP_ULONG num_cols = scale_factors->Size();
 	GPOS_ASSERT(0 < num_cols);
 
 	if (1 == num_cols)
@@ -556,7 +556,7 @@ CScaleFactorUtils::CalcScaleFactorCumulativeDisj(
 	// rows = rows0 + rows1 * 0.75 + rows2 *(0.75)^2 + ...
 
 	CDouble rows(0.0);
-	for (ULONG ul = 0; ul < num_cols; ul++)
+	for (GP_ULONG ul = 0; ul < num_cols; ul++)
 	{
 		CDouble local_scale_factor = *(*scale_factors)[ul];
 		GPOS_ASSERT(InvalidScaleFactor < local_scale_factor);

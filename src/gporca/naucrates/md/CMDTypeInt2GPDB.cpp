@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -114,7 +114,7 @@ CMDTypeInt2GPDB::~CMDTypeInt2GPDB()
 //---------------------------------------------------------------------------
 IDatumInt2 *
 CMDTypeInt2GPDB::CreateInt2Datum(CMemoryPool *mp, SINT value,
-								 BOOL is_null) const
+								 GP_BOOL is_null) const
 {
 	return GPOS_NEW(mp) CDatumInt2GPDB(m_mdid->Sysid(), value, is_null);
 }
@@ -269,7 +269,7 @@ CMDTypeInt2GPDB::GetDatumForDXLDatum(CMemoryPool *mp,
 	CDXLDatumInt2 *int2_dxl_datum =
 		CDXLDatumInt2::Cast(const_cast<CDXLDatum *>(dxl_datum));
 	SINT val = int2_dxl_datum->Value();
-	BOOL is_null = int2_dxl_datum->IsNull();
+	GP_BOOL is_null = int2_dxl_datum->IsNull();
 
 	return GPOS_NEW(mp) CDatumInt2GPDB(m_mdid->Sysid(), val, is_null);
 }

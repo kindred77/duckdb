@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -6,7 +6,7 @@
 //		IMDTypeBool.h
 //
 //	@doc:
-//		Interface for BOOL types in the metadata cache
+//		Interface for GP_BOOL types in the metadata cache
 //---------------------------------------------------------------------------
 
 
@@ -34,7 +34,7 @@ using namespace gpos;
 //		IMDTypeBool
 //
 //	@doc:
-//		Interface for BOOL types in the metadata cache
+//		Interface for GP_BOOL types in the metadata cache
 //
 //---------------------------------------------------------------------------
 class IMDTypeBool : public IMDType
@@ -53,9 +53,9 @@ public:
 		return IMDTypeBool::GetTypeInfo();
 	}
 
-	// factory function for BOOL datums
-	virtual IDatumBool *CreateBoolDatum(CMemoryPool *mp, BOOL value,
-										BOOL is_null) const = 0;
+	// factory function for GP_BOOL datums
+	virtual IDatumBool *CreateBoolDatum(CMemoryPool *mp, GP_BOOL value,
+										GP_BOOL is_null) const = 0;
 };
 
 }  // namespace gpmd

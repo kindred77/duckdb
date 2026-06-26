@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -39,10 +39,10 @@ private:
 	UlongToDrvdPropPlanMap *m_phmulpdpCTEs;
 
 	// the number of expected partition selectors
-	ULONG m_ulExpectedPartitionSelectors;
+	GP_ULONG m_ulExpectedPartitionSelectors;
 
 	// if true, a call to AddProps updates the CTE.
-	BOOL m_fUpdateCTEMap;
+	GP_BOOL m_fUpdateCTEMap;
 
 	// private copy ctor
 	CDrvdPropCtxtPlan(const CDrvdPropCtxtPlan &);
@@ -56,12 +56,12 @@ protected:
 
 public:
 	// ctor
-	CDrvdPropCtxtPlan(CMemoryPool *mp, BOOL fUpdateCTEMap = true);
+	CDrvdPropCtxtPlan(CMemoryPool *mp, GP_BOOL fUpdateCTEMap = true);
 
 	// dtor
 	virtual ~CDrvdPropCtxtPlan();
 
-	ULONG
+	GP_ULONG
 	UlExpectedPartitionSelectors() const
 	{
 		return m_ulExpectedPartitionSelectors;
@@ -75,15 +75,15 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// return the plan properties of CTE producer with given id
-	CDrvdPropPlan *PdpplanCTEProducer(ULONG ulCTEId) const;
+	CDrvdPropPlan *PdpplanCTEProducer(GP_ULONG ulCTEId) const;
 
 	// copy plan properties of given CTE prdoucer
-	void CopyCTEProducerProps(CDrvdPropPlan *pdpplan, ULONG ulCTEId);
+	void CopyCTEProducerProps(CDrvdPropPlan *pdpplan, GP_ULONG ulCTEId);
 
 #ifdef GPOS_DEBUG
 
 	// is it a plan property context?
-	virtual BOOL
+	virtual GP_BOOL
 	FPlan() const
 	{
 		return true;

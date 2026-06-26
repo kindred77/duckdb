@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -56,7 +56,7 @@ gpos::Print(WCHAR *wsz)
 IOstream &
 gpos::HexDump(IOstream &os, const void *pv, ULLONG size)
 {
-	for (ULONG i = 0; i < 1 + (size / GPOS_MEM_BPL); i++)
+	for (GP_ULONG i = 0; i < 1 + (size / GPOS_MEM_BPL); i++)
 	{
 		// starting address of line
 		BYTE *buf = ((BYTE *) pv) + (GPOS_MEM_BPL * i);
@@ -64,14 +64,14 @@ gpos::HexDump(IOstream &os, const void *pv, ULLONG size)
 		os << COstream::EsmHex;
 
 		// individual bytes
-		for (ULONG j = 0; j < GPOS_MEM_BPL; j++)
+		for (GP_ULONG j = 0; j < GPOS_MEM_BPL; j++)
 		{
 			if (buf[j] < 16)
 			{
 				os << "0";
 			}
 
-			os << (ULONG) buf[j] << " ";
+			os << (GP_ULONG) buf[j] << " ";
 
 			// separator in middle of line
 			if (j + 1 == GPOS_MEM_BPL / 2)
@@ -84,7 +84,7 @@ gpos::HexDump(IOstream &os, const void *pv, ULLONG size)
 		os << " ";
 
 		// text representation
-		for (ULONG j = 0; j < GPOS_MEM_BPL; j++)
+		for (GP_ULONG j = 0; j < GPOS_MEM_BPL; j++)
 		{
 			// print only 'visible' characters
 			if (buf[j] >= 0x20 && buf[j] <= 0x7f)
@@ -112,12 +112,12 @@ gpos::HexDump(IOstream &os, const void *pv, ULLONG size)
 //		Taken from D. E. Knuth;
 //
 //---------------------------------------------------------------------------
-ULONG
-gpos::HashByteArray(const BYTE *byte_array, ULONG size)
+GP_ULONG
+gpos::HashByteArray(const BYTE *byte_array, GP_ULONG size)
 {
-	ULONG hash = size;
+	GP_ULONG hash = size;
 
-	for (ULONG i = 0; i < size; ++i)
+	for (GP_ULONG i = 0; i < size; ++i)
 	{
 		BYTE b = byte_array[i];
 		hash = ((hash << 5) ^ (hash >> 27)) ^ b;
@@ -132,13 +132,13 @@ gpos::HashByteArray(const BYTE *byte_array, ULONG size)
 //		gpos::CombineHashes
 //
 //	@doc:
-//		Combine ULONG-based hash values
+//		Combine GP_ULONG-based hash values
 //
 //---------------------------------------------------------------------------
-ULONG
-gpos::CombineHashes(ULONG hash1, ULONG hash2)
+GP_ULONG
+gpos::CombineHashes(GP_ULONG hash1, GP_ULONG hash2)
 {
-	ULONG hashes[2];
+	GP_ULONG hashes[2];
 	hashes[0] = hash1;
 	hashes[1] = hash2;
 

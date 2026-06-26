@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal Software Inc.
 //
@@ -20,8 +20,8 @@ namespace gpopt
 {
 using namespace gpos;
 
-template <class TJoin, class TApply, class TGet, BOOL fWithSelect,
-		  BOOL is_partial, IMDIndex::EmdindexType eidxtype>
+template <class TJoin, class TApply, class TGet, GP_BOOL fWithSelect,
+		  GP_BOOL is_partial, IMDIndex::EmdindexType eidxtype>
 class CXformJoin2IndexApplyBase : public CXformJoin2IndexApply
 {
 private:
@@ -35,7 +35,7 @@ private:
 	// transform to outer index apply, but random table is not.
 	// Because if the inner is random distributed, there is no way
 	// to redistribute outer child to match inner on the join keys.
-	BOOL
+	GP_BOOL
 	FCanLeftOuterIndexApply(CMemoryPool *mp, CExpression *pexprInner,
 							CExpression *pexprScalar) const
 	{
@@ -58,7 +58,7 @@ private:
 
 		// Distribution key set of inner GET must be subset of inner columns used in
 		// the left outer join condition, but doesn't need to be equal.
-		BOOL fCanOuterIndexApply =
+		GP_BOOL fCanOuterIndexApply =
 			pcrsInnerRefs->ContainsAll(popGet->PcrsDist());
 		pcrsInnerRefs->Release();
 		if (fCanOuterIndexApply)
@@ -67,7 +67,7 @@ private:
 			// extract array of join predicates from join condition expression
 			CExpressionArray *pdrgpexpr =
 				CPredicateUtils::PdrgpexprConjuncts(mp, pexprScalar);
-			for (ULONG ul = 0; ul < pdrgpexpr->Size(); ul++)
+			for (GP_ULONG ul = 0; ul < pdrgpexpr->Size(); ul++)
 			{
 				CExpression *pexprPred = (*pdrgpexpr)[ul];
 				CColRefSet *pcrsPred = pexprPred->DeriveUsedColumns();
@@ -227,7 +227,7 @@ public:
 	// return true if xform should be applied only once
 	// only when is_partial is true, CTE producer is created and is preprocessed,
 	// where it needs the entire tree for deriving relational properties.
-	virtual BOOL
+	virtual GP_BOOL
 	IsApplyOnce()
 	{
 		return is_partial;

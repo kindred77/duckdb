@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,13 +40,13 @@ private:
 	CDouble m_rows;
 
 	// flag to express that the statistics is on an empty input
-	BOOL m_empty;
+	GP_BOOL m_empty;
 
 	// number of blocks in the relation (not always up to-to-date)
-	ULONG m_relpages;
+	GP_ULONG m_relpages;
 
 	// number of all-visible blocks in the relation (not always up-to-date)
-	ULONG m_relallvisible;
+	GP_ULONG m_relallvisible;
 
 	// relation stats
 	CDXLStatsDerivedRelation *m_dxl_stats_derived_relation;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -60,7 +60,7 @@ CPhysicalMotionRoutedDistribute::~CPhysicalMotionRoutedDistribute()
 //		Match operators
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionRoutedDistribute::Matches(COperator *pop) const
 {
 	if (Eopid() != pop->Eopid())
@@ -86,9 +86,9 @@ CColRefSet *
 CPhysicalMotionRoutedDistribute::PcrsRequired(CMemoryPool *mp,
 											  CExpressionHandle &exprhdl,
 											  CColRefSet *pcrsRequired,
-											  ULONG child_index,
+											  GP_ULONG child_index,
 											  CDrvdPropArray *,	 // pdrgpdpCtxt
-											  ULONG				 // ulOptReq
+											  GP_ULONG				 // ulOptReq
 )
 {
 	GPOS_ASSERT(0 == child_index);
@@ -111,10 +111,10 @@ CPhysicalMotionRoutedDistribute::PcrsRequired(CMemoryPool *mp,
 //		Check if required columns are included in output columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionRoutedDistribute::FProvidesReqdCols(CExpressionHandle &exprhdl,
 												   CColRefSet *pcrsRequired,
-												   ULONG  // ulOptReq
+												   GP_ULONG  // ulOptReq
 ) const
 {
 	return FUnaryProvidesReqdCols(exprhdl, pcrsRequired);
@@ -149,13 +149,13 @@ COrderSpec *
 CPhysicalMotionRoutedDistribute::PosRequired(CMemoryPool *mp,
 											 CExpressionHandle &,  // exprhdl
 											 COrderSpec *,		   //posInput
-											 ULONG
+											 GP_ULONG
 #ifdef GPOS_DEBUG
 												 child_index
 #endif	// GPOS_DEBUG
 											 ,
 											 CDrvdPropArray *,	// pdrgpdpCtxt
-											 ULONG				// ulOptReq
+											 GP_ULONG				// ulOptReq
 ) const
 {
 	GPOS_ASSERT(0 == child_index);

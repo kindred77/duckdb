@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -134,7 +134,7 @@ CDrvdPropPlan::CopyCTEProducerPlanProps(CMemoryPool *mp, CDrvdPropCtxt *pdpctxt,
 		CDrvdPropCtxtPlan::PdpctxtplanConvert(pdpctxt);
 	CPhysicalCTEConsumer *popCTEConsumer =
 		CPhysicalCTEConsumer::PopConvert(pop);
-	ULONG ulCTEId = popCTEConsumer->UlCTEId();
+	GP_ULONG ulCTEId = popCTEConsumer->UlCTEId();
 	UlongToColRefMap *colref_mapping = popCTEConsumer->Phmulcr();
 	CDrvdPropPlan *pdpplan = pdpctxtplan->PdpplanCTEProducer(ulCTEId);
 	if (NULL != pdpplan)
@@ -171,7 +171,7 @@ CDrvdPropPlan::CopyCTEProducerPlanProps(CMemoryPool *mp, CDrvdPropCtxt *pdpctxt,
 //		Check for satisfying required properties
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDrvdPropPlan::FSatisfies(const CReqdPropPlan *prpp) const
 {
 	GPOS_ASSERT(NULL != prpp);
@@ -197,10 +197,10 @@ CDrvdPropPlan::FSatisfies(const CReqdPropPlan *prpp) const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDrvdPropPlan::HashValue() const
 {
-	ULONG ulHash = gpos::CombineHashes(m_pos->HashValue(), m_pds->HashValue());
+	GP_ULONG ulHash = gpos::CombineHashes(m_pos->HashValue(), m_pds->HashValue());
 	ulHash = gpos::CombineHashes(ulHash, m_prs->HashValue());
 	ulHash = gpos::CombineHashes(ulHash, m_ppim->HashValue());
 	ulHash = gpos::CombineHashes(ulHash, m_pcm->HashValue());
@@ -216,7 +216,7 @@ CDrvdPropPlan::HashValue() const
 //		Equality function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDrvdPropPlan::Equals(const CDrvdPropPlan *pdpplan) const
 {
 	return m_pos->Matches(pdpplan->Pos()) && m_pds->Equals(pdpplan->Pds()) &&

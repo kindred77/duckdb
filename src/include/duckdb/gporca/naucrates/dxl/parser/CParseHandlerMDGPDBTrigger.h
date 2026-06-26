@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -52,7 +52,7 @@ private:
 	INT m_type;
 
 	// is trigger enabled
-	BOOL m_is_enabled;
+	GP_BOOL m_is_enabled;
 
 	// private copy ctor
 	CParseHandlerMDGPDBTrigger(const CParseHandlerMDGPDBTrigger &);

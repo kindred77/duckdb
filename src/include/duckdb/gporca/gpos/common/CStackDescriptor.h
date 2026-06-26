@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -31,7 +31,7 @@ class CStackDescriptor
 {
 private:
 	// stack depth
-	ULONG m_depth;
+	GP_ULONG m_depth;
 
 	// array with frame return addresses
 	void *m_array_of_addresses[GPOS_STACK_TRACE_DEPTH];
@@ -39,7 +39,7 @@ private:
 	// append formatted symbol description
 	void AppendSymbolInfo(CWString *ws, CHAR *demangling_symbol_buffer,
 						  SIZE_T size, const Dl_info &symbol_info_array,
-						  ULONG index) const;
+						  GP_ULONG index) const;
 
 	// reset descriptor
 	void
@@ -57,16 +57,16 @@ public:
 	}
 
 	// store current stack skipping (top_frames_to_skip) top frames
-	void BackTrace(ULONG top_frames_to_skip = 0);
+	void BackTrace(GP_ULONG top_frames_to_skip = 0);
 
 	// append trace of stored stack to string
-	void AppendTrace(CWString *ws, ULONG depth = GPOS_STACK_TRACE_DEPTH) const;
+	void AppendTrace(CWString *ws, GP_ULONG depth = GPOS_STACK_TRACE_DEPTH) const;
 
 	// append trace of stored stack to stream
-	void AppendTrace(IOstream &os, ULONG depth = GPOS_STACK_TRACE_DEPTH) const;
+	void AppendTrace(IOstream &os, GP_ULONG depth = GPOS_STACK_TRACE_DEPTH) const;
 
 	// get hash value for stored stack
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 };	// class CStackTrace
 

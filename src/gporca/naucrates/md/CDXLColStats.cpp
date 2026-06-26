@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -34,7 +34,7 @@ CDXLColStats::CDXLColStats(CMemoryPool *mp, CMDIdColStats *mdid_col_stats,
 						   CMDName *mdname, CDouble width, CDouble null_freq,
 						   CDouble distinct_remaining, CDouble freq_remaining,
 						   CDXLBucketArray *dxl_stats_bucket_array,
-						   BOOL is_col_stats_missing)
+						   GP_BOOL is_col_stats_missing)
 	: m_mp(mp),
 	  m_mdid_col_stats(mdid_col_stats),
 	  m_mdname(mdname),
@@ -117,7 +117,7 @@ CDXLColStats::GetStrRepr() const
 //		Returns the number of buckets in the histogram
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDXLColStats::Buckets() const
 {
 	return m_dxl_stats_bucket_array->Size();
@@ -132,7 +132,7 @@ CDXLColStats::Buckets() const
 //
 //---------------------------------------------------------------------------
 const CDXLBucket *
-CDXLColStats::GetDXLBucketAt(ULONG pos) const
+CDXLColStats::GetDXLBucketAt(GP_ULONG pos) const
 {
 	return (*m_dxl_stats_bucket_array)[pos];
 }
@@ -172,8 +172,8 @@ CDXLColStats::Serialize(CXMLSerializer *xml_serializer) const
 
 	GPOS_CHECK_ABORT;
 
-	ULONG num_of_buckets = Buckets();
-	for (ULONG ul = 0; ul < num_of_buckets; ul++)
+	GP_ULONG num_of_buckets = Buckets();
+	for (GP_ULONG ul = 0; ul < num_of_buckets; ul++)
 	{
 		const CDXLBucket *dxl_bucket = GetDXLBucketAt(ul);
 		dxl_bucket->Serialize(xml_serializer);
@@ -206,7 +206,7 @@ CDXLColStats::DebugPrint(IOstream &os) const
 
 	os << "Column name: " << (Mdname()).GetMDName()->GetBuffer() << std::endl;
 
-	for (ULONG ul = 0; ul < Buckets(); ul++)
+	for (GP_ULONG ul = 0; ul < Buckets(); ul++)
 	{
 		const CDXLBucket *dxl_bucket = GetDXLBucketAt(ul);
 		dxl_bucket->DebugPrint(os);

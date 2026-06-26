@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -68,7 +68,7 @@ public:
 								 CExpression *pexpr) = 0;
 
 	// hash function
-	virtual ULONG HashValue() const = 0;
+	virtual GP_ULONG HashValue() const = 0;
 
 	// extract columns used by the property
 	virtual CColRefSet *PcrsUsed(CMemoryPool *mp) const = 0;

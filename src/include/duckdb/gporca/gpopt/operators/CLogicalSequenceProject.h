@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -43,10 +43,10 @@ private:
 	CWindowFrameArray *m_pdrgpwf;
 
 	// flag indicating if current operator has any non-empty order specs
-	BOOL m_fHasOrderSpecs;
+	GP_BOOL m_fHasOrderSpecs;
 
 	// flag indicating if current operator has any non-empty frame specs
-	BOOL m_fHasFrameSpecs;
+	GP_BOOL m_fHasFrameSpecs;
 
 	// set the flag indicating that SeqPrj has specified order specs
 	void SetHasOrderSpecs(CMemoryPool *mp);
@@ -105,14 +105,14 @@ public:
 	}
 
 	// return true if non-empty order specs are used by current operator
-	BOOL
+	GP_BOOL
 	FHasOrderSpecs() const
 	{
 		return m_fHasOrderSpecs;
 	}
 
 	// return true if non-empty frame specs are used by current operator
-	BOOL
+	GP_BOOL
 	FHasFrameSpecs() const
 	{
 		return m_fHasFrameSpecs;
@@ -120,10 +120,10 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	virtual GP_BOOL FCanPullProjectionsUp(GP_ULONG  //child_index
 	) const
 	{
 		return false;
@@ -174,9 +174,9 @@ public:
 									  IStatisticsArray *stats_ctxt) const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// print
 	virtual IOstream &OsPrint(IOstream &os) const;
@@ -186,7 +186,7 @@ public:
 		CMemoryPool *mp, CExpressionHandle &exprhdl);
 
 	// check for outer references in Partition/Order, or window frame edges
-	BOOL FHasLocalReferencesTo(const CColRefSet *outerRefsToCheck) const;
+	GP_BOOL FHasLocalReferencesTo(const CColRefSet *outerRefsToCheck) const;
 
 	// conversion function
 	static CLogicalSequenceProject *

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -29,8 +29,8 @@ using namespace gpos;
 
 // initialize static members
 CUnittest *CUnittest::m_rgut = NULL;
-ULONG CUnittest::m_ulTests = 0;
-ULONG CUnittest::m_ulNested = 0;
+GP_ULONG CUnittest::m_ulTests = 0;
+GP_ULONG CUnittest::m_ulNested = 0;
 void (*CUnittest::m_pfConfig)() = NULL;
 void (*CUnittest::m_pfCleanup)() = NULL;
 
@@ -66,7 +66,7 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 //
 //---------------------------------------------------------------------------
 CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
-					 GPOS_RESULT (*pfunc)(void), ULONG major, ULONG minor)
+					 GPOS_RESULT (*pfunc)(void), GP_ULONG major, GP_ULONG minor)
 	: m_szTitle(szTitle),
 	  m_ett(ett),
 	  m_pfunc(pfunc),
@@ -83,11 +83,11 @@ CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
 //		CUnittest::CUnittest
 //
 //	@doc:
-//		Constructor for subtest identified by ULONG id
+//		Constructor for subtest identified by GP_ULONG id
 //
 //---------------------------------------------------------------------------
 CUnittest::CUnittest(const CHAR *szTitle, ETestType ett,
-					 GPOS_RESULT (*pfuncSubtest)(ULONG), ULONG ulSubtest)
+					 GPOS_RESULT (*pfuncSubtest)(GP_ULONG), GP_ULONG ulSubtest)
 	: m_szTitle(szTitle),
 	  m_ett(ett),
 	  m_pfunc(NULL),
@@ -130,7 +130,7 @@ CUnittest::CUnittest(const CUnittest &ut)
 //		Is test expected to throw?
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CUnittest::FThrows() const
 {
 	return m_fExcep;
@@ -145,7 +145,7 @@ CUnittest::FThrows() const
 //		Is given string equal to title of test?
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CUnittest::Equals(CHAR *sz) const
 {
 	return 0 == clib::Strcmp(sz, m_szTitle);
@@ -160,8 +160,8 @@ CUnittest::Equals(CHAR *sz) const
 //		Is test expected to throw given exception?
 //
 //---------------------------------------------------------------------------
-BOOL
-CUnittest::FThrows(ULONG major, ULONG minor) const
+GP_BOOL
+CUnittest::FThrows(GP_ULONG major, GP_ULONG minor) const
 {
 	return (m_ulMajor == major && m_ulMinor == minor);
 }
@@ -297,7 +297,7 @@ CUnittest::EresExecTest(const CUnittest &ut)
 //		Check if exception was injected by simulation
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CUnittest::FSimulated(CException ex)
 {
 	ITask *ptsk = ITask::Self();
@@ -327,11 +327,11 @@ CUnittest::FSimulated(CException ex)
 //
 //---------------------------------------------------------------------------
 GPOS_RESULT
-CUnittest::EresExecute(const CUnittest *rgut, const ULONG cSize)
+CUnittest::EresExecute(const CUnittest *rgut, const GP_ULONG cSize)
 {
 	GPOS_RESULT eres = GPOS_OK;
 
-	for (ULONG i = 0; i < cSize; i++)
+	for (GP_ULONG i = 0; i < cSize; i++)
 	{
 		GPOS_RESULT eresPart = GPOS_FAILED;
 		const CUnittest &ut = rgut[i];
@@ -375,7 +375,7 @@ CUnittest::EresExecute(const CUnittest *rgut, const ULONG cSize)
 void
 CUnittest::FindTest(CBitVector &bv, ETestType ett, CHAR *szTestName)
 {
-	for (ULONG i = 0; i < CUnittest::m_ulTests; i++)
+	for (GP_ULONG i = 0; i < CUnittest::m_ulTests; i++)
 	{
 		CUnittest &ut = CUnittest::m_rgut[i];
 
@@ -408,7 +408,7 @@ CUnittest::SetTraceFlag(const CHAR *szTrace)
 	CHAR *pcEnd = NULL;
 	LINT lTrace = clib::Strtol(szTrace, &pcEnd, 0 /*iBase*/);
 
-	GPOS_SET_TRACE((ULONG) lTrace);
+	GPOS_SET_TRACE((GP_ULONG) lTrace);
 }
 
 // Parse plan id
@@ -428,17 +428,17 @@ CUnittest::UllParsePlanId(const CHAR *szPlanId)
 //		Execute requested unittests
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CUnittest::Driver(CBitVector *pbv)
 {
 	CAutoConfig ac(m_pfConfig, m_pfCleanup, m_ulNested);
-	ULONG ulOk = 0;
+	GP_ULONG ulOk = 0;
 
 	// scope of timer
 	{
 		gpos::CAutoTimer timer("total test run time", true /*fPrint*/);
 
-		for (ULONG i = 0; i < CUnittest::m_ulTests; i++)
+		for (GP_ULONG i = 0; i < CUnittest::m_ulTests; i++)
 		{
 			if (pbv->Get(i))
 			{
@@ -478,7 +478,7 @@ CUnittest::Driver(CBitVector *pbv)
 //		Execute unittests by parsing input arguments
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CUnittest::Driver(CMainArgs *pma)
 {
 	CBitVector bv(ITask::Self()->Pmp(), CUnittest::UlTests());
@@ -523,7 +523,7 @@ CUnittest::Driver(CMainArgs *pma)
 //
 //---------------------------------------------------------------------------
 void
-CUnittest::Init(CUnittest *rgut, ULONG ulUtCnt, void (*pfConfig)(),
+CUnittest::Init(CUnittest *rgut, GP_ULONG ulUtCnt, void (*pfConfig)(),
 				void (*pfCleanup)())
 {
 	GPOS_ASSERT(0 == m_ulTests &&

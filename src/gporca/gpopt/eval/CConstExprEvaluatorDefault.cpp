@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -57,7 +57,7 @@ CConstExprEvaluatorDefault::PexprEval(CExpression *pexpr)
 //		Returns false, since this evaluator cannot call any functions
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CConstExprEvaluatorDefault::FCanEvalExpressions()
 {
 	return false;

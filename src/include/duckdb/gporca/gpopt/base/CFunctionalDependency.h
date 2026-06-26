@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2012 EMC CORP.
 //
@@ -72,16 +72,16 @@ public:
 	}
 
 	// determine if all FD columns are included in the given column set
-	BOOL FIncluded(CColRefSet *pcrs) const;
+	GP_BOOL FIncluded(CColRefSet *pcrs) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// equality function
-	BOOL Equals(const CFunctionalDependency *pfd) const;
+	GP_BOOL Equals(const CFunctionalDependency *pfd) const;
 
 	// do the given arguments form a functional dependency
-	BOOL
+	GP_BOOL
 	FFunctionallyDependent(CColRefSet *pcrsKey, CColRef *colref)
 	{
 		GPOS_ASSERT(NULL != pcrsKey);
@@ -94,10 +94,10 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// hash function
-	static ULONG HashValue(const CFunctionalDependencyArray *pdrgpfd);
+	static GP_ULONG HashValue(const CFunctionalDependencyArray *pdrgpfd);
 
 	// equality function
-	static BOOL Equals(const CFunctionalDependencyArray *pdrgpfdFst,
+	static GP_BOOL Equals(const CFunctionalDependencyArray *pdrgpfdFst,
 					   const CFunctionalDependencyArray *pdrgpfdSnd);
 
 	// create a set of all keys in the passed FD's array

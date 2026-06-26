@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -65,10 +65,10 @@ private:
 	IMdIdArray *m_distr_opclasses;
 
 	// is this a temporary table
-	BOOL m_is_temp_table;
+	GP_BOOL m_is_temp_table;
 
 	// does table have oids
-	BOOL m_has_oids;
+	GP_BOOL m_has_oids;
 
 	// storage type
 	IMDRelation::Erelstoragetype m_rel_storage_type;
@@ -91,7 +91,7 @@ public:
 					IMDRelation::Ereldistrpolicy rel_distr_policy,
 					ULongPtrArray *distr_column_pos_array,
 					IMdIdArray *distr_opfamilies, IMdIdArray *distr_opclasses,
-					BOOL fTemporary, BOOL fHasOids,
+					GP_BOOL fTemporary, GP_BOOL fHasOids,
 					IMDRelation::Erelstoragetype rel_storage_type,
 					ULongPtrArray *src_colids_array,
 					IntPtrArray *vartypemod_array);
@@ -183,14 +183,14 @@ public:
 	}
 
 	// is it a temporary table
-	BOOL
+	GP_BOOL
 	IsTemporary() const
 	{
 		return m_is_temp_table;
 	}
 
 	// does the table have oids
-	BOOL
+	GP_BOOL
 	HasOids() const
 	{
 		return m_has_oids;
@@ -206,11 +206,11 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// check if given column is defined by operator
-	virtual BOOL IsColDefined(ULONG colid) const;
+	virtual GP_BOOL IsColDefined(GP_ULONG colid) const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,

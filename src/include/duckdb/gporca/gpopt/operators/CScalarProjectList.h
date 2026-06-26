@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -58,16 +58,16 @@ public:
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -91,16 +91,16 @@ public:
 	}
 
 	// return number of distinct aggs in project list attached to given handle
-	static ULONG UlDistinctAggs(CExpressionHandle &exprhdl);
+	static GP_ULONG UlDistinctAggs(CExpressionHandle &exprhdl);
 
 	// return number of ordered aggs in project list attached to given handle
-	static ULONG UlOrderedAggs(CExpressionHandle &exprhdl);
+	static GP_ULONG UlOrderedAggs(CExpressionHandle &exprhdl);
 
 	// check if a project list has multiple distinct aggregates
-	static BOOL FHasMultipleDistinctAggs(CExpressionHandle &exprhdl);
+	static GP_BOOL FHasMultipleDistinctAggs(CExpressionHandle &exprhdl);
 
 	// check if a project list has a scalar func
-	static BOOL FHasScalarFunc(CExpressionHandle &exprhdl);
+	static GP_BOOL FHasScalarFunc(CExpressionHandle &exprhdl);
 
 };	// class CScalarProjectList
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -42,7 +42,7 @@ private:
 	const CWStringConst *m_str_name;
 
 	// keep track of copy status
-	BOOL m_fDeepCopy;
+	GP_BOOL m_fDeepCopy;
 
 	// deep copy function
 	void DeepCopy(CMemoryPool *mp, const CWStringConst *str);
@@ -50,7 +50,7 @@ private:
 public:
 	// ctors
 	CName(CMemoryPool *, const CWStringBase *);
-	CName(const CWStringConst *, BOOL fOwnsMemory = false);
+	CName(const CWStringConst *, GP_BOOL fOwnsMemory = false);
 	CName(const CName &);
 
 	CName(CMemoryPool *mp, const CName &);
@@ -66,14 +66,14 @@ public:
 		return m_str_name;
 	}
 
-	ULONG
+	GP_ULONG
 	Length() const
 	{
 		return m_str_name->Length();
 	}
 
 	// comparison
-	BOOL Equals(const CName &) const;
+	GP_BOOL Equals(const CName &) const;
 
 	// debug print
 	IOstream &OsPrint(IOstream &) const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -41,7 +41,7 @@ private:
 	CColRef2dArray *m_pdrgpdrgpcr;
 
 	// number of levels
-	ULONG m_num_of_part_levels;
+	GP_ULONG m_num_of_part_levels;
 
 	// private copy ctor
 	CPartKeys(const CPartKeys &);
@@ -54,7 +54,7 @@ public:
 	~CPartKeys();
 
 	// return key at a given level
-	CColRef *PcrKey(ULONG ulLevel) const;
+	CColRef *PcrKey(GP_ULONG ulLevel) const;
 
 	// return array of keys
 	CColRef2dArray *
@@ -64,7 +64,7 @@ public:
 	}
 
 	// number of levels
-	ULONG
+	GP_ULONG
 	GetPartitioningLevel() const
 	{
 		return m_num_of_part_levels;
@@ -74,7 +74,7 @@ public:
 	CPartKeys *PpartkeysCopy(CMemoryPool *mp);
 
 	// check whether the key columns overlap the given column
-	BOOL FOverlap(CColRefSet *pcrs) const;
+	GP_BOOL FOverlap(CColRefSet *pcrs) const;
 
 	// create a new PartKeys object from the current one by remapping the
 	// keys using the given hashmap

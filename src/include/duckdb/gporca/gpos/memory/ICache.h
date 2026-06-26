@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -21,8 +21,8 @@
 
 namespace gpos
 {
-typedef ULONG (*HashCacheKey)(void *key);
-typedef BOOL (*EqualsCacheKey)(void *left_key, void *right_key);
+typedef GP_ULONG (*HashCacheKey)(void *key);
+typedef GP_BOOL (*EqualsCacheKey)(void *left_key, void *right_key);
 
 class ICacheEntry
 {
@@ -73,7 +73,7 @@ public:
 	//
 	// Return true if the object was successfully inserted, false otherwise.
 	//
-	virtual BOOL Insert(ICacheEntry *cache_entry, void *key, void *value) = 0;
+	virtual GP_BOOL Insert(ICacheEntry *cache_entry, void *key, void *value) = 0;
 
 	//
 	// Create a new cache value that can be later passed to Insert

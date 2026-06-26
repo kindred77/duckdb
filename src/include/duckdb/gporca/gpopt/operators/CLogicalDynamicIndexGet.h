@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,7 +40,7 @@ private:
 	CIndexDescriptor *m_pindexdesc;
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// order spec
 	COrderSpec *m_pos;
@@ -53,11 +53,11 @@ public:
 	explicit CLogicalDynamicIndexGet(CMemoryPool *mp);
 
 	CLogicalDynamicIndexGet(CMemoryPool *mp, const IMDIndex *pmdindex,
-							CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
-							const CName *pnameAlias, ULONG ulPartIndex,
+							CTableDescriptor *ptabdesc, GP_ULONG ulOriginOpId,
+							const CName *pnameAlias, GP_ULONG ulPartIndex,
 							CColRefArray *pdrgpcrOutput,
 							CColRef2dArray *pdrgpdrgpcrPart,
-							ULONG ulSecondaryPartIndexId,
+							GP_ULONG ulSecondaryPartIndexId,
 							CPartConstraint *ppartcnstr,
 							CPartConstraint *ppartcnstrRel);
 
@@ -79,7 +79,7 @@ public:
 	}
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
@@ -107,7 +107,7 @@ public:
 	}
 
 	// check if index is partial given the table descriptor and the index mdid
-	static BOOL IsPartialIndex(CTableDescriptor *ptabdesc,
+	static GP_BOOL IsPartialIndex(CTableDescriptor *ptabdesc,
 							   const IMDIndex *pmdindex);
 
 	// order spec
@@ -118,21 +118,21 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// derive outer references
 	virtual CColRefSet *DeriveOuterReferences(CMemoryPool *mp,
 											  CExpressionHandle &exprhdl);
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const;
+	virtual GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
@@ -143,7 +143,7 @@ public:
 	PcrsStat(CMemoryPool *,		   //mp
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		GPOS_ASSERT(!"CLogicalDynamicIndexGet has no children");

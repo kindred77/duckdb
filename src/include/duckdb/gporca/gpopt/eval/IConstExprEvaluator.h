@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -50,7 +50,7 @@ public:
 	virtual CExpression *PexprEval(CExpression *pexpr) = 0;
 
 	// returns true iff the evaluator can evaluate constant expressions without subqueries
-	virtual BOOL FCanEvalExpressions() = 0;
+	virtual GP_BOOL FCanEvalExpressions() = 0;
 };
 }  // namespace gpopt
 

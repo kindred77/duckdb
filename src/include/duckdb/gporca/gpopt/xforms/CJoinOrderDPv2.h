@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 // Greenplum Database
 // Copyright (C) 2019 Pivotal Inc.
 //
@@ -147,15 +147,15 @@ private:
 	{
 		// the join order enumeration algorithm for which this is a solution
 		// (exhaustive enumeration, can use any of these: EJoinOrderAny)
-		ULONG m_join_order;
+		GP_ULONG m_join_order;
 
-		SExpressionProperties(ULONG join_order_properties)
+		SExpressionProperties(GP_ULONG join_order_properties)
 			: m_join_order(join_order_properties)
 		{
 		}
 
-		BOOL
-		Satisfies(ULONG pt)
+		GP_BOOL
+		Satisfies(GP_ULONG pt)
 		{
 			return pt == (m_join_order & pt);
 		}
@@ -164,7 +164,7 @@ private:
 		{
 			m_join_order |= p.m_join_order;
 		}
-		BOOL
+		GP_BOOL
 		IsGreedy()
 		{
 			return 0 != (m_join_order & (EJoinOrderQuery + EJoinOrderMincard +
@@ -177,13 +177,13 @@ private:
 	struct SGroupAndExpression
 	{
 		SGroupInfo *m_group_info;
-		ULONG m_expr_index;
+		GP_ULONG m_expr_index;
 
 		SGroupAndExpression()
 			: m_group_info(NULL), m_expr_index(gpos::ulong_max)
 		{
 		}
-		SGroupAndExpression(SGroupInfo *g, ULONG ix)
+		SGroupAndExpression(SGroupInfo *g, GP_ULONG ix)
 			: m_group_info(g), m_expr_index(ix)
 		{
 		}
@@ -198,12 +198,12 @@ private:
 					   ? NULL
 					   : (*m_group_info->m_best_expr_info_array)[m_expr_index];
 		}
-		BOOL
+		GP_BOOL
 		IsValid()
 		{
 			return NULL != m_group_info && gpos::ulong_max != m_expr_index;
 		}
-		BOOL
+		GP_BOOL
 		operator==(const SGroupAndExpression &other) const
 		{
 			return m_group_info == other.m_group_info &&
@@ -301,7 +301,7 @@ private:
 		{
 			m_contain_PS->Union(other->m_contain_PS);
 		}
-		BOOL
+		GP_BOOL
 		ChildrenAreEqual(const SExpressionInfo &other) const
 		{
 			return m_left_child_expr == other.m_left_child_expr &&
@@ -342,7 +342,7 @@ private:
 			m_best_expr_info_array->Release();
 		}
 
-		BOOL
+		GP_BOOL
 		IsAnAtom()
 		{
 			return 1 == m_atoms->Size();
@@ -361,11 +361,11 @@ private:
 	// info for a join level, the set of all groups representing <m_level>-way joins
 	struct SLevelInfo : public CRefCount
 	{
-		ULONG m_level;
+		GP_ULONG m_level;
 		SGroupInfoArray *m_groups;
 		CKHeap<SGroupInfoArray, SGroupInfo> *m_top_k_groups;
 
-		SLevelInfo(ULONG level, SGroupInfoArray *groups)
+		SLevelInfo(GP_ULONG level, SGroupInfoArray *groups)
 			: m_level(level), m_groups(groups), m_top_k_groups(NULL)
 		{
 		}
@@ -378,7 +378,7 @@ private:
 	};
 
 	// hashing function
-	static ULONG
+	static GP_ULONG
 	UlHashBitSet(const CBitSet *pbs)
 	{
 		GPOS_ASSERT(NULL != pbs);
@@ -387,7 +387,7 @@ private:
 	}
 
 	// equality function
-	static BOOL
+	static GP_BOOL
 	FEqualBitSet(const CBitSet *pbsFst, const CBitSet *pbsSnd)
 	{
 		GPOS_ASSERT(NULL != pbsFst);
@@ -452,7 +452,7 @@ private:
 	CMemoryPool *m_mp;
 
 	SLevelInfo *
-	Level(ULONG l)
+	Level(GP_ULONG l)
 	{
 		return (*m_join_levels)[l];
 	}
@@ -476,9 +476,9 @@ private:
 
 	// enumerate all possible joins between left_level-way joins on the left side
 	// and right_level-way joins on the right side, resulting in left_level + right_level-way joins
-	void SearchJoinOrders(ULONG left_level, ULONG right_level);
+	void SearchJoinOrders(GP_ULONG left_level, GP_ULONG right_level);
 
-	void GreedySearchJoinOrders(ULONG left_level, JoinOrderPropType algo);
+	void GreedySearchJoinOrders(GP_ULONG left_level, JoinOrderPropType algo);
 
 	virtual void DeriveStats(CExpression *pexpr);
 
@@ -493,11 +493,11 @@ private:
 								 SExpressionProperties &result_properties);
 
 	// does "prop" provide all the properties of "other_prop" plus maybe more?
-	BOOL IsASupersetOfProperties(SExpressionProperties &prop,
+	GP_BOOL IsASupersetOfProperties(SExpressionProperties &prop,
 								 SExpressionProperties &other_prop);
 
 	// is one of the properties a subset of the other or are they disjoint?
-	BOOL ArePropertiesDisjoint(SExpressionProperties &prop,
+	GP_BOOL ArePropertiesDisjoint(SExpressionProperties &prop,
 							   SExpressionProperties &other_prop);
 
 	// get best expression in a group for a given set of properties
@@ -509,7 +509,7 @@ private:
 							  SExpressionProperties props);
 
 	// enumerate bushy joins (joins where both children are also joins) of level "current_level"
-	void SearchBushyJoinOrders(ULONG current_level);
+	void SearchBushyJoinOrders(GP_ULONG current_level);
 
 	// look up an existing group or create a new one, with an expression to be used for stats
 	SGroupInfo *LookupOrCreateGroupInfo(SLevelInfo *levelInfo, CBitSet *atoms,
@@ -522,17 +522,17 @@ private:
 						 SGroupInfo *left_group_info,
 						 SGroupInfo *right_group_info);
 
-	void FinalizeDPLevel(ULONG level);
+	void FinalizeDPLevel(GP_ULONG level);
 
 	SGroupInfoArray *
-	GetGroupsForLevel(ULONG level) const
+	GetGroupsForLevel(GP_ULONG level) const
 	{
 		return (*m_join_levels)[level]->m_groups;
 	}
 
-	ULONG FindLogicalChildByNijId(ULONG nij_num);
-	static ULONG NChooseK(ULONG n, ULONG k);
-	BOOL LevelIsFull(ULONG level);
+	GP_ULONG FindLogicalChildByNijId(GP_ULONG nij_num);
+	static GP_ULONG NChooseK(GP_ULONG n, GP_ULONG k);
+	GP_BOOL LevelIsFull(GP_ULONG level);
 
 	void EnumerateDP();
 	void EnumerateQuery();
@@ -556,7 +556,7 @@ public:
 	CExpression *GetNextOfTopK();
 
 	// check for NIJs
-	BOOL IsRightChildOfNIJ(SGroupInfo *groupInfo,
+	GP_BOOL IsRightChildOfNIJ(SGroupInfo *groupInfo,
 						   CExpression **onPredToUse = NULL,
 						   CBitSet **requiredBitsOnLeft = NULL);
 

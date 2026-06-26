@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -45,7 +45,7 @@ public:
 	}
 
 	// check if operator is a pattern leaf
-	virtual BOOL
+	virtual GP_BOOL
 	FLeaf() const
 	{
 		return false;

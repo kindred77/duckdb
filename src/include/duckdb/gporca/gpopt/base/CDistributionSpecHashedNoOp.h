@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 
@@ -16,7 +16,7 @@ public:
 
 	virtual EDistributionType Edt() const;
 
-	virtual BOOL Matches(const CDistributionSpec *pds) const;
+	virtual GP_BOOL Matches(const CDistributionSpec *pds) const;
 
 	virtual const CHAR *
 	SzId() const

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -86,7 +86,7 @@ CPhysicalScan::~CPhysicalScan()
 //		Not called for leaf operators
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalScan::FInputOrderSensitive() const
 {
 	GPOS_ASSERT(!"Unexpected function call of FInputOrderSensitive");
@@ -102,10 +102,10 @@ CPhysicalScan::FInputOrderSensitive() const
 //		Check if required columns are included in output columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalScan::FProvidesReqdCols(CExpressionHandle &,  // exprhdl
 								 CColRefSet *pcrsRequired,
-								 ULONG	// ulOptReq
+								 GP_ULONG	// ulOptReq
 ) const
 {
 	GPOS_ASSERT(NULL != pcrsRequired);
@@ -113,7 +113,7 @@ CPhysicalScan::FProvidesReqdCols(CExpressionHandle &,  // exprhdl
 	CColRefSet *pcrs = GPOS_NEW(m_mp) CColRefSet(m_mp);
 	pcrs->Include(m_pdrgpcrOutput);
 
-	BOOL result = pcrs->ContainsAll(pcrsRequired);
+	GP_BOOL result = pcrs->ContainsAll(pcrsRequired);
 	pcrs->Release();
 
 	return result;
@@ -153,7 +153,7 @@ CPhysicalScan::EpetOrder(CExpressionHandle &,  // exprhdl
 CDistributionSpec *
 CPhysicalScan::PdsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 {
-	BOOL fIndexOrBitmapScan =
+	GP_BOOL fIndexOrBitmapScan =
 		COperator::EopPhysicalIndexScan == Eopid() ||
 		COperator::EopPhysicalBitmapTableScan == Eopid() ||
 		COperator::EopPhysicalDynamicIndexScan == Eopid() ||
@@ -221,19 +221,19 @@ CPhysicalScan::PdsDerive(CMemoryPool *mp, CExpressionHandle &exprhdl) const
 //
 //---------------------------------------------------------------------------
 CPartIndexMap *
-CPhysicalScan::PpimDeriveFromDynamicScan(CMemoryPool *mp, ULONG part_idx_id,
+CPhysicalScan::PpimDeriveFromDynamicScan(CMemoryPool *mp, GP_ULONG part_idx_id,
 										 IMDId *rel_mdid,
 										 CColRef2dArray *pdrgpdrgpcrPart,
-										 ULONG ulSecondaryPartIndexId,
+										 GP_ULONG ulSecondaryPartIndexId,
 										 CPartConstraint *ppartcnstr,
 										 CPartConstraint *ppartcnstrRel,
-										 ULONG ulExpectedPropagators)
+										 GP_ULONG ulExpectedPropagators)
 {
 	CPartIndexMap *ppim = GPOS_NEW(mp) CPartIndexMap(mp);
 	UlongToPartConstraintMap *ppartcnstrmap =
 		GPOS_NEW(mp) UlongToPartConstraintMap(mp);
 
-	(void) ppartcnstrmap->Insert(GPOS_NEW(mp) ULONG(ulSecondaryPartIndexId),
+	(void) ppartcnstrmap->Insert(GPOS_NEW(mp) GP_ULONG(ulSecondaryPartIndexId),
 								 ppartcnstr);
 
 	CPartKeysArray *pdrgppartkeys = GPOS_NEW(mp) CPartKeysArray(mp);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -35,7 +35,7 @@ XERCES_CPP_NAMESPACE_USE
 class CParseHandlerScalarSubPlanParamList : public CParseHandlerScalarOp
 {
 private:
-	BOOL m_has_param_list;
+	GP_BOOL m_has_param_list;
 
 	// array of outer column references
 	CDXLColRefArray *m_dxl_colref_array;

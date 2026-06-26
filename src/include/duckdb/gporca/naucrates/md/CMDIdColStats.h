@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 	CMDIdGPDB *m_rel_mdid;
 
 	// position of the attribute in the base relation
-	ULONG m_attr_pos;
+	GP_ULONG m_attr_pos;
 
 	// buffer for the serialized mdid
 	WCHAR m_mdid_buffer[GPDXL_MDID_LENGTH];
@@ -58,7 +58,7 @@ private:
 
 public:
 	// ctor
-	CMDIdColStats(CMDIdGPDB *rel_mdid, ULONG attno);
+	CMDIdColStats(CMDIdGPDB *rel_mdid, GP_ULONG attno);
 
 	// dtor
 	virtual ~CMDIdColStats();
@@ -81,13 +81,13 @@ public:
 
 	// accessors
 	IMDId *GetRelMdId() const;
-	ULONG Position() const;
+	GP_ULONG Position() const;
 
 	// equality check
-	virtual BOOL Equals(const IMDId *mdid) const;
+	virtual GP_BOOL Equals(const IMDId *mdid) const;
 
 	// computes the hash value for the metadata id
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
 		return gpos::CombineHashes(m_rel_mdid->HashValue(),
@@ -95,7 +95,7 @@ public:
 	}
 
 	// is the mdid valid
-	virtual BOOL
+	virtual GP_BOOL
 	IsValid() const
 	{
 		return IMDId::IsValid(m_rel_mdid);

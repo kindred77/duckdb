@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -123,7 +123,7 @@ public:
 
 	// factory method for creating INT2 datums
 	virtual IDatumInt2 *CreateInt2Datum(CMemoryPool *mp, SINT value,
-										BOOL is_null) const;
+										GP_BOOL is_null) const;
 
 	// accessors
 	virtual const CWStringDynamic *
@@ -147,28 +147,28 @@ public:
 	virtual IMDId *GetMdidForAggType(EAggType agg_type) const;
 
 	// is type redistributable
-	virtual BOOL
+	virtual GP_BOOL
 	IsRedistributable() const
 	{
 		return true;
 	}
 
 	// is type has fixed length
-	virtual BOOL
+	virtual GP_BOOL
 	IsFixedLength() const
 	{
 		return true;
 	}
 
 	// is type composite
-	virtual BOOL
+	virtual GP_BOOL
 	IsComposite() const
 	{
 		return false;
 	}
 
 	// size of type
-	virtual ULONG
+	virtual GP_ULONG
 	Length() const
 	{
 		return GPDB_INT2_LENGTH;
@@ -182,7 +182,7 @@ public:
 	}
 
 	// is type passed by value
-	virtual BOOL
+	virtual GP_BOOL
 	IsPassedByValue() const
 	{
 		return true;
@@ -196,14 +196,14 @@ public:
 	}
 
 	// is type hashable
-	virtual BOOL
+	virtual GP_BOOL
 	IsHashable() const
 	{
 		return true;
 	}
 
 	// is type merge joinable
-	virtual BOOL
+	virtual GP_BOOL
 	IsMergeJoinable() const
 	{
 		return true;

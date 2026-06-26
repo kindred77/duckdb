@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -92,7 +92,7 @@ const CCostModelGPDBLegacy::SCostMapping CCostModelGPDBLegacy::m_rgcm[] = {
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CCostModelGPDBLegacy::CCostModelGPDBLegacy(CMemoryPool *mp, ULONG ulSegments,
+CCostModelGPDBLegacy::CCostModelGPDBLegacy(CMemoryPool *mp, GP_ULONG ulSegments,
 										   ICostModelParamsArray *pdrgpcp)
 	: m_mp(mp), m_num_of_segments(ulSegments)
 {
@@ -225,7 +225,7 @@ CCostModelGPDBLegacy::CostRedistribute(DOUBLE rows, DOUBLE width,
 //		Check if given operator is unary
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CCostModelGPDBLegacy::FUnary(COperator::EOperatorId op_id)
 {
 	return COperator::EopPhysicalAssert == op_id ||
@@ -249,12 +249,12 @@ CCostModelGPDBLegacy::FUnary(COperator::EOperatorId op_id)
 //
 //---------------------------------------------------------------------------
 CCost
-CCostModelGPDBLegacy::CostSum(DOUBLE *pdCost, ULONG size)
+CCostModelGPDBLegacy::CostSum(DOUBLE *pdCost, GP_ULONG size)
 {
 	GPOS_ASSERT(NULL != pdCost);
 
 	DOUBLE res = 1.0;
-	for (ULONG ul = 0; ul < size; ul++)
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		res = res + pdCost[ul];
 	}
@@ -910,11 +910,11 @@ CCostModelGPDBLegacy::CostSequenceProject(CMemoryPool *,  // mp
 	DOUBLE num_rows_outer = pci->PdRows()[0];
 	DOUBLE dWidthOuter = pci->GetWidth()[0];
 
-	ULONG ulSortCols = 0;
+	GP_ULONG ulSortCols = 0;
 	COrderSpecArray *pdrgpos =
 		CPhysicalSequenceProject::PopConvert(exprhdl.Pop())->Pdrgpos();
-	const ULONG ulOrderSpecs = pdrgpos->Size();
-	for (ULONG ul = 0; ul < ulOrderSpecs; ul++)
+	const GP_ULONG ulOrderSpecs = pdrgpos->Size();
+	for (GP_ULONG ul = 0; ul < ulOrderSpecs; ul++)
 	{
 		COrderSpec *pos = (*pdrgpos)[ul];
 		ulSortCols += pos->UlSortColumns();
@@ -1082,10 +1082,10 @@ CCostModelGPDBLegacy::Cost(
 	}
 
 	FnCost *pfnc = NULL;
-	const ULONG size = GPOS_ARRAY_SIZE(m_rgcm);
+	const GP_ULONG size = GPOS_ARRAY_SIZE(m_rgcm);
 
 	// find the cost function corresponding to the given operator
-	for (ULONG ul = 0; pfnc == NULL && ul < size; ul++)
+	for (GP_ULONG ul = 0; pfnc == NULL && ul < size; ul++)
 	{
 		if (op_id == m_rgcm[ul].m_eopid)
 		{

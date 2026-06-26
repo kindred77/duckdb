@@ -1,4 +1,4 @@
-#include "duckdb_translator/CLogicalGetDuckDB.h"
+﻿#include "duckdb_translator/CLogicalGetDuckDB.h"
 
 #include "gpos/base.h"
 #include "gpopt/base/CColRefSet.h"
@@ -31,12 +31,12 @@ CLogicalGetDuckDB::~CLogicalGetDuckDB() {
     GPOS_DELETE(m_pnameAlias);
 }
 
-ULONG CLogicalGetDuckDB::HashValue() const {
+GP_ULONG CLogicalGetDuckDB::HashValue() const {
     return gpos::CombineHashes(m_ptabdesc->MDId()->HashValue(),
                                CUtils::UlHashColArray(m_pdrgpcrOutput));
 }
 
-BOOL CLogicalGetDuckDB::Matches(COperator *pop) const {
+GP_BOOL CLogicalGetDuckDB::Matches(COperator *pop) const {
     if (pop->Eopid() != EopLogicalGet)
         return false;
     CLogicalGetDuckDB *popGet = dynamic_cast<CLogicalGetDuckDB *>(pop);
@@ -47,7 +47,7 @@ BOOL CLogicalGetDuckDB::Matches(COperator *pop) const {
 }
 
 COperator *CLogicalGetDuckDB::PopCopyWithRemappedColumns(
-    CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist) {
+    CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist) {
     CColRefArray *colref_array = CUtils::PdrgpcrRemap(mp, m_pdrgpcrOutput, colref_mapping, must_exist);
     CName *pnameAlias = GPOS_NEW(mp) CName(mp, *m_pnameAlias);
     m_ptabdesc->AddRef();
@@ -60,8 +60,8 @@ CColRefSet *CLogicalGetDuckDB::DeriveOutputColumns(CMemoryPool *mp, CExpressionH
 
 CColRefSet *CLogicalGetDuckDB::DeriveNotNullColumns(CMemoryPool *mp, CExpressionHandle &) const {
     CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
-    const ULONG len = m_pdrgpcrOutput->Size();
-    for (ULONG ul = 0; ul < len; ul++) {
+    const GP_ULONG len = m_pdrgpcrOutput->Size();
+    for (GP_ULONG ul = 0; ul < len; ul++) {
         pcrs->Include((*m_pdrgpcrOutput)[ul]);
     }
     return pcrs;

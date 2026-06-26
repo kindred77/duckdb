@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -57,7 +57,7 @@ CDefaultComparator::CDefaultComparator(IConstExprEvaluator *pceeval)
 //		data and evaluates it.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::FEvalComparison(CMemoryPool *mp, const IDatum *datum1,
 									const IDatum *datum2,
 									IMDType::ECmpType cmp_type) const
@@ -80,7 +80,7 @@ CDefaultComparator::FEvalComparison(CMemoryPool *mp, const IDatum *datum1,
 
 	GPOS_ASSERT(IMDType::EtiBool == datum->GetDatumType());
 	IDatumBool *pdatumBool = dynamic_cast<IDatumBool *>(datum);
-	BOOL result = pdatumBool->GetValue();
+	GP_BOOL result = pdatumBool->GetValue();
 	pexprResult->Release();
 
 	return result;
@@ -94,7 +94,7 @@ CDefaultComparator::FEvalComparison(CMemoryPool *mp, const IDatum *datum1,
 //		Tests if the two arguments are equal.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::Equals(const IDatum *datum1, const IDatum *datum2) const
 {
 	if (!CUtils::FConstrainableType(datum1->MDId()) ||
@@ -129,7 +129,7 @@ CDefaultComparator::Equals(const IDatum *datum1, const IDatum *datum2) const
 //		Tests if the first argument is less than the second.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::IsLessThan(const IDatum *datum1, const IDatum *datum2) const
 {
 	if (!CUtils::FConstrainableType(datum1->MDId()) ||
@@ -164,7 +164,7 @@ CDefaultComparator::IsLessThan(const IDatum *datum1, const IDatum *datum2) const
 //		Tests if the first argument is less than or equal to the second.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::IsLessThanOrEqual(const IDatum *datum1,
 									  const IDatum *datum2) const
 {
@@ -208,7 +208,7 @@ CDefaultComparator::IsLessThanOrEqual(const IDatum *datum1,
 //		Tests if the first argument is greater than the second.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::IsGreaterThan(const IDatum *datum1,
 								  const IDatum *datum2) const
 {
@@ -244,7 +244,7 @@ CDefaultComparator::IsGreaterThan(const IDatum *datum1,
 //		Tests if the first argument is greater than or equal to the second.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDefaultComparator::IsGreaterThanOrEqual(const IDatum *datum1,
 										 const IDatum *datum2) const
 {

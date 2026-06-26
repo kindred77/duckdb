@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -46,13 +46,13 @@ class CDXLSpoolInfo
 {
 private:
 	// id of the spooling operator
-	ULONG m_spool_id;
+	GP_ULONG m_spool_id;
 
 	// type of the underlying spool
 	Edxlspooltype m_spool_type;
 
 	// is the spool shared across multiple slices
-	BOOL m_is_multi_slice_shared;
+	GP_BOOL m_is_multi_slice_shared;
 
 	// slice executing the underlying sort or materialize
 	INT m_executor_slice_id;
@@ -65,19 +65,19 @@ private:
 
 public:
 	// ctor/dtor
-	CDXLSpoolInfo(ULONG ulSpoolId, Edxlspooltype edxlspstype, BOOL fMultiSlice,
+	CDXLSpoolInfo(GP_ULONG ulSpoolId, Edxlspooltype edxlspstype, GP_BOOL fMultiSlice,
 				  INT iExecutorSlice);
 
 	// accessors
 
 	// spool id
-	ULONG GetSpoolId() const;
+	GP_ULONG GetSpoolId() const;
 
 	// spool type (sort or materialize)
 	Edxlspooltype GetSpoolType() const;
 
 	// is spool shared across multiple slices
-	BOOL IsMultiSlice() const;
+	GP_BOOL IsMultiSlice() const;
 
 	// id of slice executing the underlying operation
 	INT GetExecutorSliceId() const;

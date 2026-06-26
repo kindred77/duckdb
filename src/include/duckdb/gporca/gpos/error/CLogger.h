@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -49,12 +49,12 @@ private:
 	ErrorInfoLevel m_info_level;
 
 	// log message
-	void Log(const WCHAR *msg, ULONG severity, const CHAR *filename,
-			 ULONG line);
+	void Log(const WCHAR *msg, GP_ULONG severity, const CHAR *filename,
+			 GP_ULONG line);
 
 	// format log message
-	void Format(const WCHAR *msg, ULONG severity, const CHAR *filename,
-				ULONG line);
+	void Format(const WCHAR *msg, GP_ULONG severity, const CHAR *filename,
+				GP_ULONG line);
 
 	// add date to message
 	void AppendDate();

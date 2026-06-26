@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -41,18 +41,18 @@ public:
 	static CDXLMinidump *PdxlmdLoad(CMemoryPool *mp, const CHAR *file_name);
 
 	// generate a minidump file name in the provided buffer
-	static void GenerateMinidumpFileName(CHAR *buf, ULONG length,
-										 ULONG ulSessionId, ULONG ulCmdId,
+	static void GenerateMinidumpFileName(CHAR *buf, GP_ULONG length,
+										 GP_ULONG ulSessionId, GP_ULONG ulCmdId,
 										 const CHAR *szMinidumpFileName = NULL);
 
 	// finalize minidump and dump to a file
-	static void Finalize(CMiniDumperDXL *pmdp, BOOL fSerializeErrCtx);
+	static void Finalize(CMiniDumperDXL *pmdp, GP_BOOL fSerializeErrCtx);
 
 	// load and execute the minidump in the specified file
 	static CDXLNode *PdxlnExecuteMinidump(CMemoryPool *mp,
 										  const CHAR *file_name,
-										  ULONG ulSegments, ULONG ulSessionId,
-										  ULONG ulCmdId,
+										  GP_ULONG ulSegments, GP_ULONG ulSessionId,
+										  GP_ULONG ulCmdId,
 										  COptimizerConfig *optimizer_config,
 										  IConstExprEvaluator *pceeval = NULL);
 
@@ -60,16 +60,16 @@ public:
 	static CDXLNode *PdxlnExecuteMinidump(CMemoryPool *mp,
 										  CDXLMinidump *pdxlmdp,
 										  const CHAR *file_name,
-										  ULONG ulSegments, ULONG ulSessionId,
-										  ULONG ulCmdId,
+										  GP_ULONG ulSegments, GP_ULONG ulSessionId,
+										  GP_ULONG ulCmdId,
 										  COptimizerConfig *optimizer_config,
 										  IConstExprEvaluator *pceeval = NULL);
 
 	// execute the given minidump using the given MD accessor
 	static CDXLNode *PdxlnExecuteMinidump(
 		CMemoryPool *mp, CMDAccessor *md_accessor, CDXLMinidump *pdxlmd,
-		const CHAR *file_name, ULONG ulSegments, ULONG ulSessionId,
-		ULONG ulCmdId, COptimizerConfig *optimizer_config,
+		const CHAR *file_name, GP_ULONG ulSegments, GP_ULONG ulSessionId,
+		GP_ULONG ulCmdId, COptimizerConfig *optimizer_config,
 		IConstExprEvaluator *pceeval);
 
 };	// class CMinidumperUtils

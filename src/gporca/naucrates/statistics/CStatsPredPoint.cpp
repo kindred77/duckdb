@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -27,7 +27,7 @@ using namespace gpmd;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CStatsPredPoint::CStatsPredPoint(ULONG colid,
+CStatsPredPoint::CStatsPredPoint(GP_ULONG colid,
 								 CStatsPred::EStatsCmpType stats_cmp_type,
 								 CPoint *point)
 	: CStatsPred(colid), m_stats_cmp_type(stats_cmp_type), m_pred_point(point)

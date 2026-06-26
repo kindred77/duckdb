@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -120,7 +120,7 @@ CMDIdCast::MdidDest() const
 //		Checks if the mdids are equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdCast::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidCastFunc != mdid->MdidType())

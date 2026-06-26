@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -72,7 +72,7 @@ private:
 	IComparator *m_pcomp;
 
 	// atomic counter for generating part index ids
-	ULONG m_auPartId;
+	GP_ULONG m_auPartId;
 
 	// global CTE information
 	CCTEInfo *m_pcteinfo;
@@ -84,20 +84,20 @@ private:
 	COptimizerConfig *m_optimizer_config;
 
 	// whether or not we are optimizing a DML query
-	BOOL m_fDMLQuery;
+	GP_BOOL m_fDMLQuery;
 
 	// value for the first valid part id
-	static ULONG m_ulFirstValidPartId;
+	static GP_ULONG m_ulFirstValidPartId;
 
 	// if there are master only tables in the query
-	BOOL m_has_master_only_tables;
+	GP_BOOL m_has_master_only_tables;
 
 	// does the query contain any volatile functions or
 	// functions that read/modify SQL data
-	BOOL m_has_volatile_func;
+	GP_BOOL m_has_volatile_func;
 
 	// does the query have replicated tables
-	BOOL m_has_replicated_tables;
+	GP_BOOL m_has_replicated_tables;
 
 	// does this plan have a direct dispatchable filter
 	CExpressionArray *m_direct_dispatchable_filters;
@@ -126,7 +126,7 @@ public:
 	}
 
 	// are we optimizing a DML query
-	BOOL
+	GP_BOOL
 	FDMLQuery() const
 	{
 		return m_fDMLQuery;
@@ -134,7 +134,7 @@ public:
 
 	// set the DML flag
 	void
-	MarkDMLQuery(BOOL fDMLQuery)
+	MarkDMLQuery(GP_BOOL fDMLQuery)
 	{
 		m_fDMLQuery = fDMLQuery;
 	}
@@ -164,19 +164,19 @@ public:
 		m_direct_dispatchable_filters->Append(filter_expression);
 	}
 
-	BOOL
+	GP_BOOL
 	HasMasterOnlyTables() const
 	{
 		return m_has_master_only_tables;
 	}
 
-	BOOL
+	GP_BOOL
 	HasVolatileFunc() const
 	{
 		return m_has_volatile_func;
 	}
 
-	BOOL
+	GP_BOOL
 	HasReplicatedTables() const
 	{
 		return m_has_replicated_tables;
@@ -188,7 +188,7 @@ public:
 		return m_direct_dispatchable_filters;
 	}
 
-	BOOL
+	GP_BOOL
 	OptimizeDMLQueryWithSingletonSegment() const
 	{
 		// A DML statement can be optimized by enforcing a gather motion on segment instead of master,
@@ -243,7 +243,7 @@ public:
 	}
 
 	// return a new part index id
-	ULONG
+	GP_ULONG
 	UlPartIndexNextVal()
 	{
 		return m_auPartId++;
@@ -280,7 +280,7 @@ public:
 	}
 
 	// return true if all enforcers are enabled
-	static BOOL FAllEnforcersEnabled();
+	static GP_BOOL FAllEnforcersEnabled();
 
 };	// class COptCtxt
 }  // namespace gpopt

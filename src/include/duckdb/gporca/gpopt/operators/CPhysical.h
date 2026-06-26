@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -84,18 +84,18 @@ private:
 		CColRefSet *m_pcrsRequired;
 
 		// index of target physical child for which required columns need to be computed
-		ULONG m_ulChildIndex;
+		GP_ULONG m_ulChildIndex;
 
 		// index of scalar child to be used when computing required columns
-		ULONG m_ulScalarChildIndex;
+		GP_ULONG m_ulScalarChildIndex;
 
 		// private copy ctor
 		CReqdColsRequest(const CReqdColsRequest &);
 
 	public:
 		// ctor
-		CReqdColsRequest(CColRefSet *pcrsRequired, ULONG child_index,
-						 ULONG ulScalarChildIndex)
+		CReqdColsRequest(CColRefSet *pcrsRequired, GP_ULONG child_index,
+						 GP_ULONG ulScalarChildIndex)
 			: m_pcrsRequired(pcrsRequired),
 			  m_ulChildIndex(child_index),
 			  m_ulScalarChildIndex(ulScalarChildIndex)
@@ -117,24 +117,24 @@ private:
 		}
 
 		// child index to push requirements to
-		ULONG
+		GP_ULONG
 		UlChildIndex() const
 		{
 			return m_ulChildIndex;
 		}
 
 		// scalar child index
-		ULONG
+		GP_ULONG
 		UlScalarChildIndex() const
 		{
 			return m_ulScalarChildIndex;
 		}
 
 		// hash function
-		static ULONG HashValue(const CReqdColsRequest *prcr);
+		static GP_ULONG HashValue(const CReqdColsRequest *prcr);
 
 		// equality function
-		static BOOL Equals(const CReqdColsRequest *prcrFst,
+		static GP_BOOL Equals(const CReqdColsRequest *prcrFst,
 						   const CReqdColsRequest *prcrSnd);
 
 	};	// class CReqdColsRequest
@@ -152,104 +152,104 @@ private:
 	// number of requests that operator will create for its child,
 	// array entries correspond to order, distribution, rewindability and partition
 	// propagation, respectively
-	ULONG m_rgulOptReqs[GPOPT_PLAN_PROPS];
+	GP_ULONG m_rgulOptReqs[GPOPT_PLAN_PROPS];
 
 	// array of expanded requests
 	UlongPtrArray *m_pdrgpulpOptReqsExpanded;
 
 	// total number of optimization requests
-	ULONG m_ulTotalOptRequests;
+	GP_ULONG m_ulTotalOptRequests;
 
 	// update number of requests of a given property
-	void UpdateOptRequests(ULONG ulPropIndex, ULONG ulRequests);
+	void UpdateOptRequests(GP_ULONG ulPropIndex, GP_ULONG ulRequests);
 
 	// private copy ctor
 	CPhysical(const CPhysical &);
 
 	// check whether we can push a part table requirement to a given child, given
 	// the knowledge of where the part index id is defined
-	static BOOL FCanPushPartReqToChild(CBitSet *pbsPartConsumer,
-									   ULONG child_index);
+	static GP_BOOL FCanPushPartReqToChild(CBitSet *pbsPartConsumer,
+									   GP_ULONG child_index);
 
 protected:
 	// set number of order requests that operator creates for its child
 	void
-	SetOrderRequests(ULONG ulOrderReqs)
+	SetOrderRequests(GP_ULONG ulOrderReqs)
 	{
 		UpdateOptRequests(0 /*ulPropIndex*/, ulOrderReqs);
 	}
 
 	// set number of distribution requests that operator creates for its child
 	void
-	SetDistrRequests(ULONG ulDistrReqs)
+	SetDistrRequests(GP_ULONG ulDistrReqs)
 	{
 		UpdateOptRequests(1 /*ulPropIndex*/, ulDistrReqs);
 	}
 
 	// set number of rewindability requests that operator creates for its child
 	void
-	SetRewindRequests(ULONG ulRewindReqs)
+	SetRewindRequests(GP_ULONG ulRewindReqs)
 	{
 		UpdateOptRequests(2 /*ulPropIndex*/, ulRewindReqs);
 	}
 
 	// set number of partition propagation requests that operator creates for its child
 	void
-	SetPartPropagateRequests(ULONG ulPartPropagationReqs)
+	SetPartPropagateRequests(GP_ULONG ulPartPropagationReqs)
 	{
 		UpdateOptRequests(3 /*ulPropIndex*/, ulPartPropagationReqs);
 	}
 
 	// pass cte requirement to the n-th child
 	CCTEReq *PcterNAry(CMemoryPool *mp, CExpressionHandle &exprhdl,
-					   CCTEReq *pcter, ULONG child_index,
+					   CCTEReq *pcter, GP_ULONG child_index,
 					   CDrvdPropArray *pdrgpdpCtxt) const;
 
 	// helper for computing required columns of the n-th child by including used
 	// columns and excluding defined columns of the scalar child
 	CColRefSet *PcrsChildReqd(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  CColRefSet *pcrsInput, ULONG child_index,
-							  ULONG ulScalarIndex);
+							  CColRefSet *pcrsInput, GP_ULONG child_index,
+							  GP_ULONG ulScalarIndex);
 
 
 	// helper for a simple case of computing child's required sort order
 	static COrderSpec *PosPassThru(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   COrderSpec *posInput, ULONG child_index);
+								   COrderSpec *posInput, GP_ULONG child_index);
 
 	// helper for a simple case of computing child's required distribution
 	static CDistributionSpec *PdsPassThru(CMemoryPool *mp,
 										  CExpressionHandle &exprhdl,
 										  CDistributionSpec *pdsInput,
-										  ULONG child_index);
+										  GP_ULONG child_index);
 
 	// helper for computing child's required distribution when Singleton/Replicated
 	// distributions must be requested
 	static CDistributionSpec *PdsRequireSingletonOrReplicated(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CDistributionSpec *pdsInput, ULONG child_index, ULONG ulOptReq);
+		CDistributionSpec *pdsInput, GP_ULONG child_index, GP_ULONG ulOptReq);
 
 	// helper for computing child's required distribution in unary operators
 	// with a single scalar child
 	static CDistributionSpec *PdsUnary(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
 									   CDistributionSpec *pdsInput,
-									   ULONG child_index, ULONG ulOptReq);
+									   GP_ULONG child_index, GP_ULONG ulOptReq);
 
 	// helper for a simple case of computing child's required rewindability
 	static CRewindabilitySpec *PrsPassThru(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CRewindabilitySpec *prsRequired,
-										   ULONG child_index);
+										   GP_ULONG child_index);
 
 	// pass partition propagation requirement to the child
 	static CPartitionPropagationSpec *PppsRequiredPushThru(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index);
 
 	// pass partition propagation requirement to the children of an n-ary operator
 	static CPartitionPropagationSpec *PppsRequiredPushThruNAry(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index);
 
 	// helper function for pushing unresolved partition propagation in unary
 	// operators
@@ -278,7 +278,7 @@ protected:
 
 	// helper for checking if output columns of a unary operator
 	// that defines no new columns include the required columns
-	static BOOL FUnaryProvidesReqdCols(CExpressionHandle &exprhdl,
+	static GP_BOOL FUnaryProvidesReqdCols(CExpressionHandle &exprhdl,
 									   CColRefSet *pcrsRequired);
 
 	// helper for common case of passing through partition index map
@@ -299,7 +299,7 @@ protected:
 	static CDistributionSpec *PdsRequireSingleton(CMemoryPool *mp,
 												  CExpressionHandle &exprhdl,
 												  CDistributionSpec *pds,
-												  ULONG child_index);
+												  GP_ULONG child_index);
 
 	// helper to compute skew estimate based on given stats and distribution spec
 	static CDouble GetSkew(IStatistics *stats, CDistributionSpec *pds);
@@ -307,21 +307,21 @@ protected:
 
 	// return true if the given column set includes any of the columns defined by
 	// the unary node, as given by the handle
-	static BOOL FUnaryUsesDefinedColumns(CColRefSet *pcrs,
+	static GP_BOOL FUnaryUsesDefinedColumns(CColRefSet *pcrs,
 										 CExpressionHandle &exprhdl);
 
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const = 0;
+										   GP_ULONG ulOptReq) const = 0;
 
 	// distribution matching type
 	virtual CEnfdDistribution::EDistributionMatching Edm(
-		CReqdPropPlan *prppInput, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CReqdPropPlan *prppInput, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 public:
 	// ctor
@@ -335,7 +335,7 @@ public:
 	}
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FPhysical() const
 	{
 		GPOS_ASSERT(!FLogical() && !FScalar() && !FPattern());
@@ -355,13 +355,13 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) = 0;
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) = 0;
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const = 0;
+								  GP_ULONG ulOptReq) const = 0;
 
 	// compute distribution spec from the table descriptor
 	static CDistributionSpec *PdsCompute(CMemoryPool *mp,
@@ -371,31 +371,31 @@ public:
 
 	// compute required sort order of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const = 0;
+									GP_ULONG ulOptReq) const = 0;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const = 0;
+											GP_ULONG ulOptReq) const = 0;
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) = 0;
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) = 0;
 
 	// required properties: check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const = 0;
+								   GP_ULONG ulOptReq) const = 0;
 
 	// required properties: check if required CTEs are included in derived CTE map
-	virtual BOOL FProvidesReqdCTEs(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCTEs(CExpressionHandle &exprhdl,
 								   const CCTEReq *pcter) const;
 
 	//-------------------------------------------------------------------------------------
@@ -451,17 +451,17 @@ public:
 
 	// order matching type
 	virtual CEnfdOrder::EOrderMatching Eom(CReqdPropPlan *prppInput,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq);
+										   GP_ULONG ulOptReq);
 
 	// rewindability matching type
 	virtual CEnfdRewindability::ERewindabilityMatching Erm(
-		CReqdPropPlan *prppInput, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CReqdPropPlan *prppInput, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// check if optimization contexts is valid
-	virtual BOOL
+	virtual GP_BOOL
 	FValidContext(CMemoryPool *,			   // mp
 				  COptimizationContext *,	   // poc,
 				  COptimizationContextArray *  // pdrgpocChild
@@ -483,35 +483,35 @@ public:
 	}
 
 	// number of order requests that operator creates for its child
-	ULONG
+	GP_ULONG
 	UlOrderRequests() const
 	{
 		return m_rgulOptReqs[0];
 	}
 
 	// number of distribution requests that operator creates for its child
-	ULONG
+	GP_ULONG
 	UlDistrRequests() const
 	{
 		return m_rgulOptReqs[1];
 	}
 
 	// number of rewindability requests that operator creates for its child
-	ULONG
+	GP_ULONG
 	UlRewindRequests() const
 	{
 		return m_rgulOptReqs[2];
 	}
 
 	// number of partition propagation requests that operator creates for its child
-	ULONG
+	GP_ULONG
 	UlPartPropagateRequests() const
 	{
 		return m_rgulOptReqs[3];
 	}
 
 	// return total number of optimization requests
-	ULONG
+	GP_ULONG
 	UlOptRequests() const
 	{
 		return m_ulTotalOptRequests;
@@ -519,25 +519,25 @@ public:
 
 	// map request number to order, distribution, rewindability and partition propagation requests
 	void LookupRequest(
-		ULONG ulReqNo,		  // input: request number
-		ULONG *pulOrderReq,	  // output: order request number
-		ULONG *pulDistrReq,	  // output: distribution request number
-		ULONG *pulRewindReq,  // output: rewindability request number
-		ULONG *
+		GP_ULONG ulReqNo,		  // input: request number
+		GP_ULONG *pulOrderReq,	  // output: order request number
+		GP_ULONG *pulDistrReq,	  // output: distribution request number
+		GP_ULONG *pulRewindReq,  // output: rewindability request number
+		GP_ULONG *
 			pulPartPropagateReq	 // output: partition propagation request number
 	);
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL FPassThruStats() const = 0;
+	virtual GP_BOOL FPassThruStats() const = 0;
 
 	// true iff the delivered distributions of the children are compatible among themselves
-	virtual BOOL FCompatibleChildrenDistributions(
+	virtual GP_BOOL FCompatibleChildrenDistributions(
 		const CExpressionHandle &exprhdl) const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// conversion function
 	static CPhysical *
@@ -554,9 +554,9 @@ public:
 		CMemoryPool *mp, CDistributionSpecSingleton *pdss);
 
 	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CReqdPropPlan *prppInput, GP_ULONG child_index,
 								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulDistrReq);
+								   GP_ULONG ulDistrReq);
 
 };	// class CPhysical
 

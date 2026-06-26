@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -58,7 +58,7 @@ public:
 	virtual IMDId *MdidDest() const = 0;
 
 	// is the cast between binary coercible types, i.e. the types are binary compatible
-	virtual BOOL IsBinaryCoercible() const = 0;
+	virtual GP_BOOL IsBinaryCoercible() const = 0;
 
 	// cast function id
 	virtual IMDId *GetCastFuncMdId() const = 0;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -49,7 +49,7 @@ private:
 	IMdIdArray *m_mdid_types_array;
 
 	// whether function returns a set of values
-	BOOL m_returns_set;
+	GP_BOOL m_returns_set;
 
 	// function stability
 	CMDFunctionGPDB::EFuncStbl m_func_stability;
@@ -58,11 +58,11 @@ private:
 	CMDFunctionGPDB::EFuncDataAcc m_func_data_access;
 
 	// function strictness (i.e. whether func returns NULL on NULL input)
-	BOOL m_is_strict;
+	GP_BOOL m_is_strict;
 
-	BOOL m_is_ndv_preserving;
+	GP_BOOL m_is_ndv_preserving;
 
-	BOOL m_is_allowed_for_PS;
+	GP_BOOL m_is_allowed_for_PS;
 
 	// private copy ctor
 	CParseHandlerMDGPDBFunc(const CParseHandlerMDGPDBFunc &);

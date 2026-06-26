@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -49,7 +49,7 @@ private:
 
 protected:
 	// ctor - protected to restrict instantiation to children
-	CSyncHashtableAccessorBase<T, K>(CSyncHashtable<T, K> &ht, ULONG bucket_idx)
+	CSyncHashtableAccessorBase<T, K>(CSyncHashtable<T, K> &ht, GP_ULONG bucket_idx)
 		: m_ht(ht), m_bucket(m_ht.GetBucket(bucket_idx))
 	{
 	}

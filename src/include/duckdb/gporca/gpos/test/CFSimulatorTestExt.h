@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -36,7 +36,7 @@ public:
 	static GPOS_RESULT EresUnittest_NetError();
 
 	// simulate exceptions of given type
-	static GPOS_RESULT EresUnittest_SimulateException(ULONG major, ULONG minor);
+	static GPOS_RESULT EresUnittest_SimulateException(GP_ULONG major, GP_ULONG minor);
 
 };	// CFSimulatorTestExt
 }  // namespace gpos

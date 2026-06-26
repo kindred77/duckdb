@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -55,28 +55,28 @@ public:
 	}
 
 	// is the index clustered
-	virtual BOOL IsClustered() const = 0;
+	virtual GP_BOOL IsClustered() const = 0;
 
 	// index type
 	virtual EmdindexType IndexType() const = 0;
 
 	// number of keys
-	virtual ULONG Keys() const = 0;
+	virtual GP_ULONG Keys() const = 0;
 
 	// return the n-th key column
-	virtual ULONG KeyAt(ULONG pos) const = 0;
+	virtual GP_ULONG KeyAt(GP_ULONG pos) const = 0;
 
 	// return the position of the key column
-	virtual ULONG GetKeyPos(ULONG pos) const = 0;
+	virtual GP_ULONG GetKeyPos(GP_ULONG pos) const = 0;
 
 	// number of included columns
-	virtual ULONG IncludedCols() const = 0;
+	virtual GP_ULONG IncludedCols() const = 0;
 
 	// return the n-th included column
-	virtual ULONG IncludedColAt(ULONG pos) const = 0;
+	virtual GP_ULONG IncludedColAt(GP_ULONG pos) const = 0;
 
 	// return the position of the included column
-	virtual ULONG GetIncludedColPos(ULONG column) const = 0;
+	virtual GP_ULONG GetIncludedColPos(GP_ULONG column) const = 0;
 
 	// part constraint
 	virtual IMDPartConstraint *MDPartConstraint() const = 0;
@@ -86,8 +86,8 @@ public:
 
 	// check if given scalar comparison can be used with the index key
 	// at the specified position
-	virtual BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
-							  ULONG key_pos) const = 0;
+	virtual GP_BOOL IsCompatible(const IMDScalarOp *md_scalar_op,
+							  GP_ULONG key_pos) const = 0;
 
 	// index type as a string value
 	static const CWStringConst *GetDXLStr(EmdindexType index_type);

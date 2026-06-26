@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -61,16 +61,16 @@ CLogger::~CLogger()
 //
 //---------------------------------------------------------------------------
 void
-CLogger::Log(const WCHAR *msg, ULONG severity, const CHAR *filename, ULONG line)
+CLogger::Log(const WCHAR *msg, GP_ULONG severity, const CHAR *filename, GP_ULONG line)
 {
 	// format log message
 	Format(msg, severity, filename, line);
 
-	for (ULONG i = 0; i < GPOS_LOG_WRITE_RETRIES; i++)
+	for (GP_ULONG i = 0; i < GPOS_LOG_WRITE_RETRIES; i++)
 	{
 		GPOS_CHECK_ABORT;
 
-		BOOL pending_exceptions = ITask::Self()->HasPendingExceptions();
+		GP_BOOL pending_exceptions = ITask::Self()->HasPendingExceptions();
 
 		// logging is exercised in catch blocks so it cannot throw;
 		// the only propagated exception is Abort;
@@ -121,9 +121,9 @@ CLogger::Log(const WCHAR *msg, ULONG severity, const CHAR *filename, ULONG line)
 //
 //---------------------------------------------------------------------------
 void
-CLogger::Format(const WCHAR *msg, ULONG severity,
+CLogger::Format(const WCHAR *msg, GP_ULONG severity,
 				const CHAR *,  // filename
-				ULONG		   // line
+				GP_ULONG		   // line
 )
 {
 	m_entry_wrapper.Reset();

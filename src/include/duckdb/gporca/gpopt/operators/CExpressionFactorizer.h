@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -43,20 +43,20 @@ class CExpressionFactorizer
 {
 private:
 	// map expression to a count, used in factorization
-	typedef CHashMap<CExpression, ULONG, CExpression::HashValue, CUtils::Equals,
-					 CleanupRelease<CExpression>, CleanupDelete<ULONG> >
+	typedef CHashMap<CExpression, GP_ULONG, CExpression::HashValue, CUtils::Equals,
+					 CleanupRelease<CExpression>, CleanupDelete<GP_ULONG> >
 		ExprMap;
 
 	// map operators to an array of expression arrays, corresponding to
 	// a disjunction of expressions on columns created by that operator
-	typedef CHashMap<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CExpressionArrays, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CExpressionArrays> >
 		SourceToArrayPosMap;
 
 	// iterator for map of operator to disjunctive form representation
-	typedef CHashMapIter<ULONG, CExpressionArrays, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CExpressionArrays, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupRelease<CExpressionArrays> >
 		SourceToArrayPosMapIter;
 
@@ -81,7 +81,7 @@ private:
 	static void AddFactor(CMemoryPool *mp, CExpression *pexpr,
 						  CExpressionArray *pdrgpexprFactors,
 						  CExpressionArray *pdrgpexprResidual,
-						  ExprMap *pexprmap, ULONG ulDisjuncts);
+						  ExprMap *pexprmap, GP_ULONG ulDisjuncts);
 
 	// helper for building a factors map
 	static ExprMap *PexprmapFactors(CMemoryPool *mp, CExpression *pexpr);
@@ -109,8 +109,8 @@ private:
 	// only one computed column
 	// return true and set ppcrComputedColumn to that computed column,
 	// otherwise return false
-	static BOOL FOpSourceIdOrComputedColumn(CExpression *pexpr,
-											ULONG *ulOpSourceId,
+	static GP_BOOL FOpSourceIdOrComputedColumn(CExpression *pexpr,
+											GP_ULONG *ulOpSourceId,
 											CColRef **ppcrComputedColumn);
 
 	// if the given expression is a scalar that can be pushed, it returns
@@ -121,14 +121,14 @@ private:
 	// operator source id in the given source to array position map
 	// or construct a new array and add it to the map
 	static CExpressionArrays *PdrgPdrgpexprDisjunctArrayForSourceId(
-		CMemoryPool *mp, SourceToArrayPosMap *psrc2array, BOOL fAllowNewSources,
-		ULONG ulOpSourceId);
+		CMemoryPool *mp, SourceToArrayPosMap *psrc2array, GP_BOOL fAllowNewSources,
+		GP_ULONG ulOpSourceId);
 
 	// find the array of expression arrays corresponding to the given
 	// column in the given column to array position map
 	// or construct a new array and add it to the map
 	static CExpressionArrays *PdrgPdrgpexprDisjunctArrayForColumn(
-		CMemoryPool *mp, ColumnToArrayPosMap *pcol2array, BOOL fAllowNewSources,
+		CMemoryPool *mp, ColumnToArrayPosMap *pcol2array, GP_BOOL fAllowNewSources,
 		CColRef *colref);
 
 	// if the given expression is a table column to constant comparison,
@@ -136,14 +136,14 @@ private:
 	static void StoreBaseOpToColumnExpr(
 		CMemoryPool *mp, CExpression *pexpr, SourceToArrayPosMap *psrc2array,
 		ColumnToArrayPosMap *pcol2array,
-		const CColRefSet *pcrsProducedByChildren, BOOL fAllowNewSources,
-		ULONG ulPosition);
+		const CColRefSet *pcrsProducedByChildren, GP_BOOL fAllowNewSources,
+		GP_ULONG ulPosition);
 
 	// construct a filter based on the expressions from 'pdrgpdrgpexpr'
 	// and add to the array 'pdrgpexprPrefilters'
 	static void AddInferredFiltersFromArray(
 		CMemoryPool *mp, const CExpressionArrays *pdrgpdrgpexpr,
-		ULONG ulDisjChildrenLength, CExpressionArray *pdrgpexprPrefilters);
+		GP_ULONG ulDisjChildrenLength, CExpressionArray *pdrgpexprPrefilters);
 
 	// create a conjunction of the given expression and inferred filters constructed out
 	// of the given maps

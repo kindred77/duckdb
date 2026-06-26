@@ -1,4 +1,4 @@
-#include <gpopt/CommonException.h>
+﻿#include <gpopt/CommonException.h>
 #include <gpos/error/CMessage.h>
 #include <gpos/error/CMessageRepository.h>
 
@@ -359,7 +359,7 @@ GPOS_RESULT CommonException::EresExceptionInit(CMemoryPool *mp)
 		CMessage *rgpmsg[ExmiSentinel];
 		CMessageRepository *pmr = CMessageRepository::GetMessageRepository();
 
-		for (ULONG i = 0; i < GPOS_ARRAY_SIZE(rgpmsg); i++)
+		for (GP_ULONG i = 0; i < GPOS_ARRAY_SIZE(rgpmsg); i++)
 		{
 			rgpmsg[i] = GPOS_NEW(mp) CMessage(rgmsg[i]);
 			pmr->AddMessage(ElocEnUS_Utf8, rgpmsg[i]);

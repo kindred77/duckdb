@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 	IMDId *m_pmdidArray;
 
 	// is array multidimensional
-	BOOL m_fMultiDimensional;
+	GP_BOOL m_fMultiDimensional;
 
 	// const values
 	CScalarConstArray *m_pdrgPconst;
@@ -53,11 +53,11 @@ private:
 public:
 	// ctor
 	CScalarArray(CMemoryPool *mp, IMDId *elem_type_mdid, IMDId *array_type_mdid,
-				 BOOL is_multidimenstional);
+				 GP_BOOL is_multidimenstional);
 
 	// ctor
 	CScalarArray(CMemoryPool *mp, IMDId *elem_type_mdid, IMDId *array_type_mdid,
-				 BOOL is_multidimenstional, CScalarConstArray *pdrgPconst);
+				 GP_BOOL is_multidimenstional, CScalarConstArray *pdrgPconst);
 
 	// dtor
 	virtual ~CScalarArray();
@@ -78,13 +78,13 @@ public:
 
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -94,7 +94,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -117,7 +117,7 @@ public:
 	IMDId *PmdidArray() const;
 
 	// is array multi-dimensional
-	BOOL FMultiDimensional() const;
+	GP_BOOL FMultiDimensional() const;
 
 	// type of expression's result
 	virtual IMDId *MdidType() const;

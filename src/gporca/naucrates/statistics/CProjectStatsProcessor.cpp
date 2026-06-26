@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2018 Pivotal, Inc.
 //
@@ -33,10 +33,10 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 	// column ids on which widths are to be computed
 	UlongToDoubleMap *colid_width_mapping = GPOS_NEW(mp) UlongToDoubleMap(mp);
 
-	const ULONG length = projection_colids->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = projection_colids->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
-		ULONG colid = *(*projection_colids)[ul];
+		GP_ULONG colid = *(*projection_colids)[ul];
 		const CHistogram *histogram = input_stats->GetHistogram(colid);
 
 		if (NULL == histogram)
@@ -45,7 +45,7 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 			CBucketArray *proj_col_bucket = GPOS_NEW(mp) CBucketArray(mp);
 			CDouble null_freq = 0.0;
 
-			BOOL is_well_defined = false;
+			GP_BOOL is_well_defined = false;
 			if (NULL != datum_map)
 			{
 				IDatum *datum = datum_map->Find(&colid);
@@ -82,12 +82,12 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 							   CHistogram::DefaultNDVFreqRemain);
 			}
 
-			histograms_new->Insert(GPOS_NEW(mp) ULONG(colid),
+			histograms_new->Insert(GPOS_NEW(mp) GP_ULONG(colid),
 								   proj_col_histogram);
 		}
 		else
 		{
-			histograms_new->Insert(GPOS_NEW(mp) ULONG(colid),
+			histograms_new->Insert(GPOS_NEW(mp) GP_ULONG(colid),
 								   histogram->CopyHistogram());
 		}
 
@@ -100,12 +100,12 @@ CProjectStatsProcessor::CalcProjStats(CMemoryPool *mp,
 
 			CDouble width =
 				CStatisticsUtils::DefaultColumnWidth(colref->RetrieveType());
-			colid_width_mapping->Insert(GPOS_NEW(mp) ULONG(colid),
+			colid_width_mapping->Insert(GPOS_NEW(mp) GP_ULONG(colid),
 										GPOS_NEW(mp) CDouble(width));
 		}
 		else
 		{
-			colid_width_mapping->Insert(GPOS_NEW(mp) ULONG(colid),
+			colid_width_mapping->Insert(GPOS_NEW(mp) GP_ULONG(colid),
 										GPOS_NEW(mp) CDouble(*width));
 		}
 	}

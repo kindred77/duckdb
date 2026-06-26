@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -156,10 +156,10 @@ private:
 		IMDId *MDId();
 
 		// equality function for hash tables
-		static BOOL Equals(const MdidPtr &left_mdid, const MdidPtr &right_mdid);
+		static GP_BOOL Equals(const MdidPtr &left_mdid, const MdidPtr &right_mdid);
 
 		// hash function for cost contexts hash table
-		static ULONG HashValue(const MdidPtr &mdid);
+		static GP_ULONG HashValue(const MdidPtr &mdid);
 	};
 
 	// element in the MD provider hashtable
@@ -192,11 +192,11 @@ private:
 		CSystemId Sysid() const;
 
 		// equality function for hash tables
-		static BOOL Equals(const SMDProviderElem &mdpelemLeft,
+		static GP_BOOL Equals(const SMDProviderElem &mdpelemLeft,
 						   const SMDProviderElem &mdpelemRight);
 
 		// hash function for MD providers hash table
-		static ULONG HashValue(const SMDProviderElem &mdpelem);
+		static GP_ULONG HashValue(const SMDProviderElem &mdpelem);
 	};
 
 private:
@@ -248,11 +248,11 @@ private:
 
 	// return the column statistics meta data object for a given column of a table
 	const IMDColStats *Pmdcolstats(CMemoryPool *mp, IMDId *rel_mdid,
-								   ULONG ulPos);
+								   GP_ULONG ulPos);
 
 	// record histogram and width information for a given column of a table
-	void RecordColumnStats(CMemoryPool *mp, IMDId *rel_mdid, ULONG colid,
-						   ULONG ulPos, BOOL isSystemCol, BOOL isEmptyTable,
+	void RecordColumnStats(CMemoryPool *mp, IMDId *rel_mdid, GP_ULONG colid,
+						   GP_ULONG ulPos, GP_BOOL isSystemCol, GP_BOOL isEmptyTable,
 						   UlongToHistogramMap *col_histogram_mapping,
 						   UlongToDoubleMap *colid_width_mapping,
 						   CStatisticsConfig *stats_config);
@@ -328,7 +328,7 @@ public:
 	const IMDFunction *RetrieveFunc(IMDId *mdid);
 
 	// interface to check if the window function from the MD cache is an aggregate window function
-	BOOL FAggWindowFunc(IMDId *mdid);
+	GP_BOOL FAggWindowFunc(IMDId *mdid);
 
 	// interface to an aggregate from the MD cache
 	const IMDAggregate *RetrieveAgg(IMDId *mdid);

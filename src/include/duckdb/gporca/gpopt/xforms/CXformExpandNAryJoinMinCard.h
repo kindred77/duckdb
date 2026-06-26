@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -62,7 +62,7 @@ public:
 	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FNeedsStats() const
 	{
 		return true;
@@ -72,7 +72,7 @@ public:
 	void Transform(CXformContext *pxfctxt, CXformResult *pxfres,
 				   CExpression *pexpr) const;
 
-	BOOL
+	GP_BOOL
 	IsApplyOnce()
 	{
 		return true;

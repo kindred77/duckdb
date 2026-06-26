@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2018 Pivotal, Inc.
 //
@@ -87,7 +87,7 @@ CLeftOuterJoinStatsProcessor::MakeLOJHistogram(
 
 	// build a bitset with all outer child columns contributing to the join
 	CBitSet *outer_side_join_cols = GPOS_NEW(mp) CBitSet(mp);
-	for (ULONG j = 0; j < join_preds_stats->Size(); j++)
+	for (GP_ULONG j = 0; j < join_preds_stats->Size(); j++)
 	{
 		CStatsPredJoin *join_stats = (*join_preds_stats)[j];
 		if (join_stats->HasValidColIdOuter())
@@ -111,11 +111,11 @@ CLeftOuterJoinStatsProcessor::MakeLOJHistogram(
 
 	ULongPtrArray *outer_colids_with_stats =
 		outer_side_stats->GetColIdsWithStats(mp);
-	const ULONG num_outer_cols = outer_colids_with_stats->Size();
+	const GP_ULONG num_outer_cols = outer_colids_with_stats->Size();
 
-	for (ULONG i = 0; i < num_outer_cols; i++)
+	for (GP_ULONG i = 0; i < num_outer_cols; i++)
 	{
-		ULONG colid = *(*outer_colids_with_stats)[i];
+		GP_ULONG colid = *(*outer_colids_with_stats)[i];
 		const CHistogram *inner_join_histogram =
 			inner_join_stats->GetHistogram(colid);
 		GPOS_ASSERT(NULL != inner_join_histogram);
@@ -183,11 +183,11 @@ CLeftOuterJoinStatsProcessor::AddHistogramsLOJInner(
 	GPOS_ASSERT(NULL != inner_colids_with_stats);
 	GPOS_ASSERT(NULL != LOJ_histograms);
 
-	const ULONG num_inner_cols = inner_colids_with_stats->Size();
+	const GP_ULONG num_inner_cols = inner_colids_with_stats->Size();
 
-	for (ULONG ul = 0; ul < num_inner_cols; ul++)
+	for (GP_ULONG ul = 0; ul < num_inner_cols; ul++)
 	{
-		ULONG colid = *(*inner_colids_with_stats)[ul];
+		GP_ULONG colid = *(*inner_colids_with_stats)[ul];
 
 		const CHistogram *inner_join_histogram =
 			inner_join_stats->GetHistogram(colid);

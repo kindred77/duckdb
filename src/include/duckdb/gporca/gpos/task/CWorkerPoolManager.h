@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -60,7 +60,7 @@ private:
 	ULONG_PTR m_auto_task_proxy_counter;
 
 	// active flag
-	BOOL m_active;
+	GP_BOOL m_active;
 
 	// we only support a single worker now
 	CWorker *m_single_worker;

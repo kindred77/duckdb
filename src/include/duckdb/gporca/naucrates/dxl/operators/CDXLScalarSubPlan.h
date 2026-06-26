@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -64,7 +64,7 @@ private:
 	CDXLNode *m_dxlnode_test_expr;
 
 	// does test expression contain outer param
-	BOOL m_outer_param;
+	GP_BOOL m_outer_param;
 
 	// private copy ctor
 	CDXLScalarSubPlan(CDXLScalarSubPlan &);
@@ -74,7 +74,7 @@ public:
 	CDXLScalarSubPlan(CMemoryPool *mp, IMDId *first_col_type_mdid,
 					  CDXLColRefArray *dxl_colref_array,
 					  EdxlSubPlanType dxl_subplan_type,
-					  CDXLNode *dxlnode_test_expr, BOOL outer_param = false);
+					  CDXLNode *dxlnode_test_expr, GP_BOOL outer_param = false);
 
 	virtual ~CDXLScalarSubPlan();
 
@@ -112,7 +112,7 @@ public:
 		return m_dxlnode_test_expr;
 	}
 
-	BOOL
+	GP_BOOL
 	FOuterParam() const
 	{
 		return m_outer_param;
@@ -133,7 +133,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 	// return a string representation of Subplan type
 	const CWStringConst *GetSubplanTypeStr() const;
@@ -141,7 +141,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

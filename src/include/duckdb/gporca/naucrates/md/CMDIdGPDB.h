@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -49,10 +49,10 @@ protected:
 	OID m_oid;
 
 	// major version number
-	ULONG m_major_version;
+	GP_ULONG m_major_version;
 
 	// minor version number
-	ULONG m_minor_version;
+	GP_ULONG m_minor_version;
 
 	// buffer for the serialized mdid
 	WCHAR m_mdid_array[GPDXL_MDID_LENGTH];
@@ -67,7 +67,7 @@ public:
 	// ctors
 	CMDIdGPDB(CSystemId sysid, OID oid);
 	explicit CMDIdGPDB(OID oid);
-	CMDIdGPDB(OID oid, ULONG version_major, ULONG version_minor);
+	CMDIdGPDB(OID oid, GP_ULONG version_major, GP_ULONG version_minor);
 
 	// copy ctor
 	explicit CMDIdGPDB(const CMDIdGPDB &mdidSource);
@@ -92,16 +92,16 @@ public:
 	virtual OID Oid() const;
 
 	// major version
-	virtual ULONG VersionMajor() const;
+	virtual GP_ULONG VersionMajor() const;
 
 	// minor version
-	virtual ULONG VersionMinor() const;
+	virtual GP_ULONG VersionMinor() const;
 
 	// equality check
-	virtual BOOL Equals(const IMDId *mdid) const;
+	virtual GP_BOOL Equals(const IMDId *mdid) const;
 
 	// computes the hash value for the metadata id
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
 		return gpos::CombineHashes(
@@ -113,7 +113,7 @@ public:
 	}
 
 	// is the mdid valid
-	virtual BOOL IsValid() const;
+	virtual GP_BOOL IsValid() const;
 
 	// serialize mdid in DXL as the value of the specified attribute
 	virtual void Serialize(CXMLSerializer *xml_serializer,

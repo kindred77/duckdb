@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -45,8 +45,8 @@ const CException::ErrCodeElem CException::m_errcode[] = {
 //		dynamically
 //
 //---------------------------------------------------------------------------
-CException::CException(ULONG major, ULONG minor, const CHAR *filename,
-					   ULONG line)
+CException::CException(GP_ULONG major, GP_ULONG minor, const CHAR *filename,
+					   GP_ULONG line)
 	: m_major(major),
 	  m_minor(minor),
 	  m_filename(const_cast<CHAR *>(filename)),
@@ -57,8 +57,8 @@ CException::CException(ULONG major, ULONG minor, const CHAR *filename,
 }
 
 // ctor
-CException::CException(ULONG major, ULONG minor, const CHAR *filename,
-					   ULONG line, ULONG severity_level)
+CException::CException(GP_ULONG major, GP_ULONG minor, const CHAR *filename,
+					   GP_ULONG line, GP_ULONG severity_level)
 	: m_major(major),
 	  m_minor(minor),
 	  m_filename(const_cast<CHAR *>(filename)),
@@ -77,7 +77,7 @@ CException::CException(ULONG major, ULONG minor, const CHAR *filename,
 //		in lookup structures etc.
 //
 //---------------------------------------------------------------------------
-CException::CException(ULONG major, ULONG minor)
+CException::CException(GP_ULONG major, GP_ULONG minor)
 	: m_major(major), m_minor(minor), m_filename(NULL), m_line(0)
 {
 	m_severity_level = CException::ExsevSentinel;
@@ -97,7 +97,7 @@ CException::CException(ULONG major, ULONG minor)
 //
 //---------------------------------------------------------------------------
 void
-CException::Raise(const CHAR *filename, ULONG line, ULONG major, ULONG minor,
+CException::Raise(const CHAR *filename, GP_ULONG line, GP_ULONG major, GP_ULONG minor,
 				  ...)
 {
 	// manufacture actual exception object
@@ -124,8 +124,8 @@ CException::Raise(const CHAR *filename, ULONG line, ULONG major, ULONG minor,
 
 
 // void
-// CException::Raise(const CHAR *filename, ULONG line, ULONG major, ULONG minor,
-// 				  ULONG severity_level...)
+// CException::Raise(const CHAR *filename, GP_ULONG line, GP_ULONG major, GP_ULONG minor,
+// 				  GP_ULONG severity_level...)
 // {
 // 	// manufacture actual exception object
 // 	CException exc(major, minor, filename, line, severity_level);
@@ -160,7 +160,7 @@ CException::Raise(const CHAR *filename, ULONG line, ULONG major, ULONG minor,
 //
 //---------------------------------------------------------------------------
 void
-CException::Reraise(CException exc, BOOL propagate)
+CException::Reraise(CException exc, GP_BOOL propagate)
 {
 	if (NULL != ITask::Self())
 	{
@@ -215,13 +215,13 @@ CException::Raise(CException exc)
 //
 //---------------------------------------------------------------------------
 const CHAR *
-CException::GetSQLState(ULONG major, ULONG minor)
+CException::GetSQLState(GP_ULONG major, GP_ULONG minor)
 {
 	const CHAR *sql_state = m_errcode[0].m_sql_state;
 	if (ExmaSQL == major)
 	{
-		ULONG sql_states = GPOS_ARRAY_SIZE(m_errcode);
-		for (ULONG ul = 0; ul < sql_states; ul++)
+		GP_ULONG sql_states = GPOS_ARRAY_SIZE(m_errcode);
+		for (GP_ULONG ul = 0; ul < sql_states; ul++)
 		{
 			ErrCodeElem errcode = m_errcode[ul];
 			if (minor == errcode.m_exception_num)

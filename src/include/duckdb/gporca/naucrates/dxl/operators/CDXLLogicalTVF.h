@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -83,7 +83,7 @@ public:
 	}
 
 	// get number of output columns
-	ULONG Arity() const;
+	GP_ULONG Arity() const;
 
 	// return the array of column descriptors
 	const CDXLColDescrArray *
@@ -93,10 +93,10 @@ public:
 	}
 
 	// get the column descriptor at the given position
-	const CDXLColDescr *GetColumnDescrAt(ULONG ul) const;
+	const CDXLColDescr *GetColumnDescrAt(GP_ULONG ul) const;
 
 	// check if given column is defined by operator
-	virtual BOOL IsColDefined(ULONG colid) const;
+	virtual GP_BOOL IsColDefined(GP_ULONG colid) const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -115,7 +115,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

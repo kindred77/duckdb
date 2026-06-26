@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -42,8 +42,8 @@ using namespace gpos;
 //		rehydrate function of type PrFn.
 //
 //---------------------------------------------------------------------------
-template <class T, class R, class U, ULONG (*HashFn)(const T *),
-		  BOOL (*EqFn)(const T *, const T *)>
+template <class T, class R, class U, GP_ULONG (*HashFn)(const T *),
+		  GP_BOOL (*EqFn)(const T *, const T *)>
 class CTreeMap
 {
 	// array of source pointers (sources owned by 3rd party)
@@ -79,14 +79,14 @@ private:
 		const T *m_ptParent;
 
 		// child index
-		ULONG m_ulChildIndex;
+		GP_ULONG m_ulChildIndex;
 
 		// child node
 		const T *m_ptChild;
 
 	public:
 		// ctor
-		STreeLink(const T *ptParent, ULONG child_index, const T *ptChild)
+		STreeLink(const T *ptParent, GP_ULONG child_index, const T *ptChild)
 			: m_ptParent(ptParent),
 			  m_ulChildIndex(child_index),
 			  m_ptChild(ptChild)
@@ -101,20 +101,20 @@ private:
 		}
 
 		// hash function
-		static ULONG
+		static GP_ULONG
 		HashValue(const STreeLink *ptlink)
 		{
-			ULONG ulHashParent = HashFn(ptlink->m_ptParent);
-			ULONG ulHashChild = HashFn(ptlink->m_ptChild);
-			ULONG ulHashChildIndex =
-				gpos::HashValue<ULONG>(&ptlink->m_ulChildIndex);
+			GP_ULONG ulHashParent = HashFn(ptlink->m_ptParent);
+			GP_ULONG ulHashChild = HashFn(ptlink->m_ptChild);
+			GP_ULONG ulHashChildIndex =
+				gpos::HashValue<GP_ULONG>(&ptlink->m_ulChildIndex);
 
 			return CombineHashes(ulHashParent,
 								 CombineHashes(ulHashChild, ulHashChildIndex));
 		}
 
 		// equality function
-		static BOOL
+		static GP_BOOL
 		Equals(const STreeLink *ptlink1, const STreeLink *ptlink2)
 		{
 			return EqFn(ptlink1->m_ptParent, ptlink2->m_ptParent) &&
@@ -148,7 +148,7 @@ private:
 		CMemoryPool *m_mp;
 
 		// id of node
-		ULONG m_ul;
+		GP_ULONG m_ul;
 
 		// element
 		const T *m_value;
@@ -160,21 +160,21 @@ private:
 		ULLONG m_ullCount;
 
 		// number of incoming edges
-		ULONG m_ulIncoming;
+		GP_ULONG m_ulIncoming;
 
 		// node state used for counting alternatives
 		ENodeState m_ens;
 
 		// total tree count for a given child
 		ULLONG
-		UllCount(ULONG ulChild)
+		UllCount(GP_ULONG ulChild)
 		{
 			GPOS_CHECK_STACK_SIZE;
 
 			ULLONG ull = 0;
 
-			ULONG ulCandidates = (*m_pdrgdrgptn)[ulChild]->Size();
-			for (ULONG ulAlt = 0; ulAlt < ulCandidates; ulAlt++)
+			GP_ULONG ulCandidates = (*m_pdrgdrgptn)[ulChild]->Size();
+			for (GP_ULONG ulAlt = 0; ulAlt < ulCandidates; ulAlt++)
 			{
 				CTreeNode *ptn = (*(*m_pdrgdrgptn)[ulChild])[ulAlt];
 				ULLONG ullCount = ptn->UllCount();
@@ -186,18 +186,18 @@ private:
 
 		// rehydrate tree
 		R *
-		PrUnrank(CMemoryPool *mp, PrFn prfn, U *pU, ULONG ulChild,
+		PrUnrank(CMemoryPool *mp, PrFn prfn, U *pU, GP_ULONG ulChild,
 				 ULLONG ullRank)
 		{
 			GPOS_CHECK_STACK_SIZE;
 			GPOS_ASSERT(ullRank < UllCount(ulChild));
 
 			CTreeNodeArray *pdrgptn = (*m_pdrgdrgptn)[ulChild];
-			ULONG ulCandidates = pdrgptn->Size();
+			GP_ULONG ulCandidates = pdrgptn->Size();
 
 			CTreeNode *ptn = NULL;
 
-			for (ULONG ul = 0; ul < ulCandidates; ul++)
+			for (GP_ULONG ul = 0; ul < ulCandidates; ul++)
 			{
 				ptn = (*pdrgptn)[ul];
 				ULLONG ullLocalCount = ptn->UllCount();
@@ -217,7 +217,7 @@ private:
 
 	public:
 		// ctor
-		CTreeNode(CMemoryPool *mp, ULONG ul, const T *value)
+		CTreeNode(CMemoryPool *mp, GP_ULONG ul, const T *value)
 			: m_mp(mp),
 			  m_ul(ul),
 			  m_value(value),
@@ -237,15 +237,15 @@ private:
 
 		// add child alternative
 		void
-		Add(ULONG ulPos, CTreeNode *ptn)
+		Add(GP_ULONG ulPos, CTreeNode *ptn)
 		{
 			GPOS_ASSERT(!FCounted() &&
 						"Adding edges after counting not meaningful");
 
 			// insert any child arrays skipped so far; make sure we have a dense
 			// array up to the position of ulPos
-			ULONG length = m_pdrgdrgptn->Size();
-			for (ULONG ul = length; ul <= ulPos; ul++)
+			GP_ULONG length = m_pdrgdrgptn->Size();
+			for (GP_ULONG ul = length; ul <= ulPos; ul++)
 			{
 				CTreeNodeArray *pdrg = GPOS_NEW(m_mp) CTreeNodeArray(m_mp);
 				m_pdrgdrgptn->Append(pdrg);
@@ -282,8 +282,8 @@ private:
 
 				ULLONG ullCount = 1;
 
-				ULONG arity = m_pdrgdrgptn->Size();
-				for (ULONG ulChild = 0; ulChild < arity; ulChild++)
+				GP_ULONG arity = m_pdrgdrgptn->Size();
+				for (GP_ULONG ulChild = 0; ulChild < arity; ulChild++)
 				{
 					ULLONG ull = UllCount(ulChild);
 					if (0 == ull)
@@ -306,14 +306,14 @@ private:
 		}
 
 		// check if count has been determined for this node
-		BOOL
+		GP_BOOL
 		FCounted() const
 		{
 			return (EnsCounted == m_ens);
 		}
 
 		// number of incoming edges
-		ULONG
+		GP_ULONG
 		UlIncoming() const
 		{
 			return m_ulIncoming;
@@ -338,8 +338,8 @@ private:
 
 				ULLONG ullRankRem = ullRank;
 
-				ULONG ulChildren = m_pdrgdrgptn->Size();
-				for (ULONG ulChild = 0; ulChild < ulChildren; ulChild++)
+				GP_ULONG ulChildren = m_pdrgdrgptn->Size();
+				for (GP_ULONG ulChild = 0; ulChild < ulChildren; ulChild++)
 				{
 					ULLONG ullLocalCount = UllCount(ulChild);
 					GPOS_ASSERT(0 < ullLocalCount);
@@ -362,19 +362,19 @@ private:
 		IOstream &
 		OsPrint(IOstream &os)
 		{
-			ULONG ulChildren = m_pdrgdrgptn->Size();
+			GP_ULONG ulChildren = m_pdrgdrgptn->Size();
 
 			os << "=== Node " << m_ul << " [" << *Value()
 			   << "] ===" << std::endl
 			   << "# children: " << ulChildren << std::endl
 			   << "# count: " << this->UllCount() << std::endl;
 
-			for (ULONG ul = 0; ul < ulChildren; ul++)
+			for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 			{
 				os << "--- child: #" << ul << " ---" << std::endl;
-				ULONG ulAlt = (*m_pdrgdrgptn)[ul]->Size();
+				GP_ULONG ulAlt = (*m_pdrgdrgptn)[ul]->Size();
 
-				for (ULONG ulChild = 0; ulChild < ulAlt; ulChild++)
+				for (GP_ULONG ulChild = 0; ulChild < ulAlt; ulChild++)
 				{
 					CTreeNode *ptn = (*(*m_pdrgdrgptn)[ul])[ulChild];
 					os << "  -> " << ptn->m_ul << " [" << *ptn->Value() << "]"
@@ -392,10 +392,10 @@ private:
 	CMemoryPool *m_mp;
 
 	// counter for nodes
-	ULONG m_ulCountNodes;
+	GP_ULONG m_ulCountNodes;
 
 	// counter for links
-	ULONG m_ulCountLinks;
+	GP_ULONG m_ulCountLinks;
 
 	// rehydrate function
 	PrFn m_prfn;
@@ -412,8 +412,8 @@ private:
 		TMapIter;
 
 	// map of created links
-	typedef CHashMap<STreeLink, BOOL, STreeLink::HashValue, STreeLink::Equals,
-					 CleanupDelete<STreeLink>, CleanupDelete<BOOL> >
+	typedef CHashMap<STreeLink, GP_BOOL, STreeLink::HashValue, STreeLink::Equals,
+					 CleanupDelete<STreeLink>, CleanupDelete<GP_BOOL> >
 		LinkMap;
 
 	TMap *m_ptmap;
@@ -476,7 +476,7 @@ public:
 
 	// insert edge as n-th child
 	void
-	Insert(const T *ptParent, ULONG ulPos, const T *ptChild)
+	Insert(const T *ptParent, GP_ULONG ulPos, const T *ptChild)
 	{
 		GPOS_ASSERT(ptParent != ptChild);
 
@@ -496,9 +496,9 @@ public:
 
 		// add created link to links map
 #ifdef GPOS_DEBUG
-		BOOL fInserted =
+		GP_BOOL fInserted =
 #endif	// GPOS_DEBUG
-			m_plinkmap->Insert(ptlink, GPOS_NEW(m_mp) BOOL(true));
+			m_plinkmap->Insert(ptlink, GPOS_NEW(m_mp) GP_BOOL(true));
 		GPOS_ASSERT(fInserted);
 	}
 
@@ -519,7 +519,7 @@ public:
 	{
 		// first, hookup all logical root nodes to the global root
 		TMapIter mi(m_ptmap);
-		ULONG ulNodes = 0;
+		GP_ULONG ulNodes = 0;
 		for (ulNodes = 0; mi.Advance(); ulNodes++)
 		{
 			CTreeNode *ptn = const_cast<CTreeNode *>(mi.Value());
@@ -548,14 +548,14 @@ public:
 	}
 
 	// return number of nodes
-	ULONG
+	GP_ULONG
 	UlNodes() const
 	{
 		return m_ulCountNodes;
 	}
 
 	// return number of links
-	ULONG
+	GP_ULONG
 	UlLinks() const
 	{
 		return m_ulCountLinks;
@@ -578,7 +578,7 @@ public:
 	OsPrint(IOstream &os) const
 	{
 		TMapIter mi(m_ptmap);
-		ULONG ulNodes = 0;
+		GP_ULONG ulNodes = 0;
 		for (ulNodes = 0; mi.Advance(); ulNodes++)
 		{
 			CTreeNode *ptn = const_cast<CTreeNode *>(mi.Value());

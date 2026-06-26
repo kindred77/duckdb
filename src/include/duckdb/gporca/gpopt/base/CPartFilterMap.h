@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -55,7 +55,7 @@ private:
 	{
 	private:
 		// scan id
-		ULONG m_scan_id;
+		GP_ULONG m_scan_id;
 
 		// scalar expression
 		CExpression *m_pexpr;
@@ -65,17 +65,17 @@ private:
 
 	public:
 		// ctor
-		CPartFilter(ULONG scan_id, CExpression *pexpr,
+		CPartFilter(GP_ULONG scan_id, CExpression *pexpr,
 					IStatistics *stats = NULL);
 
 		// dtor
 		virtual ~CPartFilter();
 
 		// match function
-		BOOL Matches(const CPartFilter *ppf) const;
+		GP_BOOL Matches(const CPartFilter *ppf) const;
 
 		// return scan id
-		ULONG
+		GP_ULONG
 		ScanId() const
 		{
 			return m_scan_id;
@@ -101,14 +101,14 @@ private:
 	};	// class CPartFilter
 
 	// map of partition index ids to filter expressions
-	typedef CHashMap<ULONG, CPartFilter, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CPartFilter, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CPartFilter> >
 		UlongToPartFilterMap;
 
 	// map iterator
-	typedef CHashMapIter<ULONG, CPartFilter, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CPartFilter, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupRelease<CPartFilter> >
 		UlongToPartFilterMapIter;
 
@@ -125,30 +125,30 @@ public:
 	virtual ~CPartFilterMap();
 
 	// check whether map contains the given scan id
-	BOOL
-	FContainsScanId(ULONG scan_id) const
+	GP_BOOL
+	FContainsScanId(GP_ULONG scan_id) const
 	{
 		return (NULL != m_phmulpf->Find(&scan_id));
 	}
 
 	// the expression associated with the given scan id
-	CExpression *Pexpr(ULONG scan_id) const;
+	CExpression *Pexpr(GP_ULONG scan_id) const;
 
 	// stats associated with the given scan id
-	IStatistics *Pstats(ULONG scan_id) const;
+	IStatistics *Pstats(GP_ULONG scan_id) const;
 
 	// check whether the map is empty
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return 0 == m_phmulpf->Size();
 	}
 
 	// check whether current part filter map is a subset of the given one
-	BOOL FSubset(CPartFilterMap *ppfm);
+	GP_BOOL FSubset(CPartFilterMap *ppfm);
 
 	// check equality of part filter maps
-	BOOL
+	GP_BOOL
 	Equals(CPartFilterMap *ppfm)
 	{
 		GPOS_ASSERT(NULL != ppfm);
@@ -161,11 +161,11 @@ public:
 	ULongPtrArray *PdrgpulScanIds(CMemoryPool *mp) const;
 
 	// add part filter to map
-	void AddPartFilter(CMemoryPool *mp, ULONG scan_id, CExpression *pexpr,
+	void AddPartFilter(CMemoryPool *mp, GP_ULONG scan_id, CExpression *pexpr,
 					   IStatistics *stats);
 
 	// look for given scan id in given map and, if found, copy the corresponding entry to current map
-	BOOL FCopyPartFilter(CMemoryPool *mp, ULONG scan_id,
+	GP_BOOL FCopyPartFilter(CMemoryPool *mp, GP_ULONG scan_id,
 						 CPartFilterMap *ppfmSource,
 						 CColRefSet *filter_colrefs);
 

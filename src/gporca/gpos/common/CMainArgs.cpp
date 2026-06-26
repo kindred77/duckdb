@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -25,7 +25,7 @@ using namespace gpos;
 //		ctor -- saves off all opt params
 //
 //---------------------------------------------------------------------------
-CMainArgs::CMainArgs(ULONG argc, const CHAR **argv, const CHAR *fmt)
+CMainArgs::CMainArgs(GP_ULONG argc, const CHAR **argv, const CHAR *fmt)
 	: m_argc(argc),
 	  m_argv(argv),
 	  m_fmt(fmt),
@@ -77,7 +77,7 @@ CMainArgs::~CMainArgs()
 //		wraps getopt logic
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMainArgs::Getopt(CHAR *pch)
 {
 	GPOS_ASSERT(NULL != pch);

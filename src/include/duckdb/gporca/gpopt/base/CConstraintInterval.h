@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -53,7 +53,7 @@ private:
 	CRangeArray *m_pdrgprng;
 
 	// does the interval include the null value
-	BOOL m_fIncludesNull;
+	GP_BOOL m_fIncludesNull;
 
 	// hidden copy ctor
 	CConstraintInterval(const CConstraintInterval &);
@@ -61,7 +61,7 @@ private:
 	// adds ranges from a source array to a destination array, starting
 	// at the range with the given index
 	void AddRemainingRanges(CMemoryPool *mp, CRangeArray *pdrgprngSrc,
-							ULONG ulStart, CRangeArray *pdrgprngDest);
+							GP_ULONG ulStart, CRangeArray *pdrgprngDest);
 
 	// append the given range to the array or extend the last element
 	void AppendOrExtend(CMemoryPool *mp, CRangeArray *pdrgprng, CRange *prange);
@@ -84,7 +84,7 @@ private:
 	// create interval from scalar comparison expression
 	static CConstraintInterval *PciIntervalFromScalarCmp(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 	static CConstraintInterval *PciIntervalFromScalarIDF(CMemoryPool *mp,
 														 CExpression *pexpr,
@@ -93,17 +93,17 @@ private:
 	// create interval from scalar bool operator
 	static CConstraintInterval *PciIntervalFromScalarBoolOp(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 	// create interval from scalar bool AND
 	static CConstraintInterval *PciIntervalFromScalarBoolAnd(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 	// create interval from scalar bool OR
 	static CConstraintInterval *PciIntervalFromScalarBoolOr(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 	// create interval from scalar null test
 	static CConstraintInterval *PciIntervalFromScalarNullTest(
@@ -120,7 +120,7 @@ private:
 public:
 	// ctor
 	CConstraintInterval(CMemoryPool *mp, const CColRef *colref,
-						CRangeArray *pdrgprng, BOOL is_null);
+						CRangeArray *pdrgprng, GP_BOOL is_null);
 
 	// dtor
 	virtual ~CConstraintInterval();
@@ -147,27 +147,27 @@ public:
 	}
 
 	// does the interval include the null value
-	BOOL
+	GP_BOOL
 	FIncludesNull() const
 	{
 		return m_fIncludesNull;
 	}
 
 	// is this constraint a contradiction
-	virtual BOOL FContradiction() const;
+	virtual GP_BOOL FContradiction() const;
 
 	// is this interval unbounded
-	virtual BOOL IsConstraintUnbounded() const;
+	virtual GP_BOOL IsConstraintUnbounded() const;
 
 	// check if there is a constraint on the given column
-	virtual BOOL
+	virtual GP_BOOL
 	FConstraint(const CColRef *colref) const
 	{
 		return m_pcr == colref;
 	}
 
 	// check if constraint is on the gp_segment_id column
-	virtual BOOL
+	virtual GP_BOOL
 	FConstraintOnSegmentId() const
 	{
 		return false;
@@ -175,7 +175,7 @@ public:
 
 	// return a copy of the constraint with remapped columns
 	virtual CConstraint *PcnstrCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// interval intersection
 	CConstraintInterval *PciIntersect(CMemoryPool *mp,
@@ -192,7 +192,7 @@ public:
 	CConstraintInterval *PciComplement(CMemoryPool *mp);
 
 	// does the current interval contain the given interval?
-	BOOL FContainsInterval(CMemoryPool *mp, CConstraintInterval *pci);
+	GP_BOOL FContainsInterval(CMemoryPool *mp, CConstraintInterval *pci);
 
 	// scalar expression
 	virtual CExpression *PexprScalar(CMemoryPool *mp);
@@ -222,22 +222,22 @@ public:
 	// create unbounded interval
 	static CConstraintInterval *PciUnbounded(CMemoryPool *mp,
 											 const CColRef *colref,
-											 BOOL fIncludesNull);
+											 GP_BOOL fIncludesNull);
 
 	// create an unbounded interval on any column from the given set
 	static CConstraintInterval *PciUnbounded(CMemoryPool *mp,
 											 const CColRefSet *pcrs,
-											 BOOL fIncludesNull);
+											 GP_BOOL fIncludesNull);
 
 	// helper for create interval from comparison between a column and a constant
 	static CConstraintInterval *PciIntervalFromColConstCmp(
 		CMemoryPool *mp, CColRef *colref, IMDType::ECmpType cmp_type,
-		CScalarConst *popScConst, BOOL infer_nulls_as = false);
+		CScalarConst *popScConst, GP_BOOL infer_nulls_as = false);
 
 	// create interval from scalar expression
 	static CConstraintInterval *PciIntervalFromScalarExpr(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 	// create interval from any general constraint that references
 	// only one column
@@ -247,7 +247,7 @@ public:
 	// generate a ConstraintInterval from the given expression
 	static CConstraintInterval *PcnstrIntervalFromScalarArrayCmp(
 		CMemoryPool *mp, CExpression *pexpr, CColRef *colref,
-		BOOL infer_nulls_as = false);
+		GP_BOOL infer_nulls_as = false);
 
 };	// class CConstraintInterval
 

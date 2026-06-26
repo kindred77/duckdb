@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -32,7 +32,7 @@ using namespace gpos;
 
 
 // refer gpopt/exception.cpp for explanation of errors
-const ULONG expected_opt_fallback[] = {
+const GP_ULONG expected_opt_fallback[] = {
 	gpopt::
 		ExmiInvalidPlanAlternative,	 // chosen plan id is outside range of possible plans
 	gpopt::ExmiUnsupportedOp,				 // unsupported operator
@@ -49,7 +49,7 @@ const ULONG expected_opt_fallback[] = {
 
 // array of DXL minor exception types that trigger expected fallback to the planner
 // refer naucrates/exception.cpp for explanation of errors
-const ULONG expected_dxl_fallback[] = {
+const GP_ULONG expected_dxl_fallback[] = {
 	gpdxl::ExmiMDObjUnsupported,  // unsupported metadata object
 	gpdxl::
 		ExmiQuery2DXLUnsupportedFeature,  // unsupported feature during algebrization
@@ -70,12 +70,12 @@ const ULONG expected_dxl_fallback[] = {
 	gpdxl::ExmiInvalidComparisonTypeCode};
 
 // array of DXL minor exception types that error out and NOT fallback to the planner
-const ULONG expected_dxl_errors[] = {
+const GP_ULONG expected_dxl_errors[] = {
 	gpdxl::ExmiDXL2PlStmtExternalScanError,	 // external table error
 	gpdxl::ExmiQuery2DXLNotNullViolation,	 // not null violation
 };
 
-BOOL
+GP_BOOL
 ShouldErrorOut(gpos::CException &exc)
 {
 	return gpdxl::ExmaDXL == exc.Major() &&
@@ -83,15 +83,15 @@ ShouldErrorOut(gpos::CException &exc)
 						  GPOS_ARRAY_SIZE(expected_dxl_errors));
 }
 
-gpos::BOOL
-FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
-			   gpos::ULONG size)
+gpos::GP_BOOL
+FoundException(gpos::CException &exc, const gpos::GP_ULONG *exceptions,
+			   gpos::GP_ULONG size)
 {
 	GPOS_ASSERT(NULL != exceptions);
 
-	gpos::ULONG minor = exc.Minor();
-	gpos::BOOL found = false;
-	for (gpos::ULONG ul = 0; !found && ul < size; ul++)
+	gpos::GP_ULONG minor = exc.Minor();
+	gpos::GP_BOOL found = false;
+	for (gpos::GP_ULONG ul = 0; !found && ul < size; ul++)
 	{
 		found = (exceptions[ul] == minor);
 	}
@@ -99,17 +99,17 @@ FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
 	return found;
 }
 
-gpos::BOOL
+gpos::GP_BOOL
 IsLoggableFailure(gpos::CException &exc)
 {
-	gpos::ULONG major = exc.Major();
+	gpos::GP_ULONG major = exc.Major();
 
-	gpos::BOOL is_opt_failure_expected =
+	gpos::GP_BOOL is_opt_failure_expected =
 		gpopt::ExmaGPOPT == major &&
 		FoundException(exc, expected_opt_fallback,
 					   GPOS_ARRAY_SIZE(expected_opt_fallback));
 
-	gpos::BOOL is_dxl_failure_expected =
+	gpos::GP_BOOL is_dxl_failure_expected =
 		(gpdxl::ExmaDXL == major || gpdxl::ExmaMD == major) &&
 		FoundException(exc, expected_dxl_fallback,
 					   GPOS_ARRAY_SIZE(expected_dxl_fallback));

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -28,7 +28,7 @@ protected:
 	CColRefArray *m_pdrgpcrOuterRefs;
 
 	// is this an outer join?
-	BOOL m_fOuterJoin;
+	GP_BOOL m_fOuterJoin;
 
 	// a copy of the original join predicate that has been pushed down to the inner side
 	CExpression *m_origJoinPred;
@@ -36,7 +36,7 @@ protected:
 public:
 	// ctor
 	CLogicalIndexApply(CMemoryPool *mp, CColRefArray *pdrgpcrOuterRefs,
-					   BOOL fOuterJoin, CExpression *origJoinPred);
+					   GP_BOOL fOuterJoin, CExpression *origJoinPred);
 
 	// ctor for patterns
 	explicit CLogicalIndexApply(CMemoryPool *mp);
@@ -66,7 +66,7 @@ public:
 	}
 
 	// outer column references accessor
-	BOOL
+	GP_BOOL
 	FouterJoin() const
 	{
 		return m_fOuterJoin;
@@ -113,7 +113,7 @@ public:
 	virtual CXformSet *PxfsCandidates(CMemoryPool *mp) const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Stats
@@ -134,7 +134,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// conversion function
 	static CLogicalIndexApply *

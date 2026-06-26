@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -65,7 +65,7 @@ CDistributionSpecRandom::CDistributionSpecRandom(CColRef *gp_segment_id_)
 //		Match function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecRandom::Matches(const CDistributionSpec *pds) const
 {
 	if (pds->Edt() == CDistributionSpec::EdtRouted)
@@ -78,8 +78,8 @@ CDistributionSpecRandom::Matches(const CDistributionSpec *pds) const
 			static_cast<const CDistributionSpecRouted *>(pds);
 		GPOS_ASSERT(pdsRouted != NULL);
 
-		const BOOL localNull = m_gp_segment_id == NULL;
-		const BOOL pdsNull = pdsRouted->Pcr() == NULL;
+		const GP_BOOL localNull = m_gp_segment_id == NULL;
+		const GP_BOOL pdsNull = pdsRouted->Pcr() == NULL;
 
 		if (localNull || pdsNull)
 		{
@@ -111,7 +111,7 @@ CDistributionSpecRandom::Matches(const CDistributionSpec *pds) const
 //		Check if this distribution spec satisfies the given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecRandom::FSatisfies(const CDistributionSpec *pds) const
 {
 	if (Matches(pds))

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -101,14 +101,14 @@ void
 CWStringDynamic::AppendBuffer(const WCHAR *w_str)
 {
 	GPOS_ASSERT(NULL != w_str);
-	ULONG length = GPOS_WSZ_LENGTH(w_str);
+	GP_ULONG length = GPOS_WSZ_LENGTH(w_str);
 	if (0 == length)
 	{
 		return;
 	}
 
 	// expand buffer if needed
-	ULONG new_length = m_length + length;
+	GP_ULONG new_length = m_length + length;
 	if (new_length + 1 > m_capacity)
 	{
 		IncreaseCapacity(new_length);
@@ -150,8 +150,8 @@ CWStringDynamic::AppendCharArray(const CHAR *sz)
 	GPOS_ASSERT(NULL != sz);
 
 	// expand buffer if needed
-	const ULONG length = GPOS_SZ_LENGTH(sz);
-	ULONG new_length = m_length + length;
+	const GP_ULONG length = GPOS_SZ_LENGTH(sz);
+	GP_ULONG new_length = m_length + length;
 	if (new_length + 1 > m_capacity)
 	{
 		IncreaseCapacity(new_length);
@@ -160,7 +160,7 @@ CWStringDynamic::AppendCharArray(const CHAR *sz)
 
 	// convert input string to wide character buffer
 #ifdef GPOS_DEBUG
-	ULONG wide_length =
+	GP_ULONG wide_length =
 #endif	// GPOS_DEBUG
 		clib::Mbstowcs(w_str_buffer, sz, length);
 	GPOS_ASSERT(wide_length == length);
@@ -210,7 +210,7 @@ CWStringDynamic::AppendFormat(const WCHAR *format, ...)
 	GPOS_ASSERT(-1 <= res);
 
 	// estimated number of characters in expanded format string
-	ULONG size =
+	GP_ULONG size =
 		std::max(GPOS_WSZ_LENGTH(format), GPOS_ARRAY_SIZE(w_str_buf_static));
 
 	// if the static buffer is too small, find the formatted string
@@ -237,7 +237,7 @@ CWStringDynamic::AppendFormat(const WCHAR *format, ...)
 	GPOS_ASSERT(res >= 0);
 
 	// expand buffer if needed
-	ULONG new_length = m_length + ULONG(res);
+	GP_ULONG new_length = m_length + GP_ULONG(res);
 	if (new_length + 1 > m_capacity)
 	{
 		IncreaseCapacity(new_length);
@@ -277,25 +277,25 @@ CWStringDynamic::AppendEscape(const CWStringBase *str, WCHAR wc,
 	}
 
 	// count how many times the character to be escaped appears in the string
-	ULONG occurrences = str->CountOccurrencesOf(wc);
+	GP_ULONG occurrences = str->CountOccurrencesOf(wc);
 	if (0 == occurrences)
 	{
 		Append(str);
 		return;
 	}
 
-	ULONG length = str->Length();
+	GP_ULONG length = str->Length();
 	const WCHAR *w_str = str->GetBuffer();
 
-	ULONG length_replace = GPOS_WSZ_LENGTH(w_str_replace);
-	ULONG new_length = m_length + length + (length_replace - 1) * occurrences;
+	GP_ULONG length_replace = GPOS_WSZ_LENGTH(w_str_replace);
+	GP_ULONG new_length = m_length + length + (length_replace - 1) * occurrences;
 	if (new_length + 1 > m_capacity)
 	{
 		IncreaseCapacity(new_length);
 	}
 
 	// append new contents while replacing character with escaping string
-	for (ULONG i = 0, j = m_length; i < length; i++)
+	for (GP_ULONG i = 0, j = m_length; i < length; i++)
 	{
 		if (wc == w_str[i] && !str->HasEscapedCharAt(i))
 		{
@@ -325,11 +325,11 @@ CWStringDynamic::AppendEscape(const CWStringBase *str, WCHAR wc,
 //
 //---------------------------------------------------------------------------
 void
-CWStringDynamic::IncreaseCapacity(ULONG requested)
+CWStringDynamic::IncreaseCapacity(GP_ULONG requested)
 {
 	GPOS_ASSERT(requested + 1 > m_capacity);
 
-	ULONG capacity = Capacity(requested + 1);
+	GP_ULONG capacity = Capacity(requested + 1);
 	GPOS_ASSERT(capacity > requested + 1);
 	GPOS_ASSERT(capacity >= (m_capacity << 1));
 
@@ -360,10 +360,10 @@ CWStringDynamic::IncreaseCapacity(ULONG requested)
 //		Find capacity that fits requested string size
 //
 //---------------------------------------------------------------------------
-ULONG
-CWStringDynamic::Capacity(ULONG requested)
+GP_ULONG
+CWStringDynamic::Capacity(GP_ULONG requested)
 {
-	ULONG capacity = GPOS_WSTR_DYNAMIC_CAPACITY_INIT;
+	GP_ULONG capacity = GPOS_WSTR_DYNAMIC_CAPACITY_INIT;
 	while (capacity <= requested + 1)
 	{
 		capacity = capacity << 1;

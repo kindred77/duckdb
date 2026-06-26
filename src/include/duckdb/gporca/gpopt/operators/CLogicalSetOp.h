@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -50,27 +50,27 @@ protected:
 	// output equivalence classes
 	CColRefSetArray *PdrgpcrsOutputEquivClasses(CMemoryPool *mp,
 												CExpressionHandle &exprhdl,
-												BOOL fIntersect) const;
+												GP_BOOL fIntersect) const;
 
 	// equivalence classes from one input child, mapped to output columns
 	CColRefSetArray *PdrgpcrsInputMapped(CMemoryPool *mp,
 										 CExpressionHandle &exprhdl,
-										 ULONG ulChild) const;
+										 GP_ULONG ulChild) const;
 
 	// constraints for a given output column from all children
 	CConstraintArray *PdrgpcnstrColumn(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
-									   ULONG ulColIndex, ULONG ulStart) const;
+									   GP_ULONG ulColIndex, GP_ULONG ulStart) const;
 
 	// get constraint for a given output column from a given children
 	CConstraint *PcnstrColumn(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  ULONG ulColIndex, ULONG ulChild) const;
+							  GP_ULONG ulColIndex, GP_ULONG ulChild) const;
 
 	// derive constraint property for difference, intersect, and union
 	// operators
 	CPropConstraint *PpcDeriveConstraintSetop(CMemoryPool *mp,
 											  CExpressionHandle &exprhdl,
-											  BOOL fIntersect) const;
+											  GP_BOOL fIntersect) const;
 
 public:
 	// ctor
@@ -108,14 +108,14 @@ public:
 	}
 
 	// return true if we can pull projections up past this operator from its given child
-	virtual BOOL FCanPullProjectionsUp(ULONG  //child_index
+	virtual GP_BOOL FCanPullProjectionsUp(GP_ULONG  //child_index
 	) const
 	{
 		return false;
 	}
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	virtual IOstream &OsPrint(IOstream &os) const;
 
@@ -142,7 +142,7 @@ public:
 	virtual CColRefSet *PcrsStat(CMemoryPool *,		   // mp
 								 CExpressionHandle &,  // exprhdl
 								 CColRefSet *pcrsInput,
-								 ULONG	// child_index
+								 GP_ULONG	// child_index
 	) const;
 
 	// conversion function

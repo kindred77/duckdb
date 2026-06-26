@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -23,7 +23,7 @@ namespace gpnaucrates
 // Parent class for computing statistics for all joins
 class CJoinStatsProcessor
 {
-	static BOOL m_compute_scale_factor_from_histogram_buckets;
+	static GP_BOOL m_compute_scale_factor_from_histogram_buckets;
 
 protected:
 	// return join cardinality based on scaling factor and join type
@@ -36,7 +36,7 @@ protected:
 
 	// check if the join statistics object is empty output based on the input
 	// histograms and the join histograms
-	static BOOL JoinStatsAreEmpty(BOOL outer_is_empty, BOOL output_is_empty,
+	static GP_BOOL JoinStatsAreEmpty(GP_BOOL outer_is_empty, GP_BOOL output_is_empty,
 								  const CHistogram *outer_histogram,
 								  const CHistogram *inner_histogram,
 								  CHistogram *join_histogram,
@@ -50,9 +50,9 @@ protected:
 		CHistogram **result_hist1,	// output: histogram 1 after join
 		CHistogram **result_hist2,	// output: histogram 2 after join
 		CDouble *scale_factor,		// output: scale factor based on the join
-		BOOL is_input_empty,		// if true, one of the inputs is empty
+		GP_BOOL is_input_empty,		// if true, one of the inputs is empty
 		IStatistics::EStatsJoinType join_type,
-		BOOL DoIgnoreLASJHistComputation);
+		GP_BOOL DoIgnoreLASJHistComputation);
 
 public:
 	// main driver to generate join stats
@@ -62,7 +62,7 @@ public:
 		const IStatistics *inner_stats_input,
 		CStatsPredJoinArray *join_preds_stats,
 		IStatistics::EStatsJoinType join_type,
-		BOOL DoIgnoreLASJHistComputation);
+		GP_BOOL DoIgnoreLASJHistComputation);
 
 	static IStatistics *CalcAllJoinStats(CMemoryPool *mp,
 										 IStatisticsArray *statistics_array,
@@ -85,12 +85,12 @@ public:
 	);
 
 	static void
-	SetComputeScaleFactorFromHistogramBuckets(BOOL val)
+	SetComputeScaleFactorFromHistogramBuckets(GP_BOOL val)
 	{
 		m_compute_scale_factor_from_histogram_buckets = val;
 	}
 
-	static BOOL
+	static GP_BOOL
 	ComputeScaleFactorFromHistogramBuckets()
 	{
 		return m_compute_scale_factor_from_histogram_buckets;

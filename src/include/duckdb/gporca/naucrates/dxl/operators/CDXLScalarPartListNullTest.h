@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal, Inc.
 //
@@ -20,18 +20,18 @@ class CDXLScalarPartListNullTest : public CDXLScalar
 {
 private:
 	// partitioning level
-	ULONG m_partitioning_level;
+	GP_ULONG m_partitioning_level;
 
 	// Null Test type (true for 'is null', false for 'is not null')
-	BOOL m_is_null;
+	GP_BOOL m_is_null;
 
 	// private copy ctor
 	CDXLScalarPartListNullTest(const CDXLScalarPartListNullTest &);
 
 public:
 	// ctor
-	CDXLScalarPartListNullTest(CMemoryPool *mp, ULONG partitioning_level,
-							   BOOL is_null);
+	CDXLScalarPartListNullTest(CMemoryPool *mp, GP_ULONG partitioning_level,
+							   GP_BOOL is_null);
 
 	// operator type
 	virtual Edxlopid GetDXLOperator() const;
@@ -40,23 +40,23 @@ public:
 	virtual const CWStringConst *GetOpNameStr() const;
 
 	// partitioning level
-	ULONG GetPartitioningLevel() const;
+	GP_ULONG GetPartitioningLevel() const;
 
 	// Null Test type (true for 'is null', false for 'is not null')
-	BOOL IsNull() const;
+	GP_BOOL IsNull() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
 								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
 	virtual void AssertValid(const CDXLNode *dxlnode,
-							 BOOL validate_children) const;
+							 GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

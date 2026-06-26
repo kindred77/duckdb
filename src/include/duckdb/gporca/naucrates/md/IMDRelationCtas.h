@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -41,28 +41,28 @@ public:
 	virtual CMDName *GetMdNameSchema() const = 0;
 
 	// is this a partitioned table
-	virtual BOOL
+	virtual GP_BOOL
 	IsPartitioned() const
 	{
 		return false;
 	}
 
 	// number of partition columns
-	virtual ULONG
+	virtual GP_ULONG
 	PartColumnCount() const
 	{
 		return 0;
 	}
 
 	// number of partitions
-	virtual ULONG
+	virtual GP_ULONG
 	PartitionCount() const
 	{
 		return 0;
 	}
 
 	// retrieve the partition column at the given position
-	virtual const IMDColumn *PartColAt(ULONG  // pos
+	virtual const IMDColumn *PartColAt(GP_ULONG  // pos
 	) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no partition columns");
@@ -78,28 +78,28 @@ public:
 	}
 
 	// retrieve the partition column at the given position
-	virtual CHAR PartTypeAtLevel(ULONG /*pos*/) const
+	virtual CHAR PartTypeAtLevel(GP_ULONG /*pos*/) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no partition types");
 		return (CHAR) 0;
 	}
 
 	// return true if a hash distributed table needs to be considered as random
-	virtual BOOL
+	virtual GP_BOOL
 	ConvertHashToRandom() const
 	{
 		return false;
 	}
 
 	// returns the number of key sets
-	virtual ULONG
+	virtual GP_ULONG
 	KeySetCount() const
 	{
 		return 0;
 	}
 
 	// returns the key set at the specified position
-	virtual const ULongPtrArray *KeySetAt(ULONG	 // pos
+	virtual const ULongPtrArray *KeySetAt(GP_ULONG	 // pos
 	) const
 	{
 		GPOS_ASSERT(!"CTAS tables have no keys");

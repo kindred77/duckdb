@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,19 +40,19 @@ private:
 	ULongPtrArray *m_insert_colid_array;
 
 	// action column id
-	ULONG m_action_colid;
+	GP_ULONG m_action_colid;
 
 	// ctid column id
-	ULONG m_ctid_colid;
+	GP_ULONG m_ctid_colid;
 
 	// segmentid column id
-	ULONG m_segid_colid;
+	GP_ULONG m_segid_colid;
 
 	// should update preserve tuple oids
-	BOOL m_preserve_oids;
+	GP_BOOL m_preserve_oids;
 
 	// tuple oid column id
-	ULONG m_tuple_oid;
+	GP_ULONG m_tuple_oid;
 
 	// private copy ctor
 	CDXLPhysicalSplit(const CDXLPhysicalSplit &);
@@ -60,9 +60,9 @@ private:
 public:
 	// ctor
 	CDXLPhysicalSplit(CMemoryPool *mp, ULongPtrArray *delete_colid_array,
-					  ULongPtrArray *insert_colid_array, ULONG action_colid,
-					  ULONG ctid_colid, ULONG segid_colid, BOOL preserve_oids,
-					  ULONG tuple_oid);
+					  ULongPtrArray *insert_colid_array, GP_ULONG action_colid,
+					  GP_ULONG ctid_colid, GP_ULONG segid_colid, GP_BOOL preserve_oids,
+					  GP_ULONG tuple_oid);
 
 	// dtor
 	virtual ~CDXLPhysicalSplit();
@@ -88,35 +88,35 @@ public:
 	}
 
 	// action column id
-	ULONG
+	GP_ULONG
 	ActionColId() const
 	{
 		return m_action_colid;
 	}
 
 	// ctid column id
-	ULONG
+	GP_ULONG
 	GetCtIdColId() const
 	{
 		return m_ctid_colid;
 	}
 
 	// segmentid column id
-	ULONG
+	GP_ULONG
 	GetSegmentIdColId() const
 	{
 		return m_segid_colid;
 	}
 
 	// does update preserve oids
-	BOOL
+	GP_BOOL
 	IsOidsPreserved() const
 	{
 		return m_preserve_oids;
 	}
 
 	// tuple oid column id
-	ULONG
+	GP_ULONG
 	GetTupleOid() const
 	{
 		return m_tuple_oid;
@@ -125,7 +125,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format

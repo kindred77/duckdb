@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 Pivotal, Inc.
 //
@@ -40,7 +40,7 @@ public:
 
 	CLogicalMultiExternalGet(CMemoryPool *mp, IMdIdArray *part_mdids,
 							 const CName *pnameAlias,
-							 CTableDescriptor *ptabdesc, ULONG scan_id,
+							 CTableDescriptor *ptabdesc, GP_ULONG scan_id,
 							 CColRefArray *pdrgpcrOutput);
 
 	~CLogicalMultiExternalGet();
@@ -67,11 +67,11 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Required Relational Properties
@@ -82,7 +82,7 @@ public:
 	PcrsStat(CMemoryPool *,		   // mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   // pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		GPOS_ASSERT(!"CLogicalMultiExternalGet has no children");
@@ -90,7 +90,7 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		GPOS_ASSERT(!"Unexpected function call of FInputOrderSensitive");

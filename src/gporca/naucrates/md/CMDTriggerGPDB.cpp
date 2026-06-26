@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -31,7 +31,7 @@ using namespace gpdxl;
 //---------------------------------------------------------------------------
 CMDTriggerGPDB::CMDTriggerGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 							   IMDId *rel_mdid, IMDId *mdid_func, INT type,
-							   BOOL is_enabled)
+							   GP_BOOL is_enabled)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),
@@ -74,7 +74,7 @@ CMDTriggerGPDB::~CMDTriggerGPDB()
 //		Does trigger execute on a row-level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTriggerGPDB::ExecutesOnRowLevel() const
 {
 	return (m_type & GPMD_TRIGGER_ROW);
@@ -88,7 +88,7 @@ CMDTriggerGPDB::ExecutesOnRowLevel() const
 //		Is this a before trigger
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTriggerGPDB::IsBefore() const
 {
 	return (m_type & GPMD_TRIGGER_BEFORE);
@@ -102,7 +102,7 @@ CMDTriggerGPDB::IsBefore() const
 //		Is this an insert trigger
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTriggerGPDB::IsInsert() const
 {
 	return (m_type & GPMD_TRIGGER_INSERT);
@@ -116,7 +116,7 @@ CMDTriggerGPDB::IsInsert() const
 //		Is this a delete trigger
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTriggerGPDB::IsDelete() const
 {
 	return (m_type & GPMD_TRIGGER_DELETE);
@@ -130,7 +130,7 @@ CMDTriggerGPDB::IsDelete() const
 //		Is this an update trigger
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTriggerGPDB::IsUpdate() const
 {
 	return (m_type & GPMD_TRIGGER_UPDATE);

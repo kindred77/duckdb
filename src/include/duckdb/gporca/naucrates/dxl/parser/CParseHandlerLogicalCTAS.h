@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc
 //
@@ -54,10 +54,10 @@ private:
 	IntPtrArray *m_vartypemod_array;
 
 	// is this a temporary table
-	BOOL m_is_temp_table;
+	GP_BOOL m_is_temp_table;
 
 	// does table have oids
-	BOOL m_has_oids;
+	GP_BOOL m_has_oids;
 
 	// distribution policy
 	IMDRelation::Ereldistrpolicy m_rel_distr_policy;

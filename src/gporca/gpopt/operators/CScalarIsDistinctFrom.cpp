@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -51,7 +51,7 @@ CScalarIsDistinctFrom::Eber(ULongPtrArray *pdrgpulChildren) const
 	return CScalar::EberFalse;
 }
 
-BOOL
+GP_BOOL
 CScalarIsDistinctFrom::Matches(COperator *pop) const
 {
 	if (pop->Eopid() == Eopid())

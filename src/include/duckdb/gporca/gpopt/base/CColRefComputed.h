@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -39,7 +39,7 @@ private:
 
 public:
 	// ctor
-	CColRefComputed(const IMDType *pmdtype, INT type_modifier, ULONG id,
+	CColRefComputed(const IMDType *pmdtype, INT type_modifier, GP_ULONG id,
 					const CName *pname);
 
 	// dtor
@@ -52,7 +52,7 @@ public:
 	}
 
 	// is column a system column?
-	BOOL
+	GP_BOOL
 	IsSystemCol() const
 	{
 		// we cannot introduce system columns as computed column
@@ -60,7 +60,7 @@ public:
 	}
 
 	// is column a distribution column?
-	BOOL
+	GP_BOOL
 	IsDistCol() const
 	{
 		// we cannot introduce distribution columns as computed column

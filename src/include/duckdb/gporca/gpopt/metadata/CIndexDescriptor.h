@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -50,7 +50,7 @@ private:
 	CColumnDescriptorArray *m_pdrgpcoldescIncludedCols;
 
 	// clustered index
-	BOOL m_clustered;
+	GP_BOOL m_clustered;
 
 	// index type
 	IMDIndex::EmdindexType m_index_type;
@@ -63,16 +63,16 @@ public:
 	CIndexDescriptor(CMemoryPool *mp, IMDId *pmdidIndex, const CName &name,
 					 CColumnDescriptorArray *pdrgcoldescKeyCols,
 					 CColumnDescriptorArray *pdrgcoldescIncludedCols,
-					 BOOL is_clustered, IMDIndex::EmdindexType emdindt);
+					 GP_BOOL is_clustered, IMDIndex::EmdindexType emdindt);
 
 	// dtor
 	virtual ~CIndexDescriptor();
 
 	// number of key columns
-	ULONG Keys() const;
+	GP_ULONG Keys() const;
 
 	// number of included columns
-	ULONG UlIncludedColumns() const;
+	GP_ULONG UlIncludedColumns() const;
 
 	// index mdid accessor
 	IMDId *
@@ -103,7 +103,7 @@ public:
 	}
 
 	// is index clustered
-	BOOL
+	GP_BOOL
 	IsClustered() const
 	{
 		return m_clustered;
@@ -115,7 +115,7 @@ public:
 		return m_index_type;
 	}
 
-	BOOL SupportsIndexOnlyScan() const;
+	GP_BOOL SupportsIndexOnlyScan() const;
 
 	// create an index descriptor
 	static CIndexDescriptor *Pindexdesc(CMemoryPool *mp,

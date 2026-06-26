@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -45,7 +45,7 @@ private:
 public:
 	// ctor
 	CSystemId(IMDId::EMDIdType mdid_type, const WCHAR *sysid_char,
-			  ULONG length = GPDXL_SYSID_LENGTH);
+			  GP_ULONG length = GPDXL_SYSID_LENGTH);
 
 	// copy ctor
 	CSystemId(const CSystemId &);
@@ -65,10 +65,10 @@ public:
 	}
 
 	// equality
-	BOOL Equals(const CSystemId &sysid) const;
+	GP_BOOL Equals(const CSystemId &sysid) const;
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 };
 
 // dynamic arrays over md system id elements

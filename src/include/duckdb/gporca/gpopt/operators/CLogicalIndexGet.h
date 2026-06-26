@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 	CTableDescriptor *m_ptabdesc;
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// alias for table
 	const CName *m_pnameAlias;
@@ -67,7 +67,7 @@ public:
 	explicit CLogicalIndexGet(CMemoryPool *mp);
 
 	CLogicalIndexGet(CMemoryPool *mp, const IMDIndex *pmdindex,
-					 CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
+					 CTableDescriptor *ptabdesc, GP_ULONG ulOriginOpId,
 					 const CName *pnameAlias, CColRefArray *pdrgpcrOutput);
 
 	// dtor
@@ -102,7 +102,7 @@ public:
 	}
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
@@ -144,17 +144,17 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
@@ -191,7 +191,7 @@ public:
 		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive join depth
-	virtual ULONG
+	virtual GP_ULONG
 	DeriveJoinDepth(CMemoryPool *,		 // mp
 					CExpressionHandle &	 // exprhdl
 	) const
@@ -208,7 +208,7 @@ public:
 	PcrsStat(CMemoryPool *mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		// TODO:  March 26 2012; statistics derivation for indexes

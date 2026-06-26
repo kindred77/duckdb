@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -56,11 +56,11 @@ private:
 		const CXformLeftOuter2InnerUnionAllLeftAntiSemiJoin &);
 
 	// check the stats ratio to decide whether to apply the xform or not
-	BOOL FApplyXformUsingStatsInfo(const IStatistics *outer_stats,
+	GP_BOOL FApplyXformUsingStatsInfo(const IStatistics *outer_stats,
 								   const IStatistics *inner_side_stats) const;
 
 	// check if the inner expression is of a type which should be considered by this xform
-	static BOOL FValidInnerExpr(CExpression *pexprInner);
+	static GP_BOOL FValidInnerExpr(CExpression *pexprInner);
 
 	// construct a left anti semi join with the CTE consumer (ulCTEJoinId) as outer
 	// and a group by as inner
@@ -68,14 +68,14 @@ private:
 		CMemoryPool *mp, CColRefArray *pdrgpcrOuter,
 		CColRefArray *pdrgpcrOuterCopy, CColRefSet *pcrsScalar,
 		CColRefSet *pcrsInner, CColRefArray *pdrgpcrJoinOutput,
-		ULONG ulCTEJoinId, ULONG ulCTEOuterId);
+		GP_ULONG ulCTEJoinId, GP_ULONG ulCTEOuterId);
 
 	// return a project over a left anti semi join that appends nulls for all
 	// columns in the original inner child
 	static CExpression *PexprProjectOverLeftAntiSemiJoin(
 		CMemoryPool *mp, CColRefArray *pdrgpcrOuter, CColRefSet *pcrsScalar,
 		CColRefSet *pcrsInner, CColRefArray *pdrgpcrJoinOutput,
-		ULONG ulCTEJoinId, ULONG ulCTEOuterId,
+		GP_ULONG ulCTEJoinId, GP_ULONG ulCTEOuterId,
 		CColRefArray **ppdrgpcrProjectOutput);
 
 public:
@@ -105,7 +105,7 @@ public:
 	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FNeedsStats() const
 	{
 		return true;
@@ -116,7 +116,7 @@ public:
 						   CExpression *pexpr) const;
 
 	// return true if xform should be applied only once
-	virtual BOOL IsApplyOnce();
+	virtual GP_BOOL IsApplyOnce();
 };
 }  // namespace gpopt
 

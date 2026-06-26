@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,10 +65,10 @@ CJobTest::~CJobTest()
 //		Execution of test job
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobTest::FExecute(CSchedulerContext *psc)
 {
-	BOOL fRes = false;
+	GP_BOOL fRes = false;
 
 	switch (m_ett)
 	{
@@ -97,7 +97,7 @@ CJobTest::FExecute(CSchedulerContext *psc)
 //		Test job spawning
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobTest::FSpawn(CSchedulerContext *psc)
 {
 	ULONG_PTR ulpOffset = m_ulpCnt++;
@@ -116,7 +116,7 @@ CJobTest::FSpawn(CSchedulerContext *psc)
 
 	if (m_ulRounds > ulpOffset)
 	{
-		for (ULONG i = 0; i < m_ulFanout; i++)
+		for (GP_ULONG i = 0; i < m_ulFanout; i++)
 		{
 			// get new job from factory
 			CJob *pj = psc->Pjf()->PjCreate(CJob::EjtTest);
@@ -150,14 +150,14 @@ CJobTest::FSpawn(CSchedulerContext *psc)
 //		Start jobs to be queued
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobTest::FStartQueue(CSchedulerContext *psc)
 {
 	ULONG_PTR ulpOffset = m_ulpCnt++;
 
 	if (0 == ulpOffset)
 	{
-		for (ULONG i = 0; i < m_ulFanout; i++)
+		for (GP_ULONG i = 0; i < m_ulFanout; i++)
 		{
 			// get new job from factory
 			CJob *pj = psc->Pjf()->PjCreate(CJob::EjtTest);
@@ -188,10 +188,10 @@ CJobTest::FStartQueue(CSchedulerContext *psc)
 //		Test job queueing
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobTest::FQueue(CSchedulerContext *psc)
 {
-	BOOL fCompleted = true;
+	GP_BOOL fCompleted = true;
 
 	switch (m_pjq->EjqrAdd(this))
 	{
@@ -246,10 +246,10 @@ CJobTest::FQueue(CSchedulerContext *psc)
 void
 CJobTest::Loop()
 {
-	ULONG ulOuter = 0;
+	GP_ULONG ulOuter = 0;
 	while (ulOuter < m_ulIters)
 	{
-		for (ULONG ulInner = ulOuter; ulInner > 0; ulInner--)
+		for (GP_ULONG ulInner = ulOuter; ulInner > 0; ulInner--)
 		{
 			if (0 < ulOuter * (ulOuter + GPOPT_JOB_TEST_DUMMY_CONST))
 			{

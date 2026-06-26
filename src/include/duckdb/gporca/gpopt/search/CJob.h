@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -126,13 +126,13 @@ private:
 	ULONG_PTR m_ulpRefs;
 
 	// job id - set by job factory
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// job type
 	EJobType m_ejt;
 
 	// flag indicating if job is initialized
-	BOOL m_fInit;
+	GP_BOOL m_fInit;
 
 #ifdef GPOS_DEBUG
 	// job state
@@ -187,7 +187,7 @@ private:
 
 	// notify parent of job completion;
 	// return true if parent is runnable;
-	BOOL FResumeParent() const;
+	GP_BOOL FResumeParent() const;
 
 #ifdef GPOS_DEBUG
 	// reference counter accessor
@@ -198,7 +198,7 @@ private:
 	}
 
 	// check if job type is valid
-	BOOL
+	GP_BOOL
 	FValidType() const
 	{
 		return (EjtTest <= m_ejt && EjtSentinel > m_ejt);
@@ -224,7 +224,7 @@ private:
 
 protected:
 	// id accessor
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
@@ -254,7 +254,7 @@ protected:
 	virtual void Reset();
 
 	// check if job is initialized
-	BOOL
+	GP_BOOL
 	FInit() const
 	{
 		return m_fInit;
@@ -272,7 +272,7 @@ protected:
 public:
 	// actual job execution given a scheduling context
 	// returns true if job completes, false if it is suspended
-	virtual BOOL FExecute(CSchedulerContext *psc) = 0;
+	virtual GP_BOOL FExecute(CSchedulerContext *psc) = 0;
 
 	// type accessor
 	EJobType

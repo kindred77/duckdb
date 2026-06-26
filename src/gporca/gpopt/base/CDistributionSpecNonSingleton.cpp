@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -44,7 +44,7 @@ CDistributionSpecNonSingleton::CDistributionSpecNonSingleton()
 //
 //---------------------------------------------------------------------------
 CDistributionSpecNonSingleton::CDistributionSpecNonSingleton(
-	BOOL fAllowReplicated, BOOL fAllowEnforced)
+	GP_BOOL fAllowReplicated, GP_BOOL fAllowEnforced)
 	: m_fAllowReplicated(fAllowReplicated), m_fAllowEnforced(fAllowEnforced)
 {
 }
@@ -58,7 +58,7 @@ CDistributionSpecNonSingleton::CDistributionSpecNonSingleton(
 //		Check if this distribution spec satisfies the given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDistributionSpecNonSingleton::FSatisfies(const CDistributionSpec *	 // pds
 ) const
 {

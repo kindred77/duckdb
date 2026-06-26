@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -28,7 +28,7 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 CAutoTaskProxy::CAutoTaskProxy(CMemoryPool *mp, CWorkerPoolManager *pwpm,
-							   BOOL propagate_error)
+							   GP_BOOL propagate_error)
 	: m_mp(mp), m_pwpm(pwpm), m_propagate_error(propagate_error)
 {
 	m_list.Init(GPOS_OFFSET(CTask, m_proxy_link));
@@ -122,7 +122,7 @@ CAutoTaskProxy::Destroy(CTask *task)
 //
 //---------------------------------------------------------------------------
 CTask *
-CAutoTaskProxy::Create(void *(*pfunc)(void *), void *arg, BOOL *cancel)
+CAutoTaskProxy::Create(void *(*pfunc)(void *), void *arg, GP_BOOL *cancel)
 {
 	// create memory pool for task
 	CAutoMemoryPool amp(CAutoMemoryPool::ElcStrict);
@@ -216,10 +216,10 @@ CAutoTaskProxy::FindFinished(CTask **task)
 
 #ifdef GPOS_DEBUG
 	// check if there is any task scheduled
-	BOOL scheduled = false;
+	GP_BOOL scheduled = false;
 
 	// check if all tasks have been reported as finished
-	BOOL reported_all = true;
+	GP_BOOL reported_all = true;
 #endif	// GPOS_DEBUG
 
 	// iterate task list

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -54,7 +54,7 @@ private:
 	EArrCmpType m_earrccmpt;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
 	// private copy ctor
 	CScalarArrayCmp(const CScalarArrayCmp &);
@@ -98,13 +98,13 @@ public:
 
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -114,7 +114,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();

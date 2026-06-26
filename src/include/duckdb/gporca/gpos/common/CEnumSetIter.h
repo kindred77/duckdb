@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -25,7 +25,7 @@ namespace gpos
 //		Template derived from CBitSetIter
 //
 //---------------------------------------------------------------------------
-template <class T, ULONG sentinel_index>
+template <class T, GP_ULONG sentinel_index>
 class CEnumSetIter : public CBitSetIter
 {
 private:

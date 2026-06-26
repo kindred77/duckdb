@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2011 EMC Corp.
 //
@@ -82,7 +82,7 @@ CGroupProxy::MoveDuplicateGExpr(CGroupExpression *pgexpr)
 	GPOS_ASSERT(pgexpr->Pgroup() == m_pgroup);
 
 #ifdef GPOS_DEBUG
-	ULONG ulGExprsOld =
+	GP_ULONG ulGExprsOld =
 		m_pgroup->m_listGExprs.Size() + m_pgroup->m_listDupGExprs.Size();
 #endif	// GPOS_DEBUG
 
@@ -163,7 +163,7 @@ CGroupProxy::PgexprFirst()
 //
 //---------------------------------------------------------------------------
 CGroupExpression *
-CGroupProxy::PgexprSkip(CGroupExpression *pgexprStart, BOOL fSkipLogical)
+CGroupProxy::PgexprSkip(CGroupExpression *pgexprStart, GP_BOOL fSkipLogical)
 {
 	CGroupExpression *pgexpr = pgexprStart;
 	while (NULL != pgexpr && fSkipLogical == pgexpr->Pop()->FLogical())

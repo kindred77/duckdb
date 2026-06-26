@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -41,7 +41,7 @@ CPoint::CPoint(IDatum *datum) : m_datum(datum)
 //		Equality check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::Equals(const CPoint *point) const
 {
 	GPOS_ASSERT(NULL != point);
@@ -56,7 +56,7 @@ CPoint::Equals(const CPoint *point) const
 //		Inequality check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::IsNotEqual(const CPoint *point) const
 {
 	return !(this->Equals(point));
@@ -70,7 +70,7 @@ CPoint::IsNotEqual(const CPoint *point) const
 //		Less than check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::IsLessThan(const CPoint *point) const
 {
 	GPOS_ASSERT(NULL != point);
@@ -86,7 +86,7 @@ CPoint::IsLessThan(const CPoint *point) const
 //		Less than or equals check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::IsLessThanOrEqual(const CPoint *point) const
 {
 	return (this->IsLessThan(point) || this->Equals(point));
@@ -100,7 +100,7 @@ CPoint::IsLessThanOrEqual(const CPoint *point) const
 //		Greater than check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::IsGreaterThan(const CPoint *point) const
 {
 	return m_datum->StatsAreComparable(point->m_datum) &&
@@ -115,7 +115,7 @@ CPoint::IsGreaterThan(const CPoint *point) const
 //		Greater than or equals check
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPoint::IsGreaterThanOrEqual(const CPoint *point) const
 {
 	return (this->IsGreaterThan(point) || this->Equals(point));
@@ -132,7 +132,7 @@ CPoint::Distance(const CPoint *point) const
 // this" is usually the higher value and "point" is the lower value
 // [0,5) would return 5, [0,5] would return 6 and (0,5) would return 4
 CDouble
-CPoint::Width(const CPoint *point, BOOL include_lower, BOOL include_upper) const
+CPoint::Width(const CPoint *point, GP_BOOL include_lower, GP_BOOL include_upper) const
 {
 	// default to a non zero constant for overlap computation
 	CDouble width = CDouble(1.0);

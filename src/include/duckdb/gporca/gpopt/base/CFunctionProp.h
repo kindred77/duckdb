@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -36,10 +36,10 @@ private:
 	IMDFunction::EFuncStbl m_efs;
 
 	// does this expression have a volatile Function Scan
-	BOOL m_fHasVolatileFunctionScan;
+	GP_BOOL m_fHasVolatileFunctionScan;
 
 	// is this function used as a scan operator
-	BOOL m_fScan;
+	GP_BOOL m_fScan;
 
 	// hidden copy ctor
 	CFunctionProp(const CFunctionProp &);
@@ -47,7 +47,7 @@ private:
 public:
 	// ctor
 	CFunctionProp(IMDFunction::EFuncStbl func_stability,
-				  BOOL fHasVolatileFunctionScan, BOOL fScan);
+				  GP_BOOL fHasVolatileFunctionScan, GP_BOOL fScan);
 
 	// dtor
 	virtual ~CFunctionProp();
@@ -60,14 +60,14 @@ public:
 	}
 
 	// does this expression have a volatile Function Scan
-	virtual BOOL
+	virtual GP_BOOL
 	FHasVolatileFunctionScan() const
 	{
 		return m_fHasVolatileFunctionScan;
 	}
 
 	// check if must execute on a single host
-	BOOL NeedsSingletonExecution() const;
+	GP_BOOL NeedsSingletonExecution() const;
 
 	// print
 	IOstream &OsPrint(IOstream &os) const;

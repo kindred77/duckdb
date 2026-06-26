@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -66,13 +66,13 @@ public:
 		// greedy, mincard: 0 means not an LOJ, 1 means this is an LOJ edge
 		// DP: always 0
 		// DPv2: 0 means inner join, >0: the index points to the entry in the array of ON predicates
-		ULONG m_loj_num;
+		GP_ULONG m_loj_num;
 
 		// a flag to mark edge as used
-		BOOL m_fUsed;
+		GP_BOOL m_fUsed;
 
 		// ctor
-		SEdge(CMemoryPool *mp, CExpression *pexpr, ULONG loj_num);
+		SEdge(CMemoryPool *mp, CExpression *pexpr, GP_ULONG loj_num);
 
 		// dtor
 		~SEdge();
@@ -102,7 +102,7 @@ public:
 		CExpression *m_pexpr;
 
 		// a flag to component edge as used
-		BOOL m_fUsed;
+		GP_BOOL m_fUsed;
 
 		// for greedy and mincard:
 		//
@@ -194,17 +194,17 @@ protected:
 	SEdge **m_rgpedge;
 
 	// number of edges
-	ULONG m_ulEdges;
+	GP_ULONG m_ulEdges;
 
 	// components
 	SComponent **m_rgpcomp;
 
 	// number of components
-	ULONG m_ulComps;
+	GP_ULONG m_ulComps;
 
 	// should we include loj childs for evaluating
 	// join order
-	BOOL m_include_loj_childs;
+	GP_BOOL m_include_loj_childs;
 
 	// compute cover of each edge
 	void ComputeEdgeCover();
@@ -230,7 +230,7 @@ public:
 	// ctor used in MinCard, Greedy and DP xforms
 	CJoinOrder(CMemoryPool *mp, CExpressionArray *pdrgpexprComponents,
 			   CExpressionArray *pdrgpexprConjuncts,
-			   BOOL include_outer_join_childs);
+			   GP_BOOL include_outer_join_childs);
 
 	// ctor used in CXformExpandNAryJoinDPv2
 	CJoinOrder(CMemoryPool *mp, CExpressionArray *pdrgpexprComponents,
@@ -244,10 +244,10 @@ public:
 	virtual IOstream &OsPrint(IOstream &) const;
 
 	// is this a valid join combination
-	BOOL IsValidJoinCombination(SComponent *comp1, SComponent *comp2) const;
+	GP_BOOL IsValidJoinCombination(SComponent *comp1, SComponent *comp2) const;
 
 	// are these childs of the same LOJ
-	BOOL IsChildOfSameLOJ(SComponent *comp1, SComponent *comp2) const;
+	GP_BOOL IsChildOfSameLOJ(SComponent *comp1, SComponent *comp2) const;
 
 	virtual CXform::EXformId
 	EOriginXForm() const

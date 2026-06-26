@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -45,7 +45,7 @@ private:
 	CXformSet *m_xforms;
 
 	// time threshold in milliseconds
-	ULONG m_time_threshold;
+	GP_ULONG m_time_threshold;
 
 	// cost threshold
 	CCost m_cost_threshold;
@@ -61,7 +61,7 @@ private:
 
 public:
 	// ctor
-	CSearchStage(CXformSet *xform_set, ULONG ulTimeThreshold = gpos::ulong_max,
+	CSearchStage(CXformSet *xform_set, GP_ULONG ulTimeThreshold = gpos::ulong_max,
 				 CCost costThreshold = CCost(0.0));
 
 	// dtor
@@ -79,7 +79,7 @@ public:
 	// is search stage timed-out?
 	// if threshold is gpos::ulong_max, its the default and we need not time out
 	// ElapsedMS() is a costly method, so avoid calling unnecesarily
-	BOOL
+	GP_BOOL
 	FTimedOut() const
 	{
 		if (m_time_threshold == gpos::ulong_max)
@@ -88,13 +88,13 @@ public:
 	}
 
 	// return elapsed time (in millseconds) since timer was last restarted
-	ULONG
+	GP_ULONG
 	UlElapsedTime() const
 	{
 		return m_timer.ElapsedMS();
 	}
 
-	BOOL
+	GP_BOOL
 	FAchievedReqdCost() const
 	{
 		return (NULL != m_pexprBest && m_costBest <= m_cost_threshold);
@@ -108,7 +108,7 @@ public:
 	}
 
 	// time threshold accessor
-	ULONG
+	GP_ULONG
 	TimeThreshold() const
 	{
 		return m_time_threshold;

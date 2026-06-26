@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -45,7 +45,7 @@ private:
 
 	// true indicates m_dispatch_identifer_datum_array contains raw
 	// gp_segment_id values rather than hashable datums
-	BOOL m_contains_raw_values;
+	GP_BOOL m_contains_raw_values;
 
 	// private copy ctor
 	CDXLDirectDispatchInfo(const CDXLDirectDispatchInfo &);
@@ -54,12 +54,12 @@ public:
 	// ctor
 	explicit CDXLDirectDispatchInfo(
 		CDXLDatum2dArray *dispatch_identifer_datum_array,
-		BOOL contains_raw_values);
+		GP_BOOL contains_raw_values);
 
 	// dtor
 	virtual ~CDXLDirectDispatchInfo();
 
-	BOOL
+	GP_BOOL
 	FContainsRawValues() const
 	{
 		return m_contains_raw_values;

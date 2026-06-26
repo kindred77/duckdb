@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -66,15 +66,15 @@ public:
 private:
 	// log message to current task's logger;
 	// use stdout/stderr wrapping loggers outside worker framework;
-	static void LogTask(const WCHAR *msg, ULONG severity, BOOL is_err,
-						const CHAR *filename, ULONG line);
+	static void LogTask(const WCHAR *msg, GP_ULONG severity, GP_BOOL is_err,
+						const CHAR *filename, GP_ULONG line);
 
 	// no copy ctor
 	ILogger(const ILogger &);
 
 protected:
 	// write log message
-	virtual void Write(const WCHAR *log_entry, ULONG severity) = 0;
+	virtual void Write(const WCHAR *log_entry, GP_ULONG severity) = 0;
 
 public:
 	// ctor
@@ -90,15 +90,15 @@ public:
 	virtual void SetErrorInfoLevel(ErrorInfoLevel info_level) = 0;
 
 	// retrieve warning message from repository and log it to error log
-	static void Warning(const CHAR *filename, ULONG line, ULONG major,
-						ULONG minor, ...);
+	static void Warning(const CHAR *filename, GP_ULONG line, GP_ULONG major,
+						GP_ULONG minor, ...);
 
 	// log trace message to current task's output or error log
-	static void Trace(const CHAR *filename, ULONG line, BOOL is_err,
+	static void Trace(const CHAR *filename, GP_ULONG line, GP_BOOL is_err,
 					  const WCHAR *msg);
 
 	// format and log trace message to current task's output or error log
-	static void TraceFormat(const CHAR *filename, ULONG line, BOOL is_err,
+	static void TraceFormat(const CHAR *filename, GP_ULONG line, GP_BOOL is_err,
 							const WCHAR *format, ...);
 
 };	// class ILogger

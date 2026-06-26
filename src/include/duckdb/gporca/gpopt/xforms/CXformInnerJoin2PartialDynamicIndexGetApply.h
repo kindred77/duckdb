@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -91,7 +91,7 @@ public:
 	}
 
 	// return true if xform should be applied only once
-	virtual BOOL
+	virtual GP_BOOL
 	IsApplyOnce()
 	{
 		return true;

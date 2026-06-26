@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -33,23 +33,23 @@ private:
 	const CHAR *m_proc_name;
 
 	// initialization flags
-	ULONG m_init_mask;
+	GP_ULONG m_init_mask;
 
 	// message priotity
-	ULONG m_message_priority;
+	GP_ULONG m_message_priority;
 
 	// no copy ctor
 	CLoggerSyslog(const CLoggerSyslog &);
 
 	// write string to syslog
-	void Write(const WCHAR *log_entry, ULONG severity);
+	void Write(const WCHAR *log_entry, GP_ULONG severity);
 
 	static CLoggerSyslog m_alert_logger;
 
 public:
 	// ctor
-	CLoggerSyslog(const CHAR *proc_name, ULONG init_mask,
-				  ULONG message_priority);
+	CLoggerSyslog(const CHAR *proc_name, GP_ULONG init_mask,
+				  GP_ULONG message_priority);
 
 	// dtor
 	virtual ~CLoggerSyslog();

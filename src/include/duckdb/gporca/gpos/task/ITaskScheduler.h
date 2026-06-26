@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -55,10 +55,10 @@ public:
 	virtual GPOS_RESULT Cancel(CTask *task) = 0;
 
 	// get number of waiting tasks
-	virtual ULONG GetQueueSize() = 0;
+	virtual GP_ULONG GetQueueSize() = 0;
 
 	// check if task queue is empty
-	virtual BOOL IsEmpty() const = 0;
+	virtual GP_BOOL IsEmpty() const = 0;
 
 };	// class ITaskScheduler
 }  // namespace gpos

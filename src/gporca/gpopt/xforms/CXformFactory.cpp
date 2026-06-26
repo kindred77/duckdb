@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -22,7 +22,7 @@ CXformFactory::CXformFactory(CMemoryPool *mp)
       m_pxfsImplementation(NULL), m_lastAddedOrSkippedXformId(-1)
 {
     GPOS_ASSERT(NULL != mp);
-    for (ULONG i = 0; i < CXform::ExfSentinel; i++) {
+    for (GP_ULONG i = 0; i < CXform::ExfSentinel; i++) {
         m_rgpxf[i] = NULL;
     }
     m_phmszxform = GPOS_NEW(mp) XformNameToXformMap(mp);
@@ -32,7 +32,7 @@ CXformFactory::CXformFactory(CMemoryPool *mp)
 
 CXformFactory::~CXformFactory()
 {
-    for (ULONG i = 0; i < CXform::ExfSentinel; i++) {
+    for (GP_ULONG i = 0; i < CXform::ExfSentinel; i++) {
         if (NULL == m_rgpxf[i]) break;
         m_rgpxf[i]->Release();
         m_rgpxf[i] = NULL;
@@ -55,7 +55,7 @@ CXform *CXformFactory::Pxf(const CHAR *szXformName) const {
     return m_phmszxform->Find(szXformName);
 }
 
-BOOL CXformFactory::IsXformIdUsed(CXform::EXformId exfid) {
+GP_BOOL CXformFactory::IsXformIdUsed(CXform::EXformId exfid) {
     return (exfid <= m_lastAddedOrSkippedXformId && NULL != m_rgpxf[exfid]);
 }
 

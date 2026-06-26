@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -40,7 +40,7 @@ protected:
 	CTableDescriptor *m_ptabdesc;
 
 	// dynamic scan id
-	ULONG m_scan_id;
+	GP_ULONG m_scan_id;
 
 	// output columns
 	CColRefArray *m_pdrgpcrOutput;
@@ -49,10 +49,10 @@ protected:
 	CColRef2dArray *m_pdrgpdrgpcrPart;
 
 	// secondary scan id in case of a partial scan
-	ULONG m_ulSecondaryScanId;
+	GP_ULONG m_ulSecondaryScanId;
 
 	// is scan partial -- only used with heterogeneous indexes defined on a subset of partitions
-	BOOL m_is_partial;
+	GP_BOOL m_is_partial;
 
 	// dynamic get part constraint
 	CPartConstraint *m_part_constraint;
@@ -80,15 +80,15 @@ public:
 	explicit CLogicalDynamicGetBase(CMemoryPool *mp);
 
 	CLogicalDynamicGetBase(CMemoryPool *mp, const CName *pnameAlias,
-						   CTableDescriptor *ptabdesc, ULONG scan_id,
+						   CTableDescriptor *ptabdesc, GP_ULONG scan_id,
 						   CColRefArray *colref_array,
 						   CColRef2dArray *pdrgpdrgpcrPart,
-						   ULONG ulSecondaryScanId, BOOL is_partial,
+						   GP_ULONG ulSecondaryScanId, GP_BOOL is_partial,
 						   CPartConstraint *ppartcnstr,
 						   CPartConstraint *ppartcnstrRel);
 
 	CLogicalDynamicGetBase(CMemoryPool *mp, const CName *pnameAlias,
-						   CTableDescriptor *ptabdesc, ULONG scan_id,
+						   CTableDescriptor *ptabdesc, GP_ULONG scan_id,
 						   CColRefArray *pdrgpcrOutput);
 
 	// dtor
@@ -123,7 +123,7 @@ public:
 	}
 
 	// return scan id
-	virtual ULONG
+	virtual GP_ULONG
 	ScanId() const
 	{
 		return m_scan_id;
@@ -137,14 +137,14 @@ public:
 	}
 
 	// return secondary scan id
-	virtual ULONG
+	virtual GP_ULONG
 	UlSecondaryScanId() const
 	{
 		return m_ulSecondaryScanId;
 	}
 
 	// is this a partial scan -- true if the scan operator corresponds to heterogeneous index
-	virtual BOOL
+	virtual GP_BOOL
 	IsPartial() const
 	{
 		return m_is_partial;
@@ -168,7 +168,7 @@ public:
 	virtual void SetPartConstraint(CPartConstraint *ppartcnstr);
 
 	// set secondary scan id
-	virtual void SetSecondaryScanId(ULONG scan_id);
+	virtual void SetSecondaryScanId(GP_ULONG scan_id);
 
 	// set scan to partial
 	virtual void SetPartial();
@@ -193,7 +193,7 @@ public:
 		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive join depth
-	virtual ULONG
+	virtual GP_ULONG
 	DeriveJoinDepth(CMemoryPool *,		 // mp
 					CExpressionHandle &	 // exprhdl
 	) const

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -42,26 +42,26 @@ typedef CDynamicPtrArray<CDouble, CleanupDelete> CDoubleArray;
 class CHistogram : public gpos::DbgPrintMixin<CHistogram>
 {
 	// hash map from column id to a histogram
-	typedef CHashMap<ULONG, CHistogram, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CHistogram, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupDelete<CHistogram> >
 		UlongToHistogramMap;
 
 	// iterator
-	typedef CHashMapIter<ULONG, CHistogram, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CHistogram, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupDelete<CHistogram> >
 		UlongToHistogramMapIter;
 
-	// hash map from column ULONG to CDouble
-	typedef CHashMap<ULONG, CDouble, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	// hash map from column GP_ULONG to CDouble
+	typedef CHashMap<GP_ULONG, CDouble, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupDelete<CDouble> >
 		UlongToDoubleMap;
 
 	// iterator
-	typedef CHashMapIter<ULONG, CDouble, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CDouble, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupDelete<CDouble> >
 		UlongToDoubleMapIter;
 
@@ -75,7 +75,7 @@ private:
 	CBucketArray *m_histogram_buckets;
 
 	// well-defined histogram. if false, then bounds are unknown
-	BOOL m_is_well_defined;
+	GP_BOOL m_is_well_defined;
 
 	// null fraction
 	CDouble m_null_freq;
@@ -87,16 +87,16 @@ private:
 	CDouble m_freq_remaining;
 
 	// has histogram skew been measures
-	BOOL m_skew_was_measured;
+	GP_BOOL m_skew_was_measured;
 
 	// skew estimate
 	CDouble m_skew;
 
 	// was the NDVs in histogram scaled
-	BOOL m_NDVs_were_scaled;
+	GP_BOOL m_NDVs_were_scaled;
 
 	// is column statistics missing in the database
-	BOOL m_is_col_stats_missing;
+	GP_BOOL m_is_col_stats_missing;
 
 	// private copy ctor
 	CHistogram(const CHistogram &);
@@ -142,7 +142,7 @@ private:
 	CHistogram *MakeJoinHistogramINDFFilter(const CHistogram *histogram) const;
 
 	// accessor for n-th bucket
-	CBucket *operator[](ULONG) const;
+	CBucket *operator[](GP_ULONG) const;
 
 	// compute skew estimate
 	void ComputeSkew();
@@ -150,19 +150,19 @@ private:
 	// helper to add buckets from one histogram to another
 	static void AddBuckets(CMemoryPool *mp, const CBucketArray *src_buckets,
 						   CBucketArray *dest_buckets, CDouble rows_old,
-						   CDouble rows_new, ULONG begin, ULONG end);
+						   CDouble rows_new, GP_ULONG begin, GP_ULONG end);
 
 	static void AddBuckets(CMemoryPool *mp, const CBucketArray *src_buckets,
 						   CBucketArray *dest_buckets, CDouble rows,
-						   CDoubleArray *dest_bucket_freqs, ULONG begin,
-						   ULONG end);
+						   CDoubleArray *dest_bucket_freqs, GP_ULONG begin,
+						   GP_ULONG end);
 
 	// helper to combine histogram buckets to reduce total buckets
 	static CBucketArray *CombineBuckets(CMemoryPool *mp, CBucketArray *buckets,
-										ULONG desired_num_buckets);
+										GP_ULONG desired_num_buckets);
 
 	// check if we can compute NDVRemain for JOIN histogram for the given input histograms
-	static BOOL CanComputeJoinNDVRemain(const CHistogram *histogram1,
+	static GP_BOOL CanComputeJoinNDVRemain(const CHistogram *histogram1,
 										const CHistogram *histogram2);
 
 	// compute the effects of the NDV and frequency of the tuples not captured
@@ -178,20 +178,20 @@ private:
 
 
 	// check if the cardinality estimation should be done only via NDVs
-	static BOOL NeedsNDVBasedCardEstimationForEq(const CHistogram *histogram);
+	static GP_BOOL NeedsNDVBasedCardEstimationForEq(const CHistogram *histogram);
 
-	BOOL IsHistogramForTextRelatedTypes() const;
+	GP_BOOL IsHistogramForTextRelatedTypes() const;
 
 	// add residual union all buckets after the merge
-	ULONG AddResidualUnionAllBucket(CBucketArray *histogram_buckets,
+	GP_ULONG AddResidualUnionAllBucket(CBucketArray *histogram_buckets,
 									CBucket *bucket, CDouble rows_old,
-									CDouble rows_new, BOOL bucket_is_residual,
-									ULONG index) const;
+									CDouble rows_new, GP_BOOL bucket_is_residual,
+									GP_ULONG index) const;
 
 	// add residual union buckets after the merge
-	ULONG AddResidualUnionBucket(CBucketArray *histogram_buckets,
+	GP_ULONG AddResidualUnionBucket(CBucketArray *histogram_buckets,
 								 CBucket *bucket, CDouble rows,
-								 BOOL bucket_is_residual, ULONG index,
+								 GP_BOOL bucket_is_residual, GP_ULONG index,
 								 CDoubleArray *dest_bucket_freqs) const;
 
 	// used to keep track of adjacent stats buckets and how similar
@@ -199,11 +199,11 @@ private:
 	struct SAdjBucketBoundary
 	{
 		// boundary_index 0 refers to boundary between b[0] and b[1]
-		ULONG m_boundary_index;
+		GP_ULONG m_boundary_index;
 		// similarity factor between two adjacent buckets calculated as (freq0/ndv0 - freq1/ndv1) + (freq0/width0 - freq1/width1)
 		CDouble m_similarity_factor;
 
-		SAdjBucketBoundary(ULONG index, CDouble similarity_factor)
+		SAdjBucketBoundary(GP_ULONG index, CDouble similarity_factor)
 			: m_boundary_index(index), m_similarity_factor(similarity_factor)
 		{
 		}
@@ -227,14 +227,14 @@ private:
 public:
 	// ctors
 	explicit CHistogram(CMemoryPool *mp, CBucketArray *histogram_buckets,
-						BOOL is_well_defined = true);
+						GP_BOOL is_well_defined = true);
 
-	explicit CHistogram(CMemoryPool *mp, BOOL is_well_defined = true);
+	explicit CHistogram(CMemoryPool *mp, GP_BOOL is_well_defined = true);
 
 	CHistogram(CMemoryPool *mp, CBucketArray *histogram_buckets,
-			   BOOL is_well_defined, CDouble null_freq,
+			   GP_BOOL is_well_defined, CDouble null_freq,
 			   CDouble distinct_remaining, CDouble freq_remaining,
-			   BOOL is_col_stats_missing = false);
+			   GP_BOOL is_col_stats_missing = false);
 
 	// set null frequency
 	void SetNullFrequency(CDouble null_freq);
@@ -247,7 +247,7 @@ public:
 	}
 
 	// have the NDVs been scaled
-	BOOL
+	GP_BOOL
 	WereNDVsScaled() const
 	{
 		return m_NDVs_were_scaled;
@@ -286,7 +286,7 @@ public:
 	CHistogram *MakeLASJHistogramNormalize(
 		CStatsPred::EStatsCmpType stats_cmp_type, CDouble rows,
 		const CHistogram *other_histogram, CDouble *scale_factor,
-		BOOL
+		GP_BOOL
 			DoIgnoreLASJHistComputation	 // except for the case of LOJ cardinality estimation this flag is always
 		// "true" since LASJ stats computation is very aggressive
 	) const;
@@ -307,15 +307,15 @@ public:
 											CDouble *num_output_rows) const;
 
 	// cleanup residual buckets
-	void CleanupResidualBucket(CBucket *bucket, BOOL bucket_is_residual) const;
+	void CleanupResidualBucket(CBucket *bucket, GP_BOOL bucket_is_residual) const;
 
 	// get the next bucket for union / union all
 	CBucket *GetNextBucket(const CHistogram *histogram, CBucket *new_bucket,
-						   BOOL *target_bucket_is_residual,
-						   ULONG *current_bucket_index) const;
+						   GP_BOOL *target_bucket_is_residual,
+						   GP_ULONG *current_bucket_index) const;
 
 	// number of buckets
-	ULONG
+	GP_ULONG
 	GetNumBuckets() const
 	{
 		GPOS_ASSERT(m_histogram_buckets != NULL);
@@ -330,16 +330,16 @@ public:
 	}
 
 	// well defined
-	BOOL
+	GP_BOOL
 	IsWellDefined() const
 	{
 		return m_is_well_defined;
 	}
 
-	BOOL ContainsOnlySingletonBuckets() const;
+	GP_BOOL ContainsOnlySingletonBuckets() const;
 
 	// is the column statistics missing in the database
-	BOOL
+	GP_BOOL
 	IsColStatsMissing() const
 	{
 		return m_is_col_stats_missing;
@@ -355,7 +355,7 @@ public:
 	CDouble GetNumDistinct() const;
 
 	// is histogram well formed
-	BOOL IsValid() const;
+	GP_BOOL IsValid() const;
 
 	// return copy of histogram
 	CHistogram *CopyHistogram() const;
@@ -370,12 +370,12 @@ public:
 	CDouble NormalizeHistogram();
 
 	// is histogram normalized
-	BOOL IsNormalized() const;
+	GP_BOOL IsNormalized() const;
 
 	// translate the histogram into a derived column stats
 
 	// randomly pick a bucket index
-	ULONG GetRandomBucketIndex(ULONG *seed) const;
+	GP_ULONG GetRandomBucketIndex(GP_ULONG *seed) const;
 
 	// estimate of data skew
 	CDouble
@@ -411,26 +411,26 @@ public:
 	}
 
 	// check if histogram is empty
-	BOOL IsEmpty() const;
+	GP_BOOL IsEmpty() const;
 
 	// cap the total number of distinct values (NDVs) in buckets to the number of rows
 	void CapNDVs(CDouble rows);
 
 	// is comparison type supported for filters for text columns
-	static BOOL IsOpSupportedForTextFilter(
+	static GP_BOOL IsOpSupportedForTextFilter(
 		CStatsPred::EStatsCmpType stats_cmp_type);
 
 	// is comparison type supported for filters
-	static BOOL IsOpSupportedForFilter(
+	static GP_BOOL IsOpSupportedForFilter(
 		CStatsPred::EStatsCmpType stats_cmp_type);
 
 	// is the join predicate's comparison type supported
-	static BOOL JoinPredCmpTypeIsSupported(
+	static GP_BOOL JoinPredCmpTypeIsSupported(
 		CStatsPred::EStatsCmpType stats_cmp_type);
 
 	// create the default histogram for a given column reference
 	static CHistogram *MakeDefaultHistogram(CMemoryPool *mp, CColRef *col_ref,
-											BOOL is_empty);
+											GP_BOOL is_empty);
 
 	// create the default non empty histogram for a boolean column
 	static CHistogram *MakeDefaultBoolHistogram(CMemoryPool *mp);
@@ -445,7 +445,7 @@ public:
 		CMemoryPool *mp, CColumnFactory *col_factory,
 		UlongToHistogramMap *output_histograms,
 		UlongToDoubleMap *output_col_widths, const ULongPtrArray *columns,
-		BOOL is_empty);
+		GP_BOOL is_empty);
 
 	// add dummy histogram buckets for the columns in the input histogram
 	static void AddEmptyHistogram(CMemoryPool *mp,

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -37,10 +37,10 @@ private:
 	CPhysicalJoin(const CPhysicalJoin &);
 
 	// check whether the child being processed is the child that has the part consumer
-	static BOOL FProcessingChildWithPartConsumer(BOOL fOuterPartConsumerTest,
-												 ULONG ulChildIndexToTestFirst,
-												 ULONG ulChildIndexToTestSecond,
-												 ULONG child_index);
+	static GP_BOOL FProcessingChildWithPartConsumer(GP_BOOL fOuterPartConsumerTest,
+												 GP_ULONG ulChildIndexToTestFirst,
+												 GP_ULONG ulChildIndexToTestSecond,
+												 GP_ULONG child_index);
 
 	// xform that join order originated from
 	CXform::EXformId m_origin_xform;
@@ -54,25 +54,25 @@ protected:
 		CPartitionPropagationSpec *m_pppsRequired;
 
 		// child index to push requirements to
-		ULONG m_ulChildIndex;
+		GP_ULONG m_ulChildIndex;
 
 		// id of outer child
-		ULONG m_ulOuterChild;
+		GP_ULONG m_ulOuterChild;
 
 		// id of inner child
-		ULONG m_ulInnerChild;
+		GP_ULONG m_ulInnerChild;
 
 		// id of scalar child
-		ULONG m_ulScalarChild;
+		GP_ULONG m_ulScalarChild;
 
 		// private copy ctor
 		CPartPropReq(const CPartPropReq &);
 
 	public:
 		// ctor
-		CPartPropReq(CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-					 ULONG ulOuterChild, ULONG ulInnerChild,
-					 ULONG ulScalarChild)
+		CPartPropReq(CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+					 GP_ULONG ulOuterChild, GP_ULONG ulInnerChild,
+					 GP_ULONG ulScalarChild)
 			: m_pppsRequired(pppsRequired),
 			  m_ulChildIndex(child_index),
 			  m_ulOuterChild(ulOuterChild),
@@ -96,38 +96,38 @@ protected:
 		}
 
 		// child index to push requirements to
-		ULONG
+		GP_ULONG
 		UlChildIndex() const
 		{
 			return m_ulChildIndex;
 		}
 
 		// outer child id
-		ULONG
+		GP_ULONG
 		UlOuterChild() const
 		{
 			return m_ulOuterChild;
 		}
 
 		// inner child id
-		ULONG
+		GP_ULONG
 		UlInnerChild() const
 		{
 			return m_ulInnerChild;
 		}
 
 		// scalar child id
-		ULONG
+		GP_ULONG
 		UlScalarChild() const
 		{
 			return m_ulScalarChild;
 		}
 
 		// hash function
-		static ULONG HashValue(const CPartPropReq *pppr);
+		static GP_ULONG HashValue(const CPartPropReq *pppr);
 
 		// equality function
-		static BOOL Equals(const CPartPropReq *ppprFst,
+		static GP_BOOL Equals(const CPartPropReq *ppprFst,
 						   const CPartPropReq *ppprSnd);
 
 	};	// class CPartPropReq
@@ -150,36 +150,36 @@ protected:
 	virtual ~CPhysicalJoin();
 
 	// helper to check if given child index correspond to first child to be optimized
-	BOOL FFirstChildToOptimize(ULONG child_index) const;
+	GP_BOOL FFirstChildToOptimize(GP_ULONG child_index) const;
 
 	// helper to compute required distribution of correlated join's children
 	CEnfdDistribution *PedCorrelatedJoin(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CReqdPropPlan *prppInput,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// helper to compute required rewindability of correlated join's children
 	CRewindabilitySpec *PrsRequiredCorrelatedJoin(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CRewindabilitySpec *prsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq) const;
+		CRewindabilitySpec *prsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq) const;
 
 	// create partition propagation request
 	CPartPropReq *PpprCreate(CMemoryPool *mp, CExpressionHandle &exprhdl,
 							 CPartitionPropagationSpec *pppsRequired,
-							 ULONG child_index);
+							 GP_ULONG child_index);
 
 	// compute required partition propagation of the n-th child
 	CPartitionPropagationSpec *PppsRequiredCompute(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		BOOL fNLJoin);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		GP_BOOL fNLJoin);
 
 	// helper function for computing the required partition propagation
 	// spec for the children of a join
 	CPartitionPropagationSpec *PppsRequiredJoinChild(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, BOOL fNLJoin);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_BOOL fNLJoin);
 
 	// helper for propagating required sort order to outer child
 	static COrderSpec *PosPropagateToOuter(CMemoryPool *mp,
@@ -187,21 +187,21 @@ protected:
 										   COrderSpec *posRequired);
 
 	// helper for checking if required sort columns come from outer child
-	static BOOL FSortColsInOuterChild(CMemoryPool *mp,
+	static GP_BOOL FSortColsInOuterChild(CMemoryPool *mp,
 									  CExpressionHandle &exprhdl,
 									  COrderSpec *pos);
 
 	// helper for checking if the outer input of a binary join operator
 	// includes the required columns
-	static BOOL FOuterProvidesReqdCols(CExpressionHandle &exprhdl,
+	static GP_BOOL FOuterProvidesReqdCols(CExpressionHandle &exprhdl,
 									   CColRefSet *pcrsRequired);
 
 
 	// helper to add filter on part key
 	static void AddFilterOnPartKey(
-		CMemoryPool *mp, BOOL fNLJoin, CExpression *pexprScalar,
+		CMemoryPool *mp, GP_BOOL fNLJoin, CExpression *pexprScalar,
 		CPartIndexMap *ppimSource, CPartFilterMap *ppfmSource,
-		ULONG child_index, ULONG part_idx_id, BOOL fOuterPartConsumer,
+		GP_ULONG child_index, GP_ULONG part_idx_id, GP_BOOL fOuterPartConsumer,
 		CPartIndexMap *ppimResult, CPartFilterMap *ppfmResult,
 		CColRefSet *pcrsAllowedRefs);
 
@@ -209,12 +209,12 @@ protected:
 	static CExpression *PexprJoinPredOnPartKeys(CMemoryPool *mp,
 												CExpression *pexprScalar,
 												CPartIndexMap *ppimSource,
-												ULONG part_idx_id,
+												GP_ULONG part_idx_id,
 												CColRefSet *pcrsAllowedRefs);
 
 	// Do each of the given predicate children use columns from a different
 	// join child?
-	static BOOL FPredKeysSeparated(CExpression *pexprOuter,
+	static GP_BOOL FPredKeysSeparated(CExpression *pexprOuter,
 								   CExpression *pexprInner,
 								   CExpression *pexprPredOuter,
 								   CExpression *pexprPredInner);
@@ -226,10 +226,10 @@ protected:
 
 public:
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -242,42 +242,42 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const;
+								  GP_ULONG ulOptReq) const;
 
 	// compute required distribution of the n-th child
 	virtual CDistributionSpec *PdsRequired(CMemoryPool *mp,
 										   CExpressionHandle &exprhdl,
 										   CDistributionSpec *pdsRequired,
-										   ULONG child_index,
+										   GP_ULONG child_index,
 										   CDrvdPropArray *pdrgpdpCtxt,
-										   ULONG ulOptReq) const;
+										   GP_ULONG ulOptReq) const;
 
 	virtual CEnfdDistribution *Ped(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								   CReqdPropPlan *prppInput, ULONG child_index,
+								   CReqdPropPlan *prppInput, GP_ULONG child_index,
 								   CDrvdPropArray *pdrgpdpCtxt,
-								   ULONG ulDistrReq);
+								   GP_ULONG ulDistrReq);
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 	// distribution matching type
 	virtual CEnfdDistribution::EDistributionMatching Edm(
-		CReqdPropPlan *prppInput, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CReqdPropPlan *prppInput, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties
@@ -327,7 +327,7 @@ public:
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL
+	virtual GP_BOOL
 	FPassThruStats() const
 	{
 		return false;
@@ -343,17 +343,17 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// is given predicate hash-join compatible
-	static BOOL FHashJoinCompatible(CExpression *pexprPred,
+	static GP_BOOL FHashJoinCompatible(CExpression *pexprPred,
 									CExpression *pexprOuter,
 									CExpression *pexprInner);
 
 	// is given predicate merge-join compatible
-	static BOOL FMergeJoinCompatible(CExpression *pexprPred,
+	static GP_BOOL FMergeJoinCompatible(CExpression *pexprPred,
 									 CExpression *pexprOuter,
 									 CExpression *pexprInner);
 
 	// return number of distribution requests for correlated join
-	static ULONG UlDistrRequestsForCorrelatedJoin();
+	static GP_ULONG UlDistrRequestsForCorrelatedJoin();
 
 	static void AlignJoinKeyOuterInner(CExpression *pexprConjunct,
 									   CExpression *pexprOuter,

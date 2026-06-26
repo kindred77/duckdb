@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -30,17 +30,17 @@ private:
 	CRandom(const CRandom &);
 
 	// seed
-	ULONG m_seed;
+	GP_ULONG m_seed;
 
 public:
 	// no seed
 	CRandom();
 
 	// c'tor with seed
-	CRandom(ULONG seed);
+	CRandom(GP_ULONG seed);
 
 	// next random number
-	ULONG Next();
+	GP_ULONG Next();
 
 	// d'tor
 	~CRandom();

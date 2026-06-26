@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -35,7 +35,7 @@ class CParseHandlerScalarWindowFrameEdge : public CParseHandlerScalarOp
 {
 private:
 	// identify if the parser is for a leading or trailing edge
-	BOOL m_leading_edge;
+	GP_BOOL m_leading_edge;
 
 	// private copy ctor
 	CParseHandlerScalarWindowFrameEdge(
@@ -56,7 +56,7 @@ public:
 	CParseHandlerScalarWindowFrameEdge(CMemoryPool *mp,
 									   CParseHandlerManager *parse_handler_mgr,
 									   CParseHandlerBase *parse_handler_root,
-									   BOOL leading_edge);
+									   GP_BOOL leading_edge);
 };
 }  // namespace gpdxl
 

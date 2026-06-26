@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC Corp.
 //
@@ -64,7 +64,7 @@ private:
 	CMemoryPool *m_mp;
 
 	// id counter for groups
-	ULONG m_aul;
+	GP_ULONG m_aul;
 
 	// root group
 	CGroup *m_pgroupRoot;
@@ -87,15 +87,15 @@ private:
 	void Add(CGroup *pgroup, CExpression *pexprOrigin);
 
 	// rehash all group expressions after group merge - not thread-safe
-	BOOL FRehash();
+	GP_BOOL FRehash();
 
 	// helper for inserting group expression in target group
 	CGroup *PgroupInsert(CGroup *pgroupTarget, CGroupExpression *pgexpr,
-						 CExpression *pexprOrigin, BOOL fNewGroup);
+						 CExpression *pexprOrigin, GP_BOOL fNewGroup);
 
 	// helper to check if a new group needs to be created
-	BOOL FNewGroup(CGroup **ppgroupTarget, CGroupExpression *pgexpr,
-				   BOOL fScalar);
+	GP_BOOL FNewGroup(CGroup **ppgroupTarget, CGroupExpression *pgexpr,
+				   GP_BOOL fScalar);
 
 	// private copy ctor
 	CMemo(const CMemo &);
@@ -122,10 +122,10 @@ public:
 	}
 
 	// return total number of group expressions
-	ULONG UlGrpExprs();
+	GP_ULONG UlGrpExprs();
 
 	// return number of duplicate groups
-	ULONG UlDuplicateGroups();
+	GP_ULONG UlDuplicateGroups();
 
 	// mark groups as duplicates
 	void MarkDuplicates(CGroup *pgroupFst, CGroup *pgroupSnd);
@@ -147,7 +147,7 @@ public:
 	// extract a plan that delivers the given required properties
 	CExpression *PexprExtractPlan(CMemoryPool *mp, CGroup *pgroupRoot,
 								  CReqdPropPlan *prppInput,
-								  ULONG ulSearchStages);
+								  GP_ULONG ulSearchStages);
 
 	// merge duplicate groups
 	void GroupMerge();
@@ -174,7 +174,7 @@ public:
 	void Trace();
 
 	// get group by id
-	CGroup *Pgroup(ULONG id);
+	CGroup *Pgroup(GP_ULONG id);
 
 };	// class CMemo
 

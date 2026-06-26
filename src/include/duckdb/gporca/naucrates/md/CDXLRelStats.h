@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -55,7 +55,7 @@ private:
 	CDouble m_rows;
 
 	// flag to indicate if input relation is empty
-	BOOL m_empty;
+	GP_BOOL m_empty;
 
 	// DXL string for object
 	CWStringDynamic *m_dxl_str;
@@ -64,15 +64,15 @@ private:
 	CDXLRelStats(const CDXLRelStats &);
 
 	// number of blocks (not always up to-to-date)
-	ULONG m_relpages;
+	GP_ULONG m_relpages;
 
 	// number of all-visible blocks (not always up-to-date)
-	ULONG m_relallvisible;
+	GP_ULONG m_relallvisible;
 
 public:
 	CDXLRelStats(CMemoryPool *mp, CMDIdRelStats *rel_stats_mdid,
-				 CMDName *mdname, CDouble rows, BOOL is_empty, ULONG relpages,
-				 ULONG relallvisible);
+				 CMDName *mdname, CDouble rows, GP_BOOL is_empty, GP_ULONG relpages,
+				 GP_ULONG relallvisible);
 
 	virtual ~CDXLRelStats();
 
@@ -89,21 +89,21 @@ public:
 	virtual CDouble Rows() const;
 
 	// number of blocks (not always up to-to-date)
-	virtual ULONG
+	virtual GP_ULONG
 	RelPages() const
 	{
 		return m_relpages;
 	}
 
 	// number of all-visible blocks (not always up-to-date)
-	virtual ULONG
+	virtual GP_ULONG
 	RelAllVisible() const
 	{
 		return m_relallvisible;
 	}
 
 	// is statistics on an empty input
-	virtual BOOL
+	virtual GP_BOOL
 	IsEmpty() const
 	{
 		return m_empty;

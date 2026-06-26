@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -41,7 +41,7 @@ CStatsPredDisj::CStatsPredDisj(CStatsPredPtrArry *disj_pred_stats_array)
 //
 //---------------------------------------------------------------------------
 CStatsPred *
-CStatsPredDisj::GetPredStats(ULONG pos) const
+CStatsPredDisj::GetPredStats(GP_ULONG pos) const
 {
 	return (*m_disj_pred_stats_array)[pos];
 }
@@ -72,7 +72,7 @@ CStatsPredDisj::Sort() const
 //		Return the column identifier on which the predicates are on
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CStatsPredDisj::GetColId() const
 {
 	return m_colid;

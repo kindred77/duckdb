@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -27,9 +27,9 @@
 
 #include "gpos/assert.h"
 
-#define GPOS_SIZEOF(x) ((gpos::ULONG) sizeof(x))
+#define GPOS_SIZEOF(x) ((gpos::GP_ULONG) sizeof(x))
 #define GPOS_ARRAY_SIZE(x) (GPOS_SIZEOF(x) / GPOS_SIZEOF(x[0]))
-#define GPOS_OFFSET(T, M) ((gpos::ULONG)(SIZE_T) & (((T *) 0x1)->M) - 1)
+#define GPOS_OFFSET(T, M) ((gpos::GP_ULONG)(SIZE_T) & (((T *) 0x1)->M) - 1)
 
 /* wide character string literate */
 #define GPOS_WSZ_LIT(x) L##x
@@ -51,7 +51,7 @@ typedef char CHAR;
 // wide character type
 typedef wchar_t WCHAR;
 
-typedef bool BOOL;
+typedef bool GP_BOOL;
 
 // numeric types
 
@@ -59,15 +59,15 @@ typedef size_t SIZE_T;
 typedef ssize_t SSIZE_T;
 typedef mode_t MODE_T;
 
-// define ULONG,ULLONG as types which implement standard's
+// define GP_ULONG,ULLONG as types which implement standard's
 // requirements for ULONG_MAX and ULLONG_MAX; eliminate standard's slack
 // by fixed sizes rather than min requirements
 
-typedef uint32_t ULONG;
-GPOS_CPL_ASSERT(4 == sizeof(ULONG));
+typedef uint32_t GP_ULONG;
+GPOS_CPL_ASSERT(4 == sizeof(GP_ULONG));
 enum
 {
-	ulong_max = ((::gpos::ULONG) -1)
+	ulong_max = ((::gpos::GP_ULONG) -1)
 };
 
 typedef uint64_t ULLONG;

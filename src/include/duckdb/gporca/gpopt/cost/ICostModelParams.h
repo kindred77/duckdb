@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -49,7 +49,7 @@ public:
 	{
 	private:
 		// param identifier
-		ULONG m_id;
+		GP_ULONG m_id;
 
 		// param value
 		CDouble m_value;
@@ -62,7 +62,7 @@ public:
 
 	public:
 		// ctor
-		SCostParam(ULONG id, CDouble dVal, CDouble dLowerBound,
+		SCostParam(GP_ULONG id, CDouble dVal, CDouble dLowerBound,
 				   CDouble dUpperBound)
 			: m_id(id),
 			  m_value(dVal),
@@ -77,7 +77,7 @@ public:
 		virtual ~SCostParam(){};
 
 		// return param identifier
-		ULONG
+		GP_ULONG
 		Id() const
 		{
 			return m_id;
@@ -104,7 +104,7 @@ public:
 			return m_upper_bound_val;
 		}
 
-		BOOL
+		GP_BOOL
 		Equals(SCostParam *pcm) const
 		{
 			return Id() == pcm->Id() && Get() == pcm->Get() &&
@@ -115,22 +115,22 @@ public:
 	};	// struct SCostParam
 
 	// lookup param by id
-	virtual SCostParam *PcpLookup(ULONG id) const = 0;
+	virtual SCostParam *PcpLookup(GP_ULONG id) const = 0;
 
 	// lookup param by name
 	virtual SCostParam *PcpLookup(const CHAR *szName) const = 0;
 
 	// set param by id
-	virtual void SetParam(ULONG id, CDouble dVal, CDouble dLowerBound,
+	virtual void SetParam(GP_ULONG id, CDouble dVal, CDouble dLowerBound,
 						  CDouble dUpperBound) = 0;
 
 	// set param by name
 	virtual void SetParam(const CHAR *szName, CDouble dVal, CDouble dLowerBound,
 						  CDouble dUpperBound) = 0;
 
-	virtual BOOL Equals(ICostModelParams *pcm) const = 0;
+	virtual GP_BOOL Equals(ICostModelParams *pcm) const = 0;
 
-	virtual const CHAR *SzNameLookup(ULONG id) const = 0;
+	virtual const CHAR *SzNameLookup(GP_ULONG id) const = 0;
 };
 }  // namespace gpopt
 

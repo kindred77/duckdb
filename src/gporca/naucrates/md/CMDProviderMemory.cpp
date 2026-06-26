@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -90,10 +90,10 @@ CMDProviderMemory::LoadMetadataObjectsFromArray(
 	m_mdmap = GPOS_NEW(mp) MDIdToSerializedMDIdMap(mp);
 	md_map = m_mdmap;
 
-	const ULONG size = mdcache_obj_array->Size();
+	const GP_ULONG size = mdcache_obj_array->Size();
 
 	// load objects into the hash map
-	for (ULONG ul = 0; ul < size; ul++)
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		GPOS_CHECK_ABORT;
 
@@ -108,7 +108,7 @@ CMDProviderMemory::LoadMetadataObjectsFromArray(
 			mp, mdcache_obj, true /*fSerializeHeaders*/, false /*findent*/);
 
 		GPOS_CHECK_ABORT;
-		BOOL fInserted = m_mdmap->Insert(mdid_key, str.Value());
+		GP_BOOL fInserted = m_mdmap->Insert(mdid_key, str.Value());
 		if (!fInserted)
 		{
 			GPOS_RAISE(gpdxl::ExmaMD, gpdxl::ExmiMDCacheEntryDuplicate,

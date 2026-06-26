@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -37,13 +37,13 @@ private:
 	CMemoryPool *m_mp;
 
 	// string capacity
-	ULONG m_capacity;
+	GP_ULONG m_capacity;
 
 	// increase string capacity
-	void IncreaseCapacity(ULONG requested);
+	void IncreaseCapacity(GP_ULONG requested);
 
 	// find capacity that fits requested string size
-	static ULONG Capacity(ULONG requested);
+	static GP_ULONG Capacity(GP_ULONG requested);
 
 	// private copy ctor
 	CWStringDynamic(const CWStringDynamic &);

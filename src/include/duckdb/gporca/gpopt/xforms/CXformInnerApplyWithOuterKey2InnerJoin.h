@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -63,7 +63,7 @@ public:
 	}
 
 	// is transformation an Apply decorrelation (Apply To Join) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FApplyDecorrelating() const
 	{
 		return true;

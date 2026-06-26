@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -32,14 +32,14 @@ private:
 	CDynamicPtrArray<T, CleanupNULL> *m_dynamic_ptr_array;
 
 	// top of stack index
-	ULONG m_size;
+	GP_ULONG m_size;
 
 	// copy c'tor - not defined
 	CStack(CStack &);
 
 public:
 	// c'tor
-	CStack<T>(CMemoryPool *mp, ULONG min_size = 4) : m_size(0)
+	CStack<T>(CMemoryPool *mp, GP_ULONG min_size = 4) : m_size(0)
 	{
 		m_dynamic_ptr_array =
 			GPOS_NEW(mp) CDynamicPtrArray<T, CleanupNULL>(mp, min_size, 10);
@@ -95,7 +95,7 @@ public:
 	}
 
 	// is stack empty?
-	BOOL
+	GP_BOOL
 	IsEmpty() const
 	{
 		return (m_size == 0);

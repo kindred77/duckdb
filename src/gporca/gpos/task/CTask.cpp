@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -32,7 +32,7 @@ const CTaskId CTaskId::m_invalid_tid;
 //
 //---------------------------------------------------------------------------
 CTask::CTask(CMemoryPool *mp, CTaskContext *task_ctxt, IErrorContext *err_ctxt,
-			 BOOL *cancel)
+			 GP_BOOL *cancel)
 	: m_mp(mp),
 	  m_task_ctxt(task_ctxt),
 	  m_err_ctxt(err_ctxt),
@@ -177,7 +177,7 @@ CTask::SetStatus(ETaskStatus ets)
 //		Check if task has been scheduled
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CTask::IsScheduled() const
 {
 	switch (m_status)
@@ -207,7 +207,7 @@ CTask::IsScheduled() const
 //		Check if task finished executing
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CTask::IsFinished() const
 {
 	switch (m_status)
@@ -263,8 +263,8 @@ CTask::ResumeAbort()
 //		Check if task has expected status
 //
 //---------------------------------------------------------------------------
-BOOL
-CTask::CheckStatus(BOOL completed)
+GP_BOOL
+CTask::CheckStatus(GP_BOOL completed)
 {
 	GPOS_ASSERT(!IsCanceled());
 	if (completed)

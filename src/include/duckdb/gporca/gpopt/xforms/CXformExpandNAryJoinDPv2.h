@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 // Greenplum Database
 // Copyright (C) 2019 Pivotal Inc.
 //
@@ -62,7 +62,7 @@ public:
 	virtual EXformPromise Exfp(CExpressionHandle &exprhdl) const;
 
 	// do stats need to be computed before applying xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FNeedsStats() const
 	{
 		return true;

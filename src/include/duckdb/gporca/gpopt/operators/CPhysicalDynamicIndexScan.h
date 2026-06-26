@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp
 //
@@ -46,13 +46,13 @@ private:
 
 public:
 	// ctors
-	CPhysicalDynamicIndexScan(CMemoryPool *mp, BOOL is_partial,
+	CPhysicalDynamicIndexScan(CMemoryPool *mp, GP_BOOL is_partial,
 							  CIndexDescriptor *pindexdesc,
-							  CTableDescriptor *ptabdesc, ULONG ulOriginOpId,
+							  CTableDescriptor *ptabdesc, GP_ULONG ulOriginOpId,
 							  const CName *pnameAlias,
-							  CColRefArray *pdrgpcrOutput, ULONG scan_id,
+							  CColRefArray *pdrgpcrOutput, GP_ULONG scan_id,
 							  CColRef2dArray *pdrgpdrgpcrPart,
-							  ULONG ulSecondaryScanId,
+							  GP_ULONG ulSecondaryScanId,
 							  CPartConstraint *ppartcnstr,
 							  CPartConstraint *ppartcnstrRel, COrderSpec *pos);
 
@@ -82,10 +82,10 @@ public:
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties

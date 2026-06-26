@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -35,8 +35,8 @@ using namespace gpopt;
 // |  estCompleted   |
 // +-----------------+
 //
-const CJobTransformation::EEvent
-	rgeev[CJobTransformation::estSentinel][CJobTransformation::estSentinel] = {
+static const CJobTransformation::EEvent
+	rgeevXform[CJobTransformation::estSentinel][CJobTransformation::estSentinel] = {
 		{// estInitialized
 		 CJobTransformation::eevSentinel, CJobTransformation::eevCompleted},
 		{// estCompleted
@@ -100,7 +100,7 @@ CJobTransformation::Init(CGroupExpression *pgexpr, CXform *pxform)
 	m_pgexpr = pgexpr;
 	m_xform = pxform;
 
-	m_jsm.Init(rgeev
+	m_jsm.Init(rgeevXform
 #ifdef GPOS_DEBUG
 			   ,
 			   rgwszStates, rgwszEvents
@@ -135,8 +135,8 @@ CJobTransformation::EevtTransform(CSchedulerContext *psc, CJob *pjOwner)
 
 	// insert transformation results to memo
 	CXformResult *pxfres = GPOS_NEW(pmpGlobal) CXformResult(pmpGlobal);
-	ULONG ulElapsedTime = 0;
-	ULONG ulNumberOfBindings = 0;
+	GP_ULONG ulElapsedTime = 0;
+	GP_ULONG ulNumberOfBindings = 0;
 	pgexpr->Transform(pmpGlobal, pmpLocal, pxform, pxfres, &ulElapsedTime,
 					  &ulNumberOfBindings);
 	psc->Peng()->InsertXformResult(pgexpr->Pgroup(), pxfres, pxform->Exfid(),
@@ -155,7 +155,7 @@ CJobTransformation::EevtTransform(CSchedulerContext *psc, CJob *pjOwner)
 //		Main job function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobTransformation::FExecute(CSchedulerContext *psc)
 {
 	GPOS_ASSERT(FInit());

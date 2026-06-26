@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -61,7 +61,7 @@ CScalar::PrpCreate(CMemoryPool *  // mp
 //		Derive existence of subqueries from expression handle
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalar::FHasSubquery(CExpressionHandle &exprhdl)
 {
 	// if operator is a subquery, return immediately
@@ -71,8 +71,8 @@ CScalar::FHasSubquery(CExpressionHandle &exprhdl)
 	}
 
 	// otherwise, iterate over scalar children
-	const ULONG arity = exprhdl.Arity();
-	for (ULONG i = 0; i < arity; i++)
+	const GP_ULONG arity = exprhdl.Arity();
+	for (GP_ULONG i = 0; i < arity; i++)
 	{
 		if (exprhdl.FScalarChild(i))
 		{
@@ -107,12 +107,12 @@ CScalar::EberConjunction(ULongPtrArray *pdrgpulChildren)
 	// - else if all children are ANY or TRUE, the result is ANY
 	// - else if all children are NULL or TRUE, the result is NULL
 	// - else (a mix of TRUE, ANY and NULL), the result is NotTrue
-	BOOL fAllChildrenTrue = true;
-	BOOL fAllChildrenAnyOrTrue = true;
-	BOOL fAllChildrenNullOrTrue = true;
+	GP_BOOL fAllChildrenTrue = true;
+	GP_BOOL fAllChildrenAnyOrTrue = true;
+	GP_BOOL fAllChildrenNullOrTrue = true;
 
-	const ULONG ulChildren = pdrgpulChildren->Size();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pdrgpulChildren->Size();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		EBoolEvalResult eber = (EBoolEvalResult) * ((*pdrgpulChildren)[ul]);
 
@@ -162,13 +162,13 @@ CScalar::EberDisjunction(ULongPtrArray *pdrgpulChildren)
 	GPOS_ASSERT(NULL != pdrgpulChildren);
 	GPOS_ASSERT(1 < pdrgpulChildren->Size());
 
-	BOOL fAllChildrenFalse = true;
-	BOOL fNullChild = false;
-	BOOL fNotTrueChild = false;
-	BOOL fAnyChild = false;
+	GP_BOOL fAllChildrenFalse = true;
+	GP_BOOL fNullChild = false;
+	GP_BOOL fNotTrueChild = false;
+	GP_BOOL fAnyChild = false;
 
-	const ULONG ulChildren = pdrgpulChildren->Size();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pdrgpulChildren->Size();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		EBoolEvalResult eber = (EBoolEvalResult) * ((*pdrgpulChildren)[ul]);
 		switch (eber)
@@ -246,8 +246,8 @@ CScalar::EberNullOnAnyNullChild(ULongPtrArray *pdrgpulChildren)
 {
 	GPOS_ASSERT(NULL != pdrgpulChildren);
 
-	const ULONG ulChildren = pdrgpulChildren->Size();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pdrgpulChildren->Size();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		EBoolEvalResult eber = (EBoolEvalResult) * ((*pdrgpulChildren)[ul]);
 		if (EberNull == eber)
@@ -273,8 +273,8 @@ CScalar::EberNullOnAllNullChildren(ULongPtrArray *pdrgpulChildren)
 {
 	GPOS_ASSERT(NULL != pdrgpulChildren);
 
-	const ULONG ulChildren = pdrgpulChildren->Size();
-	for (ULONG ul = 0; ul < ulChildren; ul++)
+	const GP_ULONG ulChildren = pdrgpulChildren->Size();
+	for (GP_ULONG ul = 0; ul < ulChildren; ul++)
 	{
 		EBoolEvalResult eber = (EBoolEvalResult) * ((*pdrgpulChildren)[ul]);
 		if (EberNull != eber)
@@ -304,17 +304,17 @@ CScalar::EberEvaluate(CMemoryPool *mp, CExpression *pexprScalar)
 	COperator *pop = pexprScalar->Pop();
 	GPOS_ASSERT(pop->FScalar());
 
-	const ULONG arity = pexprScalar->Arity();
+	const GP_ULONG arity = pexprScalar->Arity();
 	ULongPtrArray *pdrgpulChildren = GPOS_NEW(mp) ULongPtrArray(mp);
 
 	if (!CUtils::FSubquery(pop))
 	{
 		// do not recurse into subqueries
-		for (ULONG ul = 0; ul < arity; ul++)
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprChild = (*pexprScalar)[ul];
 			EBoolEvalResult eberChild = EberEvaluate(mp, pexprChild);
-			pdrgpulChildren->Append(GPOS_NEW(mp) ULONG(eberChild));
+			pdrgpulChildren->Append(GPOS_NEW(mp) GP_ULONG(eberChild));
 		}
 	}
 
@@ -333,7 +333,7 @@ CScalar::EberEvaluate(CMemoryPool *mp, CExpression *pexprScalar)
 //		Derive existence of non-scalar functions from expression handle
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalar::FHasNonScalarFunction(CExpressionHandle &exprhdl)
 {
 	// if operator is a subquery, return immediately
@@ -343,8 +343,8 @@ CScalar::FHasNonScalarFunction(CExpressionHandle &exprhdl)
 	}
 
 	// otherwise, iterate over scalar children
-	const ULONG arity = exprhdl.Arity();
-	for (ULONG i = 0; i < arity; i++)
+	const GP_ULONG arity = exprhdl.Arity();
+	for (GP_ULONG i = 0; i < arity; i++)
 	{
 		if (exprhdl.FScalarChild(i))
 		{
@@ -371,12 +371,12 @@ CPartInfo *
 CScalar::PpartinfoDeriveCombineScalar(CMemoryPool *mp,
 									  CExpressionHandle &exprhdl)
 {
-	const ULONG arity = exprhdl.Arity();
+	const GP_ULONG arity = exprhdl.Arity();
 	GPOS_ASSERT(0 < arity);
 
 	CPartInfo *ppartinfo = GPOS_NEW(mp) CPartInfo(mp);
 
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		if (exprhdl.FScalarChild(ul))
 		{
@@ -392,7 +392,7 @@ CScalar::PpartinfoDeriveCombineScalar(CMemoryPool *mp,
 	return ppartinfo;
 }
 
-BOOL
+GP_BOOL
 CScalar::FHasScalarArrayCmp(CExpressionHandle &exprhdl)
 {
 	// if operator is a ScalarArrayCmp, return immediately
@@ -402,8 +402,8 @@ CScalar::FHasScalarArrayCmp(CExpressionHandle &exprhdl)
 	}
 
 	// otherwise, iterate over scalar children
-	const ULONG arity = exprhdl.Arity();
-	for (ULONG i = 0; i < arity; i++)
+	const GP_ULONG arity = exprhdl.Arity();
+	for (GP_ULONG i = 0; i < arity; i++)
 	{
 		if (exprhdl.FScalarChild(i))
 		{

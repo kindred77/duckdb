@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -95,13 +95,13 @@ public:
 
 
 	// equality check
-	virtual BOOL Equals(const IMDId *mdid) const = 0;
+	virtual GP_BOOL Equals(const IMDId *mdid) const = 0;
 
 	// computes the hash value for the metadata id
-	virtual ULONG HashValue() const = 0;
+	virtual GP_ULONG HashValue() const = 0;
 
 	// return true if calling object's destructor is allowed
-	virtual BOOL
+	virtual GP_BOOL
 	Deletable() const
 	{
 		return (0 == m_deletion_locks);
@@ -132,7 +132,7 @@ public:
 
 	// static hash functions for use in different indexing structures,
 	// e.g. hashmaps, MD cache, etc.
-	static ULONG
+	static GP_ULONG
 	MDIdHash(const IMDId *mdid)
 	{
 		GPOS_ASSERT(NULL != mdid);
@@ -141,7 +141,7 @@ public:
 
 	// static equality functions for use in different structures,
 	// e.g. hashmaps, MD cache, etc.
-	static BOOL
+	static GP_BOOL
 	MDIdCompare(const IMDId *left_mdid, const IMDId *right_mdid)
 	{
 		GPOS_ASSERT(NULL != left_mdid && NULL != right_mdid);
@@ -150,14 +150,14 @@ public:
 
 
 	// is the mdid valid
-	virtual BOOL IsValid() const = 0;
+	virtual GP_BOOL IsValid() const = 0;
 
 	// serialize mdid in DXL as the value for the specified attribute
 	virtual void Serialize(CXMLSerializer *xml_serializer,
 						   const CWStringConst *pstrAttribute) const = 0;
 
 	// safe validity function
-	static BOOL
+	static GP_BOOL
 	IsValid(const IMDId *mdid)
 	{
 		return NULL != mdid && mdid->IsValid();

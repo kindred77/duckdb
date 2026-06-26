@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -33,7 +33,7 @@ CIOUtils::Dump(CHAR *file_name, CHAR *sz)
 {
 	CAutoSuspendAbort asa;
 
-	const ULONG ulWrPerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+	const GP_ULONG ulWrPerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 
 	GPOS_TRY
 	{

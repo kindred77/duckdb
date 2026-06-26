@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -40,7 +40,7 @@ public:
 
 	// ctor
 	COstreamFile(const CHAR *file_path,
-				 ULONG permission_bits = S_IRUSR | S_IWUSR);
+				 GP_ULONG permission_bits = S_IRUSR | S_IWUSR);
 
 	// dtor
 	virtual ~COstreamFile();

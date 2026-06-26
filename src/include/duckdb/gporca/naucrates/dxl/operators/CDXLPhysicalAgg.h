@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -58,7 +58,7 @@ private:
 	EdxlAggStrategy m_dxl_agg_strategy;
 
 	// is it safe to stream the local hash aggregate
-	BOOL m_stream_safe;
+	GP_BOOL m_stream_safe;
 
 	// serialize output grouping columns indices in DXL
 	void SerializeGroupingColsToDXL(CXMLSerializer *xml_serializer) const;
@@ -66,7 +66,7 @@ private:
 public:
 	// ctor
 	CDXLPhysicalAgg(CMemoryPool *mp, EdxlAggStrategy dxl_agg_strategy,
-					BOOL stream_safe);
+					GP_BOOL stream_safe);
 
 	// dtor
 	virtual ~CDXLPhysicalAgg();
@@ -84,7 +84,7 @@ public:
 	void SetGroupingCols(ULongPtrArray *);
 
 	// is aggregate a hash aggregate that it safe to stream
-	BOOL
+	GP_BOOL
 	IsStreamSafe() const
 	{
 		return (EdxlaggstrategyHashed == m_dxl_agg_strategy) && m_stream_safe;
@@ -107,7 +107,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

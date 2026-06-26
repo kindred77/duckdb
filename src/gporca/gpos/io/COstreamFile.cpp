@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -24,7 +24,7 @@ using namespace gpos;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-COstreamFile::COstreamFile(const CHAR *file_path, ULONG permission_bits)
+COstreamFile::COstreamFile(const CHAR *file_path, GP_ULONG permission_bits)
 {
 	m_file_writer.Open(file_path, permission_bits);
 }

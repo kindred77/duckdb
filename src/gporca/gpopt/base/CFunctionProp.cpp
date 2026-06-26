@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -26,7 +26,7 @@ FORCE_GENERATE_DBGSTR(CFunctionProp);
 //
 //---------------------------------------------------------------------------
 CFunctionProp::CFunctionProp(IMDFunction::EFuncStbl func_stability,
-							 BOOL fHasVolatileFunctionScan, BOOL fScan)
+							 GP_BOOL fHasVolatileFunctionScan, GP_BOOL fScan)
 	: m_efs(func_stability),
 	  m_fHasVolatileFunctionScan(fHasVolatileFunctionScan),
 	  m_fScan(fScan)
@@ -56,7 +56,7 @@ CFunctionProp::~CFunctionProp()
 //		Check if must execute on a single host based on function properties
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CFunctionProp::NeedsSingletonExecution() const
 {
 	// a function needs to execute on a single host if any of the following holds:

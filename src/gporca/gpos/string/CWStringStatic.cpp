@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -29,7 +29,7 @@ using namespace gpos;
 //
 //---------------------------------------------------------------------------
 CWStringStatic::CWStringStatic(WCHAR w_str_buffer[],
-							   ULONG capacity)
+							   GP_ULONG capacity)
 	: CWString(0  // length
 			   ),
 	  m_capacity(capacity)
@@ -50,7 +50,7 @@ CWStringStatic::CWStringStatic(WCHAR w_str_buffer[],
 //		Ctor - initializes with passed string
 //
 //---------------------------------------------------------------------------
-CWStringStatic::CWStringStatic(WCHAR w_str_buffer[], ULONG capacity,
+CWStringStatic::CWStringStatic(WCHAR w_str_buffer[], GP_ULONG capacity,
 							   const WCHAR w_str_init[])
 	: CWString(0  // length
 			   ),
@@ -76,7 +76,7 @@ void
 CWStringStatic::AppendBuffer(const WCHAR *w_str_buffer)
 {
 	GPOS_ASSERT(NULL != w_str_buffer);
-	ULONG length = GPOS_WSZ_LENGTH(w_str_buffer);
+	GP_ULONG length = GPOS_WSZ_LENGTH(w_str_buffer);
 	if (0 == length || m_capacity == m_length)
 	{
 		return;
@@ -133,7 +133,7 @@ CWStringStatic::AppendCharArray(const CHAR *sz)
 		return;
 	}
 
-	ULONG length = GPOS_SZ_LENGTH(sz);
+	GP_ULONG length = GPOS_SZ_LENGTH(sz);
 	if (length >= GPOS_STATIC_STR_BUFFER_LENGTH)
 	{
 		// if input string is larger than buffer length, use AppendFormat
@@ -146,7 +146,7 @@ CWStringStatic::AppendCharArray(const CHAR *sz)
 
 // convert input string to wide character buffer
 #ifdef GPOS_DEBUG
-	ULONG wide_length =
+	GP_ULONG wide_length =
 #endif	// GPOS_DEBUG
 		clib::Mbstowcs(w_str_buffer, sz, length);
 	GPOS_ASSERT(wide_length == length);
@@ -206,7 +206,7 @@ CWStringStatic::AppendFormatVA(const WCHAR *format, VA_LIST va_args)
 	GPOS_ASSERT(NULL != format);
 
 	// available space in buffer
-	ULONG ulAvailable = m_capacity - m_length;
+	GP_ULONG ulAvailable = m_capacity - m_length;
 
 	// format string
 	(void) clib::Vswprintf(m_w_str_buffer + m_length, ulAvailable, format,
@@ -256,17 +256,17 @@ CWStringStatic::AppendEscape(const CWStringBase *str, WCHAR wc,
 		return;
 	}
 
-	ULONG length = str->Length();
-	ULONG length_replace = GPOS_WSZ_LENGTH(w_str_replace);
-	ULONG ulLengthNew = m_length;
+	GP_ULONG length = str->Length();
+	GP_ULONG length_replace = GPOS_WSZ_LENGTH(w_str_replace);
+	GP_ULONG ulLengthNew = m_length;
 	const WCHAR *w_str = str->GetBuffer();
 
-	for (ULONG i = 0; i < length && ulLengthNew < m_capacity - 1; i++)
+	for (GP_ULONG i = 0; i < length && ulLengthNew < m_capacity - 1; i++)
 	{
 		if (wc == w_str[i] && !str->HasEscapedCharAt(i))
 		{
 			// check for overflow
-			ULONG ulLengthCopy =
+			GP_ULONG ulLengthCopy =
 				std::min(length_replace, m_capacity - ulLengthNew - 1);
 
 			clib::WcStrNCpy(m_w_str_buffer + ulLengthNew, w_str_replace,

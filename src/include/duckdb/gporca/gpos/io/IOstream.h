@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -52,7 +52,7 @@ public:
 	virtual IOstream &operator<<(const CHAR *) = 0;
 	virtual IOstream &operator<<(const WCHAR) = 0;
 	virtual IOstream &operator<<(const CHAR) = 0;
-	virtual IOstream &operator<<(ULONG) = 0;
+	virtual IOstream &operator<<(GP_ULONG) = 0;
 	virtual IOstream &operator<<(ULLONG) = 0;
 	virtual IOstream &operator<<(INT) = 0;
 	virtual IOstream &operator<<(LINT) = 0;

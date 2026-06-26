@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -48,7 +48,7 @@ protected:
 	// compute required sort columns of the n-th child
 	COrderSpec *PosRequiredStreamAgg(CMemoryPool *mp,
 									 CExpressionHandle &exprhdl,
-									 COrderSpec *posRequired, ULONG child_index,
+									 COrderSpec *posRequired, GP_ULONG child_index,
 									 CColRefArray *pdrgpcrGrp) const;
 
 	// initialize the order spec using the given array of columns
@@ -59,10 +59,10 @@ public:
 	CPhysicalStreamAgg(
 		CMemoryPool *mp, CColRefArray *colref_array,
 		CColRefArray *pdrgpcrMinimal,  // minimal grouping columns based on FD's
-		COperator::EGbAggType egbaggtype, BOOL fGeneratesDuplicates,
-		CColRefArray *pdrgpcrArgDQA, BOOL fMultiStage, BOOL isAggFromSplitDQA,
+		COperator::EGbAggType egbaggtype, GP_BOOL fGeneratesDuplicates,
+		CColRefArray *pdrgpcrArgDQA, GP_BOOL fMultiStage, GP_BOOL isAggFromSplitDQA,
 		CLogicalGbAgg::EAggStage aggStage,
-		BOOL should_enforce_distribution = true
+		GP_BOOL should_enforce_distribution = true
 		// should_enforce_distribution should be set to false if
 		// 'local' and 'global' splits don't need to have different
 		// distributions. This flag is set to false if the local
@@ -94,9 +94,9 @@ public:
 	// compute required sort columns of the n-th child
 	virtual COrderSpec *
 	PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-				COrderSpec *posRequired, ULONG child_index,
+				COrderSpec *posRequired, GP_ULONG child_index,
 				CDrvdPropArray *,  //pdrgpdpCtxt,
-				ULONG			   //ulOptReq
+				GP_ULONG			   //ulOptReq
 	) const
 	{
 		return PosRequiredStreamAgg(mp, exprhdl, posRequired, child_index,

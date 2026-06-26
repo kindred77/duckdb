@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008-2011 Greenplum, Inc.
 //
@@ -29,10 +29,10 @@ using namespace gpopt;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CScheduler::CScheduler(CMemoryPool *mp, ULONG ulJobs
+CScheduler::CScheduler(CMemoryPool *mp, GP_ULONG ulJobs
 #ifdef GPOS_DEBUG
 					   ,
-					   BOOL fTrackingJobs
+					   GP_BOOL fTrackingJobs
 #endif	// GPOS_DEBUG
 					   )
 	: m_spjl(mp, ulJobs),
@@ -111,7 +111,7 @@ void
 CScheduler::ExecuteJobs(CSchedulerContext *psc)
 {
 	CJob *pj = NULL;
-	ULONG count = 0;
+	GP_ULONG count = 0;
 
 	// keep retrieving jobs
 	while (NULL != (pj = PjRetrieve()))
@@ -120,7 +120,7 @@ CScheduler::ExecuteJobs(CSchedulerContext *psc)
 		PreExecute(pj);
 
 		// execute job
-		BOOL fCompleted = FExecute(pj, psc);
+		GP_BOOL fCompleted = FExecute(pj, psc);
 
 #ifdef GPOS_DEBUG
 		// restrict parallelism to keep track of jobs
@@ -295,10 +295,10 @@ CScheduler::PreExecute(CJob *pj)
 //		Execution function using job queue
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScheduler::FExecute(CJob *pj, CSchedulerContext *psc)
 {
-	BOOL fCompleted = true;
+	GP_BOOL fCompleted = true;
 	CJobQueue *pjq = pj->Pjq();
 
 	// check if job is associated to a job queue
@@ -348,7 +348,7 @@ CScheduler::FExecute(CJob *pj, CSchedulerContext *psc)
 //
 //---------------------------------------------------------------------------
 CScheduler::EJobResult
-CScheduler::EjrPostExecute(CJob *pj, BOOL fCompleted)
+CScheduler::EjrPostExecute(CJob *pj, GP_BOOL fCompleted)
 {
 	GPOS_ASSERT(NULL != pj);
 	GPOS_ASSERT(0 < pj->UlpRefs() && "IsRunning job is marked as completed");

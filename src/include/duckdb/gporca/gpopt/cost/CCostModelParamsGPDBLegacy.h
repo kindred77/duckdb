@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -106,13 +106,13 @@ public:
 	virtual ~CCostModelParamsGPDBLegacy();
 
 	// lookup param by id
-	virtual SCostParam *PcpLookup(ULONG id) const;
+	virtual SCostParam *PcpLookup(GP_ULONG id) const;
 
 	// lookup param by name
 	virtual SCostParam *PcpLookup(const CHAR *szName) const;
 
 	// set param by id
-	virtual void SetParam(ULONG id, CDouble dVal, CDouble dLowerBound,
+	virtual void SetParam(GP_ULONG id, CDouble dVal, CDouble dLowerBound,
 						  CDouble dUpperBound);
 
 	// set param by name
@@ -122,9 +122,9 @@ public:
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;
 
-	virtual BOOL Equals(ICostModelParams *pcm) const;
+	virtual GP_BOOL Equals(ICostModelParams *pcm) const;
 
-	virtual const CHAR *SzNameLookup(ULONG id) const;
+	virtual const CHAR *SzNameLookup(GP_ULONG id) const;
 
 };	// class CCostModelParamsGPDBLegacy
 

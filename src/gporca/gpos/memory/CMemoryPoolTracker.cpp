@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -65,8 +65,8 @@ CMemoryPoolTracker::RecordFree(SAllocHeader *header)
 
 
 void *
-CMemoryPoolTracker::NewImpl(const ULONG bytes, const CHAR *file,
-							const ULONG line, CMemoryPool::EAllocationType eat)
+CMemoryPoolTracker::NewImpl(const GP_ULONG bytes, const CHAR *file,
+							const GP_ULONG line, CMemoryPool::EAllocationType eat)
 {
 	GPOS_ASSERT(bytes <= GPOS_MEM_ALLOC_MAX);
 	GPOS_ASSERT(bytes <= gpos::ulong_max);
@@ -77,7 +77,7 @@ CMemoryPoolTracker::NewImpl(const ULONG bytes, const CHAR *file,
 		CMemoryPoolManager::GetMemoryPoolMgr()->IsGlobalNewAllowed() &&
 			"Use of new operator without target memory pool is prohibited, use New(...) instead");
 
-	ULONG alloc_size = GPOS_MEM_BYTES_TOTAL(bytes);
+	GP_ULONG alloc_size = GPOS_MEM_BYTES_TOTAL(bytes);
 
 	void *ptr = clib::Malloc(alloc_size);
 
@@ -123,7 +123,7 @@ CMemoryPoolTracker::DeleteImpl(void *ptr, EAllocationType eat)
 {
 	SAllocHeader *header = static_cast<SAllocHeader *>(ptr) - 1;
 
-	ULONG user_size = header->m_user_size;
+	GP_ULONG user_size = header->m_user_size;
 	BYTE *alloc_type = static_cast<BYTE *>(ptr) + user_size;
 
 	// this assert ensures we aren't writing past allocated memory
@@ -142,7 +142,7 @@ CMemoryPoolTracker::DeleteImpl(void *ptr, EAllocationType eat)
 }
 
 // get user requested size of allocation
-ULONG
+GP_ULONG
 CMemoryPoolTracker::UserSizeOfAlloc(const void *ptr)
 {
 	const SAllocHeader *header = static_cast<const SAllocHeader *>(ptr) - 1;

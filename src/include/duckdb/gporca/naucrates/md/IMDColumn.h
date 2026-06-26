@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -46,19 +46,19 @@ public:
 	virtual INT TypeModifier() const = 0;
 
 	// are nulls allowed for this column
-	virtual BOOL IsNullable() const = 0;
+	virtual GP_BOOL IsNullable() const = 0;
 
 	// attribute number in the system catalog
 	virtual INT AttrNum() const = 0;
 
 	// is this a system column
-	virtual BOOL IsSystemColumn() const = 0;
+	virtual GP_BOOL IsSystemColumn() const = 0;
 
 	// is column dropped
-	virtual BOOL IsDropped() const = 0;
+	virtual GP_BOOL IsDropped() const = 0;
 
 	// length of the column
-	virtual ULONG Length() const = 0;
+	virtual GP_ULONG Length() const = 0;
 
 #ifdef GPOS_DEBUG
 	// debug print of the column

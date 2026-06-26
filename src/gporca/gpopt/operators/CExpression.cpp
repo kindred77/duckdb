@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -485,8 +485,8 @@ CExpression::PdpDerive(
 		GPOS_ASSERT(CDrvdProp::EptRelational != ept);
 		GPOS_ASSERT(CDrvdProp::EptScalar != ept);
 
-		const ULONG arity = Arity();
-		for (ULONG ul = 0; ul < arity; ul++)
+		const GP_ULONG arity = Arity();
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprChild = (*m_pdrgpexpr)[ul];
 			CDrvdProp *pdp = pexprChild->PdpDerive(pdpctxt);
@@ -673,13 +673,13 @@ CExpression::ResetDerivedProperties()
 	CDrvdProp::EPropType rgept[] = {CDrvdProp::EptRelational,
 									CDrvdProp::EptScalar, CDrvdProp::EptPlan};
 
-	for (ULONG i = 0; i < GPOS_ARRAY_SIZE(rgept); i++)
+	for (GP_ULONG i = 0; i < GPOS_ARRAY_SIZE(rgept); i++)
 	{
 		// reset self
 		ResetDerivedProperty(rgept[i]);
 	}
 
-	for (ULONG i = 0; i < Arity(); i++)
+	for (GP_ULONG i = 0; i < Arity(); i++)
 	{
 		// reset children
 		(*this)[i]->ResetDerivedProperties();
@@ -705,8 +705,8 @@ CExpression::ResetStats()
 	CRefCount::SafeRelease(m_pstats);
 	m_pstats = NULL;
 
-	const ULONG arity = Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		// reset children stats
 		(*this)[ul]->ResetStats();
@@ -723,7 +723,7 @@ CExpression::ResetStats()
 //
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::HasOuterRefs()
 {
 	return (0 < DeriveOuterReferences()->Size());
@@ -781,8 +781,8 @@ CExpression::PrppDecorate(CMemoryPool *mp, CReqdPropPlan *prppInput)
 		// create array of child derived properties
 		CDrvdPropArray *pdrgpdp = GPOS_NEW(m_mp) CDrvdPropArray(m_mp);
 
-		const ULONG arity = Arity();
-		for (ULONG ul = 0; ul < arity; ul++)
+		const GP_ULONG arity = Arity();
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			// compute required columns of the n-th child
 			exprhdl.ComputeChildReqdCols(ul, pdrgpdp);
@@ -816,7 +816,7 @@ CExpression::PrppDecorate(CMemoryPool *mp, CReqdPropPlan *prppInput)
 //		shallow, do not	match its children, check only arity of the root
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FMatchPattern(CGroupExpression *pgexpr) const
 {
 	GPOS_ASSERT(NULL != pgexpr);
@@ -833,8 +833,8 @@ CExpression::FMatchPattern(CGroupExpression *pgexpr) const
 	}
 	else
 	{
-		ULONG arity = Arity();
-		BOOL fMultiNode =
+		GP_ULONG arity = Arity();
+		GP_BOOL fMultiNode =
 			((1 == arity || 2 == arity) &&	// has 2 or fewer children
 			 CPattern::FMultiNode(
 				 (*this)[0]->Pop())	 // child is multileaf or a multitree
@@ -860,7 +860,7 @@ CExpression::FMatchPattern(CGroupExpression *pgexpr) const
 //		Recursive comparison of this expression against another given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::Matches(CExpression *pexpr) const
 {
 	GPOS_CHECK_STACK_SIZE;
@@ -871,14 +871,14 @@ CExpression::Matches(CExpression *pexpr) const
 		return false;
 	}
 
-	ULONG arity = Arity();
+	GP_ULONG arity = Arity();
 	if (arity != pexpr->Arity())
 	{
 		return false;
 	}
 
 	// decend into children
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		if (!(*this)[ul]->Matches((*pexpr)[ul]))
 		{
@@ -900,7 +900,7 @@ CExpression::Matches(CExpression *pexpr) const
 CExpression *
 CExpression::PexprCopyWithRemappedColumns(CMemoryPool *mp,
 										  UlongToColRefMap *colref_mapping,
-										  BOOL must_exist) const
+										  GP_BOOL must_exist) const
 {
 	GPOS_ASSERT(NULL != m_pop);
 	// this is only valid for logical and scalar expressions
@@ -908,8 +908,8 @@ CExpression::PexprCopyWithRemappedColumns(CMemoryPool *mp,
 
 	// copy children
 	CExpressionArray *pdrgpexpr = GPOS_NEW(mp) CExpressionArray(mp);
-	const ULONG arity = Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CExpression *pexprChild = (*m_pdrgpexpr)[ul];
 		pdrgpexpr->Append(pexprChild->PexprCopyWithRemappedColumns(
@@ -938,7 +938,7 @@ CExpression::PexprCopyWithRemappedColumns(CMemoryPool *mp,
 //		Check expression against a given pattern;
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FMatchPattern(CExpression *pexprPattern) const
 {
 	GPOS_CHECK_STACK_SIZE;
@@ -974,15 +974,15 @@ CExpression::FMatchPattern(CExpression *pexprPattern) const
 //		Check expression's children against a given pattern's children;
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FMatchPatternChildren(CExpression *pexprPattern) const
 {
 	GPOS_CHECK_STACK_SIZE;
 
-	ULONG arity = Arity();
-	ULONG ulArityPattern = pexprPattern->Arity();
+	GP_ULONG arity = Arity();
+	GP_ULONG ulArityPattern = pexprPattern->Arity();
 
-	BOOL fMultiNode = ((1 == ulArityPattern || 2 == ulArityPattern) &&
+	GP_BOOL fMultiNode = ((1 == ulArityPattern || 2 == ulArityPattern) &&
 					   CPattern::FMultiNode((*pexprPattern)[0]->Pop()));
 
 	if (fMultiNode)
@@ -1008,8 +1008,8 @@ CExpression::FMatchPatternChildren(CExpression *pexprPattern) const
 		return false;
 	}
 
-	BOOL fMatch = true;
-	for (ULONG ul = 0; ul < arity && fMatch; ul++)
+	GP_BOOL fMatch = true;
+	for (GP_ULONG ul = 0; ul < arity && fMatch; ul++)
 	{
 		CExpression *pexpr = (*this)[ul];
 		fMatch = fMatch && pexpr->FMatchPattern((*pexprPattern)[ul]);
@@ -1027,7 +1027,7 @@ CExpression::FMatchPatternChildren(CExpression *pexprPattern) const
 //		Recursive comparison of this expression against another given one
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FMatchDebug(CExpression *pexpr) const
 {
 	GPOS_CHECK_STACK_SIZE;
@@ -1050,7 +1050,7 @@ CExpression::FMatchDebug(CExpression *pexpr) const
 						->MdidType()
 						->Equals(CScalar::PopConvert(Pop())->MdidType()));
 
-	ULONG arity = Arity();
+	GP_ULONG arity = Arity();
 
 	if (arity != pexpr->Arity())
 	{
@@ -1061,7 +1061,7 @@ CExpression::FMatchDebug(CExpression *pexpr) const
 								   pexpr->Pop()->FInputOrderSensitive());
 
 	// decend into children
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		if (!(*this)[ul]->FMatchDebug((*pexpr)[ul]))
 		{
@@ -1150,7 +1150,7 @@ CExpression::OsPrint(IOstream &os) const
 //---------------------------------------------------------------------------
 IOstream &
 CExpression::OsPrintExpression(IOstream &os, const CPrintPrefix *ppfx,
-							   BOOL fLast) const
+							   GP_BOOL fLast) const
 {
 	// recursive, check stack depth
 	GPOS_CHECK_STACK_SIZE;
@@ -1200,8 +1200,8 @@ CExpression::OsPrintExpression(IOstream &os, const CPrintPrefix *ppfx,
 	}
 #endif	// GPOS_DEBUG
 
-	const ULONG ulChildren = this->Arity();
-	for (ULONG i = 0; i < ulChildren; i++)
+	const GP_ULONG ulChildren = this->Arity();
+	for (GP_ULONG i = 0; i < ulChildren; i++)
 	{
 		(*this)[i]->OsPrintExpression(os, &pfx, i == (ulChildren - 1));
 	}
@@ -1218,15 +1218,15 @@ CExpression::OsPrintExpression(IOstream &os, const CPrintPrefix *ppfx,
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CExpression::HashValue(const CExpression *pexpr)
 {
 	GPOS_CHECK_STACK_SIZE;
 
-	ULONG ulHash = pexpr->Pop()->HashValue();
+	GP_ULONG ulHash = pexpr->Pop()->HashValue();
 
-	const ULONG arity = pexpr->Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		ulHash = CombineHashes(ulHash, HashValue((*pexpr)[ul]));
 	}
@@ -1238,15 +1238,15 @@ CExpression::HashValue(const CExpression *pexpr)
 // Less strict hash function to support expressions that are not order
 // sensitive. This hash function specifically used in CUtils::PdrgpexprDedup
 // for deduping the expressions in a given list.
-ULONG
+GP_ULONG
 CExpression::UlHashDedup(const CExpression *pexpr)
 {
 	GPOS_CHECK_STACK_SIZE;
 
-	ULONG ulHash = pexpr->Pop()->HashValue();
+	GP_ULONG ulHash = pexpr->Pop()->HashValue();
 
-	const ULONG arity = pexpr->Arity();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = pexpr->Arity();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		if (pexpr->Pop()->FInputOrderSensitive())
 		{
@@ -1293,9 +1293,9 @@ CExpression::PexprRehydrate(CMemoryPool *mp, CCostContext *pcc,
 	CCost cost = pcc->Cost();
 	if (pop->FPhysical())
 	{
-		const ULONG arity = pgexpr->Arity();
+		const GP_ULONG arity = pgexpr->Arity();
 		CCostArray *pdrgpcost = GPOS_NEW(mp) CCostArray(mp);
-		for (ULONG ul = 0; ul < arity; ul++)
+		for (GP_ULONG ul = 0; ul < arity; ul++)
 		{
 			CExpression *pexprChild = (*pdrgpexpr)[ul];
 			CCost costChild = pexprChild->Cost();
@@ -1340,7 +1340,7 @@ CExpression::PexprRehydrate(CMemoryPool *mp, CCostContext *pcc,
 //		Check if the expression satisfies given required properties.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FValidPlan(const CReqdPropPlan *prpp,
 						CDrvdPropCtxtPlan *pdpctxtplan)
 {
@@ -1356,7 +1356,7 @@ CExpression::FValidPlan(const CReqdPropPlan *prpp,
 
 	if (COperator::EopPhysicalCTEProducer == m_pop->Eopid())
 	{
-		ULONG ulCTEId = CPhysicalCTEProducer::PopConvert(m_pop)->UlCTEId();
+		GP_ULONG ulCTEId = CPhysicalCTEProducer::PopConvert(m_pop)->UlCTEId();
 		pdpctxtplan->CopyCTEProducerProps(pdpplan, ulCTEId);
 	}
 
@@ -1376,7 +1376,7 @@ CExpression::FValidPlan(const CReqdPropPlan *prpp,
 //		Check if the distributions of all children are compatible.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FValidChildrenDistribution(CDrvdPropCtxtPlan *pdpctxtplan)
 {
 	GPOS_ASSERT(Pop()->FPhysical());
@@ -1415,7 +1415,7 @@ CExpression::FValidChildrenDistribution(CDrvdPropCtxtPlan *pdpctxtplan)
 //		Check if the expression is valid with respect to the partition enforcers.
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CExpression::FValidPartEnforcers(CDrvdPropCtxtPlan *pdpctxtplan)
 {
 	GPOS_ASSERT(Pop()->FPhysical());
@@ -1498,7 +1498,7 @@ CExpression::DerivePropertyConstraint()
 	return m_pdprel->DerivePropertyConstraint(exprhdl);
 }
 
-ULONG
+GP_ULONG
 CExpression::DeriveJoinDepth()
 {
 	CExpressionHandle exprhdl(m_mp);
@@ -1530,7 +1530,7 @@ CExpression::DerivePartitionInfo()
 	return m_pdprel->DerivePartitionInfo(exprhdl);
 }
 
-BOOL
+GP_BOOL
 CExpression::DeriveHasPartialIndexes()
 {
 	CExpressionHandle exprhdl(m_mp);
@@ -1568,7 +1568,7 @@ CExpression::DeriveSetReturningFunctionColumns()
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveSetReturningFunctionColumns(exprhdl);
 }
-BOOL
+GP_BOOL
 CExpression::DeriveHasSubquery()
 {
 	CExpressionHandle exprhdl(m_mp);
@@ -1589,42 +1589,42 @@ CExpression::DeriveScalarFunctionProperties()
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveFunctionProperties(exprhdl);
 }
-BOOL
+GP_BOOL
 CExpression::DeriveHasNonScalarFunction()
 {
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveHasNonScalarFunction(exprhdl);
 }
-ULONG
+GP_ULONG
 CExpression::DeriveTotalDistinctAggs()
 {
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveTotalDistinctAggs(exprhdl);
 }
-BOOL
+GP_BOOL
 CExpression::DeriveHasMultipleDistinctAggs()
 {
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveHasMultipleDistinctAggs(exprhdl);
 }
-BOOL
+GP_BOOL
 CExpression::DeriveHasScalarArrayCmp()
 {
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveHasScalarArrayCmp(exprhdl);
 }
-BOOL
+GP_BOOL
 CExpression::DeriveHasScalarFuncProject()
 {
 	CExpressionHandle exprhdl(m_mp);
 	exprhdl.Attach(this);
 	return m_pdpscalar->DeriveHasScalarFuncProject(exprhdl);
 }
-ULONG
+GP_ULONG
 CExpression::DeriveTotalOrderedAggs()
 {
 	CExpressionHandle exprhdl(m_mp);

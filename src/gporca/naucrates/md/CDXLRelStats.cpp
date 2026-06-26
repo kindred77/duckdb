@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -31,8 +31,8 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CDXLRelStats::CDXLRelStats(CMemoryPool *mp, CMDIdRelStats *rel_stats_mdid,
-						   CMDName *mdname, CDouble rows, BOOL is_empty,
-						   ULONG relpages, ULONG relallvisible)
+						   CMDName *mdname, CDouble rows, GP_BOOL is_empty,
+						   GP_ULONG relpages, GP_ULONG relallvisible)
 	: m_mp(mp),
 	  m_rel_stats_mdid(rel_stats_mdid),
 	  m_mdname(mdname),

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -55,13 +55,13 @@ class CMDAggregateGPDB : public IMDAggregate
 	IMDId *m_mdid_type_intermediate;
 
 	// is aggregate ordered
-	BOOL m_is_ordered;
+	GP_BOOL m_is_ordered;
 
 	// is aggregate splittable
-	BOOL m_is_splittable;
+	GP_BOOL m_is_splittable;
 
 	// is aggregate hash capable
-	BOOL m_hash_agg_capable;
+	GP_BOOL m_hash_agg_capable;
 
 	// private copy ctor
 	CMDAggregateGPDB(const CMDAggregateGPDB &);
@@ -70,8 +70,8 @@ public:
 	// ctor
 	CMDAggregateGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 					 IMDId *result_type_mdid,
-					 IMDId *intermediate_result_type_mdid, BOOL is_ordered_agg,
-					 BOOL is_splittable, BOOL is_hash_agg_capable);
+					 IMDId *intermediate_result_type_mdid, GP_BOOL is_ordered_agg,
+					 GP_BOOL is_splittable, GP_BOOL is_hash_agg_capable);
 
 	//dtor
 	~CMDAggregateGPDB();
@@ -99,21 +99,21 @@ public:
 	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;
 
 	// is an ordered aggregate
-	virtual BOOL
+	virtual GP_BOOL
 	IsOrdered() const
 	{
 		return m_is_ordered;
 	}
 
 	// is aggregate splittable
-	virtual BOOL
+	virtual GP_BOOL
 	IsSplittable() const
 	{
 		return m_is_splittable;
 	}
 
 	// is aggregate hash capable
-	virtual BOOL
+	virtual GP_BOOL
 	IsHashAggCapable() const
 	{
 		return m_hash_agg_capable;

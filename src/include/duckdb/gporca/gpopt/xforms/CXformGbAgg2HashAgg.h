@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -35,7 +35,7 @@ private:
 
 protected:
 	// check if the transformation is applicable
-	BOOL FApplicable(CExpression *pexpr) const;
+	GP_BOOL FApplicable(CExpression *pexpr) const;
 
 public:
 	// ctor

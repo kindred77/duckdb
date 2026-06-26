@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -151,7 +151,7 @@ private:
 	void ExtractScalarExpr(CParseHandlerBase *parse_handler_base);
 
 	// check if given element name is valid for starting DXL document
-	static BOOL IsValidStartElement(const XMLCh *const element_name);
+	static GP_BOOL IsValidStartElement(const XMLCh *const element_name);
 
 public:
 	// ctor

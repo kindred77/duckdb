@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -115,7 +115,7 @@ CMDTypeOidGPDB::~CMDTypeOidGPDB()
 //
 //---------------------------------------------------------------------------
 IDatumOid *
-CMDTypeOidGPDB::CreateOidDatum(CMemoryPool *mp, OID oValue, BOOL is_null) const
+CMDTypeOidGPDB::CreateOidDatum(CMemoryPool *mp, OID oValue, GP_BOOL is_null) const
 {
 	return GPOS_NEW(mp) CDatumOidGPDB(m_mdid->Sysid(), oValue, is_null);
 }
@@ -268,7 +268,7 @@ CMDTypeOidGPDB::GetDatumForDXLDatum(CMemoryPool *mp,
 	CDXLDatumOid *dxl_datumOid =
 		CDXLDatumOid::Cast(const_cast<CDXLDatum *>(dxl_datum));
 	OID oid_value = dxl_datumOid->OidValue();
-	BOOL is_null = dxl_datumOid->IsNull();
+	GP_BOOL is_null = dxl_datumOid->IsNull();
 
 	return GPOS_NEW(mp) CDatumOidGPDB(m_mdid->Sysid(), oid_value, is_null);
 }

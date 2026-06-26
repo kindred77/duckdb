@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (c) 2004-2015 Pivotal Software, Inc.
 //
@@ -33,7 +33,7 @@ typedef INT (*Comparator)(const void *, const void *);
 INT Memcmp(const void *left, const void *right, SIZE_T num_bytes);
 
 // sleep given number of microseconds
-void USleep(ULONG usecs);
+void USleep(GP_ULONG usecs);
 
 // compare two strings
 INT Strcmp(const CHAR *left, const CHAR *right);
@@ -63,10 +63,10 @@ CHAR *Strchr(const CHAR *src, INT c);
 void *Memset(void *dest, INT value, SIZE_T num_bytes);
 
 // calculate the length of a wide-character string
-ULONG Wcslen(const WCHAR *dest);
+GP_ULONG Wcslen(const WCHAR *dest);
 
 // calculate the length of a string
-ULONG Strlen(const CHAR *buf);
+GP_ULONG Strlen(const CHAR *buf);
 
 // sort a specified number of elements
 void Qsort(void *dest, SIZE_T num_bytes, SIZE_T size, Comparator fnComparator);
@@ -75,16 +75,16 @@ void Qsort(void *dest, SIZE_T num_bytes, SIZE_T size, Comparator fnComparator);
 INT Getopt(INT argc, CHAR *const argv[], const CHAR *opt_string);
 
 // convert string to long integer
-LINT Strtol(const CHAR *val, CHAR **end, ULONG base);
+LINT Strtol(const CHAR *val, CHAR **end, GP_ULONG base);
 
 // convert string to long long integer
-LINT Strtoll(const CHAR *val, CHAR **end, ULONG base);
+LINT Strtoll(const CHAR *val, CHAR **end, GP_ULONG base);
 
 // convert string to double
 DOUBLE Strtod(const CHAR *str);
 
 // return a pseudo-random integer between 0 and RAND_MAX
-ULONG Rand(ULONG *seed);
+GP_ULONG Rand(GP_ULONG *seed);
 
 // format wide character output conversion
 INT Vswprintf(WCHAR *wcstr, SIZE_T max_len, const WCHAR *format,
@@ -112,7 +112,7 @@ INT Wctomb(CHAR *dest, WCHAR src);
 LINT Wcstombs(CHAR *dest, WCHAR *src, ULONG_PTR dest_size);
 
 // convert a multibyte sequence to wide character array
-ULONG Mbstowcs(WCHAR *dest, const CHAR *src, SIZE_T len);
+GP_ULONG Mbstowcs(WCHAR *dest, const CHAR *src, SIZE_T len);
 
 // return a pointer to the start of the NULL-terminated symbol
 CHAR *Demangle(const CHAR *symbol, CHAR *buf, SIZE_T *len, INT *status);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -28,7 +28,7 @@ class CMainArgs
 {
 private:
 	// number of arguments
-	ULONG m_argc;
+	GP_ULONG m_argc;
 
 	// pointer to string array
 	const CHAR **m_argv;
@@ -47,13 +47,13 @@ private:
 
 public:
 	// ctor
-	CMainArgs(ULONG ulArgs, const CHAR **rgszArgs, const CHAR *szFmt);
+	CMainArgs(GP_ULONG ulArgs, const CHAR **rgszArgs, const CHAR *szFmt);
 
 	// dtor -- restores option params
 	~CMainArgs();
 
 	// getopt functionality
-	BOOL Getopt(CHAR *ch);
+	GP_BOOL Getopt(CHAR *ch);
 
 };	// class CMainArgs
 }  // namespace gpos

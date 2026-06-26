@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -33,7 +33,7 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CMDIndexGPDB::CMDIndexGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
-						   BOOL is_clustered, IMDIndex::EmdindexType index_type,
+						   GP_BOOL is_clustered, IMDIndex::EmdindexType index_type,
 						   IMDIndex::EmdindexType index_physical_type,
 						   IMDId *mdid_item_type,
 						   ULongPtrArray *index_key_cols_array,
@@ -126,7 +126,7 @@ CMDIndexGPDB::Mdname() const
 //		Is the index clustered
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIndexGPDB::IsClustered() const
 {
 	return m_clustered;
@@ -168,7 +168,7 @@ CMDIndexGPDB::IndexPhysicalType() const
 //		Returns the number of index keys
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIndexGPDB::Keys() const
 {
 	return m_index_key_cols_array->Size();
@@ -182,8 +182,8 @@ CMDIndexGPDB::Keys() const
 //		Returns the n-th key column
 //
 //---------------------------------------------------------------------------
-ULONG
-CMDIndexGPDB::KeyAt(ULONG pos) const
+GP_ULONG
+CMDIndexGPDB::KeyAt(GP_ULONG pos) const
 {
 	return *((*m_index_key_cols_array)[pos]);
 }
@@ -196,12 +196,12 @@ CMDIndexGPDB::KeyAt(ULONG pos) const
 //		Return the position of the key column in the index
 //
 //---------------------------------------------------------------------------
-ULONG
-CMDIndexGPDB::GetKeyPos(ULONG column) const
+GP_ULONG
+CMDIndexGPDB::GetKeyPos(GP_ULONG column) const
 {
-	const ULONG size = Keys();
+	const GP_ULONG size = Keys();
 
-	for (ULONG ul = 0; ul < size; ul++)
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		if (KeyAt(ul) == column)
 		{
@@ -220,7 +220,7 @@ CMDIndexGPDB::GetKeyPos(ULONG column) const
 //		Returns the number of included columns
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIndexGPDB::IncludedCols() const
 {
 	return m_included_cols_array->Size();
@@ -234,8 +234,8 @@ CMDIndexGPDB::IncludedCols() const
 //		Returns the n-th included column
 //
 //---------------------------------------------------------------------------
-ULONG
-CMDIndexGPDB::IncludedColAt(ULONG pos) const
+GP_ULONG
+CMDIndexGPDB::IncludedColAt(GP_ULONG pos) const
 {
 	return *((*m_included_cols_array)[pos]);
 }
@@ -248,12 +248,12 @@ CMDIndexGPDB::IncludedColAt(ULONG pos) const
 //		Return the position of the included column in the index
 //
 //---------------------------------------------------------------------------
-ULONG
-CMDIndexGPDB::GetIncludedColPos(ULONG column) const
+GP_ULONG
+CMDIndexGPDB::GetIncludedColPos(GP_ULONG column) const
 {
-	const ULONG size = IncludedCols();
+	const GP_ULONG size = IncludedCols();
 
-	for (ULONG ul = 0; ul < size; ul++)
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
 		if (IncludedColAt(ul) == column)
 		{
@@ -364,9 +364,9 @@ CMDIndexGPDB::DebugPrint(IOstream &os) const
 	   << GetDXLStr(m_index_physical_type)->GetBuffer() << std::endl;
 
 	os << "Index keys: ";
-	for (ULONG ul = 0; ul < Keys(); ul++)
+	for (GP_ULONG ul = 0; ul < Keys(); ul++)
 	{
-		ULONG ulKey = KeyAt(ul);
+		GP_ULONG ulKey = KeyAt(ul);
 		if (ul > 0)
 		{
 			os << ", ";
@@ -376,9 +376,9 @@ CMDIndexGPDB::DebugPrint(IOstream &os) const
 	os << std::endl;
 
 	os << "Included Columns: ";
-	for (ULONG ul = 0; ul < IncludedCols(); ul++)
+	for (GP_ULONG ul = 0; ul < IncludedCols(); ul++)
 	{
-		ULONG ulKey = IncludedColAt(ul);
+		GP_ULONG ulKey = IncludedColAt(ul);
 		if (ul > 0)
 		{
 			os << ", ";
@@ -413,8 +413,8 @@ CMDIndexGPDB::GetIndexRetItemTypeMdid() const
 // 		at the specified position
 //
 //---------------------------------------------------------------------------
-BOOL
-CMDIndexGPDB::IsCompatible(const IMDScalarOp *md_scalar_op, ULONG key_pos) const
+GP_BOOL
+CMDIndexGPDB::IsCompatible(const IMDScalarOp *md_scalar_op, GP_ULONG key_pos) const
 {
 	GPOS_ASSERT(NULL != md_scalar_op);
 	GPOS_ASSERT(key_pos < m_mdid_opfamilies_array->Size());
@@ -423,9 +423,9 @@ CMDIndexGPDB::IsCompatible(const IMDScalarOp *md_scalar_op, ULONG key_pos) const
 	// the families the scalar comparison belongs to
 	const IMDId *mdid_opfamily = (*m_mdid_opfamilies_array)[key_pos];
 
-	const ULONG opfamilies_count = md_scalar_op->OpfamiliesCount();
+	const GP_ULONG opfamilies_count = md_scalar_op->OpfamiliesCount();
 
-	for (ULONG ul = 0; ul < opfamilies_count; ul++)
+	for (GP_ULONG ul = 0; ul < opfamilies_count; ul++)
 	{
 		if (mdid_opfamily->Equals(md_scalar_op->OpfamilyMdidAt(ul)))
 		{

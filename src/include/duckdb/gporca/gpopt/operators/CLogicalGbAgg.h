@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -35,7 +35,7 @@ class CLogicalGbAgg : public CLogicalUnary
 {
 protected:
 	// does local / intermediate / global aggregate generate duplicate values for the same group
-	BOOL m_fGeneratesDuplicates;
+	GP_BOOL m_fGeneratesDuplicates;
 
 	// array of columns used in distinct qualified aggregates (DQA)
 	// used only in the case of intermediate aggregates
@@ -43,7 +43,7 @@ protected:
 
 	// compute required stats columns for a GbAgg
 	CColRefSet *PcrsStatGbAgg(CMemoryPool *mp, CExpressionHandle &exprhdl,
-							  CColRefSet *pcrsInput, ULONG child_index,
+							  CColRefSet *pcrsInput, GP_ULONG child_index,
 							  CColRefArray *pdrgpcrGrp) const;
 
 public:
@@ -69,7 +69,7 @@ public:
 
 	// ctor
 	CLogicalGbAgg(CMemoryPool *mp, CColRefArray *colref_array,
-				  COperator::EGbAggType egbaggtype, BOOL fGeneratesDuplicates,
+				  COperator::EGbAggType egbaggtype, GP_BOOL fGeneratesDuplicates,
 				  CColRefArray *pdrgpcrArgDQA, EAggStage aggStage);
 
 	// ctor
@@ -78,7 +78,7 @@ public:
 
 	// ctor
 	CLogicalGbAgg(CMemoryPool *mp, CColRefArray *colref_array,
-				  COperator::EGbAggType egbaggtype, BOOL fGeneratesDuplicates,
+				  COperator::EGbAggType egbaggtype, GP_BOOL fGeneratesDuplicates,
 				  CColRefArray *pdrgpcrArgDQA);
 
 	// ctor
@@ -89,14 +89,14 @@ public:
 	// ctor
 	CLogicalGbAgg(CMemoryPool *mp, CColRefArray *colref_array,
 				  CColRefArray *pdrgpcrMinimal,
-				  COperator::EGbAggType egbaggtype, BOOL fGeneratesDuplicates,
+				  COperator::EGbAggType egbaggtype, GP_BOOL fGeneratesDuplicates,
 				  CColRefArray *pdrgpcrArgDQA);
 
 	// is this part of Two Stage Scalar DQA
-	BOOL IsTwoStageScalarDQA() const;
+	GP_BOOL IsTwoStageScalarDQA() const;
 
 	// is this part of Three Stage Scalar DQA
-	BOOL IsThreeStageScalarDQA() const;
+	GP_BOOL IsThreeStageScalarDQA() const;
 
 	// return the m_aggStage
 	EAggStage
@@ -123,17 +123,17 @@ public:
 	}
 
 	// does this aggregate generate duplicate values for the same group
-	virtual BOOL
+	virtual GP_BOOL
 	FGeneratesDuplicates() const
 	{
 		return m_fGeneratesDuplicates;
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// grouping columns accessor
 	CColRefArray *
@@ -157,7 +157,7 @@ public:
 	}
 
 	// is a global aggregate?
-	BOOL
+	GP_BOOL
 	FGlobal() const
 	{
 		return (COperator::EgbaggtypeGlobal == m_egbaggtype);
@@ -172,7 +172,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	//-------------------------------------------------------------------------------------
 	// Derived Relational Properties
@@ -209,7 +209,7 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl,
 								 CColRefSet *pcrsInput,
-								 ULONG child_index) const;
+								 GP_ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations

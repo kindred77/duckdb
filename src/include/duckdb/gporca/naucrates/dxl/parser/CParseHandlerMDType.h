@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,16 +58,16 @@ private:
 	CMDName *m_mdname;
 
 	// is this a fixed-length type
-	BOOL m_istype_fixed_Length;
+	GP_BOOL m_istype_fixed_Length;
 
 	// type length
 	INT m_type_length;
 
 	// is type redistributable
-	BOOL m_is_redistributable;
+	GP_BOOL m_is_redistributable;
 
 	// is type passed by value or by reference
-	BOOL m_type_passed_by_value;
+	GP_BOOL m_type_passed_by_value;
 
 	// id of equality operator for type
 	IMDId *m_mdid_eq_op;
@@ -106,16 +106,16 @@ private:
 	IMDId *m_mdid_count_op;
 
 	// is type hashable
-	BOOL m_is_hashable;
+	GP_BOOL m_is_hashable;
 
 	// is type merge joinable on '='
-	BOOL m_is_merge_joinable;
+	GP_BOOL m_is_merge_joinable;
 
 	// is type composite
-	BOOL m_is_composite;
+	GP_BOOL m_is_composite;
 
 	// is type text related
-	BOOL m_is_text_related;
+	GP_BOOL m_is_text_related;
 
 	// id of the relation corresponding to a composite type
 	IMDId *m_mdid_base_rel;
@@ -147,7 +147,7 @@ private:
 	// parse the value for the given mdid variable name from the attributes
 	void ParseMdid(const XMLCh *element_local_name, const Attributes &attrs);
 
-	BOOL IsBuiltInType(const IMDId *mdid) const;
+	GP_BOOL IsBuiltInType(const IMDId *mdid) const;
 
 public:
 	// ctor

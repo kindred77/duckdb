@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 - 2011 EMC Corp.
 //
@@ -129,7 +129,7 @@ CMemo::Add(
 	}
 	GPOS_ASSERT(NULL != pdp);
 
-	ULONG id = m_aul++;
+	GP_ULONG id = m_aul++;
 	pdp->AddRef();
 #ifdef GPOS_DEBUG
 	CGroupExpression *pgexpr = NULL;
@@ -160,7 +160,7 @@ CMemo::Add(
 //---------------------------------------------------------------------------
 CGroup *
 CMemo::PgroupInsert(CGroup *pgroupTarget, CGroupExpression *pgexpr,
-					CExpression *pexprOrigin, BOOL fNewGroup)
+					CExpression *pexprOrigin, GP_BOOL fNewGroup)
 {
 	GPOS_ASSERT(NULL != pgroupTarget);
 	GPOS_ASSERT(NULL != pgexpr);
@@ -199,8 +199,8 @@ CMemo::PgroupInsert(CGroup *pgroupTarget, CGroupExpression *pgexpr,
 //		Helper to check if a new group needs to be created
 //
 //---------------------------------------------------------------------------
-BOOL
-CMemo::FNewGroup(CGroup **ppgroupTarget, CGroupExpression *pgexpr, BOOL fScalar)
+GP_BOOL
+CMemo::FNewGroup(CGroup **ppgroupTarget, CGroupExpression *pgexpr, GP_BOOL fScalar)
 {
 	GPOS_ASSERT(NULL != ppgroupTarget);
 
@@ -246,7 +246,7 @@ CMemo::PgroupInsert(CGroup *pgroupTarget, CExpression *pexprOrigin,
 	}
 
 	// check if we may need to create a new group
-	BOOL fNewGroup =
+	GP_BOOL fNewGroup =
 		FNewGroup(&pgroupTarget, pgexprFound, pgexpr->Pop()->FScalar());
 	if (fNewGroup)
 	{
@@ -293,7 +293,7 @@ CMemo::PgroupInsert(CGroup *pgroupTarget, CExpression *pexprOrigin,
 //---------------------------------------------------------------------------
 CExpression *
 CMemo::PexprExtractPlan(CMemoryPool *mp, CGroup *pgroupRoot,
-						CReqdPropPlan *prppInput, ULONG ulSearchStages)
+						CReqdPropPlan *prppInput, GP_ULONG ulSearchStages)
 {
 	// check stack size
 	GPOS_CHECK_STACK_SIZE;
@@ -342,8 +342,8 @@ CMemo::PexprExtractPlan(CMemoryPool *mp, CGroup *pgroupRoot,
 	// 0: CScalarCmp (>=) [ 1 7 ]
 	// the arity is 2, which means the pgexprBest has 2 children:
 	// Group 1 and Group 7. Every single child is a CGroup.
-	ULONG arity = pgexprBest->Arity();
-	for (ULONG i = 0; i < arity; i++)
+	GP_ULONG arity = pgexprBest->Arity();
+	for (GP_ULONG i = 0; i < arity; i++)
 	{
 		CGroup *pgroupChild = (*pgexprBest)[i];
 		CReqdPropPlan *prpp = NULL;
@@ -408,7 +408,7 @@ CMemo::PexprExtractPlan(CMemoryPool *mp, CGroup *pgroupRoot,
 //
 //---------------------------------------------------------------------------
 CGroup *
-CMemo::Pgroup(ULONG id)
+CMemo::Pgroup(GP_ULONG id)
 {
 	CGroup *pgroup = m_listGroups.PtFirst();
 
@@ -466,7 +466,7 @@ CMemo::MarkDuplicates(CGroup *pgroupFst, CGroup *pgroupSnd)
 //
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMemo::FRehash()
 {
 	GPOS_ASSERT(m_pgroupRoot->FExplored());
@@ -494,7 +494,7 @@ CMemo::FRehash()
 
 	// iterate on list and insert non-duplicate group expressions
 	// back to memo hash table
-	BOOL fNewDupGroups = false;
+	GP_BOOL fNewDupGroups = false;
 	while (!listGExprs.IsEmpty())
 	{
 		CGroupExpression *pgexpr = listGExprs.RemoveHead();
@@ -565,7 +565,7 @@ CMemo::GroupMerge()
 				  GPOS_FTRACE(EopttracePrintOptimizationStatistics));
 
 	// keep merging groups until we have no new duplicates
-	BOOL fNewDupGroups = true;
+	GP_BOOL fNewDupGroups = true;
 	while (fNewDupGroups)
 	{
 		CGroup *pgroup = m_listGroups.PtFirst();
@@ -767,10 +767,10 @@ CMemo::ResetTreeMap()
 //		Return number of duplicate groups
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMemo::UlDuplicateGroups()
 {
-	ULONG ulDuplicates = 0;
+	GP_ULONG ulDuplicates = 0;
 	CGroup *pgroup = m_listGroups.PtFirst();
 	while (NULL != pgroup)
 	{
@@ -793,10 +793,10 @@ CMemo::UlDuplicateGroups()
 //		Return total number of group expressions
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMemo::UlGrpExprs()
 {
-	ULONG ulGExprs = 0;
+	GP_ULONG ulGExprs = 0;
 	CGroup *pgroup = m_listGroups.PtFirst();
 	while (NULL != pgroup)
 	{

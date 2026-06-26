@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal Software Inc.
 //
@@ -48,7 +48,7 @@ public:
 	// main handler
 	virtual CExpression *PexprExpand();
 
-	ULONG
+	GP_ULONG
 	PickBestJoin(CBitSet *candidate_nodes);
 
 	CBitSet *GetAdjacentComponentsToJoinCandidate();

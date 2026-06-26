@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -103,7 +103,7 @@ public:
 
 	// record a successful allocation
 	void
-	RecordAllocation(ULONG user_data_size, ULONG total_data_size)
+	RecordAllocation(GP_ULONG user_data_size, GP_ULONG total_data_size)
 	{
 		++m_num_successful_allocations;
 		++m_num_live_obj;
@@ -113,7 +113,7 @@ public:
 
 	// record a successful free call (of a valid, non-NULL pointer)
 	void
-	RecordFree(ULONG user_data_size, ULONG total_data_size)
+	RecordFree(GP_ULONG user_data_size, GP_ULONG total_data_size)
 	{
 		++m_num_free;
 		--m_num_live_obj;

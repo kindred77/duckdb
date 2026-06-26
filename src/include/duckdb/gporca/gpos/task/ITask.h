@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -72,8 +72,8 @@ public:
 	virtual ILogger *GetErrorLogger() const = 0;
 
 	// manipulate traceflags
-	virtual BOOL SetTrace(ULONG, BOOL) = 0;
-	virtual BOOL IsTraceSet(ULONG) = 0;
+	virtual GP_BOOL SetTrace(GP_ULONG, GP_BOOL) = 0;
+	virtual GP_BOOL IsTraceSet(GP_ULONG) = 0;
 
 	// current locale
 	virtual ELocale Locale() const = 0;
@@ -82,7 +82,7 @@ public:
 	virtual IErrorContext *GetErrCtxt() const = 0;
 
 	// any pending exceptions?
-	virtual BOOL HasPendingExceptions() const = 0;
+	virtual GP_BOOL HasPendingExceptions() const = 0;
 
 	static ITask *Self();
 

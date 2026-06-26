@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -59,8 +59,8 @@ CBinding::PgexprNext(CGroup *pgroup, CGroupExpression *pgexpr) const
 //
 //---------------------------------------------------------------------------
 CExpression *
-CBinding::PexprExpandPattern(CExpression *pexprPattern, ULONG ulPos,
-							 ULONG arity)
+CBinding::PexprExpandPattern(CExpression *pexprPattern, GP_ULONG ulPos,
+							 GP_ULONG arity)
 {
 	GPOS_ASSERT_IMP(pexprPattern->Pop()->FPattern(),
 					!CPattern::PopConvert(pexprPattern->Pop())->FLeaf());
@@ -166,7 +166,7 @@ CBinding::PexprExtract(CMemoryPool *mp, CGroupExpression *pgexpr,
 	}
 
 	CExpressionArray *pdrgpexpr = NULL;
-	ULONG arity = pgexpr->Arity();
+	GP_ULONG arity = pgexpr->Arity();
 	if (0 == arity && NULL != pexprLast)
 	{
 		// no more bindings
@@ -198,7 +198,7 @@ CBinding::PexprExtract(CMemoryPool *mp, CGroupExpression *pgexpr,
 //		Initialize cursors of child expressions
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBinding::FInitChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 							CExpression *pexprPattern,
 							CExpressionArray *pdrgpexpr)
@@ -206,10 +206,10 @@ CBinding::FInitChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 	GPOS_ASSERT(NULL != pexprPattern);
 	GPOS_ASSERT(NULL != pdrgpexpr);
 
-	const ULONG arity = pgexpr->Arity();
+	const GP_ULONG arity = pgexpr->Arity();
 
 	// grab first expression from each cursor
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CGroup *pgroup = (*pgexpr)[ul];
 		CExpression *pexprPatternChild =
@@ -239,7 +239,7 @@ CBinding::FInitChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 //		with the next child expressions
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBinding::FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 							   CExpression *pexprPattern,
 							   CExpression *pexprLast,
@@ -248,7 +248,7 @@ CBinding::FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 	GPOS_ASSERT(NULL != pexprPattern);
 	GPOS_ASSERT(NULL != pdrgpexpr);
 
-	const ULONG arity = pgexpr->Arity();
+	const GP_ULONG arity = pgexpr->Arity();
 	if (NULL == pexprLast)
 	{
 		// first call, initialize cursors
@@ -256,12 +256,12 @@ CBinding::FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 	}
 
 	// could we advance a child's cursor?
-	BOOL fCursorAdvanced = false;
+	GP_BOOL fCursorAdvanced = false;
 
 	// number of exhausted cursors
-	ULONG ulExhaustedCursors = 0;
+	GP_ULONG ulExhaustedCursors = 0;
 
-	for (ULONG ul = 0; ul < arity; ul++)
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		CGroup *pgroup = (*pgexpr)[ul];
 		CExpression *pexprPatternChild =
@@ -317,7 +317,7 @@ CBinding::FAdvanceChildCursors(CMemoryPool *mp, CGroupExpression *pgexpr,
 //		Allocates the array for the children as needed;
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CBinding::FExtractChildren(CMemoryPool *mp, CGroupExpression *pgexpr,
 						   CExpression *pexprPattern, CExpression *pexprLast,
 						   CExpressionArray *pdrgpexpr)
@@ -331,7 +331,7 @@ CBinding::FExtractChildren(CMemoryPool *mp, CGroupExpression *pgexpr,
 					!CPattern::PopConvert(pexprPattern->Pop())->FLeaf());
 	GPOS_ASSERT(pexprPattern->FMatchPattern(pgexpr));
 
-	ULONG arity = pgexpr->Arity();
+	GP_ULONG arity = pgexpr->Arity();
 	if (arity < pexprPattern->Arity())
 	{
 		// does not have enough children

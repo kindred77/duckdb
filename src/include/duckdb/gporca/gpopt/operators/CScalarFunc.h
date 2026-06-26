@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -49,13 +49,13 @@ protected:
 	IMDFunction::EFuncStbl m_efs;
 
 	// can the function return multiple rows?
-	BOOL m_returns_set;
+	GP_BOOL m_returns_set;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
-	// is operator return type BOOL?
-	BOOL m_fBoolReturnType;
+	// is operator return type GP_BOOL?
+	GP_BOOL m_fBoolReturnType;
 
 private:
 	// private copy ctor
@@ -87,13 +87,13 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -103,7 +103,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -119,7 +119,7 @@ public:
 	}
 
 	// derive non-scalar function existence
-	virtual BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl);
+	virtual GP_BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl);
 
 	// conversion function
 	static CScalarFunc *

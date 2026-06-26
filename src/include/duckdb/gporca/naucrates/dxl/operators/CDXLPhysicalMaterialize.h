@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -41,11 +41,11 @@ class CDXLPhysicalMaterialize : public CDXLPhysical
 {
 private:
 	// eager materialization
-	BOOL m_is_eager;
+	GP_BOOL m_is_eager;
 
 	// spool info
 	// id of the spooling operator
-	ULONG m_spooling_op_id;
+	GP_ULONG m_spooling_op_id;
 
 	// type of the underlying spool
 	Edxlspooltype m_spool_type;
@@ -54,31 +54,31 @@ private:
 	INT m_executor_slice;
 
 	// number of consumers in case the materialize is a spooling operator
-	ULONG m_num_consumer_slices;
+	GP_ULONG m_num_consumer_slices;
 
 	// private copy ctor
 	CDXLPhysicalMaterialize(CDXLPhysicalMaterialize &);
 
 public:
 	// ctor/dtor
-	CDXLPhysicalMaterialize(CMemoryPool *mp, BOOL is_eager);
+	CDXLPhysicalMaterialize(CMemoryPool *mp, GP_BOOL is_eager);
 
-	CDXLPhysicalMaterialize(CMemoryPool *mp, BOOL is_eager,
-							ULONG spooling_op_id, INT executor_slice,
-							ULONG num_consumer_slices);
+	CDXLPhysicalMaterialize(CMemoryPool *mp, GP_BOOL is_eager,
+							GP_ULONG spooling_op_id, INT executor_slice,
+							GP_ULONG num_consumer_slices);
 
 	// accessors
 	Edxlopid GetDXLOperator() const;
 	const CWStringConst *GetOpNameStr() const;
-	ULONG GetSpoolingOpId() const;
+	GP_ULONG GetSpoolingOpId() const;
 	INT GetExecutorSlice() const;
-	ULONG GetNumConsumerSlices() const;
+	GP_ULONG GetNumConsumerSlices() const;
 
 	// is the operator spooling to other operators
-	BOOL IsSpooling() const;
+	GP_BOOL IsSpooling() const;
 
 	// does the operator do eager materialization
-	BOOL IsEager() const;
+	GP_BOOL IsEager() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -97,7 +97,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

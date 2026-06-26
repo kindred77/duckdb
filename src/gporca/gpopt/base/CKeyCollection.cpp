@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -119,14 +119,14 @@ CKeyCollection::Add(CColRefSet *pcrs)
 //		Check if set constitutes key
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CKeyCollection::FKey(const CColRefSet *pcrs,
-					 BOOL fExactMatch  // true: match keys exactly,
+					 GP_BOOL fExactMatch  // true: match keys exactly,
 									   //  false: match keys by inclusion
 ) const
 {
-	const ULONG ulSets = m_pdrgpcrs->Size();
-	for (ULONG ul = 0; ul < ulSets; ul++)
+	const GP_ULONG ulSets = m_pdrgpcrs->Size();
+	for (GP_ULONG ul = 0; ul < ulSets; ul++)
 	{
 		if (fExactMatch)
 		{
@@ -159,13 +159,13 @@ CKeyCollection::FKey(const CColRefSet *pcrs,
 //		Check if array constitutes key
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CKeyCollection::FKey(CMemoryPool *mp, const CColRefArray *colref_array) const
 {
 	CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
 	pcrs->Include(colref_array);
 
-	BOOL fKey = FKey(pcrs);
+	GP_BOOL fKey = FKey(pcrs);
 	pcrs->Release();
 
 	return fKey;
@@ -188,8 +188,8 @@ CKeyCollection::PdrgpcrTrim(CMemoryPool *mp,
 	CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
 	pcrs->Include(colref_array);
 
-	const ULONG ulSets = m_pdrgpcrs->Size();
-	for (ULONG ul = 0; ul < ulSets; ul++)
+	const GP_ULONG ulSets = m_pdrgpcrs->Size();
+	for (GP_ULONG ul = 0; ul < ulSets; ul++)
 	{
 		CColRefSet *pcrsKey = (*m_pdrgpcrs)[ul];
 		if (pcrs->ContainsAll(pcrsKey))
@@ -237,8 +237,8 @@ CKeyCollection::PdrgpcrKey(CMemoryPool *mp) const
 CColRefArray *
 CKeyCollection::PdrgpcrHashableKey(CMemoryPool *mp) const
 {
-	const ULONG ulSets = m_pdrgpcrs->Size();
-	for (ULONG ul = 0; ul < ulSets; ul++)
+	const GP_ULONG ulSets = m_pdrgpcrs->Size();
+	for (GP_ULONG ul = 0; ul < ulSets; ul++)
 	{
 		CColRefArray *pdrgpcrKey = (*m_pdrgpcrs)[ul]->Pdrgpcr(mp);
 		if (CUtils::IsHashable(pdrgpcrKey))
@@ -262,7 +262,7 @@ CKeyCollection::PdrgpcrHashableKey(CMemoryPool *mp) const
 //
 //---------------------------------------------------------------------------
 CColRefArray *
-CKeyCollection::PdrgpcrKey(CMemoryPool *mp, ULONG ulIndex) const
+CKeyCollection::PdrgpcrKey(CMemoryPool *mp, GP_ULONG ulIndex) const
 {
 	if (0 == m_pdrgpcrs->Size())
 	{
@@ -285,7 +285,7 @@ CKeyCollection::PdrgpcrKey(CMemoryPool *mp, ULONG ulIndex) const
 //
 //---------------------------------------------------------------------------
 CColRefSet *
-CKeyCollection::PcrsKey(CMemoryPool *mp, ULONG ulIndex) const
+CKeyCollection::PcrsKey(CMemoryPool *mp, GP_ULONG ulIndex) const
 {
 	if (0 == m_pdrgpcrs->Size())
 	{
@@ -312,8 +312,8 @@ CKeyCollection::OsPrint(IOstream &os) const
 {
 	os << " Keys: (";
 
-	const ULONG ulSets = m_pdrgpcrs->Size();
-	for (ULONG ul = 0; ul < ulSets; ul++)
+	const GP_ULONG ulSets = m_pdrgpcrs->Size();
+	for (GP_ULONG ul = 0; ul < ulSets; ul++)
 	{
 		if (0 < ul)
 		{

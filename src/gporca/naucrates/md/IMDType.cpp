@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -52,7 +52,7 @@ IMDType::GetCmpTypeStr(IMDType::ECmpType cmp_type)
 //		datums of these two types; else return false
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 IMDType::StatsAreComparable(const IMDType *mdtype_first,
 							const IMDType *mdtype_second)
 {
@@ -75,7 +75,7 @@ IMDType::StatsAreComparable(const IMDType *mdtype_first,
 //		datum of the given type and a given datum; else return false
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 IMDType::StatsAreComparable(const IMDType *mdtype_first,
 							const IDatum *datum_second)
 {

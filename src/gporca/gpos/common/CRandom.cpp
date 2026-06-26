@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -30,7 +30,7 @@ CRandom::CRandom() : m_seed(DEFAULT_SEED)
 }
 
 
-CRandom::CRandom(ULONG seed) : m_seed(seed)
+CRandom::CRandom(GP_ULONG seed) : m_seed(seed)
 {
 }
 
@@ -43,7 +43,7 @@ CRandom::CRandom(ULONG seed) : m_seed(seed)
 //
 //---------------------------------------------------------------------------
 
-ULONG
+GP_ULONG
 CRandom::Next()
 {
 	return clib::Rand(&m_seed);

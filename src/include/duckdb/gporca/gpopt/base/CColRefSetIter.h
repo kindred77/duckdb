@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -40,7 +40,7 @@ private:
 	CColRefSetIter(const CColRefSetIter &);
 
 	// current bit -- private to make super class' inaccessible
-	ULONG UlBit() const;
+	GP_ULONG UlBit() const;
 
 public:
 	// ctor

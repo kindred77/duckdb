@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -34,13 +34,13 @@ class CParseHandlerScalarArrayRef : public CParseHandlerScalarOp
 {
 private:
 	// number of index lists parsed
-	ULONG m_parse_index_lists;
+	GP_ULONG m_parse_index_lists;
 
 	// whether the parser is currently parsing the ref expr
-	BOOL m_parsing_ref_expr;
+	GP_BOOL m_parsing_ref_expr;
 
 	// whether the parser is currently parsing the assign expr
-	BOOL m_parsing_assign_expr;
+	GP_BOOL m_parsing_assign_expr;
 
 	// private copy ctor
 	CParseHandlerScalarArrayRef(const CParseHandlerScalarArrayRef &);

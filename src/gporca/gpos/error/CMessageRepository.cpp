@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -10,6 +10,9 @@
 //---------------------------------------------------------------------------
 
 #include "gpos/error/CMessageRepository.h"
+#ifdef GetMessage
+#undef GetMessage
+#endif
 
 #include "gpos/common/CSyncHashtableAccessByKey.h"
 #include "gpos/memory/CAutoMemoryPool.h"
@@ -70,7 +73,7 @@ CMessageRepository::LookupMessage(CException exc, ELocale locale)
 		CMessage *msg = NULL;
 		ELocale search_locale = locale;
 
-		for (ULONG i = 0; i < 2; i++)
+		for (GP_ULONG i = 0; i < 2; i++)
 		{
 			// try to locate locale-specific message table
 			TMTAccessor tmta(m_hash_table, search_locale);
@@ -190,7 +193,7 @@ CMessageRepository::AddMessage(ELocale locale, CMessage *msg)
 {
 	// retry logic: (1) attempt to insert first (frequent code path)
 	// or (2) create message table after failure and retry (infreq code path)
-	for (ULONG i = 0; i < 2; i++)
+	for (GP_ULONG i = 0; i < 2; i++)
 	{
 		// scope for accessor lock
 		{
@@ -252,7 +255,7 @@ CMessageRepository::AddMessageTable(ELocale locale)
 void
 CMessageRepository::LoadStandardMessages()
 {
-	for (ULONG ul = 0; ul < CException::ExmiSentinel; ul++)
+	for (GP_ULONG ul = 0; ul < CException::ExmiSentinel; ul++)
 	{
 		CMessage *msg = CMessage::GetMessage(ul);
 		if (CException::m_invalid_exception != msg->m_exception)

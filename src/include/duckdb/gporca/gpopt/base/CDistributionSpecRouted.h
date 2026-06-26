@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -60,14 +60,14 @@ public:
 	}
 
 	// does this distribution satisfy the given one
-	virtual BOOL Matches(const CDistributionSpec *pds) const;
+	virtual GP_BOOL Matches(const CDistributionSpec *pds) const;
 
 	// does this distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// return a copy of the distribution spec with remapped columns
 	virtual CDistributionSpec *PdsCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// append enforcers to dynamic array for the given plan properties
 	virtual void AppendEnforcers(CMemoryPool *mp, CExpressionHandle &exprhdl,
@@ -76,7 +76,7 @@ public:
 								 CExpression *pexpr);
 
 	// hash function for routed distribution spec
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// extract columns used by the distribution spec
 	virtual CColRefSet *PcrsUsed(CMemoryPool *mp) const;

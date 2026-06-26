@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -59,13 +59,13 @@ private:
 	ULongPtr2dArray *m_input_colids_arrays;
 
 	// do the columns need to be casted accross inputs
-	BOOL m_cast_across_input_req;
+	GP_BOOL m_cast_across_input_req;
 
 public:
 	// ctor
 	CDXLLogicalSetOp(CMemoryPool *mp, EdxlSetOpType edxlsetoptype,
 					 CDXLColDescrArray *pdrgdxlcd, ULongPtr2dArray *array_2D,
-					 BOOL fCastAcrossInput);
+					 GP_BOOL fCastAcrossInput);
 
 	// dtor
 	virtual ~CDXLLogicalSetOp();
@@ -91,7 +91,7 @@ public:
 	}
 
 	// number of output columns
-	ULONG
+	GP_ULONG
 	Arity() const
 	{
 		return m_col_descr_array->Size();
@@ -99,13 +99,13 @@ public:
 
 	// output column descriptor at a given position
 	const CDXLColDescr *
-	GetColumnDescrAt(ULONG idx) const
+	GetColumnDescrAt(GP_ULONG idx) const
 	{
 		return (*m_col_descr_array)[idx];
 	}
 
 	// number of inputs to the n-ary set operation
-	ULONG
+	GP_ULONG
 	ChildCount() const
 	{
 		return m_input_colids_arrays->Size();
@@ -113,7 +113,7 @@ public:
 
 	// column array of the input at a given position
 	const ULongPtrArray *
-	GetInputColIdArrayAt(ULONG idx) const
+	GetInputColIdArrayAt(GP_ULONG idx) const
 	{
 		GPOS_ASSERT(idx < ChildCount());
 
@@ -121,7 +121,7 @@ public:
 	}
 
 	// do the columns across inputs need to be casted
-	BOOL
+	GP_BOOL
 	IsCastAcrossInputReq() const
 	{
 		return m_cast_across_input_req;
@@ -132,7 +132,7 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	// check if given column is defined by operator
-	virtual BOOL IsColDefined(ULONG colid) const;
+	virtual GP_BOOL IsColDefined(GP_ULONG colid) const;
 
 	// conversion function
 	static CDXLLogicalSetOp *
@@ -147,7 +147,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

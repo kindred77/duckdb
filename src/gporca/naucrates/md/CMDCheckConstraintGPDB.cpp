@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -80,10 +80,10 @@ CMDCheckConstraintGPDB::GetCheckConstraintExpr(CMemoryPool *mp,
 
 	const IMDRelation *mdrel = md_accessor->RetrieveRel(m_rel_mdid);
 #ifdef GPOS_DEBUG
-	const ULONG len = colref_array->Size();
+	const GP_ULONG len = colref_array->Size();
 	GPOS_ASSERT(len > 0);
 
-	const ULONG arity =
+	const GP_ULONG arity =
 		mdrel->NonDroppedColsCount() - mdrel->SystemColumnsCount();
 	GPOS_ASSERT(arity == len);
 #endif	// GPOS_DEBUG

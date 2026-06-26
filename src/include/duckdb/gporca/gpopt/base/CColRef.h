@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -32,13 +32,13 @@ class CColRef;
 typedef CDynamicPtrArray<CColRef, CleanupNULL> CColRefArray;
 typedef CDynamicPtrArray<CColRefArray, CleanupRelease> CColRef2dArray;
 
-// hash map mapping ULONG -> CColRef
-typedef CHashMap<ULONG, CColRef, gpos::HashValue<ULONG>, gpos::Equals<ULONG>,
-				 CleanupDelete<ULONG>, CleanupNULL<CColRef> >
+// hash map mapping GP_ULONG -> CColRef
+typedef CHashMap<GP_ULONG, CColRef, gpos::HashValue<GP_ULONG>, gpos::Equals<GP_ULONG>,
+				 CleanupDelete<GP_ULONG>, CleanupNULL<CColRef> >
 	UlongToColRefMap;
 // iterator
-typedef CHashMapIter<ULONG, CColRef, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CColRef, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupNULL<CColRef> >
 	UlongToColRefMapIter;
 
@@ -92,7 +92,7 @@ public:
 	};
 
 	// ctor
-	CColRef(const IMDType *pmdtype, const INT type_modifier, ULONG id,
+	CColRef(const IMDType *pmdtype, const INT type_modifier, GP_ULONG id,
 			const CName *pname);
 
 	// dtor
@@ -120,33 +120,33 @@ public:
 	}
 
 	// id
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
 	}
 
 	// overloaded equality operator
-	BOOL
+	GP_BOOL
 	operator==(const CColRef &cr) const
 	{
 		return Equals(m_id, cr.Id());
 	}
 
 	// static hash functions
-	static ULONG HashValue(const ULONG &);
+	static GP_ULONG HashValue(const GP_ULONG &);
 
-	static ULONG HashValue(const CColRef *colref);
+	static GP_ULONG HashValue(const CColRef *colref);
 
 	// equality function for hash table
-	static BOOL
-	Equals(const ULONG &ulKey, const ULONG &ulKeyOther)
+	static GP_BOOL
+	Equals(const GP_ULONG &ulKey, const GP_ULONG &ulKeyOther)
 	{
 		return ulKey == ulKeyOther;
 	}
 
 	// equality function
-	static BOOL
+	static GP_BOOL
 	Equals(const CColRef *pcrFirst, const CColRef *pcrSecond)
 	{
 		return Equals(pcrFirst->Id(), pcrSecond->Id());
@@ -156,21 +156,21 @@ public:
 	static ULongPtrArray *Pdrgpul(CMemoryPool *mp, CColRefArray *colref_array);
 
 	// check if the the array of column references are equal
-	static BOOL Equals(const CColRefArray *pdrgpcr1,
+	static GP_BOOL Equals(const CColRefArray *pdrgpcr1,
 					   const CColRefArray *pdrgpcr2);
 
 	// check if the the array of column reference arrays are equal
-	static BOOL Equals(const CColRef2dArray *pdrgdrgpcr1,
+	static GP_BOOL Equals(const CColRef2dArray *pdrgdrgpcr1,
 					   const CColRef2dArray *pdrgdrgpcr2);
 
 	// type of column reference (base/computed)
 	virtual Ecolreftype Ecrt() const = 0;
 
 	// is column a system column?
-	virtual BOOL IsSystemCol() const = 0;
+	virtual GP_BOOL IsSystemCol() const = 0;
 
 	// is column a distribution column?
-	virtual BOOL IsDistCol() const = 0;
+	virtual GP_BOOL IsDistCol() const = 0;
 
 	// print
 	IOstream &OsPrint(IOstream &) const;
@@ -179,10 +179,10 @@ public:
 	SLink m_link;
 
 	// id, serves as hash key
-	const ULONG m_id;
+	const GP_ULONG m_id;
 
 	// invalid key
-	static const ULONG m_ulInvalid;
+	static const GP_ULONG m_ulInvalid;
 
 	void
 	MarkAsUnused()
@@ -204,8 +204,8 @@ public:
 	}
 
 	EUsedStatus
-	GetUsage(BOOL check_system_col = false,
-			 BOOL check_distribution_col = false) const
+	GetUsage(GP_BOOL check_system_col = false,
+			 GP_BOOL check_distribution_col = false) const
 	{
 		if (GPOS_FTRACE(EopttraceTranslateUnusedColrefs) ||
 			(!check_system_col && IsSystemCol()) ||

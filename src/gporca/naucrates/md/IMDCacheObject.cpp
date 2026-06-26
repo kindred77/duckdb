@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -64,8 +64,8 @@ IMDCacheObject::SerializeMDIdList(CXMLSerializer *xml_serializer,
 	// serialize list of metadata ids
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix), strTokenList);
-	const ULONG length = mdid_array->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = mdid_array->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		xml_serializer->OpenElement(
 			CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),

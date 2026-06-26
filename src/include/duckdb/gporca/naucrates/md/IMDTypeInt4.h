@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -54,7 +54,7 @@ public:
 
 	// factory function for INT4 datums
 	virtual IDatumInt4 *CreateInt4Datum(CMemoryPool *mp, INT value,
-										BOOL is_null) const = 0;
+										GP_BOOL is_null) const = 0;
 };
 
 }  // namespace gpmd

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -146,17 +146,17 @@ private:
 	struct ErrCodeElem
 	{
 		// exception number
-		ULONG m_exception_num;
+		GP_ULONG m_exception_num;
 
 		// SQL standard error code
 		const CHAR *m_sql_state;
 	};
 
 	// error range
-	ULONG m_major;
+	GP_ULONG m_major;
 
 	// error number
-	ULONG m_minor;
+	GP_ULONG m_minor;
 
 	// SQL state error code
 	const CHAR *m_sql_state;
@@ -165,10 +165,10 @@ private:
 	CHAR *m_filename;
 
 	// line in file
-	ULONG m_line;
+	GP_ULONG m_line;
 
 	// severity level mapped to GPDB log severity level
-	ULONG m_severity_level;
+	GP_ULONG m_severity_level;
 
 	// sql state error codes
 	static const ErrCodeElem m_errcode[ExmiSQLTest - ExmiSQLDefault + 1];
@@ -178,7 +178,7 @@ private:
 	static void Raise(CException exc) __attribute__((__noreturn__));
 
 	// get sql error code for given exception
-	static const CHAR *GetSQLState(ULONG major, ULONG minor);
+	static const CHAR *GetSQLState(GP_ULONG major, GP_ULONG minor);
 
 public:
 	// severity levels
@@ -200,19 +200,19 @@ public:
 	static const CHAR *m_severity[ExsevSentinel];
 
 	// ctor
-	CException(ULONG major, ULONG minor);
-	CException(ULONG major, ULONG minor, const CHAR *filename, ULONG line);
-	CException(ULONG major, ULONG minor, const CHAR *filename, ULONG line,
-			   ULONG severity_level);
+	CException(GP_ULONG major, GP_ULONG minor);
+	CException(GP_ULONG major, GP_ULONG minor, const CHAR *filename, GP_ULONG line);
+	CException(GP_ULONG major, GP_ULONG minor, const CHAR *filename, GP_ULONG line,
+			   GP_ULONG severity_level);
 
 	// accessors
-	ULONG
+	GP_ULONG
 	Major() const
 	{
 		return m_major;
 	}
 
-	ULONG
+	GP_ULONG
 	Minor() const
 	{
 		return m_minor;
@@ -224,13 +224,13 @@ public:
 		return m_filename;
 	}
 
-	ULONG
+	GP_ULONG
 	Line() const
 	{
 		return m_line;
 	}
 
-	ULONG
+	GP_ULONG
 	SeverityLevel() const
 	{
 		return m_severity_level;
@@ -243,7 +243,7 @@ public:
 	}
 
 	// simple equality
-	BOOL
+	GP_BOOL
 	operator==(const CException &exc) const
 	{
 		return m_major == exc.m_major && m_minor == exc.m_minor;
@@ -251,37 +251,37 @@ public:
 
 
 	// simple inequality
-	BOOL
+	GP_BOOL
 	operator!=(const CException &exc) const
 	{
 		return !(*this == exc);
 	}
 
 	// equality function -- needed for hashtable
-	static BOOL
+	static GP_BOOL
 	Equals(const CException &exc, const CException &excOther)
 	{
 		return exc == excOther;
 	}
 
 	// basic hash function
-	static ULONG
+	static GP_ULONG
 	HashValue(const CException &exc)
 	{
 		return exc.m_major ^ exc.m_minor;
 	}
 
 	// wrapper around throw
-	static void Raise(const CHAR *filename, ULONG line, ULONG major,
-					  ULONG minor, ...) __attribute__((__noreturn__));
+	static void Raise(const CHAR *filename, GP_ULONG line, GP_ULONG major,
+					  GP_ULONG minor, ...) __attribute__((__noreturn__));
 
 	// wrapper around throw with severity level
-	// static void Raise(const CHAR *filename, ULONG line, ULONG major,
-	// 				  ULONG minor, ULONG severity_level, ...)
+	// static void Raise(const CHAR *filename, GP_ULONG line, GP_ULONG major,
+	// 				  GP_ULONG minor, GP_ULONG severity_level, ...)
 	// 	__attribute__((__noreturn__));
 
 	// rethrow wrapper
-	static void Reraise(CException exc, BOOL propagate = false)
+	static void Reraise(CException exc, GP_BOOL propagate = false)
 		__attribute__((__noreturn__));
 
 	// invalid exception

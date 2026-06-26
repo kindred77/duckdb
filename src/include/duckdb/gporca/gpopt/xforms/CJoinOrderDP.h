@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -60,15 +60,15 @@ private:
 		~SComponentPair();
 
 		// hashing function
-		static ULONG HashValue(const SComponentPair *pcomppair);
+		static GP_ULONG HashValue(const SComponentPair *pcomppair);
 
 		// equality function
-		static BOOL Equals(const SComponentPair *pcomppairFst,
+		static GP_BOOL Equals(const SComponentPair *pcomppairFst,
 						   const SComponentPair *pcomppairSnd);
 	};
 
 	// hashing function
-	static ULONG
+	static GP_ULONG
 	UlHashBitSet(const CBitSet *pbs)
 	{
 		GPOS_ASSERT(NULL != pbs);
@@ -77,7 +77,7 @@ private:
 	}
 
 	// equality function
-	static BOOL
+	static GP_BOOL
 	FEqualBitSet(const CBitSet *pbsFst, const CBitSet *pbsSnd)
 	{
 		GPOS_ASSERT(NULL != pbsFst);
@@ -160,11 +160,11 @@ private:
 
 	// add expression to cost map
 	void InsertExpressionCost(CExpression *pexpr, CDouble dCost,
-							  BOOL fValidateInsert);
+							  GP_BOOL fValidateInsert);
 
 	// generate all subsets of the given array of elements
 	static void GenerateSubsets(CMemoryPool *mp, CBitSet *pbsCurrent,
-								ULONG *pulElems, ULONG size, ULONG ulIndex,
+								GP_ULONG *pulElems, GP_ULONG size, GP_ULONG ulIndex,
 								CBitSetArray *pdrgpbsSubsets);
 
 	// driver of subset generation

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -50,11 +50,11 @@ public:
 	Edxloptype GetDXLOperatorType() const;
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const = 0;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const = 0;
 
 #ifdef GPOS_DEBUG
 	virtual void AssertValid(const CDXLNode *dxlnode,
-							 BOOL validate_children) const = 0;
+							 GP_BOOL validate_children) const = 0;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

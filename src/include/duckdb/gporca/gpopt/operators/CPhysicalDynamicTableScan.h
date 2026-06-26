@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -33,12 +33,12 @@ private:
 
 public:
 	// ctors
-	CPhysicalDynamicTableScan(CMemoryPool *mp, BOOL is_partial,
+	CPhysicalDynamicTableScan(CMemoryPool *mp, GP_BOOL is_partial,
 							  const CName *pname, CTableDescriptor *ptabdesc,
-							  ULONG ulOriginOpId, ULONG scan_id,
+							  GP_ULONG ulOriginOpId, GP_ULONG scan_id,
 							  CColRefArray *colref_array,
 							  CColRef2dArray *pdrgpdrgpcrParts,
-							  ULONG ulSecondaryScanId,
+							  GP_ULONG ulSecondaryScanId,
 							  CPartConstraint *ppartcnstr,
 							  CPartConstraint *ppartcnstrRel);
 
@@ -57,7 +57,7 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// statistics derivation during costing
 	virtual IStatistics *PstatsDerive(CMemoryPool *mp,

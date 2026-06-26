@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -28,7 +28,7 @@ using namespace gpos;
 const ULONG_PTR CMemoryPool::m_invalid = ULONG_PTR_MAX;
 
 // get user requested size of allocation
-ULONG
+GP_ULONG
 CMemoryPool::UserSizeOfAlloc(const void *ptr)
 {
 	GPOS_ASSERT(NULL != ptr);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -49,13 +49,13 @@ private:
 	IMDId *m_mdid_type_intermediate;
 
 	// is aggregate ordered
-	BOOL m_is_ordered;
+	GP_BOOL m_is_ordered;
 
 	// is aggregate splittable
-	BOOL m_is_splittable;
+	GP_BOOL m_is_splittable;
 
 	// can we use hash aggregation to compute agg function
-	BOOL m_hash_agg_capable;
+	GP_BOOL m_hash_agg_capable;
 
 	// private copy ctor
 	CParseHandlerMDGPDBAgg(const CParseHandlerMDGPDBAgg &);

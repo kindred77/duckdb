@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -217,7 +217,7 @@ COptimizerConfig::Serialize(CMemoryPool *mp, CXMLSerializer *xml_serializer,
 	// Serialize traceflags represented in bitset into stream
 	gpos::CBitSetIter bsi(*pbsTrace);
 	CWStringDynamic wsTraceFlags(mp);
-	for (ULONG ul = 0; bsi.Advance(); ul++)
+	for (GP_ULONG ul = 0; bsi.Advance(); ul++)
 	{
 		if (0 < ul)
 		{

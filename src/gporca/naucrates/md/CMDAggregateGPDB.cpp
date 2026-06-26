@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -32,8 +32,8 @@ using namespace gpdxl;
 CMDAggregateGPDB::CMDAggregateGPDB(CMemoryPool *mp, IMDId *mdid,
 								   CMDName *mdname, IMDId *result_type_mdid,
 								   IMDId *intermediate_result_type_mdid,
-								   BOOL fOrdered, BOOL is_splittable,
-								   BOOL is_hash_agg_capable)
+								   GP_BOOL fOrdered, GP_BOOL is_splittable,
+								   GP_BOOL is_hash_agg_capable)
 	: m_mp(mp),
 	  m_mdid(mdid),
 	  m_mdname(mdname),

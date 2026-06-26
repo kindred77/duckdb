@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -42,7 +42,7 @@ private:
 	const INT m_return_type_modifier;
 
 	// does the func return a set
-	BOOL m_returns_set;
+	GP_BOOL m_returns_set;
 
 	// private copy ctor
 	CDXLScalarFuncExpr(const CDXLScalarFuncExpr &);
@@ -51,7 +51,7 @@ public:
 	// ctor
 	CDXLScalarFuncExpr(CMemoryPool *mp, IMDId *mdid_func,
 					   IMDId *mdid_return_type, INT return_type_modifier,
-					   BOOL returns_set);
+					   GP_BOOL returns_set);
 
 	//dtor
 	virtual ~CDXLScalarFuncExpr();
@@ -71,7 +71,7 @@ public:
 	INT TypeModifier() const;
 
 	// does function return a set
-	BOOL ReturnsSet() const;
+	GP_BOOL ReturnsSet() const;
 
 	// serialize operator in DXL format
 	virtual void SerializeToDXL(CXMLSerializer *xml_serializer,
@@ -88,12 +88,12 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL HasBoolResult(CMDAccessor *md_accessor) const;
+	virtual GP_BOOL HasBoolResult(CMDAccessor *md_accessor) const;
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

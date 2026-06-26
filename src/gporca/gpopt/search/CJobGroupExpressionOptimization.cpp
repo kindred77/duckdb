@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -77,8 +77,8 @@ using namespace gpopt;
 //                 |      estCompleted      |
 //                 +------------------------+
 //
-const CJobGroupExpressionOptimization::EEvent
-	rgeev[CJobGroupExpressionOptimization::estSentinel]
+static const CJobGroupExpressionOptimization::EEvent
+	rgeevExprOpt[CJobGroupExpressionOptimization::estSentinel]
 		 [CJobGroupExpressionOptimization::estSentinel] = {
 			 {// estInitialized
 			  CJobGroupExpressionOptimization::eevSentinel,
@@ -185,7 +185,7 @@ CJobGroupExpressionOptimization::~CJobGroupExpressionOptimization()
 //---------------------------------------------------------------------------
 void
 CJobGroupExpressionOptimization::Init(CGroupExpression *pgexpr,
-									  COptimizationContext *poc, ULONG ulOptReq,
+									  COptimizationContext *poc, GP_ULONG ulOptReq,
 									  CReqdPropPlan *prppCTEProducer)
 {
 	GPOS_ASSERT(NULL != poc);
@@ -196,7 +196,7 @@ CJobGroupExpressionOptimization::Init(CGroupExpression *pgexpr,
 	GPOS_ASSERT(ulOptReq <=
 				CPhysical::PopConvert(pgexpr->Pop())->UlOptRequests());
 
-	m_jsm.Init(rgeev
+	m_jsm.Init(rgeevExprOpt
 #ifdef GPOS_DEBUG
 			   ,
 			   rgwszStates, rgwszEvents
@@ -360,7 +360,7 @@ CJobGroupExpressionOptimization::EevtInitialize(CSchedulerContext *psc,
 void
 CJobGroupExpressionOptimization::DerivePrevChildProps(CSchedulerContext *psc)
 {
-	ULONG ulPrevChildIndex =
+	GP_ULONG ulPrevChildIndex =
 		m_pexprhdlPlan->UlPreviousOptimizedChildIndex(m_ulChildIndex);
 
 	// retrieve plan properties of the optimal implementation of previous child group
@@ -583,7 +583,7 @@ CJobGroupExpressionOptimization::EevtAddEnforcers(CSchedulerContext *psc,
 													*pjgeo->m_pexprhdlPlan);
 
 	// enforce physical properties
-	BOOL fCheckEnfdProps = psc->Peng()->FCheckEnfdProps(
+	GP_BOOL fCheckEnfdProps = psc->Peng()->FCheckEnfdProps(
 		psc->GetGlobalMemoryPool(), pjgeo->m_pgexpr, pjgeo->m_poc,
 		pjgeo->m_ulOptReq, pjgeo->m_pdrgpoc);
 	if (fCheckEnfdProps)
@@ -631,7 +631,7 @@ CJobGroupExpressionOptimization::EevtOptimizeSelf(CSchedulerContext *psc,
 	COptimizationContext *poc = pjgeo->m_poc;
 	CGroupExpression *pgexpr = pjgeo->m_pgexpr;
 	COptimizationContextArray *pdrgpoc = pjgeo->m_pdrgpoc;
-	ULONG ulOptReq = pjgeo->m_ulOptReq;
+	GP_ULONG ulOptReq = pjgeo->m_ulOptReq;
 
 	CCostContext *pcc =
 		pgexpr->PccComputeCost(psc->GetGlobalMemoryPool(), poc, ulOptReq,
@@ -697,7 +697,7 @@ CJobGroupExpressionOptimization::EevtFinalize(CSchedulerContext *,	// psc
 //		Main job function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupExpressionOptimization::FExecute(CSchedulerContext *psc)
 {
 	GPOS_ASSERT(FInit());
@@ -718,7 +718,7 @@ void
 CJobGroupExpressionOptimization::ScheduleJob(CSchedulerContext *psc,
 											 CGroupExpression *pgexpr,
 											 COptimizationContext *poc,
-											 ULONG ulOptReq, CJob *pjParent)
+											 GP_ULONG ulOptReq, CJob *pjParent)
 {
 	CJob *pj = psc->Pjf()->PjCreate(CJob::EjtGroupExpressionOptimization);
 
@@ -737,10 +737,10 @@ CJobGroupExpressionOptimization::ScheduleJob(CSchedulerContext *psc,
 //		Schedule a new job for CTE optimization
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupExpressionOptimization::FScheduleCTEOptimization(
 	CSchedulerContext *psc, CGroupExpression *pgexpr, COptimizationContext *poc,
-	ULONG ulOptReq, CJob *pjParent)
+	GP_ULONG ulOptReq, CJob *pjParent)
 {
 	GPOS_ASSERT(NULL != psc);
 

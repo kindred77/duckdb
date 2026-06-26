@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CDistributionSpecStrictHashed_H
@@ -15,7 +15,7 @@ class CDistributionSpecStrictHashed : public CDistributionSpecHashed
 {
 public:
 	CDistributionSpecStrictHashed(CExpressionArray *pdrgpexpr,
-								  BOOL fNullsColocated);
+								  GP_BOOL fNullsColocated);
 
 	virtual EDistributionType Edt() const;
 

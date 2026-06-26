@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -61,13 +61,13 @@ public:
 	virtual IMDId *GetInverseOpMdid() const = 0;
 
 	// is this an equality operator
-	virtual BOOL IsEqualityOp() const = 0;
+	virtual GP_BOOL IsEqualityOp() const = 0;
 
 	// does operator return NULL when all inputs are NULL?
-	virtual BOOL ReturnsNullOnNullInput() const = 0;
+	virtual GP_BOOL ReturnsNullOnNullInput() const = 0;
 
 	// preserves NDVs of its inputs?
-	virtual BOOL IsNDVPreserving() const = 0;
+	virtual GP_BOOL IsNDVPreserving() const = 0;
 
 	virtual IMDType::ECmpType ParseCmpType() const = 0;
 
@@ -75,10 +75,10 @@ public:
 	virtual CMDName Mdname() const = 0;
 
 	// number of classes this operator belongs to
-	virtual ULONG OpfamiliesCount() const = 0;
+	virtual GP_ULONG OpfamiliesCount() const = 0;
 
 	// operator class at given position
-	virtual IMDId *OpfamilyMdidAt(ULONG pos) const = 0;
+	virtual IMDId *OpfamilyMdidAt(GP_ULONG pos) const = 0;
 
 	// compatible hash opfamily
 	virtual IMDId *HashOpfamilyMdid() const = 0;

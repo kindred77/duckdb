@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,7 +58,7 @@ CPhysicalMotionBroadcast::~CPhysicalMotionBroadcast()
 //		Match operators
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionBroadcast::Matches(COperator *pop) const
 {
 	return Eopid() == pop->Eopid();
@@ -76,9 +76,9 @@ CColRefSet *
 CPhysicalMotionBroadcast::PcrsRequired(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
 									   CColRefSet *pcrsRequired,
-									   ULONG child_index,
+									   GP_ULONG child_index,
 									   CDrvdPropArray *,  // pdrgpdpCtxt
-									   ULONG			  // ulOptReq
+									   GP_ULONG			  // ulOptReq
 )
 {
 	GPOS_ASSERT(0 == child_index);
@@ -100,10 +100,10 @@ CPhysicalMotionBroadcast::PcrsRequired(CMemoryPool *mp,
 //		Check if required columns are included in output columns
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPhysicalMotionBroadcast::FProvidesReqdCols(CExpressionHandle &exprhdl,
 											CColRefSet *pcrsRequired,
-											ULONG  // ulOptReq
+											GP_ULONG  // ulOptReq
 ) const
 {
 	return FUnaryProvidesReqdCols(exprhdl, pcrsRequired);
@@ -139,13 +139,13 @@ COrderSpec *
 CPhysicalMotionBroadcast::PosRequired(CMemoryPool *mp,
 									  CExpressionHandle &,	// exprhdl
 									  COrderSpec *,			//posInput
-									  ULONG
+									  GP_ULONG
 #ifdef GPOS_DEBUG
 										  child_index
 #endif	// GPOS_DEBUG
 									  ,
 									  CDrvdPropArray *,	 // pdrgpdpCtxt
-									  ULONG				 // ulOptReq
+									  GP_ULONG				 // ulOptReq
 ) const
 {
 	GPOS_ASSERT(0 == child_index);

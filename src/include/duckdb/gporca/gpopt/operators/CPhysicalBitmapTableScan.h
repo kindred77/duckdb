@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -40,7 +40,7 @@ class CPhysicalBitmapTableScan : public CPhysicalScan
 {
 private:
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// disable copy ctor
 	CPhysicalBitmapTableScan(const CPhysicalBitmapTableScan &);
@@ -48,7 +48,7 @@ private:
 public:
 	// ctor
 	CPhysicalBitmapTableScan(CMemoryPool *mp, CTableDescriptor *ptabdesc,
-							 ULONG ulOriginOpId, const CName *pnameTableAlias,
+							 GP_ULONG ulOriginOpId, const CName *pnameTableAlias,
 							 CColRefArray *pdrgpcrOutput);
 
 	// dtor
@@ -71,24 +71,24 @@ public:
 	}
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
 	}
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// derive partition index map
 	virtual CPartIndexMap *

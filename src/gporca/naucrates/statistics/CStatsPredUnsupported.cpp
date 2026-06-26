@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -25,7 +25,7 @@ using namespace gpnaucrates;
 //
 //---------------------------------------------------------------------------
 CStatsPredUnsupported::CStatsPredUnsupported(
-	ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type)
+	GP_ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type)
 	: CStatsPred(colid),
 	  m_stats_cmp_type(stats_cmp_type),
 	  m_default_scale_factor(0.0)
@@ -43,7 +43,7 @@ CStatsPredUnsupported::CStatsPredUnsupported(
 //
 //---------------------------------------------------------------------------
 CStatsPredUnsupported::CStatsPredUnsupported(
-	ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
+	GP_ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
 	CDouble default_scale_factor)
 	: CStatsPred(colid),
 	  m_stats_cmp_type(stats_cmp_type),

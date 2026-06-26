@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -42,7 +42,7 @@ private:
 	};
 
 	// segment id column
-	ULONG m_segment_id_col;
+	GP_ULONG m_segment_id_col;
 
 	// private copy ctor
 	CDXLPhysicalRoutedDistributeMotion(
@@ -50,7 +50,7 @@ private:
 
 public:
 	// ctor
-	CDXLPhysicalRoutedDistributeMotion(CMemoryPool *mp, ULONG segment_id_col);
+	CDXLPhysicalRoutedDistributeMotion(CMemoryPool *mp, GP_ULONG segment_id_col);
 
 	// operator type
 	Edxlopid GetDXLOperator() const;
@@ -59,14 +59,14 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// segment id column
-	ULONG
+	GP_ULONG
 	SegmentIdCol() const
 	{
 		return m_segment_id_col;
 	}
 
 	// index of relational child node in the children array
-	virtual ULONG
+	virtual GP_ULONG
 	GetRelationChildIdx() const
 	{
 		return EdxlroutedmIndexChild;
@@ -90,7 +90,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

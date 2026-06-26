@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -33,7 +33,7 @@ using namespace gpopt;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CDatumOidGPDB::CDatumOidGPDB(CSystemId sysid, OID oid_val, BOOL is_null)
+CDatumOidGPDB::CDatumOidGPDB(CSystemId sysid, OID oid_val, GP_BOOL is_null)
 	: m_mdid(NULL), m_val(oid_val), m_is_null(is_null)
 {
 	CMDAccessor *md_accessor = COptCtxt::PoctxtFromTLS()->Pmda();
@@ -59,7 +59,7 @@ CDatumOidGPDB::CDatumOidGPDB(CSystemId sysid, OID oid_val, BOOL is_null)
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CDatumOidGPDB::CDatumOidGPDB(IMDId *mdid, OID oid_val, BOOL is_null)
+CDatumOidGPDB::CDatumOidGPDB(IMDId *mdid, OID oid_val, GP_BOOL is_null)
 	: m_mdid(mdid), m_val(oid_val), m_is_null(is_null)
 {
 	GPOS_ASSERT(NULL != m_mdid);
@@ -107,7 +107,7 @@ CDatumOidGPDB::OidValue() const
 //		Accessor of is null
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumOidGPDB::IsNull() const
 {
 	return m_is_null;
@@ -121,7 +121,7 @@ CDatumOidGPDB::IsNull() const
 //		Accessor of size
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumOidGPDB::Size() const
 {
 	return 4;
@@ -149,7 +149,7 @@ CDatumOidGPDB::MDId() const
 //		Hash function
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CDatumOidGPDB::HashValue() const
 {
 	return gpos::CombineHashes(m_mdid->HashValue(),
@@ -188,7 +188,7 @@ CDatumOidGPDB::GetStrRepr(CMemoryPool *mp) const
 //		Matches the values of datums
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CDatumOidGPDB::Matches(const IDatum *datum) const
 {
 	if (!datum->MDId()->Equals(m_mdid))

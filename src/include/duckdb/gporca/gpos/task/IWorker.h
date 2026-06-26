@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -30,7 +30,7 @@
 	} while (0)
 
 
-#define GPOS_CHECK_ABORT_MAX_INTERVAL_MSEC (ULONG(1500))
+#define GPOS_CHECK_ABORT_MAX_INTERVAL_MSEC (GP_ULONG(1500))
 
 namespace gpos
 {
@@ -53,7 +53,7 @@ private:
 	IWorker(const IWorker &);
 
 	// check for abort request
-	virtual void CheckForAbort(const CHAR *, ULONG) = 0;
+	virtual void CheckForAbort(const CHAR *, GP_ULONG) = 0;
 
 public:
 	// dummy ctor
@@ -71,13 +71,13 @@ public:
 	virtual ITask *GetTask() = 0;
 
 	// stack check
-	virtual BOOL CheckStackSize(ULONG request = 0) const = 0;
+	virtual GP_BOOL CheckStackSize(GP_ULONG request = 0) const = 0;
 
 	// lookup worker in worker pool manager
 	static IWorker *Self();
 
 	// check for aborts
-	static void CheckAbort(const CHAR *file, ULONG line_num);
+	static void CheckAbort(const CHAR *file, GP_ULONG line_num);
 
 };	// class IWorker
 }  // namespace gpos

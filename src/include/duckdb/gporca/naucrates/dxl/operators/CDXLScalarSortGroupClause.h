@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -47,15 +47,15 @@ private:
 	INT m_tle_sort_group_ref;
 	INT m_eqop;
 	INT m_sortop;
-	BOOL m_nulls_first;
-	BOOL m_hashable;
+	GP_BOOL m_nulls_first;
+	GP_BOOL m_hashable;
 
 	CDXLScalarSortGroupClause(const CDXLScalarSortGroupClause &);
 
 public:
 	// ctor/dtor
 	CDXLScalarSortGroupClause(CMemoryPool *mp, INT tle_sort_group_ref, INT eqop,
-							  INT sortop, BOOL nulls_first, BOOL hashable)
+							  INT sortop, GP_BOOL nulls_first, GP_BOOL hashable)
 		: CDXLScalar(mp),
 		  m_tle_sort_group_ref(tle_sort_group_ref),
 		  m_eqop(eqop),
@@ -84,13 +84,13 @@ public:
 		return m_sortop;
 	}
 
-	BOOL
+	GP_BOOL
 	NullsFirst() const
 	{
 		return m_nulls_first;
 	}
 
-	BOOL
+	GP_BOOL
 	IsHashable() const
 	{
 		return m_hashable;
@@ -106,7 +106,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	BOOL
+	GP_BOOL
 	HasBoolResult(CMDAccessor *) const
 	{
 		return false;
@@ -114,7 +114,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	void
-	AssertValid(const CDXLNode *, BOOL) const
+	AssertValid(const CDXLNode *, GP_BOOL) const
 	{
 	}
 #endif	// GPOS_DEBUG

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,16 +65,16 @@ private:
 	CMDName *m_mdname;
 
 	// can type be redistributed based on non-legacy distr opfamily
-	BOOL m_is_redistributable;
+	GP_BOOL m_is_redistributable;
 
 	// is this a fixed-length type
-	BOOL m_is_fixed_length;
+	GP_BOOL m_is_fixed_length;
 
 	// type length in number of bytes for fixed-length types, 0 otherwise
-	ULONG m_length;
+	GP_ULONG m_length;
 
 	// is type passed by value or by reference
-	BOOL m_is_passed_by_value;
+	GP_BOOL m_is_passed_by_value;
 
 	IMDId *m_distr_opfamily;
 
@@ -117,16 +117,16 @@ private:
 	IMDId *m_mdid_count;
 
 	// is type hashable
-	BOOL m_is_hashable;
+	GP_BOOL m_is_hashable;
 
 	// is type merge joinable using '='
-	BOOL m_is_merge_joinable;
+	GP_BOOL m_is_merge_joinable;
 
 	// is type composite
-	BOOL m_is_composite_type;
+	GP_BOOL m_is_composite_type;
 
 	// is type text related
-	BOOL m_is_text_related;
+	GP_BOOL m_is_text_related;
 
 	// id of the relation corresponding to a composite type
 	IMDId *m_mdid_base_relation;
@@ -146,14 +146,14 @@ private:
 public:
 	// ctor
 	CMDTypeGenericGPDB(
-		CMemoryPool *mp, IMDId *mdid, CMDName *mdname, BOOL is_redistributable,
-		BOOL is_fixed_length, ULONG length, BOOL is_passed_by_value,
+		CMemoryPool *mp, IMDId *mdid, CMDName *mdname, GP_BOOL is_redistributable,
+		GP_BOOL is_fixed_length, GP_ULONG length, GP_BOOL is_passed_by_value,
 		IMDId *mdid_distr_opfamily, IMDId *mdid_legacy_distr_opfamily,
 		IMDId *mdid_op_eq, IMDId *mdid_op_neq, IMDId *mdid_op_lt,
 		IMDId *mdid_op_leq, IMDId *mdid_op_gt, IMDId *mdid_op_geq,
 		IMDId *mdid_op_cmp, IMDId *pmdidMin, IMDId *pmdidMax, IMDId *pmdidAvg,
-		IMDId *pmdidSum, IMDId *pmdidCount, BOOL is_hashable,
-		BOOL is_merge_joinable, BOOL is_composite_type, BOOL is_text_related,
+		IMDId *pmdidSum, IMDId *pmdidCount, GP_BOOL is_hashable,
+		GP_BOOL is_merge_joinable, GP_BOOL is_composite_type, GP_BOOL is_text_related,
 		IMDId *mdid_base_relation, IMDId *mdid_type_array, INT gpdb_length);
 
 	// dtor
@@ -170,28 +170,28 @@ public:
 
 	virtual CMDName Mdname() const;
 
-	virtual BOOL IsRedistributable() const;
+	virtual GP_BOOL IsRedistributable() const;
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsFixedLength() const
 	{
 		return m_is_fixed_length;
 	}
 
 	// is type composite
-	virtual BOOL
+	virtual GP_BOOL
 	IsComposite() const
 	{
 		return m_is_composite_type;
 	}
 
-	virtual ULONG
+	virtual GP_ULONG
 	Length() const
 	{
 		return m_gpdb_length;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsPassedByValue() const
 	{
 		return m_is_passed_by_value;
@@ -210,20 +210,20 @@ public:
 	}
 
 	// is type hashable
-	virtual BOOL
+	virtual GP_BOOL
 	IsHashable() const
 	{
 		return m_is_hashable;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsTextRelated() const
 	{
 		return m_is_text_related;
 	}
 
 	// is type merge joinable on '='
-	virtual BOOL
+	virtual GP_BOOL
 	IsMergeJoinable() const
 	{
 		return m_is_merge_joinable;
@@ -285,40 +285,40 @@ public:
 #endif
 
 	// is type an ambiguous one? e.g., AnyElement in GPDB
-	virtual BOOL IsAmbiguous() const;
+	virtual GP_BOOL IsAmbiguous() const;
 
 	// create a dxl datum
 	static CDXLDatum *CreateDXLDatumVal(CMemoryPool *mp, IMDId *mdid,
 										const IMDType *md_type,
-										INT type_modifier, BOOL is_null,
-										BYTE *byte_array, ULONG length,
+										INT type_modifier, GP_BOOL is_null,
+										BYTE *byte_array, GP_ULONG length,
 										LINT lint_Value, CDouble double_Value);
 
 	// create a dxl datum of types having double mapping
 	static CDXLDatum *CreateDXLDatumStatsDoubleMappable(
-		CMemoryPool *mp, IMDId *mdid, INT type_modifier, BOOL is_null,
-		BYTE *byte_array, ULONG length, LINT lint_Value, CDouble double_Value);
+		CMemoryPool *mp, IMDId *mdid, INT type_modifier, GP_BOOL is_null,
+		BYTE *byte_array, GP_ULONG length, LINT lint_Value, CDouble double_Value);
 
 	// create a dxl datum of types having lint mapping
 	static CDXLDatum *CreateDXLDatumStatsIntMappable(
-		CMemoryPool *mp, IMDId *mdid, INT type_modifier, BOOL is_null,
-		BYTE *byte_array, ULONG length, LINT lint_Value, CDouble double_Value);
+		CMemoryPool *mp, IMDId *mdid, INT type_modifier, GP_BOOL is_null,
+		BYTE *byte_array, GP_ULONG length, LINT lint_Value, CDouble double_Value);
 
 	// create a NULL constant for this type
 	virtual IDatum *CreateGenericNullDatum(CMemoryPool *mp,
 										   INT type_modifier) const;
 
 	// does a datum of this type need bytea to Lint mapping for statistics computation
-	static BOOL HasByte2IntMapping(const IMDType *mdtype);
+	static GP_BOOL HasByte2IntMapping(const IMDType *mdtype);
 
 	// does a datum of this type need bytea to double mapping for statistics computation
-	static BOOL HasByte2DoubleMapping(const IMDId *mdid);
+	static GP_BOOL HasByte2DoubleMapping(const IMDId *mdid);
 
 	// is this a time-related type
-	static BOOL IsTimeRelatedType(const IMDId *mdid);
+	static GP_BOOL IsTimeRelatedType(const IMDId *mdid);
 
 	// is this a time-related type mappable to DOUBLE
-	static inline BOOL
+	static inline GP_BOOL
 	IsTimeRelatedTypeMappableToDouble(const IMDId *mdid)
 	{
 		return IsTimeRelatedType(mdid) &&
@@ -326,14 +326,14 @@ public:
 	}
 
 	// is this a time-related type mappable to LINT
-	static inline BOOL
+	static inline GP_BOOL
 	IsTimeRelatedTypeMappableToLint(const IMDId *mdid)
 	{
 		return mdid->Equals(&CMDIdGPDB::m_mdid_date);
 	}
 
 	// is this a network-related type
-	static BOOL IsNetworkRelatedType(const IMDId *mdid);
+	static GP_BOOL IsNetworkRelatedType(const IMDId *mdid);
 };
 }  // namespace gpmd
 

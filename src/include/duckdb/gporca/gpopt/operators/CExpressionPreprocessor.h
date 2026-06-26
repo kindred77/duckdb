@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2012 EMC Corp.
 //
@@ -36,14 +36,14 @@ class CExpressionPreprocessor
 {
 private:
 	// map CTE id to collected predicates
-	typedef CHashMap<ULONG, CExpressionArray, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CExpressionArray, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CExpressionArray> >
 		CTEPredsMap;
 
 	// iterator for map of CTE id to collected predicates
-	typedef CHashMapIter<ULONG, CExpressionArray, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CExpressionArray, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupRelease<CExpressionArray> >
 		CTEPredsMapIter;
 
@@ -59,7 +59,7 @@ private:
 
 	// check if all columns in the given equivalence class come from one of the
 	// children of the given expression
-	static BOOL FEquivClassFromChild(CColRefSet *pcrs, CExpression *pexpr);
+	static GP_BOOL FEquivClassFromChild(CColRefSet *pcrs, CExpression *pexpr);
 
 	// generate predicates for the given set of columns based on the given
 	// constraint property
@@ -134,7 +134,7 @@ private:
 	// add dummy project element below scalar subquery when the output column is an outer reference
 	static CExpression *PexprProjBelowSubquery(CMemoryPool *mp,
 											   CExpression *pexpr,
-											   BOOL fUnderPrList);
+											   GP_BOOL fUnderPrList);
 
 	// helper function to rewrite IN query to simple EXISTS with a predicate
 	static CExpression *ConvertInToSimpleExists(CMemoryPool *mp,
@@ -162,11 +162,11 @@ private:
 
 	// imply new predicates on LOJ's inner child based on constraints derived from LOJ's outer child and join predicate
 	static CExpression *PexprWithImpliedPredsOnLOJInnerChild(
-		CMemoryPool *mp, CExpression *pexprLOJ, BOOL *pfAddedPredicates);
+		CMemoryPool *mp, CExpression *pexprLOJ, GP_BOOL *pfAddedPredicates);
 
 	// infer predicate from outer child to inner child of the outer join
 	static CExpression *PexprOuterJoinInferPredsFromOuterChildToInnerChild(
-		CMemoryPool *mp, CExpression *pexpr, BOOL *pfAddedPredicates);
+		CMemoryPool *mp, CExpression *pexpr, GP_BOOL *pfAddedPredicates);
 
 	// driver for inferring predicates from constraints
 	static CExpression *PexprInferPredicates(CMemoryPool *mp,
@@ -192,7 +192,7 @@ private:
 		CExpressionArray *pdrgpexpr);
 
 	// determines if the expression is likely convertible to an array expression
-	static BOOL FConvert2InIsConvertable(CExpression *pexpr,
+	static GP_BOOL FConvert2InIsConvertable(CExpression *pexpr,
 										 CScalarBoolOp::EBoolOperator eboolop);
 
 	// reorder the scalar cmp children to ensure that left child is Scalar Ident and right Child is Scalar Const

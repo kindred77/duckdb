@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -88,7 +88,7 @@ CScalarCmp::MdIdOp() const
 //		metadata id
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CScalarCmp::HashValue() const
 {
 	return gpos::CombineHashes(COperator::HashValue(), m_mdid_op->HashValue());
@@ -103,7 +103,7 @@ CScalarCmp::HashValue() const
 //		Match function on operator level
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarCmp::Matches(COperator *pop) const
 {
 	if (pop->Eopid() == Eopid())
@@ -125,7 +125,7 @@ CScalarCmp::Matches(COperator *pop) const
 //		Sensitivity to order of inputs
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CScalarCmp::FInputOrderSensitive() const
 {
 	return !m_fCommutative;

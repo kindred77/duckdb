@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2017 Pivotal Inc.
 //
@@ -42,7 +42,7 @@ private:
 	IMDId *m_coerce_func_mdid;
 
 	// conversion semantics flag to pass to func
-	BOOL m_explicit;
+	GP_BOOL m_explicit;
 
 	// private copy ctor
 	CDXLScalarArrayCoerceExpr(const CDXLScalarArrayCoerceExpr &);
@@ -50,7 +50,7 @@ private:
 public:
 	CDXLScalarArrayCoerceExpr(CMemoryPool *mp, IMDId *coerce_func_mdid,
 							  IMDId *result_type_mdid, INT type_modifier,
-							  BOOL is_explicit, EdxlCoercionForm coerce_format,
+							  GP_BOOL is_explicit, EdxlCoercionForm coerce_format,
 							  INT location);
 
 	virtual ~CDXLScalarArrayCoerceExpr()
@@ -72,7 +72,7 @@ public:
 		return m_coerce_func_mdid;
 	}
 
-	BOOL
+	GP_BOOL
 	IsExplicit() const
 	{
 		return m_explicit;

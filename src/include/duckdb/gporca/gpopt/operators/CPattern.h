@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -45,7 +45,7 @@ public:
 	}
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FPattern() const
 	{
 		GPOS_ASSERT(!FPhysical() && !FScalar() && !FLogical());
@@ -59,17 +59,17 @@ public:
 	virtual CReqdProp *PrpCreate(CMemoryPool *mp) const;
 
 	// match function
-	BOOL Matches(COperator *) const;
+	GP_BOOL Matches(COperator *) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// check if operator is a pattern leaf
-	virtual BOOL FLeaf() const = 0;
+	virtual GP_BOOL FLeaf() const = 0;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// conversion function
 	static CPattern *
@@ -82,7 +82,7 @@ public:
 	}
 
 	// helper to check multi-node pattern
-	static BOOL
+	static GP_BOOL
 	FMultiNode(COperator *pop)
 	{
 		return COperator::EopPatternMultiLeaf == pop->Eopid() ||

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -73,17 +73,17 @@ public:
 	}
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 
 	// return locally used columns
@@ -119,16 +119,16 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// is the given expression a scalar cast of a scalar identifier
-	static BOOL FCastedScId(CExpression *pexpr);
+	static GP_BOOL FCastedScId(CExpression *pexpr);
 
 	// is the given expression a scalar cast of given scalar identifier
-	static BOOL FCastedScId(CExpression *pexpr, CColRef *colref);
+	static GP_BOOL FCastedScId(CExpression *pexpr, CColRef *colref);
 
 	// is the given expression a scalar func allowed for Partition selection of given scalar identifier
-	static BOOL FAllowedFuncScId(CExpression *pexpr);
+	static GP_BOOL FAllowedFuncScId(CExpression *pexpr);
 
 	// is the given expression a scalar func allowed for Partition selection of given scalar identifier
-	static BOOL FAllowedFuncScId(CExpression *pexpr, CColRef *colref);
+	static GP_BOOL FAllowedFuncScId(CExpression *pexpr, CColRef *colref);
 
 };	// class CScalarIdent
 

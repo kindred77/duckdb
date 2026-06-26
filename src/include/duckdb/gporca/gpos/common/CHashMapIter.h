@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -26,8 +26,8 @@ namespace gpos
 //		Hash map iterator
 //
 //---------------------------------------------------------------------------
-template <class K, class T, ULONG (*HashFn)(const K *),
-		  BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
+template <class K, class T, GP_ULONG (*HashFn)(const K *),
+		  GP_BOOL (*EqFn)(const K *, const K *), void (*DestroyKFn)(K *),
 		  void (*DestroyTFn)(T *)>
 class CHashMapIter : public CStackObject
 {
@@ -39,13 +39,13 @@ private:
 	const TMap *m_map;
 
 	// current hashchain
-	ULONG m_chain_idx;
+	GP_ULONG m_chain_idx;
 
 	// current key
-	ULONG m_key_idx;
+	GP_ULONG m_key_idx;
 
 	// is initialized?
-	BOOL m_is_initialized;
+	GP_BOOL m_is_initialized;
 
 	// private copy ctor
 	CHashMapIter(
@@ -76,7 +76,7 @@ public:
 	}
 
 	// advance iterator to next element
-	BOOL
+	GP_BOOL
 	Advance()
 	{
 		if (m_key_idx < m_map->m_keys->Size())

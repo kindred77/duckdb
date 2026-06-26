@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -38,10 +38,10 @@ private:
 	CDXLTableDescr *m_dxl_table_descr;
 
 	// ctid column id
-	ULONG m_ctid_colid;
+	GP_ULONG m_ctid_colid;
 
 	// segmentId column id
-	ULONG m_segid_colid;
+	GP_ULONG m_segid_colid;
 
 	// list of deletion column ids
 	ULongPtrArray *m_deletion_colid_array;
@@ -52,7 +52,7 @@ private:
 public:
 	// ctor
 	CDXLLogicalDelete(CMemoryPool *mp, CDXLTableDescr *table_descr,
-					  ULONG ctid_colid, ULONG segid_colid,
+					  GP_ULONG ctid_colid, GP_ULONG segid_colid,
 					  ULongPtrArray *delete_colid_array);
 
 	// dtor
@@ -72,14 +72,14 @@ public:
 	}
 
 	// ctid column
-	ULONG
+	GP_ULONG
 	GetCtIdColId() const
 	{
 		return m_ctid_colid;
 	}
 
 	// segment id column
-	ULONG
+	GP_ULONG
 	GetSegmentIdColId() const
 	{
 		return m_segid_colid;
@@ -95,7 +95,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *node, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *node, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// serialize operator in DXL format

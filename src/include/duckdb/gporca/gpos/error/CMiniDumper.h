@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -32,10 +32,10 @@ private:
 	CMemoryPool *m_mp;
 
 	// flag indicating if handler is initialized
-	BOOL m_initialized;
+	GP_BOOL m_initialized;
 
 	// flag indicating if handler is finalized
-	BOOL m_finalized;
+	GP_BOOL m_finalized;
 
 	// private copy ctor
 	CMiniDumper(const CMiniDumper &);

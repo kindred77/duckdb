@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -72,14 +72,14 @@ public:
 	}
 
 	// comparison operator
-	BOOL
+	GP_BOOL
 	operator<(const CCost &cost) const
 	{
 		return (CDouble)(*this) < (CDouble) cost;
 	}
 
 	// comparison operator
-	BOOL
+	GP_BOOL
 	operator>(const CCost &cost) const
 	{
 		return (CDouble) cost < (CDouble)(*this);

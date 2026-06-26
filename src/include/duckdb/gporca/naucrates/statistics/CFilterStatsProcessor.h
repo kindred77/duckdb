@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -32,27 +32,27 @@ private:
 											CBitSet *filter_colids,
 											CHistogram *hist_before,
 											CDouble *last_scale_factor,
-											ULONG *target_last_colid);
+											GP_ULONG *target_last_colid);
 
 	// create a new histogram after applying a point filter
 	static CHistogram *MakeHistPointFilter(CStatsPredPoint *pred_stats,
 										   CBitSet *filter_colids,
 										   CHistogram *hist_before,
 										   CDouble *last_scale_factor,
-										   ULONG *target_last_colid);
+										   GP_ULONG *target_last_colid);
 
 	// create a new histogram after applying a LIKE filter
 	static CHistogram *MakeHistLikeFilter(CStatsPredLike *pred_stats,
 										  CBitSet *filter_colids,
 										  CHistogram *hist_before,
 										  CDouble *last_scale_factor,
-										  ULONG *target_last_colid);
+										  GP_ULONG *target_last_colid);
 
 	// create a new histogram for an unsupported predicate
 	static CHistogram *MakeHistUnsupportedPred(
 		CStatsPredUnsupported *pred_stats, CBitSet *filter_colids,
 		CHistogram *hist_before, CDouble *last_scale_factor,
-		ULONG *target_last_colid);
+		GP_ULONG *target_last_colid);
 
 	// create a new histogram after applying a pred op ANY(ARRAY[...]) filter
 	static CHistogram *MakeHistArrayCmpAnyFilter(CMemoryPool *mp,
@@ -60,7 +60,7 @@ private:
 												 CBitSet *filter_colids,
 												 CHistogram *hist_before,
 												 CDouble *last_scale_factor,
-												 ULONG *target_last_colid);
+												 GP_ULONG *target_last_colid);
 
 	// create a new hash map of histograms after applying a conjunctive or disjunctive filter
 	static UlongToHistogramMap *MakeHistHashMapConjOrDisjFilter(
@@ -81,14 +81,14 @@ private:
 		CStatsPredDisj *pred_stats, CDouble *scale_factor);
 
 	// check if the column is a new column for statistic calculation
-	static BOOL IsNewStatsColumn(ULONG colid, ULONG last_colid);
+	static GP_BOOL IsNewStatsColumn(GP_ULONG colid, GP_ULONG last_colid);
 
 public:
 	// filter
 	static CStatistics *MakeStatsFilter(CMemoryPool *mp,
 										const CStatistics *input_stats,
 										CStatsPred *base_pred_stats,
-										BOOL do_cap_NDVs);
+										GP_BOOL do_cap_NDVs);
 
 	// derive statistics for filter operation based on given scalar expression
 	static IStatistics *MakeStatsFilterForScalarExpr(

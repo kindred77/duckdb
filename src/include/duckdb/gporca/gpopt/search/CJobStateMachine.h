@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -133,7 +133,7 @@ public:
 	}
 
 	// run the state machine
-	BOOL
+	GP_BOOL
 	FRun(CSchedulerContext *psc, CJob *pjOwner)
 	{
 		GPOS_ASSERT(NULL != psc);
@@ -164,7 +164,7 @@ public:
 			// use the event to transition state machine
 			estNext = estCurrent;
 #ifdef GPOS_DEBUG
-			BOOL fSucceeded =
+			GP_BOOL fSucceeded =
 #endif	// GPOS_DEBUG
 				m_sm.FTransition(eev, estNext);
 
@@ -181,7 +181,7 @@ public:
 		m_sm.Reset();
 
 		// initialize actions array
-		for (ULONG i = 0; i < estSentinel; i++)
+		for (GP_ULONG i = 0; i < estSentinel; i++)
 		{
 			m_rgPfuncAction[i] = NULL;
 		}
@@ -208,7 +208,7 @@ public:
 
 	// compute unreachable states
 	void
-	Unreachable(CMemoryPool *mp, TEnumState **ppestate, ULONG *pulSize) const
+	Unreachable(CMemoryPool *mp, TEnumState **ppestate, GP_ULONG *pulSize) const
 	{
 		m_sm.Unreachable(mp, ppestate, pulSize);
 	}

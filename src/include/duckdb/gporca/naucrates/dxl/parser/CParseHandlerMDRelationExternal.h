@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -39,7 +39,7 @@ private:
 	INT m_reject_limit;
 
 	// reject limit in rows?
-	BOOL m_is_rej_limit_in_rows;
+	GP_BOOL m_is_rej_limit_in_rows;
 
 	// format error table mdid
 	IMDId *m_mdid_fmt_err_table;
@@ -54,7 +54,7 @@ private:
 	ULongPtrArray *m_level_with_default_part_array;
 
 	// is part constraint unbounded
-	BOOL m_part_constraint_unbounded;
+	GP_BOOL m_part_constraint_unbounded;
 
 	// private copy ctor
 	CParseHandlerMDRelationExternal(const CParseHandlerMDRelationExternal &);

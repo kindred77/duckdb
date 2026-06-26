@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -25,7 +25,7 @@ using namespace gpmd;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CStatsPredLike::CStatsPredLike(ULONG colid, CExpression *expr_left,
+CStatsPredLike::CStatsPredLike(GP_ULONG colid, CExpression *expr_left,
 							   CExpression *expr_right,
 							   CDouble default_scale_factor)
 	: CStatsPred(colid),
@@ -61,7 +61,7 @@ CStatsPredLike::~CStatsPredLike()
 //		Return the column identifier on which the predicates are on
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CStatsPredLike::GetColId() const
 {
 	return m_colid;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -41,7 +41,7 @@ public:
 	virtual ~CXformExploration();
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FExploration() const
 	{
 		GPOS_ASSERT(!FSubstitution() && !FImplementation());
@@ -49,21 +49,21 @@ public:
 	}
 
 	// is transformation a subquery unnesting (Subquery To Apply) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FSubqueryUnnesting() const
 	{
 		return false;
 	}
 
 	// is transformation an Apply decorrelation (Apply To Join) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FApplyDecorrelating() const
 	{
 		return false;
 	}
 
 	// do stats need to be computed before applying xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FNeedsStats() const
 	{
 		return false;

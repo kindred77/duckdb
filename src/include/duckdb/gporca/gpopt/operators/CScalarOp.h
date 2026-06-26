@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -45,13 +45,13 @@ private:
 	const CWStringConst *m_pstrOp;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
-	// is operator return type BOOL?
-	BOOL m_fBoolReturnType;
+	// is operator return type GP_BOOL?
+	GP_BOOL m_fBoolReturnType;
 
 	// is operator commutative
-	BOOL m_fCommutative;
+	GP_BOOL m_fCommutative;
 
 	// private copy ctor
 	CScalarOp(const CScalarOp &);
@@ -91,19 +91,19 @@ public:
 	virtual IMDId *MdidType() const;
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -120,7 +120,7 @@ public:
 	}
 
 	// helper function
-	static BOOL FCommutative(const IMDId *pcmdidOtherOp);
+	static GP_BOOL FCommutative(const IMDId *pcmdidOtherOp);
 
 	// boolean expression evaluation
 	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;

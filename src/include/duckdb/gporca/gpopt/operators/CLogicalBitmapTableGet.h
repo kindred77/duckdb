@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal, Inc.
 //
@@ -43,7 +43,7 @@ private:
 	CTableDescriptor *m_ptabdesc;
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG m_ulOriginOpId;
+	GP_ULONG m_ulOriginOpId;
 
 	// alias for table
 	const CName *m_pnameTableAlias;
@@ -57,7 +57,7 @@ private:
 public:
 	// ctor
 	CLogicalBitmapTableGet(CMemoryPool *mp, CTableDescriptor *ptabdesc,
-						   ULONG ulOriginOpId, const CName *pnameTableAlias,
+						   GP_ULONG ulOriginOpId, const CName *pnameTableAlias,
 						   CColRefArray *pdrgpcrOutput);
 
 	// ctor
@@ -103,20 +103,20 @@ public:
 	}
 
 	// origin operator id -- gpos::ulong_max if operator was not generated via a transformation
-	ULONG
+	GP_ULONG
 	UlOriginOpId() const
 	{
 		return m_ulOriginOpId;
 	}
 
 	// operator specific hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	virtual BOOL
+	virtual GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -124,7 +124,7 @@ public:
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *PopCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// derive output columns
 	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp,
@@ -148,7 +148,7 @@ public:
 		CMemoryPool *mp, CExpressionHandle &exprhdl) const;
 
 	// derive join depth
-	virtual ULONG
+	virtual GP_ULONG
 	DeriveJoinDepth(CMemoryPool *,		 // mp
 					CExpressionHandle &	 // exprhdl
 	) const
@@ -170,7 +170,7 @@ public:
 	PcrsStat(CMemoryPool *mp,
 			 CExpressionHandle &,  // exprhdl
 			 CColRefSet *,		   //pcrsInput
-			 ULONG				   // child_index
+			 GP_ULONG				   // child_index
 	) const
 	{
 		return GPOS_NEW(mp) CColRefSet(mp);

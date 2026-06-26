@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -26,7 +26,7 @@ FORCE_GENERATE_DBGSTR(CSearchStage);
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CSearchStage::CSearchStage(CXformSet *xform_set, ULONG ulTimeThreshold,
+CSearchStage::CSearchStage(CXformSet *xform_set, GP_ULONG ulTimeThreshold,
 						   CCost costThreshold)
 	: m_xforms(xform_set),
 	  m_time_threshold(ulTimeThreshold),

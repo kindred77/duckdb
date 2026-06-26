@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -65,11 +65,11 @@ public:
 	virtual ~CEnfdRewindability();
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// check if the given rewindability specification is compatible with the
 	// rewindability specification of this object for the specified matching type
-	BOOL FCompatible(CRewindabilitySpec *pos) const;
+	GP_BOOL FCompatible(CRewindabilitySpec *pos) const;
 
 	// required rewindability accessor
 	CRewindabilitySpec *
@@ -80,7 +80,7 @@ public:
 
 	// get rewindability enforcing type for the given operator
 	EPropEnforcingType Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
-							BOOL fRewindabilityReqd) const;
+							GP_BOOL fRewindabilityReqd) const;
 
 	// property spec accessor
 	virtual CPropSpec *
@@ -97,7 +97,7 @@ public:
 	}
 
 	// matching function
-	BOOL
+	GP_BOOL
 	Matches(CEnfdRewindability *per)
 	{
 		GPOS_ASSERT(NULL != per);

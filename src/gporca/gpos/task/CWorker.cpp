@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 - 2010 Greenplum, Inc.
 //
@@ -31,7 +31,7 @@ bool (*CWorker::abort_requested_by_system)(void);
 //		ctor
 //
 //---------------------------------------------------------------------------
-CWorker::CWorker(ULONG stack_size, ULONG_PTR stack_start)
+CWorker::CWorker(GP_ULONG stack_size, ULONG_PTR stack_start)
 	: m_task(NULL), m_stack_size(stack_size), m_stack_start(stack_start)
 {
 	GPOS_ASSERT(stack_size >= 2 * 1024 &&
@@ -101,9 +101,9 @@ CWorker::Execute(CTask *task)
 void
 CWorker::CheckForAbort(
 #ifdef GPOS_FPSIMULATOR
-	const CHAR *file, ULONG line_num
+	const CHAR *file, GP_ULONG line_num
 #else
-	const CHAR *, ULONG
+	const CHAR *, GP_ULONG
 #endif	// GPOS_FPSIMULATOR
 )
 {
@@ -140,8 +140,8 @@ CWorker::CheckForAbort(
 //		else we check if requested space can fit in stack
 //
 //---------------------------------------------------------------------------
-BOOL
-CWorker::CheckStackSize(ULONG request) const
+GP_BOOL
+CWorker::CheckStackSize(GP_ULONG request) const
 {
 	ULONG_PTR ptr = 0;
 
@@ -175,7 +175,7 @@ CWorker::CheckStackSize(ULONG request) const
 //
 //---------------------------------------------------------------------------
 void
-CWorker::SimulateAbort(const CHAR *file, ULONG line_num)
+CWorker::SimulateAbort(const CHAR *file, GP_ULONG line_num)
 {
 	if (m_task->IsTraceSet(EtraceSimulateAbort) &&
 		CFSimulator::FSim()->NewStack(CException::ExmaSystem,

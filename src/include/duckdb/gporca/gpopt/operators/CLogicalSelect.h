@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -106,7 +106,7 @@ public:
 	virtual CExpression *PexprPartPred(CMemoryPool *mp,
 									   CExpressionHandle &exprhdl,
 									   CExpression *pexprInput,
-									   ULONG child_index) const;
+									   GP_ULONG child_index) const;
 
 	//-------------------------------------------------------------------------------------
 	// Transformations
@@ -120,7 +120,7 @@ public:
 	//-------------------------------------------------------------------------------------
 
 	// return true if operator can select a subset of input tuples based on some predicate,
-	virtual BOOL
+	virtual GP_BOOL
 	FSelectionOp() const
 	{
 		return true;

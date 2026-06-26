@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -41,7 +41,7 @@ protected:
 
 public:
 	// ctor
-	CWString(ULONG length);
+	CWString(GP_ULONG length);
 
 	// dtor
 	virtual ~CWString()

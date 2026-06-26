@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -27,10 +27,10 @@ class CBitVector
 {
 private:
 	// size in bits
-	ULONG m_nbits;
+	GP_ULONG m_nbits;
 
 	// size of vector in units, not bits
-	ULONG m_len;
+	GP_ULONG m_len;
 
 	// vector
 	ULLONG *m_vec;
@@ -43,7 +43,7 @@ private:
 
 public:
 	// ctor
-	CBitVector(CMemoryPool *mp, ULONG cBits);
+	CBitVector(CMemoryPool *mp, GP_ULONG cBits);
 
 	// dtor
 	~CBitVector();
@@ -52,13 +52,13 @@ public:
 	CBitVector(CMemoryPool *mp, const CBitVector &);
 
 	// determine if bit is set
-	BOOL Get(ULONG ulBit) const;
+	GP_BOOL Get(GP_ULONG ulBit) const;
 
 	// set given bit; return previous value
-	BOOL ExchangeSet(ULONG ulBit);
+	GP_BOOL ExchangeSet(GP_ULONG ulBit);
 
 	// clear given bit; return previous value
-	BOOL ExchangeClear(ULONG ulBit);
+	GP_BOOL ExchangeClear(GP_ULONG ulBit);
 
 	// union vectors
 	void Or(const CBitVector *);
@@ -67,25 +67,25 @@ public:
 	void And(const CBitVector *);
 
 	// is subset
-	BOOL ContainsAll(const CBitVector *) const;
+	GP_BOOL ContainsAll(const CBitVector *) const;
 
 	// is dijoint
-	BOOL IsDisjoint(const CBitVector *) const;
+	GP_BOOL IsDisjoint(const CBitVector *) const;
 
 	// equality
-	BOOL Equals(const CBitVector *) const;
+	GP_BOOL Equals(const CBitVector *) const;
 
 	// is empty?
-	BOOL IsEmpty() const;
+	GP_BOOL IsEmpty() const;
 
 	// find next bit from given position
-	BOOL GetNextSetBit(ULONG, ULONG &) const;
+	GP_BOOL GetNextSetBit(GP_ULONG, GP_ULONG &) const;
 
 	// number of bits set
-	ULONG CountSetBits() const;
+	GP_ULONG CountSetBits() const;
 
 	// hash value
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 };	// class CBitVector
 

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008-2010 Greenplum Inc.
 //	Copyright (C) 2011 EMC Corp.
@@ -41,9 +41,9 @@
 // padded size for a given data structure
 #define GPOS_MEM_ALIGNED_STRUCT_SIZE(x) GPOS_MEM_ALIGNED_SIZE(GPOS_SIZEOF(x))
 
-// sanity check: char and ulong always fits into the basic unit of alignment
+// sanity check: char and GP_ULONG always fits into the basic unit of alignment
 GPOS_CPL_ASSERT(GPOS_MEM_ALIGNED_STRUCT_SIZE(gpos::CHAR) == GPOS_MEM_ARCH);
-GPOS_CPL_ASSERT(GPOS_MEM_ALIGNED_STRUCT_SIZE(gpos::ULONG) == GPOS_MEM_ARCH);
+GPOS_CPL_ASSERT(GPOS_MEM_ALIGNED_STRUCT_SIZE(gpos::GP_ULONG) == GPOS_MEM_ARCH);
 
 // static pattern to init memory
 #define GPOS_MEM_INIT_PATTERN_CHAR (0xCC)
@@ -114,13 +114,13 @@ public:
 	}
 
 	// implementation of placement new with memory pool
-	virtual void *NewImpl(const ULONG bytes, const CHAR *file, const ULONG line,
+	virtual void *NewImpl(const GP_ULONG bytes, const CHAR *file, const GP_ULONG line,
 						  CMemoryPool::EAllocationType eat) = 0;
 
 	// implementation of array-new with memory pool
 	template <typename T>
 	T *
-	NewArrayImpl(SIZE_T num_elements, const CHAR *filename, ULONG line)
+	NewArrayImpl(SIZE_T num_elements, const CHAR *filename, GP_ULONG line)
 	{
 		T *array = static_cast<T *>(
 			NewImpl(sizeof(T) * num_elements, filename, line, EatArray));
@@ -155,7 +155,7 @@ public:
 	}
 
 	// requested size of allocation
-	static ULONG UserSizeOfAlloc(const void *ptr);
+	static GP_ULONG UserSizeOfAlloc(const void *ptr);
 
 	// free allocation
 	static void DeleteImpl(void *ptr, EAllocationType eat);
@@ -163,7 +163,7 @@ public:
 #ifdef GPOS_DEBUG
 
 	// check if the memory pool keeps track of live objects
-	virtual BOOL
+	virtual GP_BOOL
 	SupportsLiveObjectWalk() const
 	{
 		return false;
@@ -275,7 +275,7 @@ public:
 // specific type signature defined below.
 inline void *
 operator new(gpos::SIZE_T size, gpos::CMemoryPool *mp,
-			 const gpos::CHAR *filename, gpos::ULONG line)
+			 const gpos::CHAR *filename, gpos::GP_ULONG line)
 {
 	return mp->NewImpl(size, filename, line, gpos::CMemoryPool::EatSingleton);
 }
@@ -287,7 +287,7 @@ operator new(gpos::SIZE_T size, gpos::CMemoryPool *mp,
 // *only* when a constructor throws an exception, and the version of 'new' is
 // known to be the one declared above.
 inline void
-operator delete(void *ptr, gpos::CMemoryPool *, const gpos::CHAR *, gpos::ULONG)
+operator delete(void *ptr, gpos::CMemoryPool *, const gpos::CHAR *, gpos::GP_ULONG)
 {
 	// Reclaim memory after constructor throws exception.
 	gpos::CMemoryPool::DeleteImpl(ptr, gpos::CMemoryPool::EatSingleton);

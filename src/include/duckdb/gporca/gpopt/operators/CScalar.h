@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -85,7 +85,7 @@ public:
 	}
 
 	// type of operator
-	virtual BOOL
+	virtual GP_BOOL
 	FScalar() const
 	{
 		GPOS_ASSERT(!FPhysical() && !FLogical() && !FPattern());
@@ -147,12 +147,12 @@ public:
 	}
 
 	// derive subquery existence
-	virtual BOOL FHasSubquery(CExpressionHandle &exprhdl);
+	virtual GP_BOOL FHasSubquery(CExpressionHandle &exprhdl);
 
 	// derive non-scalar function existence
-	virtual BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl);
+	virtual GP_BOOL FHasNonScalarFunction(CExpressionHandle &exprhdl);
 
-	virtual BOOL FHasScalarArrayCmp(CExpressionHandle &exprhdl);
+	virtual GP_BOOL FHasScalarArrayCmp(CExpressionHandle &exprhdl);
 
 	// boolean expression evaluation
 	virtual EBoolEvalResult

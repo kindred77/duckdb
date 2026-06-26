@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -30,7 +30,7 @@ using namespace gpos;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CJobFactory::CJobFactory(CMemoryPool *mp, ULONG ulJobs)
+CJobFactory::CJobFactory(CMemoryPool *mp, GP_ULONG ulJobs)
 	: m_mp(mp),
 	  m_ulJobs(ulJobs),
 	  m_pspjTest(NULL),

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -48,7 +48,7 @@ private:
 
 public:
 	// ctor
-	CDXLDatumInt2(CMemoryPool *mp, IMDId *mdid_type, BOOL is_null, SINT val);
+	CDXLDatumInt2(CMemoryPool *mp, IMDId *mdid_type, GP_BOOL is_null, SINT val);
 
 	// dtor
 	virtual ~CDXLDatumInt2(){};

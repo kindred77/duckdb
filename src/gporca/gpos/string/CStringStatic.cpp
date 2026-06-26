@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -28,7 +28,7 @@ using namespace gpos;
 //		Ctor - initializes with empty string
 //
 //---------------------------------------------------------------------------
-CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity)
+CStringStatic::CStringStatic(CHAR buffer[], GP_ULONG capacity)
 	: m_buffer(buffer), m_length(0), m_capacity(capacity)
 {
 	GPOS_ASSERT(NULL != buffer);
@@ -46,7 +46,7 @@ CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity)
 //		Ctor with string initialization
 //
 //---------------------------------------------------------------------------
-CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity,
+CStringStatic::CStringStatic(CHAR buffer[], GP_ULONG capacity,
 							 const CHAR init_str[])
 	: m_buffer(buffer), m_length(0), m_capacity(capacity)
 {
@@ -65,12 +65,12 @@ CStringStatic::CStringStatic(CHAR buffer[], ULONG capacity,
 //		Checks whether the string is byte-wise equal to a given string literal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CStringStatic::Equals(const CHAR *buf) const
 {
 	GPOS_ASSERT(NULL != buf);
 
-	ULONG length = clib::Strlen(buf);
+	GP_ULONG length = clib::Strlen(buf);
 	return (m_length == length && 0 == clib::Strncmp(m_buffer, buf, length));
 }
 
@@ -102,7 +102,7 @@ void
 CStringStatic::AppendBuffer(const CHAR *buf)
 {
 	GPOS_ASSERT(NULL != buf);
-	ULONG length = clib::Strlen(buf);
+	GP_ULONG length = clib::Strlen(buf);
 	if (0 == length || m_capacity == m_length)
 	{
 		return;
@@ -164,7 +164,7 @@ CStringStatic::AppendFormatVA(const CHAR *format, VA_LIST va_args)
 	GPOS_ASSERT(NULL != format);
 
 	// available space in buffer
-	ULONG ulAvailable = m_capacity - m_length;
+	GP_ULONG ulAvailable = m_capacity - m_length;
 
 	// format string
 	(void) clib::Vsnprintf(m_buffer + m_length, ulAvailable, format, va_args);
@@ -190,19 +190,19 @@ CStringStatic::AppendFormatVA(const CHAR *format, VA_LIST va_args)
 void
 CStringStatic::AppendConvert(const WCHAR *wc_str)
 {
-	ULONG length_entry = GPOS_WSZ_LENGTH(wc_str);
+	GP_ULONG length_entry = GPOS_WSZ_LENGTH(wc_str);
 
 	if (m_capacity - m_length < length_entry)
 	{
 		length_entry = m_capacity - m_length - 1;
 	}
 
-	for (ULONG i = 0; i < length_entry; i++)
+	for (GP_ULONG i = 0; i < length_entry; i++)
 	{
 		CHAR str_convert[MB_LEN_MAX];
 
 		/* convert wide character to multi-byte array */
-		ULONG char_length = clib::Wctomb(str_convert, wc_str[i]);
+		GP_ULONG char_length = clib::Wctomb(str_convert, wc_str[i]);
 		GPOS_ASSERT(0 < char_length);
 
 		// check if wide character is ASCII-compatible

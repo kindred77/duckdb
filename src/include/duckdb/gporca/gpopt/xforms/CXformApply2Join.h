@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -42,7 +42,7 @@ class CXformApply2Join : public CXformExploration
 {
 private:
 	// check if we can create a correlated apply expression from the given expression
-	static BOOL
+	static GP_BOOL
 	FCanCreateCorrelatedApply(CMemoryPool *, CExpression *pexprApply)
 	{
 		GPOS_ASSERT(NULL != pexprApply);
@@ -135,7 +135,7 @@ private:
 
 protected:
 	// helper function to attempt decorrelating Apply's inner child
-	static BOOL
+	static GP_BOOL
 	FDecorrelate(CMemoryPool *mp, CExpression *pexprApply,
 				 CExpression **ppexprInner, CExpressionArray **ppdrgpexpr)
 	{
@@ -258,7 +258,7 @@ protected:
 
 public:
 	// ctor for deep pattern
-	explicit CXformApply2Join<TApply, TJoin>(CMemoryPool *mp, BOOL)
+	explicit CXformApply2Join<TApply, TJoin>(CMemoryPool *mp, GP_BOOL)
 		:  // pattern
 		  CXformExploration(GPOS_NEW(mp) CExpression(
 			  mp, GPOS_NEW(mp) TApply(mp),
@@ -300,7 +300,7 @@ public:
 	}
 
 	// is transformation an Apply decorrelation (Apply To Join) xform?
-	virtual BOOL
+	virtual GP_BOOL
 	FApplyDecorrelating() const
 	{
 		return true;

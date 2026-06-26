@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #include "gpopt/base/CDistributionSpecStrictHashed.h"
@@ -6,7 +6,7 @@
 namespace gpopt
 {
 CDistributionSpecStrictHashed::CDistributionSpecStrictHashed(
-	CExpressionArray *pdrgpexpr, BOOL fNullsColocated)
+	CExpressionArray *pdrgpexpr, GP_BOOL fNullsColocated)
 	: CDistributionSpecHashed(pdrgpexpr, fNullsColocated)
 {
 }

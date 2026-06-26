@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -62,7 +62,7 @@ CPartitionPropagationSpec::~CPartitionPropagationSpec()
 //		Hash of components
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CPartitionPropagationSpec::HashValue() const
 {
 	return m_ppim->HashValue();
@@ -77,7 +77,7 @@ CPartitionPropagationSpec::HashValue() const
 //		Check whether two partition propagation specs are equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPartitionPropagationSpec::Matches(const CPartitionPropagationSpec *ppps) const
 {
 	return m_ppim->Equals(ppps->Ppim()) && m_ppfm->Equals(ppps->m_ppfm);
@@ -108,11 +108,11 @@ CPartitionPropagationSpec::AppendEnforcers(CMemoryPool *mp,
 	GPOS_ASSERT(NULL != pexpr);
 
 	ULongPtrArray *pdrgpul = m_ppim->PdrgpulScanIds(mp);
-	const ULONG size = pdrgpul->Size();
+	const GP_ULONG size = pdrgpul->Size();
 
-	for (ULONG ul = 0; ul < size; ul++)
+	for (GP_ULONG ul = 0; ul < size; ul++)
 	{
-		ULONG scan_id = *((*pdrgpul)[ul]);
+		GP_ULONG scan_id = *((*pdrgpul)[ul]);
 		GPOS_ASSERT(m_ppim->Contains(scan_id));
 
 		if (CPartIndexMap::EpimConsumer != m_ppim->Epim(scan_id) ||
@@ -150,8 +150,8 @@ CPartitionPropagationSpec::AppendEnforcers(CMemoryPool *mp,
 			// find out which keys are used in the predicate, in case there are multiple
 			// keys at this point (e.g. from a union of multiple CTE consumers)
 			CColRefSet *pcrsUsed = pexprScalar->DeriveUsedColumns();
-			const ULONG ulKeysets = pdrgppartkeys->Size();
-			for (ULONG ulKey = 0; NULL == pdrgpdrgpcrKeys && ulKey < ulKeysets;
+			const GP_ULONG ulKeysets = pdrgppartkeys->Size();
+			for (GP_ULONG ulKey = 0; NULL == pdrgpdrgpcrKeys && ulKey < ulKeysets;
 				 ulKey++)
 			{
 				// get partition key
@@ -206,7 +206,7 @@ CPartitionPropagationSpec::AppendEnforcers(CMemoryPool *mp,
 //
 //---------------------------------------------------------------------------
 CExpression *
-CPartitionPropagationSpec::PexprFilter(CMemoryPool *mp, ULONG scan_id)
+CPartitionPropagationSpec::PexprFilter(CMemoryPool *mp, GP_ULONG scan_id)
 {
 	CExpression *pexprScalar = m_ppfm->Pexpr(scan_id);
 	GPOS_ASSERT(NULL != pexprScalar);
@@ -249,10 +249,10 @@ CPartitionPropagationSpec::PexprFilter(CMemoryPool *mp, ULONG scan_id)
 //		expression
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CPartitionPropagationSpec::FRequiresPartitionPropagation(
 	CMemoryPool *mp, CExpression *pexpr, CExpressionHandle &exprhdl,
-	ULONG part_idx_id) const
+	GP_ULONG part_idx_id) const
 {
 	GPOS_ASSERT(m_ppim->Contains(part_idx_id));
 
@@ -319,14 +319,14 @@ CPartitionPropagationSpec::SplitPartPredicates(
 	CBitSet *pbsUsed = GPOS_NEW(mp) CBitSet(mp);
 	CColRefSet *pcrsKeys = PcrsKeys(mp, pdrgpdrgpcrKeys);
 
-	const ULONG ulLevels = pdrgpdrgpcrKeys->Size();
-	for (ULONG ul = 0; ul < ulLevels; ul++)
+	const GP_ULONG ulLevels = pdrgpdrgpcrKeys->Size();
+	for (GP_ULONG ul = 0; ul < ulLevels; ul++)
 	{
 		CColRef *colref = CUtils::PcrExtractPartKey(pdrgpdrgpcrKeys, ul);
 		// find conjuncts for this key and mark their positions
 		CExpressionArray *pdrgpexprKey = PdrgpexprPredicatesOnKey(
 			mp, pdrgpexprConjuncts, colref, pcrsKeys, &pbsUsed);
-		const ULONG length = pdrgpexprKey->Size();
+		const GP_ULONG length = pdrgpexprKey->Size();
 		if (length == 0)
 		{
 			// no predicates on this key
@@ -350,9 +350,9 @@ CPartitionPropagationSpec::SplitPartPredicates(
 			GPOS_ASSERT(NULL != pexprOther);
 			pexprOther->AddRef();
 #ifdef GPOS_DEBUG
-			BOOL result =
+			GP_BOOL result =
 #endif	// GPOS_DEBUG
-				phmulexprEqFilter->Insert(GPOS_NEW(mp) ULONG(ul), pexprOther);
+				phmulexprEqFilter->Insert(GPOS_NEW(mp) GP_ULONG(ul), pexprOther);
 			GPOS_ASSERT(result);
 			pdrgpexprKey->Release();
 		}
@@ -361,10 +361,10 @@ CPartitionPropagationSpec::SplitPartPredicates(
 			// Filters
 			// more than one predicate on this key or one non-simple-equality predicate
 #ifdef GPOS_DEBUG
-			BOOL result =
+			GP_BOOL result =
 #endif	// GPOS_DEBUG
 				phmulexprFilter->Insert(
-					GPOS_NEW(mp) ULONG(ul),
+					GPOS_NEW(mp) GP_ULONG(ul),
 					CPredicateUtils::PexprConjunction(mp, pdrgpexprKey));
 			GPOS_ASSERT(result);
 			continue;
@@ -392,8 +392,8 @@ CPartitionPropagationSpec::PcrsKeys(CMemoryPool *mp,
 {
 	CColRefSet *pcrs = GPOS_NEW(mp) CColRefSet(mp);
 
-	const ULONG ulLevels = pdrgpdrgpcrKeys->Size();
-	for (ULONG ul = 0; ul < ulLevels; ul++)
+	const GP_ULONG ulLevels = pdrgpdrgpcrKeys->Size();
+	for (GP_ULONG ul = 0; ul < ulLevels; ul++)
 	{
 		CColRef *colref = CUtils::PcrExtractPartKey(pdrgpdrgpcrKeys, ul);
 		pcrs->Include(colref);
@@ -421,8 +421,8 @@ CPartitionPropagationSpec::PexprResidualFilter(CMemoryPool *mp,
 
 	CExpressionArray *pdrgpexprUnused = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG length = pdrgpexpr->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = pdrgpexpr->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		if (pbsUsed->Get(ul))
 		{
@@ -469,8 +469,8 @@ CPartitionPropagationSpec::PdrgpexprPredicatesOnKey(CMemoryPool *mp,
 
 	CExpressionArray *pdrgpexprResult = GPOS_NEW(mp) CExpressionArray(mp);
 
-	const ULONG length = pdrgpexpr->Size();
-	for (ULONG ul = 0; ul < length; ul++)
+	const GP_ULONG length = pdrgpexpr->Size();
+	for (GP_ULONG ul = 0; ul < length; ul++)
 	{
 		if ((*ppbs)->Get(ul))
 		{

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -54,7 +54,7 @@ private:
 	{
 	private:
 		// scan id
-		ULONG m_scan_id;
+		GP_ULONG m_scan_id;
 
 		// partition table mdid
 		IMDId *m_mdid;
@@ -70,7 +70,7 @@ private:
 
 	public:
 		// ctor
-		CPartInfoEntry(ULONG scan_id, IMDId *mdid,
+		CPartInfoEntry(GP_ULONG scan_id, IMDId *mdid,
 					   CPartKeysArray *pdrgppartkeys,
 					   CPartConstraint *ppartcnstrRel);
 
@@ -78,7 +78,7 @@ private:
 		virtual ~CPartInfoEntry();
 
 		// scan id
-		virtual ULONG
+		virtual GP_ULONG
 		ScanId() const
 		{
 			return m_scan_id;
@@ -139,34 +139,34 @@ public:
 	virtual ~CPartInfo();
 
 	// number of part table consumers
-	ULONG
+	GP_ULONG
 	UlConsumers() const
 	{
 		return m_pdrgppartentries->Size();
 	}
 
 	// add part table consumer
-	void AddPartConsumer(CMemoryPool *mp, ULONG scan_id, IMDId *mdid,
+	void AddPartConsumer(CMemoryPool *mp, GP_ULONG scan_id, IMDId *mdid,
 						 CColRef2dArray *pdrgpdrgpcrPart,
 						 CPartConstraint *ppartcnstrRel);
 
 	// scan id of the entry at the given position
-	ULONG ScanId(ULONG ulPos) const;
+	GP_ULONG ScanId(GP_ULONG ulPos) const;
 
 	// relation mdid of the entry at the given position
-	IMDId *GetRelMdId(ULONG ulPos) const;
+	IMDId *GetRelMdId(GP_ULONG ulPos) const;
 
 	// part keys of the entry at the given position
-	CPartKeysArray *Pdrgppartkeys(ULONG ulPos) const;
+	CPartKeysArray *Pdrgppartkeys(GP_ULONG ulPos) const;
 
 	// part constraint of the entry at the given position
-	CPartConstraint *Ppartcnstr(ULONG ulPos) const;
+	CPartConstraint *Ppartcnstr(GP_ULONG ulPos) const;
 
 	// check if part info contains given scan id
-	BOOL FContainsScanId(ULONG scan_id) const;
+	GP_BOOL FContainsScanId(GP_ULONG scan_id) const;
 
 	// part keys of the entry with the given scan id
-	CPartKeysArray *PdrgppartkeysByScanId(ULONG scan_id) const;
+	CPartKeysArray *PdrgppartkeysByScanId(GP_ULONG scan_id) const;
 
 	// return a new part info object with an additional set of remapped keys
 	CPartInfo *PpartinfoWithRemappedKeys(CMemoryPool *mp,

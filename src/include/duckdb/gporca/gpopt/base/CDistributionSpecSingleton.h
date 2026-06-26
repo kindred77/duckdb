@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -72,7 +72,7 @@ public:
 	}
 
 	// is this a master-only distribution
-	BOOL
+	GP_BOOL
 	FOnMaster() const
 	{
 		return EstMaster == m_est;
@@ -86,21 +86,21 @@ public:
 	}
 
 	// does this distribution satisfy the given one
-	virtual BOOL FSatisfies(const CDistributionSpec *pds) const;
+	virtual GP_BOOL FSatisfies(const CDistributionSpec *pds) const;
 
 	// hash function for singleton distribution spec
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
-		ULONG ulEdt = (ULONG) Edt();
-		BOOL fOnMaster = FOnMaster();
+		GP_ULONG ulEdt = (GP_ULONG) Edt();
+		GP_BOOL fOnMaster = FOnMaster();
 
-		return gpos::CombineHashes(gpos::HashValue<ULONG>(&ulEdt),
-								   gpos::HashValue<BOOL>(&fOnMaster));
+		return gpos::CombineHashes(gpos::HashValue<GP_ULONG>(&ulEdt),
+								   gpos::HashValue<GP_BOOL>(&fOnMaster));
 	}
 
 	// match function for singleton distribution specs
-	virtual BOOL
+	virtual GP_BOOL
 	Matches(const CDistributionSpec *pds) const
 	{
 		return Edt() == pds->Edt() &&

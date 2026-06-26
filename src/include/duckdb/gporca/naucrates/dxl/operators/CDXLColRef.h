@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -51,7 +51,7 @@ private:
 	CMDName *m_mdname;
 
 	// id
-	const ULONG m_id;
+	const GP_ULONG m_id;
 
 	// column type
 	IMDId *m_mdid_type;
@@ -64,7 +64,7 @@ private:
 
 public:
 	// ctor/dtor
-	CDXLColRef(CMemoryPool *mp, CMDName *mdname, ULONG id, IMDId *mdid_type,
+	CDXLColRef(CMemoryPool *mp, CMDName *mdname, GP_ULONG id, IMDId *mdid_type,
 			   INT type_modifier);
 
 	~CDXLColRef();
@@ -76,7 +76,7 @@ public:
 
 	INT TypeModifier() const;
 
-	ULONG Id() const;
+	GP_ULONG Id() const;
 };
 }  // namespace gpdxl
 

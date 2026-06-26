@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -122,14 +122,14 @@ public:
 	// conversion function, only if the NAryJoin has LOJ children
 	static CLogicalNAryJoin *PopConvertNAryLOJ(COperator *pop);
 
-	BOOL
+	GP_BOOL
 	HasOuterJoinChildren() const
 	{
 		return (NULL != m_lojChildPredIndexes);
 	}
 
-	BOOL
-	IsInnerJoinChild(ULONG child_num) const
+	GP_BOOL
+	IsInnerJoinChild(GP_ULONG child_num) const
 	{
 		return (NULL == m_lojChildPredIndexes ||
 				*((*m_lojChildPredIndexes)[child_num]) == 0);
@@ -155,7 +155,7 @@ public:
 
 	CExpression *
 	GetOnPredicateForLOJChild(CExpression *nary_join_expr,
-							  ULONG child_num) const
+							  GP_ULONG child_num) const
 	{
 		GPOS_ASSERT(nary_join_expr->Pop() == this);
 		GPOS_ASSERT(0 < *(*m_lojChildPredIndexes)[child_num]);

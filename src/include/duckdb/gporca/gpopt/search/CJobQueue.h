@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -36,7 +36,7 @@ private:
 	CJob *m_pj;
 
 	// flag indicating if main job has completed
-	BOOL m_fCompleted;
+	GP_BOOL m_fCompleted;
 
 	// list of jobs waiting for main job to complete
 	CList<CJob> m_listjQueued;

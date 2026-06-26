@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -41,28 +41,28 @@ public:
 	}
 
 	// simple comparison
-	BOOL
+	GP_BOOL
 	Equals(const CTaskId &tid) const
 	{
 		return m_task_id == tid.m_task_id;
 	}
 
 	// comparison operator
-	inline BOOL
+	inline GP_BOOL
 	operator==(const CTaskId &tid) const
 	{
 		return this->Equals(tid);
 	}
 
 	// comparison function; used in hashtables
-	static BOOL
+	static GP_BOOL
 	Equals(const CTaskId &tid, const CTaskId &other)
 	{
 		return tid == other;
 	}
 
 	// primitive hash function
-	static ULONG
+	static GP_ULONG
 	HashValue(const CTaskId &tid)
 	{
 		return gpos::HashValue<ULONG_PTR>(&tid.m_task_id);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -71,7 +71,7 @@ public:
 	}
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// required propagation accessor
 	CPartitionPropagationSpec *
@@ -88,14 +88,14 @@ public:
 	}
 
 	// is required partition propagation resolved by the given part index map
-	BOOL FResolved(CMemoryPool *mp, CPartIndexMap *ppim) const;
+	GP_BOOL FResolved(CMemoryPool *mp, CPartIndexMap *ppim) const;
 
 	// are the dynamic scans required by the partition propagation in the scope defined by the given part index map
-	BOOL FInScope(CMemoryPool *mp, CPartIndexMap *ppim) const;
+	GP_BOOL FInScope(CMemoryPool *mp, CPartIndexMap *ppim) const;
 
 	// get distribution enforcing type for the given operator
 	EPropEnforcingType Epet(CExpressionHandle &exprhdl, CPhysical *popPhysical,
-							BOOL fPropagationReqd) const;
+							GP_BOOL fPropagationReqd) const;
 
 	// return matching type
 	EPartitionPropagationMatching
@@ -105,7 +105,7 @@ public:
 	}
 
 	// matching function
-	BOOL
+	GP_BOOL
 	Matches(CEnfdPartitionPropagation *pepp)
 	{
 		GPOS_ASSERT(NULL != pepp);

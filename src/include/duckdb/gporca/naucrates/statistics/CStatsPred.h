@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -69,11 +69,11 @@ private:
 
 protected:
 	// column id
-	ULONG m_colid;
+	GP_ULONG m_colid;
 
 public:
 	// ctor
-	explicit CStatsPred(ULONG colid) : m_colid(colid)
+	explicit CStatsPred(GP_ULONG colid) : m_colid(colid)
 	{
 	}
 
@@ -83,7 +83,7 @@ public:
 	}
 
 	// accessors
-	virtual ULONG
+	virtual GP_ULONG
 	GetColId() const
 	{
 		return m_colid;

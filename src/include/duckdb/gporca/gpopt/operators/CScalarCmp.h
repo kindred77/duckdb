@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -44,10 +44,10 @@ private:
 	IMDType::ECmpType m_comparision_type;
 
 	// does operator return NULL on NULL input?
-	BOOL m_returns_null_on_null_input;
+	GP_BOOL m_returns_null_on_null_input;
 
 	// is comparison commutative
-	BOOL m_fCommutative;
+	GP_BOOL m_fCommutative;
 
 	// private copy ctor
 	CScalarCmp(const CScalarCmp &);
@@ -88,26 +88,26 @@ public:
 
 
 	// operator specific hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// match function
-	BOOL Matches(COperator *pop) const;
+	GP_BOOL Matches(COperator *pop) const;
 
 	// sensitivity to order of inputs
-	BOOL FInputOrderSensitive() const;
+	GP_BOOL FInputOrderSensitive() const;
 
 	// return a copy of the operator with remapped columns
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
 	}
 
 	// is operator commutative
-	BOOL FCommutative() const;
+	GP_BOOL FCommutative() const;
 
 	// boolean expression evaluation
 	virtual EBoolEvalResult Eber(ULongPtrArray *pdrgpulChildren) const;

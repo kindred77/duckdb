@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -44,15 +44,15 @@ using namespace gpmd;
 //
 //---------------------------------------------------------------------------
 CMDTypeGenericGPDB::CMDTypeGenericGPDB(
-	CMemoryPool *mp, IMDId *mdid, CMDName *mdname, BOOL is_redistributable,
-	BOOL is_fixed_length, ULONG length, BOOL is_passed_by_value,
+	CMemoryPool *mp, IMDId *mdid, CMDName *mdname, GP_BOOL is_redistributable,
+	GP_BOOL is_fixed_length, GP_ULONG length, GP_BOOL is_passed_by_value,
 	IMDId *mdid_distr_opfamily, IMDId *mdid_legacy_distr_opfamily,
 	IMDId *mdid_op_eq, IMDId *mdid_op_neq, IMDId *mdid_op_lt,
 	IMDId *mdid_op_leq, IMDId *mdid_op_gt, IMDId *mdid_op_geq,
 	IMDId *mdid_op_cmp, IMDId *mdid_op_min, IMDId *mdid_op_max,
 	IMDId *mdid_op_avg, IMDId *mdid_op_sum, IMDId *mdid_op_count,
-	BOOL is_hashable, BOOL is_merge_joinable, BOOL is_composite_type,
-	BOOL is_text_related, IMDId *mdid_base_relation, IMDId *mdid_type_array,
+	GP_BOOL is_hashable, GP_BOOL is_merge_joinable, GP_BOOL is_composite_type,
+	GP_BOOL is_text_related, IMDId *mdid_base_relation, IMDId *mdid_type_array,
 	INT gpdb_length)
 	: m_mp(mp),
 	  m_mdid(mdid),
@@ -311,7 +311,7 @@ CMDTypeGenericGPDB::GetDatumVal(CMemoryPool *mp, IDatum *datum) const
 {
 	m_mdid->AddRef();
 	CDatumGenericGPDB *datum_generic = dynamic_cast<CDatumGenericGPDB *>(datum);
-	ULONG length = 0;
+	GP_ULONG length = 0;
 	BYTE *pba = NULL;
 	if (!datum_generic->IsNull())
 	{
@@ -345,7 +345,7 @@ CMDTypeGenericGPDB::GetDatumVal(CMemoryPool *mp, IDatum *datum) const
 // 		Is type an ambiguous one? I.e. a "polymorphic" type in GPDB terms
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::IsAmbiguous() const
 {
 	OID oid = CMDIdGPDB::CastMdid(m_mdid)->Oid();
@@ -365,7 +365,7 @@ CMDTypeGenericGPDB::IsAmbiguous() const
 CDXLDatum *
 CMDTypeGenericGPDB::CreateDXLDatumVal(CMemoryPool *mp, IMDId *mdid,
 									  const IMDType *md_type, INT type_modifier,
-									  BOOL is_null, BYTE *pba, ULONG length,
+									  GP_BOOL is_null, BYTE *pba, GP_ULONG length,
 									  LINT lValue, CDouble dValue)
 {
 	GPOS_ASSERT(IMDId::EmdidGPDB == mdid->MdidType());
@@ -397,8 +397,8 @@ CMDTypeGenericGPDB::CreateDXLDatumVal(CMemoryPool *mp, IMDId *mdid,
 //---------------------------------------------------------------------------
 CDXLDatum *
 CMDTypeGenericGPDB::CreateDXLDatumStatsDoubleMappable(
-	CMemoryPool *mp, IMDId *mdid, INT type_modifier, BOOL is_null,
-	BYTE *byte_array, ULONG length, LINT, CDouble double_value)
+	CMemoryPool *mp, IMDId *mdid, INT type_modifier, GP_BOOL is_null,
+	BYTE *byte_array, GP_ULONG length, LINT, CDouble double_value)
 {
 	GPOS_ASSERT(CMDTypeGenericGPDB::HasByte2DoubleMapping(mdid));
 	return GPOS_NEW(mp) CDXLDatumStatsDoubleMappable(
@@ -416,8 +416,8 @@ CMDTypeGenericGPDB::CreateDXLDatumStatsDoubleMappable(
 //---------------------------------------------------------------------------
 CDXLDatum *
 CMDTypeGenericGPDB::CreateDXLDatumStatsIntMappable(
-	CMemoryPool *mp, IMDId *mdid, INT type_modifier, BOOL is_null,
-	BYTE *byte_array, ULONG length, LINT lint_value,
+	CMemoryPool *mp, IMDId *mdid, INT type_modifier, GP_BOOL is_null,
+	BYTE *byte_array, GP_ULONG length, LINT lint_value,
 	CDouble	 // double_value
 )
 {
@@ -469,7 +469,7 @@ CMDTypeGenericGPDB::GetDXLDatumNull(CMemoryPool *mp) const
 //		Does the datum of this type need bytea -> Lint mapping for
 //		statistics computation
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::HasByte2IntMapping(const IMDType *mdtype)
 {
 	IMDId *mdid = mdtype->MDId();
@@ -498,7 +498,7 @@ CMDTypeGenericGPDB::CreateGenericNullDatum(CMemoryPool *mp,
 //		Does the datum of this type need bytea -> double mapping for
 //		statistics computation
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::HasByte2DoubleMapping(const IMDId *mdid)
 {
 	return mdid->Equals(&CMDIdGPDB::m_mdid_numeric) ||
@@ -515,7 +515,7 @@ CMDTypeGenericGPDB::HasByte2DoubleMapping(const IMDId *mdid)
 //	@doc:
 //		is this a time-related type
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::IsTimeRelatedType(const IMDId *mdid)
 {
 	return mdid->Equals(&CMDIdGPDB::m_mdid_date) ||
@@ -536,7 +536,7 @@ CMDTypeGenericGPDB::IsTimeRelatedType(const IMDId *mdid)
 //	@doc:
 //		is this a network-related type
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::IsNetworkRelatedType(const IMDId *mdid)
 {
 	return mdid->Equals(&CMDIdGPDB::m_mdid_inet) ||
@@ -557,7 +557,7 @@ CMDTypeGenericGPDB::GetDistrOpfamilyMdid() const
 	}
 }
 
-BOOL
+GP_BOOL
 CMDTypeGenericGPDB::IsRedistributable() const
 {
 	if (GPOS_FTRACE(EopttraceConsiderOpfamiliesForDistribution) &&

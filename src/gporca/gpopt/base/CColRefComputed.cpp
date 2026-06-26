@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -26,7 +26,7 @@ using namespace gpopt;
 //
 //---------------------------------------------------------------------------
 CColRefComputed::CColRefComputed(const IMDType *pmdtype, INT type_modifier,
-								 ULONG id, const CName *pname)
+								 GP_ULONG id, const CName *pname)
 	: CColRef(pmdtype, type_modifier, id, pname)
 {
 	GPOS_ASSERT(NULL != pmdtype);

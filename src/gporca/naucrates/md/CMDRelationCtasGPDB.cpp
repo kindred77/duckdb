@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -28,7 +28,7 @@ using namespace gpmd;
 //---------------------------------------------------------------------------
 CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 	CMemoryPool *mp, IMDId *mdid, CMDName *mdname_schema, CMDName *mdname,
-	BOOL fTemporary, BOOL fHasOids, Erelstoragetype rel_storage_type,
+	GP_BOOL fTemporary, GP_BOOL fHasOids, Erelstoragetype rel_storage_type,
 	Ereldistrpolicy rel_distr_policy, CMDColumnArray *mdcol_array,
 	ULongPtrArray *distr_col_array, IMdIdArray *distr_opfamiles,
 	IMdIdArray *distr_opclasses, ULongPtr2dArray *keyset_array,
@@ -63,25 +63,25 @@ CMDRelationCtasGPDB::CMDRelationCtasGPDB(
 	m_nondrop_col_pos_array = GPOS_NEW(m_mp) ULongPtrArray(m_mp);
 	m_col_width_array = GPOS_NEW(mp) CDoubleArray(mp);
 
-	const ULONG arity = mdcol_array->Size();
-	for (ULONG ul = 0; ul < arity; ul++)
+	const GP_ULONG arity = mdcol_array->Size();
+	for (GP_ULONG ul = 0; ul < arity; ul++)
 	{
 		IMDColumn *mdcol = (*mdcol_array)[ul];
 		GPOS_ASSERT(!mdcol->IsDropped() &&
 					"Cannot create a table with dropped columns");
 
-		BOOL is_system_col = mdcol->IsSystemColumn();
+		GP_BOOL is_system_col = mdcol->IsSystemColumn();
 		if (is_system_col)
 		{
 			m_system_columns++;
 		}
 		else
 		{
-			m_nondrop_col_pos_array->Append(GPOS_NEW(m_mp) ULONG(ul));
+			m_nondrop_col_pos_array->Append(GPOS_NEW(m_mp) GP_ULONG(ul));
 		}
 
 		(void) m_attrno_nondrop_col_pos_map->Insert(
-			GPOS_NEW(m_mp) INT(mdcol->AttrNum()), GPOS_NEW(m_mp) ULONG(ul));
+			GPOS_NEW(m_mp) INT(mdcol->AttrNum()), GPOS_NEW(m_mp) GP_ULONG(ul));
 
 		m_col_width_array->Append(GPOS_NEW(mp) CDouble(mdcol->Length()));
 	}
@@ -179,7 +179,7 @@ CMDRelationCtasGPDB::GetRelDistribution() const
 //		Returns the number of columns of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationCtasGPDB::ColumnCount() const
 {
 	GPOS_ASSERT(NULL != m_md_col_array);
@@ -189,7 +189,7 @@ CMDRelationCtasGPDB::ColumnCount() const
 
 // Return the width of a column with regards to the position
 DOUBLE
-CMDRelationCtasGPDB::ColWidth(ULONG pos) const
+CMDRelationCtasGPDB::ColWidth(GP_ULONG pos) const
 {
 	return (*m_col_width_array)[pos]->Get();
 }
@@ -202,7 +202,7 @@ CMDRelationCtasGPDB::ColWidth(ULONG pos) const
 //		Returns the number of system columns of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationCtasGPDB::SystemColumnsCount() const
 {
 	return m_system_columns;
@@ -216,10 +216,10 @@ CMDRelationCtasGPDB::SystemColumnsCount() const
 //		Return the position of a column in the metadata object given the
 //		attribute number in the system catalog
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationCtasGPDB::GetPosFromAttno(INT attno) const
 {
-	ULONG *att_pos = m_attrno_nondrop_col_pos_map->Find(&attno);
+	GP_ULONG *att_pos = m_attrno_nondrop_col_pos_map->Find(&attno);
 	GPOS_ASSERT(NULL != att_pos);
 
 	return *att_pos;
@@ -233,7 +233,7 @@ CMDRelationCtasGPDB::GetPosFromAttno(INT attno) const
 //		Returns the number of columns in the distribution column list of this relation
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDRelationCtasGPDB::DistrColumnCount() const
 {
 	return (m_distr_col_array == NULL) ? 0 : m_distr_col_array->Size();
@@ -248,7 +248,7 @@ CMDRelationCtasGPDB::DistrColumnCount() const
 //
 //---------------------------------------------------------------------------
 const IMDColumn *
-CMDRelationCtasGPDB::GetMdCol(ULONG pos) const
+CMDRelationCtasGPDB::GetMdCol(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos < m_md_col_array->Size());
 
@@ -264,16 +264,16 @@ CMDRelationCtasGPDB::GetMdCol(ULONG pos) const
 //
 //---------------------------------------------------------------------------
 const IMDColumn *
-CMDRelationCtasGPDB::GetDistrColAt(ULONG pos) const
+CMDRelationCtasGPDB::GetDistrColAt(GP_ULONG pos) const
 {
 	GPOS_ASSERT(pos < m_distr_col_array->Size());
 
-	ULONG distr_key_pos = (*(*m_distr_col_array)[pos]);
+	GP_ULONG distr_key_pos = (*(*m_distr_col_array)[pos]);
 	return GetMdCol(distr_key_pos);
 }
 
 IMDId *
-CMDRelationCtasGPDB::GetDistrOpfamilyAt(ULONG pos) const
+CMDRelationCtasGPDB::GetDistrOpfamilyAt(GP_ULONG pos) const
 {
 	if (m_distr_opfamilies == NULL)
 	{
@@ -348,8 +348,8 @@ CMDRelationCtasGPDB::Serialize(CXMLSerializer *xml_serializer) const
 	xml_serializer->OpenElement(
 		CDXLTokens::GetDXLTokenStr(EdxltokenNamespacePrefix),
 		CDXLTokens::GetDXLTokenStr(EdxltokenColumns));
-	const ULONG columns = m_md_col_array->Size();
-	for (ULONG ul = 0; ul < columns; ul++)
+	const GP_ULONG columns = m_md_col_array->Size();
+	for (GP_ULONG ul = 0; ul < columns; ul++)
 	{
 		CMDColumn *mdcol = (*m_md_col_array)[ul];
 		mdcol->Serialize(xml_serializer);
@@ -399,8 +399,8 @@ CMDRelationCtasGPDB::DebugPrint(IOstream &os) const
 	   << GetDistrPolicyStr(m_rel_distr_policy)->GetBuffer() << std::endl;
 
 	os << "Relation columns: " << std::endl;
-	const ULONG total_columns = ColumnCount();
-	for (ULONG ul = 0; ul < total_columns; ul++)
+	const GP_ULONG total_columns = ColumnCount();
+	for (GP_ULONG ul = 0; ul < total_columns; ul++)
 	{
 		const IMDColumn *mdcol = GetMdCol(ul);
 		mdcol->DebugPrint(os);
@@ -408,8 +408,8 @@ CMDRelationCtasGPDB::DebugPrint(IOstream &os) const
 	os << std::endl;
 
 	os << "Distributed by: ";
-	const ULONG distr_col_count = DistrColumnCount();
-	for (ULONG ul = 0; ul < distr_col_count; ul++)
+	const GP_ULONG distr_col_count = DistrColumnCount();
+	for (GP_ULONG ul = 0; ul < distr_col_count; ul++)
 	{
 		if (0 < ul)
 		{

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2008 Greenplum, Inc.
 //
@@ -81,8 +81,8 @@ CTaskContext::~CTaskContext()
 //		Set trace flag; return original setting
 //
 //---------------------------------------------------------------------------
-BOOL
-CTaskContext::SetTrace(ULONG trace, BOOL val)
+GP_BOOL
+CTaskContext::SetTrace(GP_ULONG trace, GP_BOOL val)
 {
 	if (val)
 	{

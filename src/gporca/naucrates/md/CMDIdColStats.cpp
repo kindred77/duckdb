@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -25,7 +25,7 @@ using namespace gpmd;
 //		Ctor
 //
 //---------------------------------------------------------------------------
-CMDIdColStats::CMDIdColStats(CMDIdGPDB *rel_mdid, ULONG pos)
+CMDIdColStats::CMDIdColStats(CMDIdGPDB *rel_mdid, GP_ULONG pos)
 	: m_rel_mdid(rel_mdid),
 	  m_attr_pos(pos),
 	  m_str(m_mdid_buffer, GPOS_ARRAY_SIZE(m_mdid_buffer))
@@ -102,7 +102,7 @@ CMDIdColStats::GetRelMdId() const
 //		Returns the attribute number
 //
 //---------------------------------------------------------------------------
-ULONG
+GP_ULONG
 CMDIdColStats::Position() const
 {
 	return m_attr_pos;
@@ -116,7 +116,7 @@ CMDIdColStats::Position() const
 //		Checks if the mdids are equal
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CMDIdColStats::Equals(const IMDId *mdid) const
 {
 	if (NULL == mdid || EmdidColStats != mdid->MdidType())

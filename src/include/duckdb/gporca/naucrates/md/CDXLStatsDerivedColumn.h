@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,7 +40,7 @@ class CDXLStatsDerivedColumn : public CRefCount
 {
 private:
 	// column identifier
-	ULONG m_colid;
+	GP_ULONG m_colid;
 
 	// column width
 	CDouble m_width;
@@ -61,7 +61,7 @@ private:
 
 public:
 	// ctor
-	CDXLStatsDerivedColumn(ULONG colid, CDouble width, CDouble null_freq,
+	CDXLStatsDerivedColumn(GP_ULONG colid, CDouble width, CDouble null_freq,
 						   CDouble distinct_remaining, CDouble freq_remaining,
 						   CDXLBucketArray *dxl_stats_bucket_array);
 
@@ -69,7 +69,7 @@ public:
 	virtual ~CDXLStatsDerivedColumn();
 
 	// column identifier
-	ULONG
+	GP_ULONG
 	GetColId() const
 	{
 		return m_colid;

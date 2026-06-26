@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2020 VMware, Inc.
 //
@@ -46,7 +46,7 @@ private:
 
 public:
 	// ctor
-	CStatsPredArrayCmp(ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
+	CStatsPredArrayCmp(GP_ULONG colid, CStatsPred::EStatsCmpType stats_cmp_type,
 					   CPointArray *points);
 
 	// dtor

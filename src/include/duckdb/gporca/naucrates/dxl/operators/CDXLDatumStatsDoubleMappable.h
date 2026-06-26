@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -50,8 +50,8 @@ private:
 public:
 	// ctor
 	CDXLDatumStatsDoubleMappable(CMemoryPool *mp, IMDId *mdid_type,
-								 INT type_modifier, BOOL is_null, BYTE *data,
-								 ULONG length, CDouble val);
+								 INT type_modifier, GP_BOOL is_null, BYTE *data,
+								 GP_ULONG length, CDouble val);
 
 	// dtor
 	virtual ~CDXLDatumStatsDoubleMappable(){};
@@ -69,7 +69,7 @@ public:
 	// statistics related APIs
 
 	// can datum be mapped to double
-	virtual BOOL
+	virtual GP_BOOL
 	IsDatumMappableToDouble() const
 	{
 		return true;

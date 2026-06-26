@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2014 Pivotal Inc.
 //
@@ -41,7 +41,7 @@ public:
 	struct CDXLCtasOption
 	{
 		// the type of the Option encoded as an integer
-		ULONG m_type;
+		GP_ULONG m_type;
 
 		// option name
 		CWStringBase *m_str_name;
@@ -50,11 +50,11 @@ public:
 		CWStringBase *m_str_value;
 
 		// does this represent a NULL value
-		BOOL m_is_null;
+		GP_BOOL m_is_null;
 
 		// ctor
-		CDXLCtasOption(ULONG type, CWStringBase *str_name,
-					   CWStringBase *str_value, BOOL is_null)
+		CDXLCtasOption(GP_ULONG type, CWStringBase *str_name,
+					   CWStringBase *str_value, GP_BOOL is_null)
 			: m_type(type),
 			  m_str_name(str_name),
 			  m_str_value(str_value),

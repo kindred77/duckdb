@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,14 +29,14 @@ namespace gpopt
 using namespace gpos;
 
 // hash map from CTE id to corresponding producer plan properties
-typedef CHashMap<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMap<GP_ULONG, CDrvdPropPlan, gpos::HashValue<GP_ULONG>,
+				 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 				 CleanupRelease<CDrvdPropPlan> >
 	UlongToDrvdPropPlanMap;
 
 // iterator for plan properties map
-typedef CHashMapIter<ULONG, CDrvdPropPlan, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, CDrvdPropPlan, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CDrvdPropPlan> >
 	UlongToDrvdPropPlanMapIter;
 
@@ -77,7 +77,7 @@ private:
 	{
 	private:
 		// cte id
-		ULONG m_id;
+		GP_ULONG m_id;
 
 		// cte type
 		CCTEMap::ECteType m_ect;
@@ -90,7 +90,7 @@ private:
 
 	public:
 		// ctor
-		CCTEMapEntry(ULONG id, CCTEMap::ECteType ect, CDrvdPropPlan *pdpplan)
+		CCTEMapEntry(GP_ULONG id, CCTEMap::ECteType ect, CDrvdPropPlan *pdpplan)
 			: m_id(id), m_ect(ect), m_pdpplan(pdpplan)
 		{
 			GPOS_ASSERT(EctSentinel > ect);
@@ -104,7 +104,7 @@ private:
 		}
 
 		// cte id
-		ULONG
+		GP_ULONG
 		Id() const
 		{
 			return m_id;
@@ -125,11 +125,11 @@ private:
 		}
 
 		// hash function
-		ULONG
+		GP_ULONG
 		HashValue() const
 		{
 			return gpos::CombineHashes(
-				gpos::HashValue<ULONG>(&m_id),
+				gpos::HashValue<GP_ULONG>(&m_id),
 				gpos::HashValue<CCTEMap::ECteType>(&m_ect));
 		}
 
@@ -149,14 +149,14 @@ private:
 	};	// class CCTEMapEntry
 
 	// map CTE id to CTE map entry
-	typedef CHashMap<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMap<GP_ULONG, CCTEMapEntry, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<CCTEMapEntry> >
 		UlongToCTEMapEntryMap;
 
 	// map iterator
-	typedef CHashMapIter<ULONG, CCTEMapEntry, gpos::HashValue<ULONG>,
-						 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+	typedef CHashMapIter<GP_ULONG, CCTEMapEntry, gpos::HashValue<GP_ULONG>,
+						 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 						 CleanupRelease<CCTEMapEntry> >
 		UlongToCTEMapEntryMapIter;
 
@@ -170,7 +170,7 @@ private:
 	CCTEMap(const CCTEMap &);
 
 	// lookup info for given cte id
-	CCTEMapEntry *PcmeLookup(ULONG ulCteId) const;
+	CCTEMapEntry *PcmeLookup(GP_ULONG ulCteId) const;
 
 	// helper to add entries found in first map and are unresolved based on second map
 	static void AddUnresolved(const CCTEMap &cmFirst, const CCTEMap &cmSecond,
@@ -184,29 +184,29 @@ public:
 	virtual ~CCTEMap();
 
 	// return the CTE type associated with the given ID in the map
-	ECteType Ect(const ULONG id) const;
+	ECteType Ect(const GP_ULONG id) const;
 
 	// inserting a new map entry, no entry with the same id can already exist
-	void Insert(ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan);
+	void Insert(GP_ULONG ulCteId, ECteType ect, CDrvdPropPlan *pdpplan);
 
 	// hash function
-	ULONG HashValue() const;
+	GP_ULONG HashValue() const;
 
 	// check if two cte maps are equal
-	BOOL
+	GP_BOOL
 	Equals(const CCTEMap *pcm) const
 	{
 		return (m_phmcm->Size() == pcm->m_phmcm->Size()) && this->FSubset(pcm);
 	}
 
 	// extract plan properties of the only producer in the map, if any
-	CDrvdPropPlan *PdpplanProducer(ULONG *ulpId) const;
+	CDrvdPropPlan *PdpplanProducer(GP_ULONG *ulpId) const;
 
 	// check if current  map is a subset of the given one
-	BOOL FSubset(const CCTEMap *pcm) const;
+	GP_BOOL FSubset(const CCTEMap *pcm) const;
 
 	// check whether the current CTE map satisfies the given CTE requirements
-	BOOL FSatisfies(const CCTEReq *pcter) const;
+	GP_BOOL FSatisfies(const CCTEReq *pcter) const;
 
 	// return producer ids that are in this map but not in the given requirement
 	ULongPtrArray *PdrgpulAdditionalProducers(CMemoryPool *mp,

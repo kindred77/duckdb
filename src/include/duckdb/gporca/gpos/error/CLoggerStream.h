@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -34,7 +34,7 @@ private:
 	// write string to stream
 	void
 	Write(const WCHAR *log_entry,
-		  ULONG	 // severity
+		  GP_ULONG	 // severity
 	)
 	{
 		m_os = m_os << log_entry;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -52,13 +52,13 @@ private:
 	INT m_type_modifier;
 
 	// is NULL an allowed value for the attribute
-	BOOL m_is_nullable;
+	GP_BOOL m_is_nullable;
 
 	// is column dropped
-	BOOL m_is_dropped;
+	GP_BOOL m_is_dropped;
 
 	// length of the column
-	ULONG m_length;
+	GP_ULONG m_length;
 
 	// default value expression
 	gpdxl::CDXLNode *m_dxl_default_val;
@@ -69,9 +69,9 @@ private:
 public:
 	// ctor
 	CMDColumn(CMDName *mdname, INT attrnum, IMDId *mdid_type, INT type_modifier,
-			  BOOL is_nullable, BOOL is_dropped,
+			  GP_BOOL is_nullable, GP_BOOL is_dropped,
 			  gpdxl::CDXLNode *dxl_dafault_value,
-			  ULONG length = gpos::ulong_max);
+			  GP_ULONG length = gpos::ulong_max);
 
 	// dtor
 	virtual ~CMDColumn();
@@ -88,24 +88,24 @@ public:
 	virtual INT AttrNum() const;
 
 	// is this a system column
-	virtual BOOL
+	virtual GP_BOOL
 	IsSystemColumn() const
 	{
 		return (0 > m_attno);
 	}
 
 	// length of the column
-	ULONG
+	GP_ULONG
 	Length() const
 	{
 		return m_length;
 	}
 
 	// is the column nullable
-	virtual BOOL IsNullable() const;
+	virtual GP_BOOL IsNullable() const;
 
 	// is the column dropped
-	virtual BOOL IsDropped() const;
+	virtual GP_BOOL IsDropped() const;
 
 	// serialize metadata object in DXL format given a serializer object
 	virtual void Serialize(gpdxl::CXMLSerializer *) const;

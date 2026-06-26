@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright 2018 Pivotal, Inc.
 //
@@ -25,8 +25,8 @@ CLeftAntiSemiJoinStatsProcessor::JoinHistogramsLASJ(
 	CHistogram **result_hist1,	// output: histogram 1 after join
 	CHistogram **result_hist2,	// output: histogram 2 after join
 	CDouble *scale_factor,		// output: scale factor based on the join
-	BOOL is_input_empty, IStatistics::EStatsJoinType,
-	BOOL DoIgnoreLASJHistComputation)
+	GP_BOOL is_input_empty, IStatistics::EStatsJoinType,
+	GP_BOOL DoIgnoreLASJHistComputation)
 {
 	GPOS_ASSERT(NULL != histogram1);
 	GPOS_ASSERT(NULL != histogram2);
@@ -49,7 +49,7 @@ CLeftAntiSemiJoinStatsProcessor::JoinHistogramsLASJ(
 		return;
 	}
 
-	BOOL empty_histograms = histogram1->IsEmpty() || histogram2->IsEmpty();
+	GP_BOOL empty_histograms = histogram1->IsEmpty() || histogram2->IsEmpty();
 	if (!empty_histograms &&
 		CHistogram::JoinPredCmpTypeIsSupported(stats_cmp_type))
 	{
@@ -80,7 +80,7 @@ CStatistics *
 CLeftAntiSemiJoinStatsProcessor::CalcLASJoinStatsStatic(
 	CMemoryPool *mp, const IStatistics *outer_stats_input,
 	const IStatistics *inner_stats_input, CStatsPredJoinArray *join_preds_stats,
-	BOOL DoIgnoreLASJHistComputation)
+	GP_BOOL DoIgnoreLASJHistComputation)
 {
 	GPOS_ASSERT(NULL != inner_stats_input);
 	GPOS_ASSERT(NULL != outer_stats_input);

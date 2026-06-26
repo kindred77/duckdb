@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -29,14 +29,14 @@ class CDXLLogicalCTEAnchor : public CDXLLogical
 {
 private:
 	// cte id
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// private copy ctor
 	CDXLLogicalCTEAnchor(CDXLLogicalCTEAnchor &);
 
 public:
 	// ctor
-	CDXLLogicalCTEAnchor(CMemoryPool *mp, ULONG id);
+	CDXLLogicalCTEAnchor(CMemoryPool *mp, GP_ULONG id);
 
 	// operator type
 	Edxlopid GetDXLOperator() const;
@@ -45,7 +45,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// cte identifier
-	ULONG
+	GP_ULONG
 	Id() const
 	{
 		return m_id;
@@ -59,7 +59,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,19 +40,19 @@ public:
 	}
 
 	// does trigger execute on a row-level
-	virtual BOOL ExecutesOnRowLevel() const = 0;
+	virtual GP_BOOL ExecutesOnRowLevel() const = 0;
 
 	// is this a before trigger
-	virtual BOOL IsBefore() const = 0;
+	virtual GP_BOOL IsBefore() const = 0;
 
 	// is this an insert trigger
-	virtual BOOL IsInsert() const = 0;
+	virtual GP_BOOL IsInsert() const = 0;
 
 	// is this a delete trigger
-	virtual BOOL IsDelete() const = 0;
+	virtual GP_BOOL IsDelete() const = 0;
 
 	// is this an update trigger
-	virtual BOOL IsUpdate() const = 0;
+	virtual GP_BOOL IsUpdate() const = 0;
 
 	// relation mdid
 	virtual IMDId *GetRelMdId() const = 0;
@@ -61,7 +61,7 @@ public:
 	virtual IMDId *FuncMdId() const = 0;
 
 	// is trigger enabled
-	virtual BOOL IsEnabled() const = 0;
+	virtual GP_BOOL IsEnabled() const = 0;
 };
 }  // namespace gpmd
 

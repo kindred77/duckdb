@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2009 Greenplum, Inc.
 //
@@ -64,7 +64,7 @@ private:
 	TEnumState m_tenumstate;
 
 	// flag indicating if the state machine is initialized
-	BOOL m_fInit;
+	GP_BOOL m_fInit;
 
 	// array of transitions
 	TEnumEvent m_rgrgtenumeventTransitions[tenumstateSentinel]
@@ -85,7 +85,7 @@ private:
 	const WCHAR *m_rgwszEvents[tenumeventSentinel];
 
 	// current index into history
-	ULONG m_ulHistory;
+	GP_ULONG m_ulHistory;
 
 	// state history
 	TEnumState m_tenumstateHistory[GPOPT_FSM_HISTORY];
@@ -97,7 +97,7 @@ private:
 	void
 	RecordHistory(TEnumEvent tenumevent, TEnumState tenumstate)
 	{
-		ULONG ulHistory = m_ulHistory % GPOPT_FSM_HISTORY;
+		GP_ULONG ulHistory = m_ulHistory % GPOPT_FSM_HISTORY;
 
 		m_tenumeventHistory[ulHistory] = tenumevent;
 		m_tenumstateHistory[ulHistory] = tenumstate;
@@ -129,7 +129,7 @@ private:
 	void
 	States(EsetStates *peset) const
 	{
-		for (ULONG ul = 0; ul < tenumstateSentinel; ul++)
+		for (GP_ULONG ul = 0; ul < tenumstateSentinel; ul++)
 		{
 			(void) peset->ExchangeSet((TEnumState) ul);
 		}
@@ -223,21 +223,21 @@ private:
 #endif	// GPOS_DEBUG
 
 	// actual implementation of transition
-	BOOL
+	GP_BOOL
 	FAttemptTransition(TEnumState tenumstateOld, TEnumEvent tenumevent,
 					   TEnumState &tenumstateNew) const
 	{
 		GPOS_ASSERT(tenumevent < tenumeventSentinel);
 		GPOS_ASSERT(m_fInit);
 
-		for (ULONG ulOuter = 0; ulOuter < tenumstateSentinel; ulOuter++)
+		for (GP_ULONG ulOuter = 0; ulOuter < tenumstateSentinel; ulOuter++)
 		{
 			if (m_rgrgtenumeventTransitions[tenumstateOld][ulOuter] ==
 				tenumevent)
 			{
 #ifdef GPOS_DEBUG
 				// make sure there isn't another transition possible for the same event
-				for (ULONG ulInner = ulOuter + 1; ulInner < tenumstateSentinel;
+				for (GP_ULONG ulInner = ulOuter + 1; ulInner < tenumstateSentinel;
 					 ulInner++)
 				{
 					GPOS_ASSERT(
@@ -272,8 +272,8 @@ public:
 #endif	// GPOS_DEBUG
 	{
 		GPOS_ASSERT(0 < tenumstateSentinel && 0 < tenumeventSentinel &&
-					(ULONG) tenumeventSentinel + 1 >=
-						(ULONG) tenumstateSentinel);
+					(GP_ULONG) tenumeventSentinel + 1 >=
+						(GP_ULONG) tenumstateSentinel);
 	}
 
 	// initialize state machine
@@ -289,9 +289,9 @@ public:
 	{
 		GPOS_ASSERT(!m_fInit);
 
-		for (ULONG ulOuter = 0; ulOuter < tenumstateSentinel; ulOuter++)
+		for (GP_ULONG ulOuter = 0; ulOuter < tenumstateSentinel; ulOuter++)
 		{
-			for (ULONG ulInner = 0; ulInner < tenumstateSentinel; ulInner++)
+			for (GP_ULONG ulInner = 0; ulInner < tenumstateSentinel; ulInner++)
 			{
 				m_rgrgtenumeventTransitions[ulOuter][ulInner] =
 					rgrgtenumeventTransitions[ulOuter][ulInner];
@@ -299,12 +299,12 @@ public:
 		}
 
 #ifdef GPOS_DEBUG
-		for (ULONG ul = 0; ul < tenumstateSentinel; ul++)
+		for (GP_ULONG ul = 0; ul < tenumstateSentinel; ul++)
 		{
 			m_rgwszStates[ul] = rgwszStates[ul];
 		}
 
-		for (ULONG ul = 0; ul < tenumeventSentinel; ul++)
+		for (GP_ULONG ul = 0; ul < tenumeventSentinel; ul++)
 		{
 			m_rgwszEvents[ul] = rgwszEvents[ul];
 		}
@@ -318,11 +318,11 @@ public:
 	~CStateMachine(){};
 
 	// attempt transition
-	BOOL
+	GP_BOOL
 	FTransition(TEnumEvent tenumevent, TEnumState &tenumstate)
 	{
 		TEnumState tenumstateNew;
-		BOOL fSucceeded =
+		GP_BOOL fSucceeded =
 			FAttemptTransition(m_tenumstate, tenumevent, tenumstateNew);
 
 		if (fSucceeded)
@@ -343,7 +343,7 @@ public:
 	{
 		TEnumState tenumstateDummy;
 #ifdef GPOS_DEBUG
-		BOOL fCheck =
+		GP_BOOL fCheck =
 #else
 		(void)
 #endif	// GPOS_DEBUG
@@ -386,9 +386,9 @@ public:
 	IOstream &
 	OsHistory(IOstream &os) const
 	{
-		ULONG ulElems = std::min(m_ulHistory, GPOPT_FSM_HISTORY);
+		GP_ULONG ulElems = std::min(m_ulHistory, GPOPT_FSM_HISTORY);
 
-		ULONG ulStart = m_ulHistory + 1;
+		GP_ULONG ulStart = m_ulHistory + 1;
 		if (m_ulHistory < GPOPT_FSM_HISTORY)
 		{
 			// if we haven't rolled over, just start at 0
@@ -397,9 +397,9 @@ public:
 
 		os << "State Machine History (" << (void *) this << ")" << std::endl;
 
-		for (ULONG ul = 0; ul < ulElems; ul++)
+		for (GP_ULONG ul = 0; ul < ulElems; ul++)
 		{
-			ULONG ulPos = (ulStart + ul) % GPOPT_FSM_HISTORY;
+			GP_ULONG ulPos = (ulStart + ul) % GPOPT_FSM_HISTORY;
 			os << ul << ": " << WszEvent(m_tenumeventHistory[ulPos])
 			   << " (event) -> " << WszState(m_tenumstateHistory[ulPos])
 			   << " (state)" << std::endl;
@@ -409,11 +409,11 @@ public:
 	}
 
 	// check for unreachable states
-	BOOL
+	GP_BOOL
 	FReachable(CMemoryPool *mp) const
 	{
 		TEnumState *pestate = NULL;
-		ULONG size = 0;
+		GP_ULONG size = 0;
 		Unreachable(mp, &pestate, &size);
 		GPOS_DELETE_ARRAY(pestate);
 
@@ -422,14 +422,14 @@ public:
 
 	// compute array of unreachable states
 	void
-	Unreachable(CMemoryPool *mp, TEnumState **ppestate, ULONG *pulSize) const
+	Unreachable(CMemoryPool *mp, TEnumState **ppestate, GP_ULONG *pulSize) const
 	{
 		GPOS_ASSERT(NULL != ppestate);
 		GPOS_ASSERT(NULL != pulSize);
 
 		// initialize output array
 		*ppestate = GPOS_NEW_ARRAY(mp, TEnumState, tenumstateSentinel);
-		for (ULONG ul = 0; ul < tenumstateSentinel; ul++)
+		for (GP_ULONG ul = 0; ul < tenumstateSentinel; ul++)
 		{
 			(*ppestate)[ul] = tenumstateSentinel;
 		}
@@ -442,7 +442,7 @@ public:
 
 		// store remaining states in output array
 		EsetStatesIter esetIter(*peset);
-		ULONG ul = 0;
+		GP_ULONG ul = 0;
 		while (esetIter.Advance())
 		{
 			(*ppestate)[ul++] = esetIter.TBit();

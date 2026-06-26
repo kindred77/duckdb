@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -85,10 +85,10 @@ public:
 	IMDId *MdidDest() const;
 
 	// equality check
-	virtual BOOL Equals(const IMDId *mdid) const;
+	virtual GP_BOOL Equals(const IMDId *mdid) const;
 
 	// computes the hash value for the metadata id
-	virtual ULONG
+	virtual GP_ULONG
 	HashValue() const
 	{
 		return gpos::CombineHashes(
@@ -97,7 +97,7 @@ public:
 	}
 
 	// is the mdid valid
-	virtual BOOL
+	virtual GP_BOOL
 	IsValid() const
 	{
 		return IMDId::IsValid(m_mdid_src) && IMDId::IsValid(m_mdid_dest);

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -44,7 +44,7 @@ using namespace gpopt;
 // |      estCompleted      |
 // +------------------------+
 //
-const CJobGroupExploration::EEvent
+static const CJobGroupExploration::EEvent
 	rgeev[CJobGroupExploration::estSentinel]
 		 [CJobGroupExploration::estSentinel] = {
 			 {// estInitialized
@@ -144,7 +144,7 @@ CJobGroupExploration::Init(CGroup *pgroup)
 //		the function returns true if it could schedule any new jobs
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupExploration::FScheduleGroupExpressions(CSchedulerContext *psc)
 {
 	CGroupExpression *pgexprLast = m_pgexprLastScheduled;
@@ -166,7 +166,7 @@ CJobGroupExploration::FScheduleGroupExpressions(CSchedulerContext *psc)
 		}
 	}
 
-	BOOL fNewJobs = (m_pgexprLastScheduled != pgexprLast);
+	GP_BOOL fNewJobs = (m_pgexprLastScheduled != pgexprLast);
 
 	// set last scheduled expression
 	m_pgexprLastScheduled = pgexprLast;
@@ -246,7 +246,7 @@ CJobGroupExploration::EevtExploreChildren(CSchedulerContext *psc, CJob *pjOwner)
 //		Main job function
 //
 //---------------------------------------------------------------------------
-BOOL
+GP_BOOL
 CJobGroupExploration::FExecute(CSchedulerContext *psc)
 {
 	GPOS_ASSERT(FInit());

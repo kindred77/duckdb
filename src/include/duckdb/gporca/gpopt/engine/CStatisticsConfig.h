@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2013 EMC Corp.
 //
@@ -19,7 +19,7 @@
 #include "naucrates/md/CMDIdColStats.h"
 #include "naucrates/md/IMDId.h"
 
-#define MAX_STATS_BUCKETS ULONG(100)
+#define MAX_STATS_BUCKETS GP_ULONG(100)
 
 namespace gpopt
 {
@@ -51,7 +51,7 @@ private:
 
 	// max stats buckets for combining histograms
 	// See CHistogram::MakeUnionAllHistogramNormalize/MakeUnionHistogramNormalize
-	ULONG m_max_stats_buckets;
+	GP_ULONG m_max_stats_buckets;
 
 	// hash set of md ids for columns with missing statistics
 	MdidHashSet *m_phsmdidcolinfo;
@@ -60,7 +60,7 @@ public:
 	// ctor
 	CStatisticsConfig(CMemoryPool *mp, CDouble damping_factor_filter,
 					  CDouble damping_factor_join,
-					  CDouble damping_factor_groupby, ULONG max_stats_buckets);
+					  CDouble damping_factor_groupby, GP_ULONG max_stats_buckets);
 
 	// dtor
 	~CStatisticsConfig();
@@ -87,7 +87,7 @@ public:
 	}
 
 	// max stats buckets for combining histograms
-	ULONG
+	GP_ULONG
 	UlMaxStatsBuckets() const
 	{
 		return m_max_stats_buckets;

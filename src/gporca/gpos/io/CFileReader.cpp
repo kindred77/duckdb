@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -54,7 +54,7 @@ CFileReader::~CFileReader()
 //
 //---------------------------------------------------------------------------
 void
-CFileReader::Open(const CHAR *file_path, const ULONG permission_bits)
+CFileReader::Open(const CHAR *file_path, const GP_ULONG permission_bits)
 {
 	GPOS_ASSERT(NULL != file_path);
 

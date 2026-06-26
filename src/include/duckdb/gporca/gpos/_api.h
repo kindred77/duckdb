@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------
  *	Greenplum Database
  *	Copyright (c) 2004-2015 Pivotal Software, Inc.
  *
@@ -25,15 +25,15 @@
 #ifdef __cplusplus
 
 // lookup given exception type in the given array
-gpos::BOOL FoundException(gpos::CException &exc, const gpos::ULONG *exceptions,
-						  gpos::ULONG size);
+gpos::GP_BOOL FoundException(gpos::CException &exc, const gpos::GP_ULONG *exceptions,
+						  gpos::GP_ULONG size);
 
 // Check if given exception is an unexpected reason for failing to
 // produce a plan
-gpos::BOOL IsLoggableFailure(gpos::CException &exc);
+gpos::GP_BOOL IsLoggableFailure(gpos::CException &exc);
 
 // check if given exception should error out
-gpos::BOOL ShouldErrorOut(gpos::CException &exc);
+gpos::GP_BOOL ShouldErrorOut(gpos::CException &exc);
 
 
 extern "C" {

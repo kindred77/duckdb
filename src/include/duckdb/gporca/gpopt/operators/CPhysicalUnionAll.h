@@ -1,4 +1,4 @@
-//	Greenplum Database
+﻿//	Greenplum Database
 //	Copyright (C) 2016 Pivotal Software, Inc.
 
 #ifndef GPOPT_CPhysicalUnionAll_H
@@ -23,7 +23,7 @@ private:
 
 	// if this union is needed for partial indexes then store the scan
 	// id, otherwise this will be gpos::ulong_max
-	const ULONG m_ulScanIdPartialIndex;
+	const GP_ULONG m_ulScanIdPartialIndex;
 
 	// set representation of input columns
 	CColRefSetArray *m_pdrgpcrsInput;
@@ -36,14 +36,14 @@ private:
 
 	// map given array of scalar ident expressions to positions of UnionAll input columns in the given child;
 	ULongPtrArray *PdrgpulMap(CMemoryPool *mp, CExpressionArray *pdrgpexpr,
-							  ULONG child_index) const;
+							  GP_ULONG child_index) const;
 
 	// map given ColRefSet, expressed in terms of outputs,
 	// into an equivalent ColRefSet, expressed in terms
 	// of input number n
 	CColRefSet *MapOutputColRefsToInput(CMemoryPool *mp,
 										CColRefSet *out_col_refs,
-										ULONG child_index);
+										GP_ULONG child_index);
 
 	// derive hashed distribution from child operators
 	CDistributionSpecHashed *PdshashedDerive(CMemoryPool *mp,
@@ -66,17 +66,17 @@ protected:
 	// compute required hashed distribution of the n-th child
 	CDistributionSpecHashed *PdshashedPassThru(
 		CMemoryPool *mp, CDistributionSpecHashed *pdshashedRequired,
-		ULONG child_index) const;
+		GP_ULONG child_index) const;
 
 public:
 	CPhysicalUnionAll(CMemoryPool *mp, CColRefArray *pdrgpcrOutput,
 					  CColRef2dArray *pdrgpdrgpcrInput,
-					  ULONG ulScanIdPartialIndex);
+					  GP_ULONG ulScanIdPartialIndex);
 
 	virtual ~CPhysicalUnionAll();
 
 	// match function
-	virtual BOOL Matches(COperator *) const;
+	virtual GP_BOOL Matches(COperator *) const;
 
 	// ident accessors
 	virtual EOperatorId Eopid() const = 0;
@@ -84,7 +84,7 @@ public:
 	virtual const CHAR *SzId() const = 0;
 
 	// sensitivity to order of inputs
-	virtual BOOL FInputOrderSensitive() const;
+	virtual GP_BOOL FInputOrderSensitive() const;
 
 	// accessor of output column array
 	CColRefArray *PdrgpcrOutput() const;
@@ -94,14 +94,14 @@ public:
 
 	// if this unionall is needed for partial indexes then return the scan
 	// id, otherwise return gpos::ulong_max
-	ULONG UlScanIdPartialIndex() const;
+	GP_ULONG UlScanIdPartialIndex() const;
 
 	// is this unionall needed for a partial index
-	BOOL IsPartialIndex() const;
+	GP_BOOL IsPartialIndex() const;
 
 	// return true if operator passes through stats obtained from children,
 	// this is used when computing stats during costing
-	virtual BOOL FPassThruStats() const;
+	virtual GP_BOOL FPassThruStats() const;
 
 	//-------------------------------------------------------------------------------------
 	// Required Plan Properties
@@ -110,42 +110,42 @@ public:
 	// compute required output columns of the n-th child
 	virtual CColRefSet *PcrsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsRequired,
-		ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		GP_ULONG child_index, CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// compute required ctes of the n-th child
 	virtual CCTEReq *PcteRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-								  CCTEReq *pcter, ULONG child_index,
+								  CCTEReq *pcter, GP_ULONG child_index,
 								  CDrvdPropArray *pdrgpdpCtxt,
-								  ULONG ulOptReq) const;
+								  GP_ULONG ulOptReq) const;
 
 	// compute required sort order of the n-th child
 	virtual COrderSpec *PosRequired(CMemoryPool *mp, CExpressionHandle &exprhdl,
-									COrderSpec *posRequired, ULONG child_index,
+									COrderSpec *posRequired, GP_ULONG child_index,
 									CDrvdPropArray *pdrgpdpCtxt,
-									ULONG ulOptReq) const;
+									GP_ULONG ulOptReq) const;
 
 	// compute required rewindability of the n-th child
 	virtual CRewindabilitySpec *PrsRequired(CMemoryPool *mp,
 											CExpressionHandle &exprhdl,
 											CRewindabilitySpec *prsRequired,
-											ULONG child_index,
+											GP_ULONG child_index,
 											CDrvdPropArray *pdrgpdpCtxt,
-											ULONG ulOptReq) const;
+											GP_ULONG ulOptReq) const;
 
 	// compute required partition propagation of the n-th child
 	virtual CPartitionPropagationSpec *PppsRequired(
 		CMemoryPool *mp, CExpressionHandle &exprhdl,
-		CPartitionPropagationSpec *pppsRequired, ULONG child_index,
-		CDrvdPropArray *pdrgpdpCtxt, ULONG ulOptReq);
+		CPartitionPropagationSpec *pppsRequired, GP_ULONG child_index,
+		CDrvdPropArray *pdrgpdpCtxt, GP_ULONG ulOptReq);
 
 	// conversion function
 	static CPhysicalUnionAll *PopConvert(COperator *pop);
 
 
 	// check if required columns are included in output columns
-	virtual BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
+	virtual GP_BOOL FProvidesReqdCols(CExpressionHandle &exprhdl,
 								   CColRefSet *pcrsRequired,
-								   ULONG ulOptReq) const;
+								   GP_ULONG ulOptReq) const;
 
 	//-------------------------------------------------------------------------------------
 	// Derived Plan Properties

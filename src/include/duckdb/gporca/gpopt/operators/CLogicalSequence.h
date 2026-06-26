@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -56,11 +56,11 @@ public:
 	}
 
 	// match function
-	virtual BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL Matches(COperator *pop) const;
 
 
 	// sensitivity to order of inputs
-	BOOL
+	GP_BOOL
 	FInputOrderSensitive() const
 	{
 		return true;
@@ -70,7 +70,7 @@ public:
 	virtual COperator *
 	PopCopyWithRemappedColumns(CMemoryPool *,		//mp,
 							   UlongToColRefMap *,	//colref_mapping,
-							   BOOL					//must_exist
+							   GP_BOOL					//must_exist
 	)
 	{
 		return PopCopyDefault();
@@ -111,9 +111,9 @@ public:
 	// compute required stat columns of the n-th child
 	virtual CColRefSet *
 	PcrsStat(CMemoryPool *mp, CExpressionHandle &exprhdl, CColRefSet *pcrsInput,
-			 ULONG child_index) const
+			 GP_ULONG child_index) const
 	{
-		const ULONG ulLastChildIndex = exprhdl.Arity() - 1;
+		const GP_ULONG ulLastChildIndex = exprhdl.Arity() - 1;
 		if (child_index == ulLastChildIndex)
 		{
 			// only pass through the required stats column to the last child since

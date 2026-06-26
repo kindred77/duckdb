@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -52,7 +52,7 @@ private:
 	IMdIdArray *m_mdid_types_array;
 
 	// whether function returns a set of values
-	BOOL m_returns_set;
+	GP_BOOL m_returns_set;
 
 	// function stability
 	EFuncStbl m_func_stability;
@@ -61,14 +61,14 @@ private:
 	EFuncDataAcc m_func_data_access;
 
 	// function strictness (i.e. whether func returns NULL on NULL input)
-	BOOL m_is_strict;
+	GP_BOOL m_is_strict;
 
 	// function result has very similar number of distinct values as the
 	// single function argument (used for cardinality estimation)
-	BOOL m_is_ndv_preserving;
+	GP_BOOL m_is_ndv_preserving;
 
 	// is an increasing function (non-implicit/lossy cast) which can be used for partition selection
-	BOOL m_is_allowed_for_PS;
+	GP_BOOL m_is_allowed_for_PS;
 
 	// dxl token array for stability
 	Edxltoken m_dxl_func_stability_array[EfsSentinel];
@@ -95,9 +95,9 @@ public:
 	// ctor/dtor
 	CMDFunctionGPDB(CMemoryPool *mp, IMDId *mdid, CMDName *mdname,
 					IMDId *result_type_mdid, IMdIdArray *mdid_array,
-					BOOL ReturnsSet, EFuncStbl func_stability,
-					EFuncDataAcc func_data_access, BOOL is_strict,
-					BOOL is_ndv_preserving, BOOL is_allowed_for_PS);
+					GP_BOOL ReturnsSet, EFuncStbl func_stability,
+					EFuncDataAcc func_data_access, GP_BOOL is_strict,
+					GP_BOOL is_ndv_preserving, GP_BOOL is_allowed_for_PS);
 
 	virtual ~CMDFunctionGPDB();
 
@@ -121,20 +121,20 @@ public:
 	virtual IMdIdArray *OutputArgTypesMdidArray() const;
 
 	// does function return NULL on NULL input
-	virtual BOOL
+	virtual GP_BOOL
 	IsStrict() const
 	{
 		return m_is_strict;
 	}
 
-	virtual BOOL
+	virtual GP_BOOL
 	IsNDVPreserving() const
 	{
 		return m_is_ndv_preserving;
 	}
 
 	// is this function a lossy cast allowed for Partition selection
-	virtual BOOL
+	virtual GP_BOOL
 	IsAllowedForPS() const
 	{
 		return m_is_allowed_for_PS;
@@ -155,7 +155,7 @@ public:
 	}
 
 	// does function return a set of values
-	virtual BOOL ReturnsSet() const;
+	virtual GP_BOOL ReturnsSet() const;
 
 	// serialize object in DXL format
 	virtual void Serialize(gpdxl::CXMLSerializer *xml_serializer) const;

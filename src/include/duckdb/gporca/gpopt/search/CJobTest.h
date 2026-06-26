@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -47,13 +47,13 @@ private:
 	ETestType m_ett;
 
 	// number of job spawning rounds
-	ULONG m_ulRounds;
+	GP_ULONG m_ulRounds;
 
 	// spawning fanout
-	ULONG m_ulFanout;
+	GP_ULONG m_ulFanout;
 
 	// CPU-burning iterations per job
-	ULONG m_ulIters;
+	GP_ULONG m_ulIters;
 
 	// iteration counter
 	static ULONG_PTR m_ulpCnt;
@@ -62,13 +62,13 @@ private:
 	CJobQueue *m_pjq;
 
 	// test job spawning
-	BOOL FSpawn(CSchedulerContext *psc);
+	GP_BOOL FSpawn(CSchedulerContext *psc);
 
 	// start jobs to be queued
-	BOOL FStartQueue(CSchedulerContext *psc);
+	GP_BOOL FStartQueue(CSchedulerContext *psc);
 
 	// test job queueing
-	BOOL FQueue(CSchedulerContext *psc);
+	GP_BOOL FQueue(CSchedulerContext *psc);
 
 	// burn some CPU to simulate actual work
 	void Loop();
@@ -81,7 +81,7 @@ public:
 	virtual ~CJobTest();
 
 	// execution
-	virtual BOOL FExecute(CSchedulerContext *psc);
+	virtual GP_BOOL FExecute(CSchedulerContext *psc);
 
 #ifdef GPOS_DEBUG
 	// printer
@@ -90,7 +90,7 @@ public:
 
 	// set execution parameters
 	void
-	Init(ETestType ett, ULONG ulRounds, ULONG ulFanout, ULONG ulIters,
+	Init(ETestType ett, GP_ULONG ulRounds, GP_ULONG ulFanout, GP_ULONG ulIters,
 		 CJobQueue *pjq)
 	{
 		m_ett = ett;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -36,7 +36,7 @@ class CDXLScalarProjElem : public CDXLScalar
 private:
 	// id of column defined by this project element:
 	// for computed columns this is a new id, for colrefs: id of the original column
-	ULONG m_id;
+	GP_ULONG m_id;
 
 	// alias
 	const CMDName *m_mdname;
@@ -46,7 +46,7 @@ private:
 
 public:
 	// ctor/dtor
-	CDXLScalarProjElem(CMemoryPool *mp, ULONG id, const CMDName *mdname);
+	CDXLScalarProjElem(CMemoryPool *mp, GP_ULONG id, const CMDName *mdname);
 
 	virtual ~CDXLScalarProjElem();
 
@@ -57,7 +57,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// id of the proj element
-	ULONG Id() const;
+	GP_ULONG Id() const;
 
 	// alias of the proj elem
 	const CMDName *GetMdNameAlias() const;
@@ -66,8 +66,8 @@ public:
 	virtual void SerializeToDXL(CXMLSerializer *, const CDXLNode *) const;
 
 	// check if given column is defined by operator
-	virtual BOOL
-	IsColDefined(ULONG colid) const
+	virtual GP_BOOL
+	IsColDefined(GP_ULONG colid) const
 	{
 		return (Id() == colid);
 	}
@@ -83,7 +83,7 @@ public:
 	}
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -93,7 +93,7 @@ public:
 
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 };
 }  // namespace gpdxl

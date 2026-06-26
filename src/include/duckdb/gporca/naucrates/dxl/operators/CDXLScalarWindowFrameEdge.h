@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -50,7 +50,7 @@ class CDXLScalarWindowFrameEdge : public CDXLScalar
 {
 private:
 	// identify if it is a leading or trailing edge
-	BOOL m_leading_edge;
+	GP_BOOL m_leading_edge;
 
 	// frame boundary
 	EdxlFrameBoundary m_dxl_frame_boundary;
@@ -60,7 +60,7 @@ private:
 
 public:
 	// ctor
-	CDXLScalarWindowFrameEdge(CMemoryPool *mp, BOOL fLeading,
+	CDXLScalarWindowFrameEdge(CMemoryPool *mp, GP_BOOL fLeading,
 							  EdxlFrameBoundary frame_boundary);
 
 	// ident accessors
@@ -70,7 +70,7 @@ public:
 	const CWStringConst *GetOpNameStr() const;
 
 	// is it a leading or trailing edge
-	BOOL
+	GP_BOOL
 	IsLeadingEdge() const
 	{
 		return m_leading_edge;
@@ -92,7 +92,7 @@ public:
 								const CDXLNode *dxlnode) const;
 
 	// does the operator return a boolean result
-	virtual BOOL
+	virtual GP_BOOL
 	HasBoolResult(CMDAccessor *	 //md_accessor
 	) const
 	{
@@ -103,7 +103,7 @@ public:
 #ifdef GPOS_DEBUG
 	// checks whether the operator has valid structure, i.e. number and
 	// types of child nodes
-	void AssertValid(const CDXLNode *dxlnode, BOOL validate_children) const;
+	void AssertValid(const CDXLNode *dxlnode, GP_BOOL validate_children) const;
 #endif	// GPOS_DEBUG
 
 	// conversion function

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 EMC Corp.
 //
@@ -58,28 +58,28 @@ public:
 	}
 
 	// is this point equal to another
-	BOOL Equals(const CPoint *) const;
+	GP_BOOL Equals(const CPoint *) const;
 
 	// is this point not equal to another
-	BOOL IsNotEqual(const CPoint *) const;
+	GP_BOOL IsNotEqual(const CPoint *) const;
 
 	// less than
-	BOOL IsLessThan(const CPoint *) const;
+	GP_BOOL IsLessThan(const CPoint *) const;
 
 	// less than or equals
-	BOOL IsLessThanOrEqual(const CPoint *) const;
+	GP_BOOL IsLessThanOrEqual(const CPoint *) const;
 
 	// greater than
-	BOOL IsGreaterThan(const CPoint *) const;
+	GP_BOOL IsGreaterThan(const CPoint *) const;
 
 	// greater than or equals
-	BOOL IsGreaterThanOrEqual(const CPoint *) const;
+	GP_BOOL IsGreaterThanOrEqual(const CPoint *) const;
 
 	// distance between two points
 	CDouble Distance(const CPoint *) const;
 
 	// distance between two points, taking bounds into account
-	CDouble Width(const CPoint *, BOOL include_lower, BOOL include_upper) const;
+	CDouble Width(const CPoint *, GP_BOOL include_lower, GP_BOOL include_upper) const;
 
 	// print function
 	virtual IOstream &OsPrint(IOstream &os) const;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -40,9 +40,9 @@ private:
 		CExpression *pexprScalarStart,	// limit offset
 		CExpression *pexprScalarRows,	// limit count
 		COrderSpec *pos,				// ordering specification
-		BOOL fGlobal,					// is it a local or global limit
-		BOOL fHasCount,					// does limit specify a number of rows
-		BOOL fTopLimitUnderDML) const;
+		GP_BOOL fGlobal,					// is it a local or global limit
+		GP_BOOL fHasCount,					// does limit specify a number of rows
+		GP_BOOL fTopLimitUnderDML) const;
 
 public:
 	// ctor
@@ -68,7 +68,7 @@ public:
 	}
 
 	// Compatibility function for splitting limit
-	virtual BOOL
+	virtual GP_BOOL
 	FCompatible(CXform::EXformId exfid)
 	{
 		return (CXform::ExfSplitLimit != exfid);

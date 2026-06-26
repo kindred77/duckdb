@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2011 Greenplum, Inc.
 //
@@ -58,10 +58,10 @@ private:
 	);
 
 	// is this a supported element of a metadata list
-	BOOL FSupportedElem(const XMLCh *const xml_str);
+	GP_BOOL FSupportedElem(const XMLCh *const xml_str);
 
 	// is this a supported metadata list type
-	BOOL FSupportedListType(const XMLCh *const xml_str);
+	GP_BOOL FSupportedListType(const XMLCh *const xml_str);
 
 public:
 	// ctor/dtor

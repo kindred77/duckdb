@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -33,10 +33,10 @@ class CXformSimplifySubquery : public CXformExploration
 {
 private:
 	// definition of simplification function
-	typedef BOOL(FnSimplify)(CMemoryPool *mp, CExpression *, CExpression **);
+	typedef GP_BOOL(FnSimplify)(CMemoryPool *mp, CExpression *, CExpression **);
 
 	// definition of matching function
-	typedef BOOL(FnMatch)(COperator *);
+	typedef GP_BOOL(FnMatch)(COperator *);
 
 	//---------------------------------------------------------------------------
 	//	@struct:
@@ -60,15 +60,15 @@ private:
 	static const SSimplifySubqueryMapping m_rgssm[];
 
 	// transform existential subqueries to count(*) subqueries
-	static BOOL FSimplifyExistential(CMemoryPool *mp, CExpression *pexprScalar,
+	static GP_BOOL FSimplifyExistential(CMemoryPool *mp, CExpression *pexprScalar,
 									 CExpression **ppexprNewScalar);
 
 	// transform quantified subqueries to count(*) subqueries
-	static BOOL FSimplifyQuantified(CMemoryPool *mp, CExpression *pexprScalar,
+	static GP_BOOL FSimplifyQuantified(CMemoryPool *mp, CExpression *pexprScalar,
 									CExpression **ppexprNewScalar);
 
 	// main driver, transform existential/quantified subqueries to count(*) subqueries
-	static BOOL FSimplify(CMemoryPool *mp, CExpression *pexprScalar,
+	static GP_BOOL FSimplify(CMemoryPool *mp, CExpression *pexprScalar,
 						  CExpression **ppexprNewScalar,
 						  FnSimplify *pfnsimplify, FnMatch *pfnmatch);
 

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+﻿//===----------------------------------------------------------------------===//
 //                         DuckDB
 //
 // duckdb/gporca/duckdb_translator/CLogicalGetDuckDB.h
@@ -50,11 +50,11 @@ public:
 	CTableDescriptor *Ptabdesc() const { return m_ptabdesc; }
 	
 	// Operator interface
-	virtual ULONG HashValue() const;
-	virtual BOOL Matches(COperator *pop) const;
-	virtual BOOL FInputOrderSensitive() const { return false; }
+	virtual GP_ULONG HashValue() const;
+	virtual GP_BOOL Matches(COperator *pop) const;
+	virtual GP_BOOL FInputOrderSensitive() const { return false; }
 	virtual COperator *PopCopyWithRemappedColumns(
-	    CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+	    CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 	
 	// Relational properties
 	virtual CColRefSet *DeriveOutputColumns(CMemoryPool *mp, CExpressionHandle &exprhdl);
@@ -66,11 +66,11 @@ public:
 	    CMemoryPool *mp, CExpressionHandle &) const {
 	    return PpcDeriveConstraintFromTable(mp, m_ptabdesc, m_pdrgpcrOutput);
 	}
-	virtual ULONG DeriveJoinDepth(CMemoryPool *, CExpressionHandle &) const { return 1; }
+	virtual GP_ULONG DeriveJoinDepth(CMemoryPool *, CExpressionHandle &) const { return 1; }
 	virtual CTableDescriptor *DeriveTableDescriptor(CMemoryPool *, CExpressionHandle &) const { return m_ptabdesc; }
 	
 	// Stat columns
-	virtual CColRefSet *PcrsStat(CMemoryPool *, CExpressionHandle &, CColRefSet *, ULONG) const {
+	virtual CColRefSet *PcrsStat(CMemoryPool *, CExpressionHandle &, CColRefSet *, GP_ULONG) const {
 	    GPOS_ASSERT(!"CLogicalGetDuckDB has no children");
 	    return NULL;
 	}

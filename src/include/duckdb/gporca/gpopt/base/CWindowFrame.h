@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2012 EMC Corp.
 //
@@ -155,14 +155,14 @@ public:
 	}
 
 	// matching function
-	BOOL Matches(const CWindowFrame *pwf) const;
+	GP_BOOL Matches(const CWindowFrame *pwf) const;
 
 	// hash function
-	virtual ULONG HashValue() const;
+	virtual GP_ULONG HashValue() const;
 
 	// return a copy of the window frame with remapped columns
 	virtual CWindowFrame *PwfCopyWithRemappedColumns(
-		CMemoryPool *mp, UlongToColRefMap *colref_mapping, BOOL must_exist);
+		CMemoryPool *mp, UlongToColRefMap *colref_mapping, GP_BOOL must_exist);
 
 	// return columns used by frame edges
 	CColRefSet *
@@ -175,18 +175,18 @@ public:
 	virtual IOstream &OsPrint(IOstream &os) const;
 
 	// matching function over frame arrays
-	static BOOL Equals(const CWindowFrameArray *pdrgpwfFirst,
+	static GP_BOOL Equals(const CWindowFrameArray *pdrgpwfFirst,
 					   const CWindowFrameArray *pdrgpwfSecond);
 
 	// combine hash values of a maximum number of entries
-	static ULONG HashValue(const CWindowFrameArray *pdrgpwfFirst,
-						   ULONG ulMaxSize);
+	static GP_ULONG HashValue(const CWindowFrameArray *pdrgpwfFirst,
+						   GP_ULONG ulMaxSize);
 
 	// print array of window frame objects
 	static IOstream &OsPrint(IOstream &os, const CWindowFrameArray *pdrgpwf);
 
 	// check if a given window frame is empty
-	static BOOL
+	static GP_BOOL
 	IsEmpty(CWindowFrame *pwf)
 	{
 		return pwf == &m_wfEmpty;

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2018 Pivotal, Inc.
 //
@@ -38,15 +38,15 @@ using namespace gpdxl;
 using namespace gpmd;
 using namespace gpopt;
 
-// hash maps ULONG -> array of ULONGs
-typedef CHashMap<ULONG, ULongPtrArray, gpos::HashValue<ULONG>,
-				 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+// hash maps GP_ULONG -> array of ULONGs
+typedef CHashMap<GP_ULONG, ULongPtrArray, gpos::HashValue<GP_ULONG>,
+				 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 				 CleanupRelease<ULongPtrArray> >
 	UlongToUlongPtrArrayMap;
 
 // iterator
-typedef CHashMapIter<ULONG, ULongPtrArray, gpos::HashValue<ULONG>,
-					 gpos::Equals<ULONG>, CleanupDelete<ULONG>,
+typedef CHashMapIter<GP_ULONG, ULongPtrArray, gpos::HashValue<GP_ULONG>,
+					 gpos::Equals<GP_ULONG>, CleanupDelete<GP_ULONG>,
 					 CleanupRelease<ULongPtrArray> >
 	UlongToUlongPtrArrayMapIter;
 
@@ -97,23 +97,23 @@ private:
 	// where 1 is no risk
 	// when going from the leaves to the root of the plan, operators that generate joins,
 	// selections and groups increment the risk
-	ULONG m_stats_estimation_risk;
+	GP_ULONG m_stats_estimation_risk;
 
 	// flag to indicate if input relation is empty
-	BOOL m_empty;
+	GP_BOOL m_empty;
 	//
 	// number of blocks in the relation (not always up to-to-date)
-	ULONG m_relpages;
+	GP_ULONG m_relpages;
 
 	// number of all-visible blocks in the relation (not always up-to-date)
-	ULONG m_relallvisible;
+	GP_ULONG m_relallvisible;
 
 	// statistics could be computed using predicates with external parameters (outer references),
 	// this is the total number of external parameters' values
 	CDouble m_num_rebinds;
 
 	// number of predicates applied
-	ULONG m_num_predicates;
+	GP_ULONG m_num_predicates;
 
 	// statistics configuration
 	CStatisticsConfig *m_stats_conf;
@@ -123,32 +123,32 @@ private:
 	CUpperBoundNDVPtrArray *m_src_upper_bound_NDVs;
 
 	// the default value for operators that have no cardinality estimation risk
-	static const ULONG no_card_est_risk_default_val;
+	static const GP_ULONG no_card_est_risk_default_val;
 
 	// helper method to add histograms where the column ids have been remapped
 	static void AddHistogramsWithRemap(CMemoryPool *mp,
 									   UlongToHistogramMap *src_histograms,
 									   UlongToHistogramMap *dest_histograms,
 									   UlongToColRefMap *colref_mapping,
-									   BOOL must_exist);
+									   GP_BOOL must_exist);
 
 	// helper method to add width information where the column ids have been remapped
 	static void AddWidthInfoWithRemap(CMemoryPool *mp,
 									  UlongToDoubleMap *src_width,
 									  UlongToDoubleMap *dest_width,
 									  UlongToColRefMap *colref_mapping,
-									  BOOL must_exist);
+									  GP_BOOL must_exist);
 
 public:
 	// ctor
 	CStatistics(CMemoryPool *mp, UlongToHistogramMap *col_histogram_mapping,
 				UlongToDoubleMap *colid_width_mapping, CDouble rows,
-				BOOL is_empty, ULONG num_predicates = 0);
+				GP_BOOL is_empty, GP_ULONG num_predicates = 0);
 
 	CStatistics(CMemoryPool *mp, UlongToHistogramMap *col_histogram_mapping,
 				UlongToDoubleMap *colid_width_mapping, CDouble rows,
-				BOOL is_empty, ULONG relpages, ULONG relallvisible,
-				CDouble rebinds, ULONG num_predicates);
+				GP_BOOL is_empty, GP_ULONG relpages, GP_ULONG relallvisible,
+				CDouble rebinds, GP_ULONG num_predicates);
 
 
 	// dtor
@@ -164,13 +164,13 @@ public:
 	// actual number of rows
 	virtual CDouble Rows() const;
 
-	virtual ULONG
+	virtual GP_ULONG
 	RelPages() const
 	{
 		return m_relpages;
 	}
 
-	virtual ULONG
+	virtual GP_ULONG
 	RelAllVisible() const
 	{
 		return m_relallvisible;
@@ -184,7 +184,7 @@ public:
 	}
 
 	// skew estimate for given column
-	virtual CDouble GetSkew(ULONG colid) const;
+	virtual CDouble GetSkew(GP_ULONG colid) const;
 
 	// what is the width in bytes of set of column id's
 	virtual CDouble Width(ULongPtrArray *colids) const;
@@ -196,7 +196,7 @@ public:
 	virtual CDouble Width() const;
 
 	// is statistics on an empty input
-	virtual BOOL
+	virtual GP_BOOL
 	IsEmpty() const
 	{
 		return m_empty;
@@ -204,7 +204,7 @@ public:
 
 	// look up the histogram of a particular column
 	virtual const CHistogram *
-	GetHistogram(ULONG colid) const
+	GetHistogram(GP_ULONG colid) const
 	{
 		return m_colid_histogram_mapping->Find(&colid);
 	}
@@ -213,10 +213,10 @@ public:
 	virtual CDouble GetNDVs(const CColRef *colref);
 
 	// look up the width of a particular column
-	virtual const CDouble *GetWidth(ULONG colid) const;
+	virtual const CDouble *GetWidth(GP_ULONG colid) const;
 
 	// the risk of errors in cardinality estimation
-	virtual ULONG
+	virtual GP_ULONG
 	StatsEstimationRisk() const
 	{
 		return m_stats_estimation_risk;
@@ -224,7 +224,7 @@ public:
 
 	// update the risk of errors in cardinality estimation
 	virtual void
-	SetStatsEstimationRisk(ULONG risk)
+	SetStatsEstimationRisk(GP_ULONG risk)
 	{
 		m_stats_estimation_risk = risk;
 	}
@@ -243,7 +243,7 @@ public:
 	virtual CStatistics *CalcLASJoinStats(
 		CMemoryPool *mp, const IStatistics *other_stats,
 		CStatsPredJoinArray *join_preds_stats,
-		BOOL
+		GP_BOOL
 			DoIgnoreLASJHistComputation	 // except for the case of LOJ cardinality estimation this flag is always
 		// "true" since LASJ stats computation is very aggressive
 	) const;
@@ -277,7 +277,7 @@ public:
 	// copy stats with remapped column id
 	virtual IStatistics *CopyStatsWithRemap(CMemoryPool *mp,
 											UlongToColRefMap *colref_mapping,
-											BOOL must_exist) const;
+											GP_BOOL must_exist) const;
 
 	// return the set of column references we have stats for
 	virtual CColRefSet *GetColRefSet(CMemoryPool *mp) const;
@@ -296,12 +296,12 @@ public:
 	virtual CDouble GetColUpperBoundNDVs(const CColRef *colref);
 
 	// return the index of the array of upper bound ndvs to which column reference belongs
-	virtual ULONG GetIndexUpperBoundNDVs(const CColRef *colref);
+	virtual GP_ULONG GetIndexUpperBoundNDVs(const CColRef *colref);
 
 	// return the column identifiers of all columns statistics maintained
 	virtual ULongPtrArray *GetColIdsWithStats(CMemoryPool *mp) const;
 
-	virtual ULONG
+	virtual GP_ULONG
 	GetNumberOfPredicates() const
 	{
 		return m_num_predicates;
@@ -365,8 +365,8 @@ public:
 	static const CDouble DefaultDistinctValues;
 
 	// check if the input statistics from join statistics computation empty
-	static BOOL IsEmptyJoin(const CStatistics *outer_stats,
-							const CStatistics *inner_side_stats, BOOL IsLASJ);
+	static GP_BOOL IsEmptyJoin(const CStatistics *outer_stats,
+							const CStatistics *inner_side_stats, GP_BOOL IsLASJ);
 
 	// add upper bound ndvs information for a given set of columns
 	static void CreateAndInsertUpperBoundNDVs(CMemoryPool *mp,

@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 //	Greenplum Database
 //	Copyright (C) 2010 Greenplum, Inc.
 //
@@ -42,7 +42,7 @@ CFileWriter::CFileWriter() : CFileDescriptor(), m_file_size(0)
 //
 //---------------------------------------------------------------------------
 void
-CFileWriter::Open(const CHAR *file_path, ULONG permission_bits)
+CFileWriter::Open(const CHAR *file_path, GP_ULONG permission_bits)
 {
 	GPOS_ASSERT(NULL != file_path);
 
