@@ -1,0 +1,114 @@
+include_directories(src/include/duckdb/optimizer/gporca)
+
+add_library_unity(
+        duckdb_gpopt
+        OBJECT
+
+        base/CAutoOptCtxt.cpp
+        base/CCastUtils.cpp
+        base/CColConstraintsArrayMapper.cpp
+        base/CColConstraintsHashMapper.cpp
+        base/CColRef.cpp
+        base/CColRefComputed.cpp
+        base/CColRefSet.cpp
+        base/CColRefSetIter.cpp
+        base/CColRefTable.cpp
+        base/CColumnFactory.cpp
+        base/CConstraint.cpp
+        base/CConstraintConjunction.cpp
+        base/CConstraintDisjunction.cpp
+        base/CConstraintInterval.cpp
+        base/CConstraintNegation.cpp
+        base/CCostContext.cpp
+        base/CCTEInfo.cpp
+        base/CCTEMap.cpp
+        base/CCTEReq.cpp
+        base/CDatumSortedSet.cpp
+        base/CDefaultComparator.cpp
+        base/CDistributionSpecHashed.cpp
+        base/CDistributionSpecHashedNoOp.cpp
+        base/CDistributionSpecNonSingleton.cpp
+        base/CDistributionSpecRandom.cpp
+        base/CDistributionSpecReplicated.cpp
+        base/CDistributionSpecRouted.cpp
+        base/CDistributionSpecSingleton.cpp
+        base/CDistributionSpecStrictHashed.cpp
+        base/CDistributionSpecStrictRandom.cpp
+        base/CDistributionSpecStrictSingleton.cpp
+        base/CDistributionSpecUniversal.cpp
+        base/CDrvdProp.cpp
+        base/CDrvdPropCtxt.cpp
+        base/CDrvdPropCtxtPlan.cpp
+        base/CDrvdPropPlan.cpp
+        base/CDrvdPropRelational.cpp
+        base/CDrvdPropScalar.cpp
+        base/CEnfdDistribution.cpp
+        base/CEnfdOrder.cpp
+        base/CEnfdPartitionPropagation.cpp
+        base/CEnfdProp.cpp
+        base/CEnfdRewindability.cpp
+        base/CFunctionalDependency.cpp
+        base/CFunctionProp.cpp
+        base/CIOUtils.cpp
+        base/CKeyCollection.cpp
+        base/COptCtxt.cpp
+        base/COptimizationContext.cpp
+        base/COrderSpec.cpp
+        base/CPartFilterMap.cpp
+        base/CPartIndexMap.cpp
+        base/CPartInfo.cpp
+        base/CPartitionPropagationSpec.cpp
+        base/CPartKeys.cpp
+        base/CPrintPrefix.cpp
+        base/CPropConstraint.cpp
+        base/CQueryContext.cpp
+        base/CRange.cpp
+        base/CReqdProp.cpp
+        base/CReqdPropPlan.cpp
+        base/CReqdPropRelational.cpp
+        base/CRewindabilitySpec.cpp
+        base/CUtils.cpp
+        base/CWindowFrame.cpp
+        base/CWindowOids.cpp
+        base/IColConstraintsMapper.cpp
+
+        cost/CCostModelGPDB.cpp
+        cost/CCostModelGPDBLegacy.cpp
+        cost/CCostModelParamsGPDB.cpp
+        cost/CCostModelParamsGPDBLegacy.cpp
+        cost/ICostModel.cpp
+
+        engine/CEngine.cpp
+        engine/CEnumeratorConfig.cpp
+        engine/CPartialPlan.cpp
+        engine/CStatisticsConfig.cpp
+
+        optimizer/COptimizer.cpp
+        optimizer/COptimizerConfig.cpp
+
+        search/CBinding.cpp
+        search/CGroup.cpp
+        search/CGroupExpression.cpp
+        search/CGroupProxy.cpp
+        search/CJob.cpp
+        search/CJobFactory.cpp
+        search/CJobGroup.cpp
+        search/CJobGroupExploration.cpp
+        search/CJobGroupExpression.cpp
+        search/CJobGroupExpressionExploration.cpp
+        search/CJobGroupExpressionImplementation.cpp
+        search/CJobGroupExpressionOptimization.cpp
+        search/CJobGroupImplementation.cpp
+        search/CJobGroupOptimization.cpp
+        search/CJobQueue.cpp
+        search/CJobTest.cpp
+        search/CJobTransformation.cpp
+        search/CMemo.cpp
+        search/CScheduler.cpp
+        search/CSchedulerContext.cpp
+        search/CSearchStage.cpp
+
+        )
+set(ALL_OBJECT_FILES
+        ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:duckdb_gpopt>
+        PARENT_SCOPE)
