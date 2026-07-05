@@ -70,7 +70,7 @@ add_subdirectory(parallel)
 add_subdirectory(storage)
 add_subdirectory(transaction)
 
-add_subdirectory(gporca)
+#add_subdirectory(gporca)
 
 set(DUCKDB_LINK_LIBS
     duckdb_fsst
