@@ -1,3 +1,9 @@
 git clone -b kindred-branch-novelox-win64 git@github.com:kindred77/my_gporca third_party/my_gporca 
 cd third_party/my_gporca
 git submodule update --init --recursive
+
+build with mingw64 gcc
+cmake args:
+-DENABLE_UBSAN=OFF
+-DENABLE_SANITIZER=OFF
+-DREDUCE_SYMBOLS=ON
